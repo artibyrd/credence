@@ -1,0 +1,81 @@
+[tool.poetry]
+name = "credence"
+version = "0.1.0"
+description = "Autonomous epistemic evaluation engine, FastMCP server, and decentralized trust network (Credence Mesh)."
+authors = ["Credence Network Contributors"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "credence" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+fastapi = { version = "^0.116.1", extras = ["standard"] }
+uvicorn = { version = "^0.35.0", extras = ["standard"] }
+pydantic = "^2.10.0"
+pydantic-settings = "^2.7.0"
+sqlmodel = "^0.0.24"
+aiosqlite = "^0.21.0"
+pyyaml = "^6.0.2"
+trafilatura = "^2.0.0"
+playwright = "^1.58.0"
+rich = "^13.9.4"
+simhash = "^2.1.2"
+cryptography = ">=44.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+ruff = "^0.9.0"
+mypy = "^1.14.0"
+types-pyyaml = "^6.0.12.20241230"
+types-requests = "^2.32.0.20241016"
+
+[tool.poetry.scripts]
+credence = "credence.cli.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "S",  # bandit
+]
+ignore = [
+    "E501", # line too long
+    "S101", # use of assert (in tests)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+]

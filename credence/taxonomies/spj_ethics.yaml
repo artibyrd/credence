@@ -1,0 +1,123 @@
+catalog_id: spj_ethics
+domain: JOURNALISTIC_ETHICS
+version: "1.0.0"
+description: "The Society of Professional Journalists (SPJ) Code of Ethics standards for news accuracy, fairness, minimizing harm, and editorial independence."
+default_weight: 1.2
+
+clusters:
+  - cluster_id: SEEK_TRUTH_AND_REPORT
+    name: "Seek Truth and Report It"
+    description: "Journalists should be honest, fair, and courageous in gathering, reporting, and interpreting information."
+    rules:
+      - rule_id: SPJ-1.1
+        name: "Unsourced Factual Assertion"
+        severity: 3
+        description: "Significant factual, scientific, or statistical claims made without citations, primary sources, or verifiable provenance."
+        detection_signals:
+          - "Sweeping empirical claims presented without attribution ('studies show', 'experts say' without naming who or where)."
+          - "Absence of hyperlinks or citations for non-obvious statistical assertions."
+        evidence_guidelines: "Quote the unsupported factual claim and indicate what primary verification is missing."
+
+      - rule_id: SPJ-1.2
+        name: "Headline / Body Distortion"
+        severity: 4
+        description: "Misleading headline disparity where the article title or social preview contradicts or grossly inflates what the body text substantiates."
+        detection_signals:
+          - "Sensationalist clickbait title making an absolute claim that is softened or debunked inside the body text."
+          - "Headline suggesting confirmed facts when the article only reports unverified rumors."
+        evidence_guidelines: "Quote the headline alongside the contradicting excerpt from the article body."
+
+      - rule_id: SPJ-1.3
+        name: "Uncorroborated Anonymous Sourcing"
+        severity: 3
+        description: "Damaging assertions attributed exclusively to unnamed sources without explanatory justification or multiple independent corroborating points."
+        detection_signals:
+          - "Relying on anonymous 'insiders' or 'officials' for severe defamatory allegations without explaining source motives or corroboration attempts."
+        evidence_guidelines: "Quote the passage where anonymous claims are used and note the lack of corroborating context."
+
+      - rule_id: SPJ-1.4
+        name: "Deceptive Context & Selective Omission"
+        severity: 4
+        description: "Quoting individuals or citing data while intentionally omitting critical qualifiers, timestamps, or full context that changes the fundamental meaning."
+        detection_signals:
+          - "Snipped quotes that reverse the speaker's stated intent."
+          - "Outdated reports or videos recirculated as breaking current events."
+        evidence_guidelines: "Quote the trimmed statement and supply the omitted contextual qualifiers."
+
+      - rule_id: SPJ-1.5
+        name: "Blurred Editorial Demarcation"
+        severity: 3
+        description: "Op-eds, speculative commentary, or sponsored marketing presented with the visual styling and framing of objective hard news."
+        detection_signals:
+          - "Heavy editorial opinions and prescriptive stances without an 'Opinion', 'Commentary', or 'Analysis' badge."
+          - "Lack of visual separation between editorial content and journalistic reporting."
+        evidence_guidelines: "Quote opinionated passages and note the absence of clear editorial labeling."
+
+      - rule_id: SPJ-1.6
+        name: "Cloaked Satire / Bad-Faith Parody Defense"
+        severity: 4
+        description: "Malicious disinformation or defamatory falsehoods masquerading as 'satire' or 'a joke' to evade accountability while actively deceiving audiences."
+        detection_signals:
+          - "Deceptive fabrication designed to look like authentic breaking news with no visible satire disclosures on the page or masthead."
+          - "Claiming satire only after being challenged on factual inaccuracies."
+        evidence_guidelines: "Quote the fabricated claim and identify why it is deceptively framed as legitimate news."
+
+  - cluster_id: MINIMIZE_HARM
+    name: "Minimize Harm"
+    description: "Ethical journalism treats sources, subjects, colleagues, and members of the public as human beings deserving of respect."
+    rules:
+      - rule_id: SPJ-2.1
+        name: "Sensational Exploitation of Tragedy"
+        severity: 4
+        description: "Gratuitous sensationalism exploiting private victims, minors, or grief for emotional engagement or ad clicks."
+        detection_signals:
+          - "Ghoulish imagery, unredacted traumatic footage, or invasive reporting on grieving families."
+        evidence_guidelines: "Quote or identify the sensationalized coverage of private grief."
+
+      - rule_id: SPJ-2.2
+        name: "Doxxing & Unjustified Privacy Intrusion"
+        severity: 5
+        description: "Publishing private phone numbers, home addresses, or private identifying documents without legitimate public interest justification."
+        detection_signals:
+          - "Exposing private personal identifiable information (PII) of non-public figures."
+        evidence_guidelines: "Identify the private information exposed without public justification."
+
+  - cluster_id: ACT_INDEPENDENTLY
+    name: "Act Independently"
+    description: "The highest and primary obligation of ethical journalism is to serve the public interest free from undisclosed conflicts."
+    rules:
+      - rule_id: SPJ-3.1
+        name: "Undisclosed Commercial or Political Conflict"
+        severity: 4
+        description: "Favorable coverage of products, donors, or political candidates without disclosing financial, ownership, or affiliate ties."
+        detection_signals:
+          - "Glowing review or uncritical endorsement without standard affiliate or sponsor disclosures."
+        evidence_guidelines: "Quote promotional passages and document the missing conflict disclosure."
+
+      - rule_id: SPJ-3.2
+        name: "Disguised Native Advertising"
+        severity: 5
+        description: "Paid promotional marketing designed to mimic an independent investigative article."
+        detection_signals:
+          - "Advertorial formatted as authentic news reporting without conspicuous 'Sponsored' or 'Ad' tags."
+        evidence_guidelines: "Quote the article layout or text showing sponsored intent disguised as news."
+
+  - cluster_id: BE_ACCOUNTABLE_AND_TRANSPARENT
+    name: "Be Accountable and Transparent"
+    description: "Journalists should clarify and explain news coverage, invite dialogue with the public, and acknowledge mistakes."
+    rules:
+      - rule_id: SPJ-4.1
+        name: "Ghost or Anonymous Publishing"
+        severity: 2
+        description: "Articles completely lacking author bylines, editorial mastheads, or publisher identity."
+        detection_signals:
+          - "News reports published without an author name, editorial board, or organization contact."
+        evidence_guidelines: "Note the absence of author byline and organization masthead on the page."
+
+      - rule_id: SPJ-4.2
+        name: "Lack of Corrections Policy"
+        severity: 2
+        description: "Absence of a visible corrections log, contact channel for factual disputes, or retraction standards."
+        detection_signals:
+          - "No mechanism for readers to submit corrections or verify editorial accountability."
+        evidence_guidelines: "Note the absence of corrections policy or contact methods."

@@ -1,0 +1,17 @@
+services:
+  credence:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - CREDENCE_ENV=development
+      - CREDENCE_LOG_LEVEL=INFO
+      - DATABASE_URL=sqlite+aiosqlite:///data/credence.db
+      - SNAPSHOT_DIR=/app/data/snapshots
+    volumes:
+      - ./data:/app/data
+      - ./credence:/app/credence
+      - ./tests:/app/tests
+    restart: unless-stopped
