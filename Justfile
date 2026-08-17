@@ -37,6 +37,10 @@ docker-build:
 docker-test:
     docker compose run --rm credence poetry run pytest tests/
 
+# Run interactive Textual TUI dashboard
+tui:
+    poetry run credence tui
+
 # Run fastmcp dev server
 dev:
     poetry run python -m credence.server.app

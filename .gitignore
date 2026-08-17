@@ -36,11 +36,12 @@ htmlcov/
 # Local databases and runtime data
 data/snapshots/*
 !data/snapshots/.gitkeep
-data/*.db
-data/*.sqlite
-data/*.sqlite3
-*.db
-*.sqlite
+data/*.db*
+data/*.sqlite*
+*.db*
+*.sqlite*
+data/*.key
+*.key
 
 # Environment secrets
 .env

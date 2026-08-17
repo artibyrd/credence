@@ -16,6 +16,8 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
    - Use `sqlite+aiosqlite:///:memory:` and offline HTML fixtures.
 5. **Taxonomy Registries**:
    - Never hardcode rule names in pipeline scoring math. Always use namespaced URIs (`domain:cluster/rule_id@version`) and generic numerical severity/confidence inputs.
+6. **Human Review Before Commits ("Mk1 Eyeball")**:
+   - Never execute `git commit` automatically. Always present changes and live verification results for human review first, and only commit when explicitly requested by the user.
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic test suite (<2s).
