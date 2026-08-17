@@ -274,9 +274,9 @@ just docker-test
 │   ├── monitoring.tf
 │   └── outputs.tf
 ├── cloudbuild.yaml            # Cloud Build CI/CD (Lint -> Test Gate -> Build -> Deploy)
-├── tests/                     # Hermetic Pytest Suite (137 tests across 4 interfaces & red team attacks)
+├── tests/                     # Hermetic Pytest Suite (144 tests across 4 interfaces, red team & gauntlet)
 ├── .agents/skills/            # Antigravity Progressive Disclosure Skills (Cluster, Benchmark, White-Label)
-├── docs/                      # Architectural Specs, 30 Invariants, Threat Model FAQ & Parity Matrix
+├── docs/                      # Architectural Specs, 31 Invariants, Threat Model FAQ & Parity Matrix
 ├── docker-compose.mesh.yml    # 13-Node Local Mesh Cluster Configuration
 ├── Dockerfile                 # Multi-stage Container with Python 3.12 + Chromium
 ├── Justfile                   # Task runner
@@ -287,7 +287,7 @@ just docker-test
 
 ## Documentation & Deep References
 
-- 📘 **[Agent Guidelines & Invariants (30 Invariants)](docs/agent-invariants.md)**
+- 📘 **[Agent Guidelines & Invariants (31 Invariants)](docs/agent-invariants.md)**
 - 📘 **[Skeptic's FAQ & Adversarial Threat Model](docs/faq-adversarial-defense.md)**
 - 📘 **[Universal Feature Parity Matrix](docs/feature-parity-matrix.md)**
 - 📘 **[Decentralized Architecture Specification](docs/architecture.md)**

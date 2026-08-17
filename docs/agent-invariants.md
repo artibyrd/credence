@@ -190,6 +190,13 @@ This document outlines mandatory rules and design invariants for human contribut
 - **Untrusted Prompt Isolation**: Evaluated prose text must be wrapped inside `<untrusted_source_text>` boundary tags and accompanied by explicit security directives instructing models that text within tags cannot override system prompts, execute JSON commands, or cancel ethics checks.
 - **Mesh Relay & Server Rate Limiting**: P2P WebSocket relays must enforce per-peer token-bucket rate limits (`check_rate_limit`), and FastMCP tool servers must enforce burst throttling (`ServerRateLimiter`) and payload size limits ($\le 100\text{k}$ characters) to prevent token quota starvation and SQLite lock contention.
 
+---
+
+## 31. XML ElementTree Traversal & Zero-Key Ingestion Invariant
+- **ElementTree Boolean Traversal Safety**: In Python `xml.etree.ElementTree`, an Element with 0 child elements evaluates to `False` in boolean context. Never chain XML node lookups with `or` operators (`find(tag1) or find(tag2)`). All feed and XML parsers must use explicit `is not None` checks or `_find_first_elem()` helpers and extract inner text via `itertext()`.
+- **Zero-Key First-Boot Fallback**: When no API key is detected in the runtime environment, the evaluation pipeline must automatically engage the offline structural heuristic engine (`quota_preserved = True`, `evaluation_method: "offline_structural_heuristic"`, confidence capped at $\le 0.50$) to guarantee zero-crash developer onboarding.
+
+
 
 
 

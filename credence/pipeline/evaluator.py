@@ -357,8 +357,10 @@ async def evaluate_snapshot(
     # Check Token Budget Governor and API Key status
     quota_preserved = False
     api_key, key_source = get_active_api_key()
+    if not api_key:
+        quota_preserved = True
 
-    if session is not None:
+    if session is not None and not quota_preserved:
         budget_ok, reason = await check_budget_before_call(
             session, estimated_tokens=3000, profile_override=profile_override
         )
