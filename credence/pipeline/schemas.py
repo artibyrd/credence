@@ -90,3 +90,7 @@ class AuditReport(BaseModel):
     quota_preserved: bool = Field(
         default=False, description="True if evaluation ran in offline mode to protect token quota"
     )
+    evaluation_method: str = Field(
+        default="llm_multi_agent",
+        description="Method used for evaluation: llm_multi_agent or offline_structural_heuristic",
+    )

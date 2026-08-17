@@ -23,6 +23,7 @@ class DomainMetrics:
     median_deviations_sum: float = 0.0
     grounded_quotes_count: int = 0
     total_quotes_count: int = 0
+    unique_domains_count: int = 1
     slashing_count: int = 0
     first_evaluated_at: Optional[datetime] = None
     last_evaluated_at: Optional[datetime] = None
@@ -46,8 +47,10 @@ def calculate_subject_expertise(metrics: DomainMetrics) -> float:
     total_q = max(1, metrics.total_quotes_count)
     grounding_ratio = min(1.0, max(0.0, metrics.grounded_quotes_count / total_q))
 
-    # 3. Domain Volume Threshold V (15%): Requires >= 25 evaluations for full volume credit
-    volume_ratio = min(1.0, metrics.evaluations_count / 25.0)
+    # 3. Domain Volume & Entropy V (15%): Requires >= 25 evaluations across >= 5 distinct domains (Anti-Sybil)
+    volume_count_ratio = min(1.0, metrics.evaluations_count / 25.0)
+    domain_entropy_ratio = min(1.0, max(0.2, metrics.unique_domains_count / 5.0))
+    volume_ratio = volume_count_ratio * domain_entropy_ratio
 
     # 4. Domain Longevity L (10%): Requires >= 30 days active history for full stability credit
     longevity_ratio = 0.1

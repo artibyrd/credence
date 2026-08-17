@@ -171,6 +171,7 @@ class DomainMetricRecord(SQLModel, table=True):
     median_deviations_sum: float = Field(default=0.0, description="Cumulative deviation from domain robust median")
     grounded_quotes_count: int = Field(default=0, description="Verbatim grounded technical citations")
     total_quotes_count: int = Field(default=0, description="Total citations submitted in this domain")
+    unique_domains_count: int = Field(default=1, description="Number of distinct origin FQDNs evaluated in this domain")
     slashing_count: int = Field(default=0, description="Number of times expertise was slashed for hallucinations")
     expertise_score: float = Field(default=0.05, description="Empirical expertise score E_i(subject) from 0.05 to 1.0")
     first_evaluated_at: datetime = Field(default_factory=utc_now, description="First evaluation timestamp in domain")

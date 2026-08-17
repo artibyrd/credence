@@ -122,7 +122,15 @@ class BayesianConsensusAggregator:
 
         for p in peer_meta:
             delta = abs(p["score"] - median_score)
-            if delta > self.outlier_delta_threshold and len(peer_meta) >= 3:
+            has_grounded_violations = len(p["att"].violations) > 0 and p["grounded_ratio"] >= 0.80
+            is_verified_authority = p.get("domain_exp", 0.0) >= 0.70 or p["weight"] >= 0.50
+
+            # The Galileo Rule: Verified authorities providing 100% grounded citations
+            # cannot be dismissed as outliers by low-expertise swarms reporting absence of evidence
+            if is_verified_authority and has_grounded_violations:
+                p["is_outlier"] = False
+                valid_peers.append(p)
+            elif delta > self.outlier_delta_threshold and len(peer_meta) >= 3:
                 p["is_outlier"] = True
                 outlier_pubkeys.append(p["pubkey"])
             else:

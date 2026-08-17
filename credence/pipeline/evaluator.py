@@ -413,6 +413,13 @@ async def evaluate_snapshot(
 
     taxonomies_used = active_reg.get_catalog_hashes()
 
+    # Structural Disclosure & Heuristic Confidence Capping (Adversarial Hardening)
+    if quota_preserved:
+        confidence_score = min(0.50, confidence_score)
+        eval_method = "offline_structural_heuristic"
+    else:
+        eval_method = "llm_multi_agent"
+
     # Step 6: Assemble Report
     report = AuditReport(
         url=snapshot.url,
@@ -428,6 +435,7 @@ async def evaluate_snapshot(
         violations=validated_violations,
         taxonomies_used=taxonomies_used,
         quota_preserved=quota_preserved,
+        evaluation_method=eval_method,
     )
 
     # Step 7: Cryptographic Attestation Signing

@@ -90,6 +90,7 @@ def test_empirical_expertise_mathematical_formula():
         median_deviations_sum=0.0,  # 0 deviation -> concordance = 1.0
         grounded_quotes_count=50,
         total_quotes_count=50,  # 100% grounding -> 1.0
+        unique_domains_count=5,  # Anti-Sybil domain entropy -> 1.0
         slashing_count=0,
         first_evaluated_at=datetime.fromtimestamp(now.timestamp() - 35 * 86400, tz=timezone.utc),
         last_evaluated_at=now,  # 35 days -> longevity = 1.0
@@ -114,6 +115,7 @@ def test_empirical_expertise_mathematical_formula():
         median_deviations_sum=0.0,
         grounded_quotes_count=50,
         total_quotes_count=50,
+        unique_domains_count=5,
         slashing_count=1,
         first_evaluated_at=datetime.fromtimestamp(now.timestamp() - 35 * 86400, tz=timezone.utc),
         last_evaluated_at=now,

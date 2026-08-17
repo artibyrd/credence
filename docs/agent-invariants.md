@@ -163,4 +163,26 @@ This document outlines mandatory rules and design invariants for human contribut
 - All network fetching modules (dual-capture HTML extractor, syndicated RSS/Atom/JSON feed parsers, and remote seed downloaders) must enforce strict SSRF guards rejecting cloud metadata services (`169.254.169.254`, `metadata.google.internal`), loopback addresses (`127.0.0.1`, `localhost`, `::1`), and RFC 1918 private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
 - Offline local HTML fixtures (`file://` / `text://`) are permitted only during hermetic test executions with explicit test authorization (`allow_local=True`).
 
+---
+
+## 27. Asymmetric Grounded Evidence & Galileo Invariant
+- In decentralized consensus calculations, **absence of evidence is not evidence of absence**.
+- A verified subject authority ($E_i \ge 0.70$) providing an itemized violation backed by a 100% grounded verbatim citation ($G=1.0$) MUST NOT be classified as an outlier (`is_outlier = False`) by generalist nodes reporting zero violations.
+- Consensus scores in specialized subject namespaces must use Domain Authority Weighted Medians ($W_i = 0.20 Q_i + 0.80 E_i$) rather than unweighted headcounts to prevent uninformed swarms from overriding specialized truth.
+
+---
+
+## 28. Anti-Sybil Domain Diversity & Factual Cloaking Guard Invariant
+- Subject expertise volume ratio ($V_{i, \text{sub}}$) requires evaluation across multiple distinct Fully Qualified Domain Names ($V_i = \min(1.0, \text{count}/25.0) \times \min(1.0, \text{domains}/5.0)$) to prevent colluding Sybil cartels from self-farming authority on synthetic self-hosted domains.
+- Structural satire markers (Schema.org `SatiricalArticle` tags, badges) are candidate cues only; any content asserting factual allegations regarding living individuals, elections, or public health directives triggers mandatory `SPJ-1.6` cloaking penalties that hard-override `is_satire` to `False` and disable suspicion score neutralization.
+
+---
+
+## 29. Agent Context Governance & Progressive Disclosure Invariant
+- Root rule files (`AGENTS.md` / `GEMINI.md`) must be kept lean, categorized, and focused exclusively on cardinal engineering, security, and behavioral invariants to minimize per-turn token taxes.
+- Complex procedural workflows (benchmarks, cluster orchestration, multi-cloud scaffolding) must be encapsulated as on-demand workspace skills (`.agents/skills/`) to leverage Antigravity progressive disclosure.
+- Detailed mathematical proofs, formulas, and extended architectural rationale must be maintained in dedicated documentation files under `docs/`.
+
+
+
 
