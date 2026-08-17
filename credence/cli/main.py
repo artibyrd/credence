@@ -5,6 +5,8 @@ Commands:
 - credence lookup <hash_or_url>
 - credence identity [show|generate]
 - credence taxonomy [list|show <catalog_id>]
+- credence quota
+- credence tui
 """
 
 from __future__ import annotations
@@ -23,30 +25,48 @@ from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
 from credence.pipeline.evaluator import audit_url
+from credence.pipeline.governor import get_token_headroom_status
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 from credence.taxonomy_loader import registry
 
 console = Console()
 
 
+def _get_verdict_badge(report: AuditReport) -> tuple[str, str]:
+    if report.is_satire:
+        return "cyan", "🎭 SATIRE / PARODY"
+    if report.suspicion_score <= 15.0:
+        return "green", "🛡️ CLEAN"
+    if report.suspicion_score <= 40.0:
+        return "yellow", "⚠️ LOW SUSPICION"
+    if report.suspicion_score <= 70.0:
+        return "dark_orange", "🚨 SUSPICIOUS"
+    return "bold red", "🛑 HIGH DECEPTION"
+
+
+def _render_violations_table(violations: list[SpecialistViolationFinding]) -> None:
+    table = Table(title="[bold]Itemized Grounded Violations[/bold]", show_header=True, header_style="bold magenta")
+    table.add_column("Rule ID", style="cyan", width=12)
+    table.add_column("Domain", style="dim", width=22)
+    table.add_column("Sev", justify="center", width=5)
+    table.add_column("Cited Excerpt / Element", style="italic", width=40)
+    table.add_column("Reasoning & Evidence", style="white")
+
+    for v in violations:
+        sev_style = "red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
+        table.add_row(
+            v.rule_id,
+            v.domain,
+            f"[{sev_style}]{v.severity}[/{sev_style}]",
+            f'"{v.quote_or_element}"' if len(v.quote_or_element) < 80 else f'"{v.quote_or_element[:77]}..."',
+            v.reasoning,
+        )
+    console.print(table)
+
+
 def render_audit_report(report: AuditReport) -> None:
     """Render an AuditReport as a formatted Rich dashboard panel."""
-    # Determine color styling based on classification
-    if report.is_satire:
-        color = "cyan"
-        badge = "🎭 SATIRE / PARODY"
-    elif report.suspicion_score <= 15.0:
-        color = "green"
-        badge = "🛡️ CLEAN"
-    elif report.suspicion_score <= 40.0:
-        color = "yellow"
-        badge = "⚠️ LOW SUSPICION"
-    elif report.suspicion_score <= 70.0:
-        color = "dark_orange"
-        badge = "🚨 SUSPICIOUS"
-    else:
-        color = "bold red"
-        badge = "🛑 HIGH DECEPTION"
+    color, badge = _get_verdict_badge(report)
 
     summary_lines = [
         f"[bold]Target URL:[/bold] {report.url}",
@@ -57,6 +77,11 @@ def render_audit_report(report: AuditReport) -> None:
         f"[bold]Suspicion Density:[/bold] {report.suspicion_density:.1f} violations / 1,000 words",
         f"[bold]Evaluation Confidence:[/bold] {report.confidence_score * 100:.0f}%",
     ]
+
+    if report.quota_preserved:
+        summary_lines.append(
+            "[bold yellow]⚡ Quota Preserved:[/bold yellow] Offline heuristic mode executed to protect developer tokens."
+        )
 
     if report.is_satire:
         summary_lines.append(
@@ -76,23 +101,7 @@ def render_audit_report(report: AuditReport) -> None:
     console.print(panel)
 
     if report.violations:
-        table = Table(title="[bold]Itemized Grounded Violations[/bold]", show_header=True, header_style="bold magenta")
-        table.add_column("Rule ID", style="cyan", width=12)
-        table.add_column("Domain", style="dim", width=22)
-        table.add_column("Sev", justify="center", width=5)
-        table.add_column("Cited Excerpt / Element", style="italic", width=40)
-        table.add_column("Reasoning & Evidence", style="white")
-
-        for v in report.violations:
-            sev_style = "red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
-            table.add_row(
-                v.rule_id,
-                v.domain,
-                f"[{sev_style}]{v.severity}[/{sev_style}]",
-                f'"{v.quote_or_element}"' if len(v.quote_or_element) < 80 else f'"{v.quote_or_element[:77]}..."',
-                v.reasoning,
-            )
-        console.print(table)
+        _render_violations_table(report.violations)
     else:
         console.print("[green]✓ No rule violations detected on this page.[/green]\n")
 
@@ -158,6 +167,7 @@ async def cli_lookup(identifier: str) -> None:
             violations=violations_schemas,
             node_pubkey=audit.node_pubkey,
             node_signature=audit.node_signature,
+            quota_preserved=audit.quota_preserved,
         )
         render_audit_report(report)
         return
@@ -211,6 +221,41 @@ def cli_taxonomy(action: str, catalog_id: Optional[str] = None) -> None:
         console.print(checklist)
 
 
+async def cli_quota() -> None:
+    """Display real-time Token Headroom, spend metrics, and Circuit Breaker safety status."""
+    await init_db()
+    async for s in get_session():
+        status = await get_token_headroom_status(s)
+
+        cb_style = (
+            "bold red"
+            if status.circuit_breaker_tripped
+            else ("bold yellow" if status.throttle_active else "bold green")
+        )
+        cb_label = (
+            "🚨 TRIPPED (QUOTA_PRESERVED)"
+            if status.circuit_breaker_tripped
+            else ("⚠️ THROTTLED (High Usage)" if status.throttle_active else "🟢 HEALTHY (Normal Concurrency)")
+        )
+
+        lines = [
+            f"[bold]Active API Key Source:[/bold] [cyan]{status.active_api_key_source}[/cyan]",
+            f"[bold]Circuit Breaker Status:[/bold] [{cb_style}]{cb_label}[/{cb_style}]\n",
+            f"[bold]Hourly Token Headroom:[/bold] [green]{status.hourly_headroom_pct:.1f}% remaining[/green] ({status.hourly_tokens_used:,} / {status.hourly_tokens_max:,} tokens)",
+            f"[bold]Daily Token Headroom:[/bold]  [green]{status.daily_headroom_pct:.1f}% remaining[/green] ({status.daily_tokens_used:,} / {status.daily_tokens_max:,} tokens)",
+            f"[bold]24h Estimated Spend:[/bold]    [yellow]${status.daily_spend_usd:.4f}[/yellow] / ${status.daily_budget_usd:.2f} USD ({status.daily_spend_pct:.1f}% budget used)",
+        ]
+
+        console.print(
+            Panel(
+                "\n".join(lines),
+                title="[bold]Token Safety Governor & Headroom Budget[/bold]",
+                border_style="green" if not status.circuit_breaker_tripped else "red",
+            )
+        )
+        return
+
+
 def main() -> None:
     """CLI argument parsing and router."""
     parser = argparse.ArgumentParser(
@@ -231,6 +276,9 @@ def main() -> None:
     # identity command
     id_parser = subparsers.add_parser("identity", help="Manage node cryptographic identity.")
     id_parser.add_argument("action", choices=["show", "generate"], default="show", nargs="?")
+
+    # quota command
+    subparsers.add_parser("quota", help="Display token headroom, daily USD spend, and circuit breaker status.")
 
     # tui command
     subparsers.add_parser("tui", help="Launch interactive Terminal User Interface (TUI) dashboard.")
@@ -259,6 +307,8 @@ def main() -> None:
         asyncio.run(cli_lookup(args.identifier))
     elif args.command == "identity":
         cli_identity(args.action)
+    elif args.command == "quota":
+        asyncio.run(cli_quota())
     elif args.command == "taxonomy":
         cli_taxonomy(args.action, args.catalog_id)
 

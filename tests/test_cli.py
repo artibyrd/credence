@@ -68,6 +68,14 @@ def test_cli_taxonomy() -> None:
 
 
 @pytest.mark.unit
+async def test_cli_quota() -> None:
+    """Verify quota command outputs headroom metrics without errors."""
+    from credence.cli.main import cli_quota
+
+    await cli_quota()
+
+
+@pytest.mark.unit
 async def test_cli_audit_and_lookup(fixtures_dir: Path) -> None:
     """Verify CLI audit and lookup workflows."""
     file_url = f"file://{fixtures_dir / 'clean_article.html'}"

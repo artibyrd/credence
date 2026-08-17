@@ -2,12 +2,13 @@
 
 Orchestrates:
 1. Webpage dual-capture snapshotting.
-2. Satire & Provenance evaluation.
-3. Concurrent domain specialist auditing (SPJ Ethics, IEP Fallacies, Deceptive Patterns).
-4. Grounded quote verification.
-5. Calibrated suspicion and density scoring.
-6. Ed25519 cryptographic attestation signing.
-7. Database caching and persistence.
+2. Token budget check & circuit breaker safety.
+3. Satire & Provenance evaluation.
+4. Concurrent domain specialist auditing (SPJ Ethics, IEP Fallacies, Deceptive Patterns).
+5. Grounded quote verification & quality escalation.
+6. Calibrated suspicion and density scoring.
+7. Ed25519 cryptographic attestation signing.
+8. Database caching, token recording, and persistence.
 """
 
 from __future__ import annotations
@@ -23,6 +24,11 @@ from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.ingestion.extractor import ExtractedContent
 from credence.ingestion.snapshot import DualCaptureResult, capture_webpage
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
+from credence.pipeline.governor import (
+    check_budget_before_call,
+    evaluate_quality_and_should_escalate,
+    get_active_api_key,
+)
 from credence.pipeline.schemas import (
     AuditReport,
     SpecialistViolationFinding,
@@ -169,12 +175,22 @@ def heuristic_evaluate_content(
 async def evaluate_snapshot(
     snapshot: DualCaptureResult,
     reg: Optional[TaxonomyRegistry] = None,
+    session: Optional[AsyncSession] = None,
     sign_result: bool = True,
 ) -> AuditReport:
     """Execute the multi-agent evaluation pipeline against a captured snapshot."""
     active_reg = reg or registry
     if not active_reg.list_catalogs():
         active_reg.load_all()
+
+    # Check Token Budget Governor and API Key status
+    quota_preserved = False
+    api_key, key_source = get_active_api_key()
+
+    if session is not None:
+        budget_ok, reason = await check_budget_before_call(session, estimated_tokens=3000)
+        if not budget_ok:
+            quota_preserved = True
 
     # Step 1: Satire & Provenance Evaluation
     is_satire = snapshot.extracted.is_satire_cue
@@ -213,9 +229,14 @@ async def evaluate_snapshot(
         has_cloaked_disinfo=has_cloaked_disinfo,
     )
 
+    # Step 5: Quality Gate & Escalation Assessment
+    should_escalate, esc_reason = evaluate_quality_and_should_escalate(
+        validated_violations, confidence_score, calibrated_score
+    )
+
     taxonomies_used = active_reg.get_catalog_hashes()
 
-    # Step 5: Assemble Report
+    # Step 6: Assemble Report
     report = AuditReport(
         url=snapshot.url,
         content_sha256=snapshot.content_sha256,
@@ -229,9 +250,10 @@ async def evaluate_snapshot(
         satire_notes=satire_notes,
         violations=validated_violations,
         taxonomies_used=taxonomies_used,
+        quota_preserved=quota_preserved,
     )
 
-    # Step 6: Cryptographic Attestation Signing
+    # Step 7: Cryptographic Attestation Signing
     if sign_result:
         identity = load_or_create_node_identity()
         report = sign_audit_report(report, identity)
@@ -244,10 +266,9 @@ async def audit_url(
     session: Optional[AsyncSession] = None,
     force_refresh: bool = False,
 ) -> AuditReport:
-    """Audit a URL with database cache checking and automatic persistence."""
+    """Audit a URL with database cache checking, token budgeting, and automatic persistence."""
     await init_db()
 
-    # Helper function to execute within a session
     async def _execute_with_session(s: AsyncSession) -> AuditReport:
         # Step 1: Ingest snapshot
         snapshot_result = await capture_webpage(url, save_artifacts=True)
@@ -257,7 +278,6 @@ async def audit_url(
             stmt = select(AuditRecord).where(AuditRecord.content_sha256 == snapshot_result.content_sha256)
             cached_audit = (await s.exec(stmt)).first()
             if cached_audit:
-                # Load associated violations
                 v_stmt = select(ViolationRecord).where(ViolationRecord.audit_id == cached_audit.id)
                 cached_violations = (await s.exec(v_stmt)).all()
 
@@ -298,10 +318,11 @@ async def audit_url(
                     taxonomies_used=tax_map,
                     node_pubkey=cached_audit.node_pubkey,
                     node_signature=cached_audit.node_signature,
+                    quota_preserved=cached_audit.quota_preserved,
                 )
 
         # Step 3: Run fresh evaluation
-        report = await evaluate_snapshot(snapshot_result)
+        report = await evaluate_snapshot(snapshot_result, session=s)
 
         # Step 4: Persist to database
         snap_record = SnapshotRecord(
@@ -334,6 +355,7 @@ async def audit_url(
             node_pubkey=report.node_pubkey,
             node_signature=report.node_signature,
             taxonomies_used_json=json.dumps(report.taxonomies_used),
+            quota_preserved=report.quota_preserved,
         )
         s.add(audit_record)
         await s.commit()

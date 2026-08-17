@@ -6,6 +6,7 @@ Provides:
 - Grounded citation and violation viewer.
 - Interactive Taxonomy Catalog browser.
 - Cryptographic Node Identity & Attestation manager.
+- Real-time Token Headroom & Quota Circuit Breaker monitor.
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
 from credence.pipeline.evaluator import audit_url
+from credence.pipeline.governor import get_token_headroom_status
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 from credence.taxonomy_loader import registry
 
@@ -155,6 +157,13 @@ class CredenceApp(App):
         margin: 1;
         background: $surface;
     }
+
+    #quota_panel {
+        padding: 1;
+        border: round $accent;
+        margin: 1;
+        background: $surface;
+    }
     """
 
     BINDINGS = [
@@ -163,6 +172,7 @@ class CredenceApp(App):
         ("r", "refresh_data", "Refresh"),
         ("t", "switch_to_taxonomies", "Taxonomies"),
         ("i", "switch_to_identity", "Node Identity"),
+        ("k", "switch_to_quota", "Token Quota"),
     ]
 
     def __init__(self) -> None:
@@ -192,6 +202,9 @@ class CredenceApp(App):
                     with TabPane("📚 Taxonomies", id="tab_taxonomies"):
                         yield Tree("Registered Taxonomy Catalogs", id="taxonomy_tree")
 
+                    with TabPane("⚡ Token Quota", id="tab_quota"):
+                        yield Static("Loading Token Headroom & Safety Status...", id="quota_panel")
+
                     with TabPane("🔑 Node Identity", id="tab_identity"):
                         yield Static("Loading Node Identity...", id="identity_panel")
 
@@ -212,11 +225,10 @@ class CredenceApp(App):
         v_table.cursor_type = "row"
         v_table.add_columns("Rule ID", "Sev", "Domain", "Excerpt")
 
-        # Populate Taxonomy Tree
+        # Populate Views
         self._populate_taxonomy_tree()
-
-        # Populate Node Identity Tab
         self._populate_identity_panel()
+        await self._populate_quota_panel()
 
         # Load recent audits from DB
         await self.load_recent_audits()
@@ -242,6 +254,33 @@ class CredenceApp(App):
             f"[green]✓ Node is ready to cryptographically sign and verify epistemic attestations on the Credence Mesh.[/green]"
         )
         panel.update(content)
+
+    async def _populate_quota_panel(self) -> None:
+        panel = self.query_one("#quota_panel", Static)
+        async for s in get_session():
+            status = await get_token_headroom_status(s)
+            cb_style = (
+                "bold red"
+                if status.circuit_breaker_tripped
+                else ("bold yellow" if status.throttle_active else "bold green")
+            )
+            cb_label = (
+                "🚨 TRIPPED (QUOTA_PRESERVED)"
+                if status.circuit_breaker_tripped
+                else ("⚠️ THROTTLED (High Usage)" if status.throttle_active else "🟢 HEALTHY (Normal Concurrency)")
+            )
+
+            lines = [
+                "[bold cyan]Token Safety Governor & Headroom Budget[/bold cyan]\n",
+                f"[bold]Active API Key Source:[/bold] [cyan]{status.active_api_key_source}[/cyan]",
+                f"[bold]Circuit Breaker Status:[/bold] [{cb_style}]{cb_label}[/{cb_style}]\n",
+                f"[bold]Hourly Token Headroom:[/bold] [green]{status.hourly_headroom_pct:.1f}% remaining[/green] ({status.hourly_tokens_used:,} / {status.hourly_tokens_max:,} tokens)",
+                f"[bold]Daily Token Headroom:[/bold]  [green]{status.daily_headroom_pct:.1f}% remaining[/green] ({status.daily_tokens_used:,} / {status.daily_tokens_max:,} tokens)",
+                f"[bold]24h Estimated Spend:[/bold]    [yellow]${status.daily_spend_usd:.4f}[/yellow] / ${status.daily_budget_usd:.2f} USD ({status.daily_spend_pct:.1f}% budget used)\n",
+                "[dim]The governor protects your Antigravity interactive pairing tokens by falling back to offline heuristics whenever limits are approached.[/dim]",
+            ]
+            panel.update("\n".join(lines))
+            break
 
     async def load_recent_audits(self) -> None:
         """Query recent audits from SQLite and populate sidebar table."""
@@ -313,6 +352,7 @@ class CredenceApp(App):
                 violations=violations_schemas,
                 node_pubkey=audit.node_pubkey,
                 node_signature=audit.node_signature,
+                quota_preserved=audit.quota_preserved,
             )
 
             self.current_report = report
@@ -342,6 +382,9 @@ class CredenceApp(App):
             f"[bold]Content SHA-256:[/bold] {report.content_sha256[:28]}...  |  "
             f"[bold]Ed25519 Attestation:[/bold] {'[green]✓ Signed[/green]' if report.node_signature else '[yellow]Unsigned[/yellow]'}"
         )
+        if report.quota_preserved:
+            banner_text += "  |  [yellow]⚡ Quota Preserved (Offline)[/yellow]"
+
         banner.update(banner_text)
 
         # Update Violations Table
@@ -411,6 +454,7 @@ class CredenceApp(App):
             report = await audit_url(url, force_refresh=True)
             self.current_report = report
             await self.load_recent_audits()
+            await self._populate_quota_panel()
             self._update_inspector_views(report)
             self.notify(f"Audit completed: {report.classification} ({report.suspicion_score:.1f})")
         except Exception as e:
@@ -418,9 +462,10 @@ class CredenceApp(App):
             self.notify(f"Audit failed: {e}", severity="error")
 
     async def action_refresh_data(self) -> None:
-        """Refresh recent audits from DB."""
+        """Refresh recent audits and quota status from DB."""
         await self.load_recent_audits()
-        self.notify("Refreshed recent audits.")
+        await self._populate_quota_panel()
+        self.notify("Refreshed recent audits and quota metrics.")
 
     def action_switch_to_taxonomies(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
@@ -429,6 +474,10 @@ class CredenceApp(App):
     def action_switch_to_identity(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_identity"
+
+    def action_switch_to_quota(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_quota"
 
 
 def run_tui() -> None:

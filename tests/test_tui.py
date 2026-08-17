@@ -7,7 +7,7 @@ from credence.tui.app import CredenceApp
 
 @pytest.mark.unit
 async def test_credence_tui_app_lifecycle() -> None:
-    """Verify CredenceApp boots, loads widgets, populates tree and panels, and closes cleanly."""
+    """Verify CredenceApp boots, loads widgets, populates tree, quota, and panels, and closes cleanly."""
     app = CredenceApp()
 
     async with app.run_test() as pilot:
@@ -17,9 +17,13 @@ async def test_credence_tui_app_lifecycle() -> None:
         assert app.query_one("#history_table") is not None
         assert app.query_one("#taxonomy_tree") is not None
         assert app.query_one("#identity_panel") is not None
+        assert app.query_one("#quota_panel") is not None
 
         # Test switching tabs
         app.action_switch_to_taxonomies()
+        await pilot.pause()
+
+        app.action_switch_to_quota()
         await pilot.pause()
 
         app.action_switch_to_identity()

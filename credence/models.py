@@ -4,6 +4,7 @@ Defines schemas for:
 - SnapshotRecord: Captured webpage metadata, DOM/screenshot paths, and cryptographic hashes.
 - AuditRecord: Evaluated suspicion scores, satire flags, and attestation signatures.
 - ViolationRecord: Granular rule violations linked to exact cited quotes and evidence.
+- TokenUsageRecord: In-database token consumption, thinking tokens, and cost tracking.
 """
 
 from datetime import datetime, timezone
@@ -73,6 +74,9 @@ class AuditRecord(SQLModel, table=True):
         default=None, description="Ed25519 cryptographic signature of attestation JSON"
     )
     taxonomies_used_json: str = Field(default="{}", description="JSON map of {catalog_id: catalog_hash}")
+    quota_preserved: bool = Field(
+        default=False, description="True if audit fell back to offline heuristics to preserve token quota"
+    )
 
     # Relationships
     snapshot: Optional[SnapshotRecord] = Relationship(back_populates="audits")
@@ -99,3 +103,18 @@ class ViolationRecord(SQLModel, table=True):
 
     # Relationships
     audit: Optional[AuditRecord] = Relationship(back_populates="violations")
+
+
+class TokenUsageRecord(SQLModel, table=True):
+    """Stores token consumption, thinking tokens, and estimated USD cost per subagent call."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    timestamp: datetime = Field(default_factory=utc_now, index=True, description="UTC timestamp of API call")
+    model_name: str = Field(index=True, description="Gemini model identifier (e.g. gemini-3.7-flash)")
+    prompt_tokens: int = Field(default=0, description="Input prompt token count")
+    completion_tokens: int = Field(default=0, description="Output candidate token count")
+    thinking_tokens: int = Field(default=0, description="Reasoning/thinking token count")
+    total_tokens: int = Field(default=0, description="Total tokens consumed")
+    estimated_cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
+    caller: str = Field(default="specialist", index=True, description="Subagent caller name")
+    was_escalated: bool = Field(default=False, description="Whether this call was an escalated evaluation")

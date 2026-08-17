@@ -87,3 +87,6 @@ class AuditReport(BaseModel):
     # Cryptographic Attestation Fields (Optional until signed)
     node_pubkey: Optional[str] = Field(default=None, description="Ed25519 public key hex of evaluating node")
     node_signature: Optional[str] = Field(default=None, description="Ed25519 signature hex of canonical JSON")
+    quota_preserved: bool = Field(
+        default=False, description="True if evaluation ran in offline mode to protect token quota"
+    )

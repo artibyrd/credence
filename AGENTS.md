@@ -18,8 +18,16 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
    - Never hardcode rule names in pipeline scoring math. Always use namespaced URIs (`domain:cluster/rule_id@version`) and generic numerical severity/confidence inputs.
 6. **Human Review Before Commits ("Mk1 Eyeball")**:
    - Never execute `git commit` automatically. Always present changes and live verification results for human review first, and only commit when explicitly requested by the user.
+7. **Token Budget & Development Coexistence Invariant**:
+   - Always prioritize `CREDENCE_GEMINI_API_KEY` over shared dev keys.
+   - Enforce hourly/daily token budgets and automatic offline circuit-breaker fallbacks (`QUOTA_PRESERVED`) to guarantee that autonomous auditing never starves interactive Antigravity development sessions.
+8. **Textual & Rich Markup Escaping**:
+   - Never use unescaped `[/]` or bracket shortcuts in Textual/Rich widget strings; format as `[bold]/[/bold]` or escape as `[\]`.
+9. **Whitespace-Insensitive Citation Grounding**:
+   - Grounded quote validators must collapse all whitespace sequences (`\s+` -> ` `) in both citations and source HTML text before substring matching.
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic test suite (<2s).
 - `just lint`: Run `ruff check`, `ruff format --check`, and `mypy credence tests`.
 - `just format`: Autoformat code with Ruff.
+- `just tui`: Launch interactive Textual terminal workstation.
