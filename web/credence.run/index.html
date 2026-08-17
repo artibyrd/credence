@@ -9,6 +9,19 @@
 </head>
 <body>
 
+  <nav class="credence-nav">
+    <a href="https://credence.run" class="brand">
+      🛡️ Credence <span class="badge">v1.0.0</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="https://credence.run" class="active">Home</a></li>
+      <li><a href="https://docs.credence.run">Docs</a></li>
+      <li><a href="https://blog.credence.run">Blog</a></li>
+      <li><a href="https://credence.report/viewer.html">Report Viewer</a></li>
+      <li><a href="https://github.com/credence-network/credence" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </nav>
+
   <header class="hero">
     <div class="container">
       <span class="badge-pill">🛡️ v1.0.0 Stable &bull; Ed25519 Signed &bull; FastMCP 2.0</span>
@@ -26,8 +39,8 @@
         </div>
         <div class="terminal-body">
           <div class="command-line">
-            <code>curl -fsSL https://credence.run/install | sh</code>
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://credence.run/install | sh')">Copy</button>
+            <code>curl -fsSL https://credence.run/install.sh | bash</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://credence.run/install.sh | bash')">Copy</button>
           </div>
           <div class="command-line">
             <code>credence audit https://example.com/breaking-news</code>
@@ -59,8 +72,8 @@
         </div>
 
         <div class="card">
-          <h3>4. FastMCP 2.0 & Claude Desktop Ready</h3>
-          <p>Seamlessly expose live epistemic evaluation tools, dynamic resources, and prompt templates to AI agents via Server-Sent Events (SSE) and Stdio transports.</p>
+          <h3>4. Native FastMCP 2.0 Integration</h3>
+          <p>Expose live epistemic evaluation tools directly to Claude Desktop, Cursor, and autonomous AI agents over standard I/O and SSE transports.</p>
         </div>
 
         <div class="card">
@@ -139,10 +152,17 @@
     </section>
   </main>
 
-  <footer>
+  <footer class="credence-footer">
     <div class="container">
-      <p>Credence &bull; Open-Source Epistemic Trust Network &bull; MIT Licensed</p>
-      <p style="margin-top: 0.5rem;"><a href="https://github.com/arthur-davis/credence">GitHub Repository</a> &bull; <a href="https://taxonomies.credence.foundation">Taxonomy Catalogs</a> &bull; <a href="https://seeds.credence.nexus/peers.json">Bootstrap Seeds</a></p>
+      <div class="footer-links">
+        <a href="https://credence.run">Home</a>
+        <a href="https://docs.credence.run">Docs</a>
+        <a href="https://blog.credence.run">Blog</a>
+        <a href="https://credence.report/viewer.html">Report Viewer</a>
+        <a href="https://github.com/credence-network/credence" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <p>Credence &bull; Open-Source Epistemic Trust Network &bull; Apache-2.0 Licensed</p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">&copy; 2026 Credence Network Contributors</p>
     </div>
   </footer>
 
