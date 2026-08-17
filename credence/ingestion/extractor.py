@@ -41,16 +41,23 @@ class ExtractedContent(BaseModel):
 # Regex patterns for detecting explicit satire cues in HTML, mastheads, or metadata
 _SATIRE_META_PATTERNS = [
     re.compile(r'itemtype=["\']https?://schema\.org/(SatiricalArticle|Humor)["\']', re.IGNORECASE),
-    re.compile(r'content=["\'][^"\']*\b(satire|parody|humor|satirical)\b[^"\']*["\']', re.IGNORECASE),
     re.compile(
-        r'class=["\'][^"\']*\b(satire-tag|badge-satire|humor-category|parody-disclaimer)\b[^"\']*["\']', re.IGNORECASE
+        r'<meta[^>]*(name|property)=["\'][^"\']*(keywords|category|description)["\'][^>]*content=["\'][^"\']*\b(satire|parody|humor|satirical)\b[^"\']*["\']',
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r'class=["\'][^"\']*\b(satire-tag|badge-satire|humor-category|satire-indicator)\b[^"\']*["\']',
+        re.IGNORECASE,
     ),
     re.compile(r'href=["\'][^"\']*/(satire|humor|parody|comedy)/?["\']', re.IGNORECASE),
     re.compile(
-        r"(about\s+us|disclaimer)[^>]*>[^<]*\b(satire|satirical|parody|fictional|humor|comedy\s+publication)\b",
-        re.IGNORECASE,
+        r"<footer>.*?\b(satirical|parody|fictitious|satire)\b.*?</footer>",
+        re.IGNORECASE | re.DOTALL,
     ),
-    re.compile(r"<(footer|div|p)[^>]*>.*?\b(satirical|parody|fictitious)\b.*?</\1>", re.IGNORECASE | re.DOTALL),
+    re.compile(
+        r"<(div|section|p)[^>]*\b(disclaimer|about-us|site-description)\b[^>]*>.*?\b(satire|satirical|parody|fictitious|humor\s+publication)\b.*?</\1>",
+        re.IGNORECASE | re.DOTALL,
+    ),
 ]
 
 
@@ -65,11 +72,6 @@ def detect_satire_cues(html: str) -> tuple[bool, List[str]]:
         if match:
             matched_str = match.group(0)[:100].replace("\n", " ").strip()
             reasons.append(f"Found satire marker: {matched_str}")
-
-    # Check for general satirical phrases
-    if re.search(r"\b(satirical|parody|fictitious)\b", html, re.IGNORECASE):
-        if not reasons:
-            reasons.append("Detected satire/parody keywords in document markup.")
 
     return len(reasons) > 0, reasons
 

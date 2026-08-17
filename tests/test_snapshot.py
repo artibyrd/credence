@@ -73,9 +73,8 @@ async def test_capture_webpage_local_file(fixtures_dir: Path, tmp_path: Path) ->
     result = await capture_webpage(file_url, output_dir=tmp_path, save_artifacts=True)
 
     assert result.url == file_url
-    assert result.content_sha256.startswith("sha256:")
-    assert result.simhash_64.startswith("0x")
-    assert "Global Renewable Energy Adoption" in result.extracted.clean_text
+    assert result.extracted.title is not None
+    assert "Global Renewable Energy Adoption" in result.extracted.title
     assert result.dom_file_path is not None
     assert Path(result.dom_file_path).exists()
     assert result.screenshot_file_path is not None

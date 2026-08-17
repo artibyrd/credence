@@ -35,6 +35,9 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
     - Production Cloud Run v2 services must configure `min_instance_count = 0` (scale-to-zero), `cpu_idle = true`, a **$15.00 USD/month Cloud Billing Budget ceiling** with automated 50%, 80%, 100% threshold alarms, and Secret Manager API key references.
 14. **Host Resource Safety & Pre-Flight Governor Invariant**:
     - Local multi-node cluster orchestration must run pre-flight memory checks via `hardware_guard.py` (throttling to $\le 3$ nodes on $< 2\text{GB}$ RAM hosts like Raspberry Pis) and enforce hard `mem_limit: 128m` Docker cgroups limits per container.
+15. **Epistemic Benchmark & Grounded Heuristics Invariant**:
+    - Satire cue extractors must strictly target structural declarations (Schema.org `SatiricalArticle`, masthead badges, and dedicated disclaimer containers) rather than unrestricted keyword matching across arbitrary prose.
+    - Heuristic evaluation engines and synthetic test fixtures must quote exact verbatim substrings from the extracted DOM text to guarantee 100% quote grounding validation (`is_grounded=True`).
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic test suite (<2s).

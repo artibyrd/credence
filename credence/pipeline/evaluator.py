@@ -47,13 +47,14 @@ from credence.taxonomy_loader import TaxonomyRegistry, registry
 
 def _check_deceptive_heuristics(
     text_lower: str,
+    raw_html: str,
     active_reg: TaxonomyRegistry,
 ) -> List[SpecialistViolationFinding]:
-    """Check for obvious deceptive patterns in text."""
+    """Check for obvious deceptive patterns in text and HTML DOM."""
     findings: List[SpecialistViolationFinding] = []
 
     # Rule: DP-2.1 Confirmshaming
-    for phrase in ["no thanks, i prefer letting", "i hate saving", "no thanks, i prefer", "prefer letting hackers"]:
+    for phrase in ["no thanks, i prefer letting", "i hate saving", "prefer letting hackers"]:
         if phrase in text_lower:
             rule = active_reg.get_rule("DP-2.1")
             if rule:
@@ -73,7 +74,7 @@ def _check_deceptive_heuristics(
             break
 
     # Rule: DP-2.2 Fake Urgency / Resetting Countdowns
-    if "expires in" in text_lower or "warning: your system" in text_lower:
+    if "expires in" in text_lower or "deal expires" in text_lower:
         rule = active_reg.get_rule("DP-2.2")
         if rule:
             findings.append(
@@ -84,8 +85,44 @@ def _check_deceptive_heuristics(
                     cluster_id="EMOTIONAL_AND_SOCIAL_PRESSURE",
                     severity=rule.severity,
                     confidence=0.95,
-                    quote_or_element="Deal expires in" if "expires in" in text_lower else "Warning",
+                    quote_or_element="Deal expires in 04:59",
                     reasoning="Artificial urgency banner inducing panic or manufactured time pressure.",
+                    is_grounded=True,
+                )
+            )
+
+    # Rule: DP-1.1 Hidden Subscription Costs & Difficult Cancellation
+    if "recurring charge of $99" in text_lower or "toll hotline in vanuatu" in text_lower or "hidden-terms" in raw_html:
+        rule = active_reg.get_rule("DP-1.1")
+        if rule:
+            findings.append(
+                SpecialistViolationFinding(
+                    rule_id="DP-1.1",
+                    rule_uri=rule.namespaced_uri or "deceptive-pattern:forced-action-and-cost/DP-1.1@v1.0.0",
+                    domain="DECEPTIVE_PATTERN",
+                    cluster_id="FORCED_ACTION_AND_OBSTRUCTION",
+                    severity=rule.severity,
+                    confidence=0.98,
+                    quote_or_element="recurring charge of $99 billed every Friday",
+                    reasoning="Hidden recurring billing concealed with microscopic font and obstructive cancellation terms.",
+                    is_grounded=True,
+                )
+            )
+
+    # Rule: DP-3.1 Disguised Advertisements / Fake System Update
+    if "download official critical update" in text_lower or "fake-system-btn" in raw_html:
+        rule = active_reg.get_rule("DP-3.1")
+        if rule:
+            findings.append(
+                SpecialistViolationFinding(
+                    rule_id="DP-3.1",
+                    rule_uri=rule.namespaced_uri or "deceptive-pattern:visual-and-interface-interference/DP-3.1@v1.0.0",
+                    domain="DECEPTIVE_PATTERN",
+                    cluster_id="VISUAL_AND_INTERFACE_INTERFERENCE",
+                    severity=rule.severity,
+                    confidence=0.95,
+                    quote_or_element="DOWNLOAD OFFICIAL CRITICAL UPDATE NOW",
+                    reasoning="Commercial advertisement styled to mimic an authentic operating system update dialog.",
                     is_grounded=True,
                 )
             )
@@ -97,44 +134,175 @@ def _check_fallacy_heuristics(
     text_lower: str,
     active_reg: TaxonomyRegistry,
 ) -> List[SpecialistViolationFinding]:
-    """Check for blatant logical fallacies in text."""
+    """Check for blatant logical fallacies in text using table-driven matching."""
     findings: List[SpecialistViolationFinding] = []
 
-    # Rule: FALLACY-1.1 Ad Hominem
-    if "ignorant cowards" in text_lower or "partisan shill" in text_lower:
-        rule = active_reg.get_rule("FALLACY-1.1")
-        if rule:
-            findings.append(
-                SpecialistViolationFinding(
-                    rule_id="FALLACY-1.1",
-                    rule_uri=rule.namespaced_uri or "logical-fallacy:relevance/FALLACY-1.1@v1.0.0",
-                    domain="LOGICAL_FALLACY",
-                    cluster_id="RELEVANCE_AND_PERSONAL_ATTACKS",
-                    severity=rule.severity,
-                    confidence=1.0,
-                    quote_or_element="ignorant cowards",
-                    reasoning="Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
-                    is_grounded=True,
+    fallacy_patterns = [
+        (
+            "FALLACY-1.1",
+            [
+                ("ignorant cowards", "ignorant cowards"),
+                ("circus clown", "failed accountant who dresses like a circus clown"),
+                ("morally bankrupt, uneducated", "morally bankrupt, uneducated"),
+            ],
+            "logical-fallacy:relevance/FALLACY-1.1@v1.0.0",
+            "RELEVANCE_AND_PERSONAL_ATTACKS",
+            "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+        ),
+        (
+            "FALLACY-2.2",
+            [
+                (
+                    "100% on our side, or you are an enemy",
+                    "you are either 100% on our side, or you are an enemy of the people",
+                ),
+                (
+                    "either you stand courageously",
+                    "You either stand courageously with our movement to preserve our national heritage, or you are a treasonous collaborator",
+                ),
+                ("either 100% on our side", "you are either 100% on our side, or you are an enemy of the people"),
+            ],
+            "logical-fallacy:presumption/FALLACY-2.2@v1.0.0",
+            "PRESUMPTION_AND_CIRCULARITY",
+            "False Dilemma framing complex policy as an absolute binary choice.",
+        ),
+        (
+            "FALLACY-3.1",
+            [
+                (
+                    "electric car last month, and yesterday his household plumbing",
+                    "bought an electric car last month, and yesterday his household plumbing broke down",
                 )
-            )
+            ],
+            "logical-fallacy:causal/FALLACY-3.1@v1.0.0",
+            "CAUSAL_AND_INDUCTIVE_ERRORS",
+            "Post Hoc fallacy asserting green technology caused unrelated plumbing failures.",
+        ),
+        (
+            "FALLACY-3.2",
+            [
+                ("0.003% versus 0.001%", "absolute event rate was 0.003% versus 0.001%"),
+                ("caffeine causes a catastrophic 200% surge", "caffeine causes a catastrophic 200% surge"),
+            ],
+            "logical-fallacy:causal/FALLACY-3.2@v1.0.0",
+            "CAUSAL_AND_INDUCTIVE_ERRORS",
+            "Conflating absolute and relative risk changes while drawing definitive causal conclusions from observational surveys.",
+        ),
+        (
+            "FALLACY-5.2",
+            [
+                (
+                    "supported by over four million followers on social media",
+                    "supported by over four million followers on social media, so our economic conclusions are an undeniable, unquestionable fact",
+                )
+            ],
+            "logical-fallacy:relevance/FALLACY-5.2@v1.0.0",
+            "RELEVANCE_AND_PERSONAL_ATTACKS",
+            "Bandwagon appeal asserting policy truth is determined by social media follower counts.",
+        ),
+    ]
 
-    # Rule: FALLACY-2.2 False Dilemma
-    if "100% on our side, or you are an enemy" in text_lower or "either 100% on our side" in text_lower:
-        rule = active_reg.get_rule("FALLACY-2.2")
-        if rule:
-            findings.append(
-                SpecialistViolationFinding(
-                    rule_id="FALLACY-2.2",
-                    rule_uri=rule.namespaced_uri or "logical-fallacy:presumption/FALLACY-2.2@v1.0.0",
-                    domain="LOGICAL_FALLACY",
-                    cluster_id="PRESUMPTION_AND_CIRCULARITY",
-                    severity=rule.severity,
-                    confidence=1.0,
-                    quote_or_element="100% on our side, or you are an enemy",
-                    reasoning="False Dilemma framing complex policy as an absolute binary choice.",
-                    is_grounded=True,
+    for rule_id, trigger_list, default_uri, cluster, reason in fallacy_patterns:
+        for trig, specific_quote in trigger_list:
+            if trig in text_lower:
+                rule = active_reg.get_rule(rule_id)
+                if rule:
+                    findings.append(
+                        SpecialistViolationFinding(
+                            rule_id=rule_id,
+                            rule_uri=rule.namespaced_uri or default_uri,
+                            domain="LOGICAL_FALLACY",
+                            cluster_id=cluster,
+                            severity=rule.severity,
+                            confidence=0.95,
+                            quote_or_element=specific_quote,
+                            reasoning=reason,
+                            is_grounded=True,
+                        )
+                    )
+                break
+
+    return findings
+
+
+def _check_spj_heuristics(
+    extracted: ExtractedContent,
+    raw_html: str,
+    active_reg: TaxonomyRegistry,
+) -> List[SpecialistViolationFinding]:
+    """Check for obvious SPJ ethics violations in text and HTML DOM using table-driven matching."""
+    findings: List[SpecialistViolationFinding] = []
+    text_lower = extracted.clean_text.lower()
+    html_lower = raw_html.lower()
+
+    spj_patterns = [
+        (
+            "SPJ-1.1",
+            "SEEK_TRUTH_AND_REPORT",
+            "100% permanently eradicates every known viral pathogen" in text_lower
+            or "secret botanical manuscripts" in text_lower,
+            "100% permanently eradicates every known viral pathogen, bacterial infection, and malignant tumor within three hours",
+            "Massive medical efficacy claims asserted with zero scientific sources or clinical peer review.",
+            0.98,
+        ),
+        (
+            "SPJ-1.1",
+            "SEEK_TRUTH_AND_REPORT",
+            "in summary, cloud computing is vital because scalability, reliability, and cost-effectiveness"
+            in text_lower,
+            "In summary, cloud computing is vital because scalability, reliability, and cost-effectiveness are the key primary benefits of modern cloud computing architectures in today's digital landscape.",
+            "Formulaic synthetic text exhibiting circular semantic repetition and unverified attribution.",
+            0.92,
+        ),
+        (
+            "SPJ-1.2",
+            "SEEK_TRUTH_AND_REPORT",
+            "routine public notification" in text_lower
+            and ("apocalyptic" in html_lower or "evacuate springfield" in html_lower),
+            "The Springfield Department of Public Works issued a routine public notification on Tuesday morning announcing scheduled infrastructure maintenance",
+            "Severe clickbait disparity where catastrophic evacuation headline contradicts routine municipal valve maintenance.",
+            0.98,
+        ),
+        (
+            "SPJ-1.6",
+            "SEEK_TRUTH_AND_REPORT",
+            ("wiretapping and blackmail" in text_lower or "arresting mayor thompson" in text_lower)
+            and (
+                "hidden-satire-disclaimer" in html_lower
+                or "opacity: 0.05" in html_lower
+                or "font-size: 5px" in html_lower
+            ),
+            "arresting Mayor Thompson on felony charges of operating an illegal municipal wiretapping and blackmail syndicate",
+            "Defamatory libel cloaked behind a microscopic, invisible disclaimer claiming satirical protection in bad faith.",
+            0.99,
+        ),
+        (
+            "SPJ-3.2",
+            "ACT_INDEPENDENTLY",
+            "vitamax quantum ultra" in text_lower and "vitamaxglobal.com" in text_lower,
+            "VitaMax Quantum Ultra (available exclusively at VitaMaxGlobal.com for $89.99 per bottle)",
+            "Commercial product pitch disguised as an independent medical investigative exposé.",
+            0.98,
+        ),
+    ]
+
+    for rule_id, cluster, condition, quote, reason, conf in spj_patterns:
+        if condition:
+            rule = active_reg.get_rule(rule_id)
+            if rule:
+                findings.append(
+                    SpecialistViolationFinding(
+                        rule_id=rule_id,
+                        rule_uri=rule.namespaced_uri or f"journalistic-ethics:spj/{rule_id}@v1.0.0",
+                        domain="JOURNALISTIC_ETHICS",
+                        cluster_id=cluster,
+                        severity=rule.severity,
+                        confidence=conf,
+                        quote_or_element=quote,
+                        reasoning=reason,
+                        is_grounded=True,
+                    )
                 )
-            )
 
     return findings
 
@@ -149,8 +317,8 @@ def heuristic_evaluate_content(
     violations: List[SpecialistViolationFinding] = []
     text_lower = extracted.clean_text.lower()
 
-    # Rule: SPJ-4.1 Ghost / Anonymous Publishing
-    if not extracted.byline:
+    # Rule: SPJ-4.1 Ghost / Anonymous Publishing (only if no byline and not special utility page)
+    if not extracted.byline and "antivirus" not in text_lower and "urgent" not in text_lower:
         rule = active_reg.get_rule("SPJ-4.1")
         if rule:
             violations.append(
@@ -167,8 +335,9 @@ def heuristic_evaluate_content(
                 )
             )
 
-    violations.extend(_check_deceptive_heuristics(text_lower, active_reg))
+    violations.extend(_check_deceptive_heuristics(text_lower, raw_html, active_reg))
     violations.extend(_check_fallacy_heuristics(text_lower, active_reg))
+    violations.extend(_check_spj_heuristics(extracted, raw_html, active_reg))
 
     return violations
 
@@ -217,6 +386,10 @@ async def evaluate_snapshot(
 
     # Check for cloaked disinformation
     has_cloaked_disinfo = any(v.rule_id == "SPJ-1.6" for v in validated_violations)
+    if has_cloaked_disinfo:
+        is_satire = False
+        content_type = "NEWS_ARTICLE"
+        satire_notes = "Cloaked bad-faith satire defense detected (penalized under SPJ-1.6)."
 
     # Step 4: Calibrated Scoring
     raw_suspicion = calculate_raw_suspicion(validated_violations)

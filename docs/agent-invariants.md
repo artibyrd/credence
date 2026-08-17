@@ -88,3 +88,9 @@ This document outlines mandatory rules and design invariants for human contribut
 
 ## 14. Host Resource Safety & Pre-Flight Governor Invariant
 - Local multi-node cluster orchestration must run pre-flight memory checks via `hardware_guard.py` (throttling to $\le 3$ nodes on $< 2\text{GB}$ RAM hosts like Raspberry Pis) and enforce hard `mem_limit: 128m` Docker cgroups limits per container.
+
+---
+
+## 15. Epistemic Benchmark & Grounded Heuristics Invariant
+- Satire cue extractors must strictly target structural declarations (Schema.org `SatiricalArticle`, masthead badges, and dedicated disclaimer containers) rather than unrestricted keyword matching across arbitrary prose.
+- Heuristic evaluation engines and synthetic test fixtures must quote exact verbatim substrings from the extracted DOM text to guarantee 100% quote grounding validation (`is_grounded=True`).
