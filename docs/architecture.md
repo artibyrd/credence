@@ -183,3 +183,14 @@ In accordance with **Invariant 21**:
   credence init-org --name "Truth Consortium" --domain "truthconsortium.org"
   ```
 - Scaffolds independent root Ed25519 keypairs, parameterized Terraform variables, static taxonomy mirrors, and branded landing pages without requiring JavaScript build tools.
+
+---
+
+## 12. Syndicated Feed Pre-Ingestion, Mesh Effort Avoidance & Empirical Subject Expertise
+
+In accordance with **Invariants 22, 23, and 24**:
+- **Autonomous Feed Ingestion**: Native RSS 2.0, Atom 1.0, and JSON Feed 1.1 polling with HTTP `ETag`/`304` short-circuiting and token headroom safety pauses.
+- **BitTorrent "Generous Defaults" Work Sharing**: Evaluated audits are freely seeded across the mesh at $0.00 compute. Nodes divide feed lists so $N$ nodes cover $N \times$ more internet without duplicating LLM tokens.
+- **Empirical Domain Expertise ($E_i$, No Diplomas)**: Authority in specialized fields (e.g. apiculture, canine care, clinical oncology) is earned exclusively through observable track records ($E_i = 0.40 C + 0.35 G + 0.15 V + 0.10 L$). Citing ungrounded/hallucinated quotes slashes domain score by 50%.
+- **Universal Feature Parity**: Full capabilities exposed across CLI, FastMCP 2.0, Textual TUI, and Zero-Build Web portals. See 📘 **[Universal Feature Parity Matrix](feature-parity-matrix.md)**.
+

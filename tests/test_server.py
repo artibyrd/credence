@@ -25,12 +25,21 @@ async def test_fastmcp_server_initialization() -> None:
     assert "credence_get_quota_status" in tool_names
     assert "credence_get_consensus" in tool_names
     assert "credence_get_seed_nodes" in tool_names
+    assert "credence_sync_feeds" in tool_names
+    assert "credence_add_feed_subscription" in tool_names
+    assert "credence_list_feeds" in tool_names
+    assert "credence_remove_feed_subscription" in tool_names
+    assert "credence_get_feed_stats" in tool_names
 
     resources = await server.list_resources()
     resource_uris = [r.uri for r in resources]
     assert "credence://taxonomies" in resource_uris
     assert "credence://node/identity" in resource_uris
     assert "credence://mesh/seeds" in resource_uris
+    assert "credence://profiles" in resource_uris
+    assert "credence://subjects/registry" in resource_uris
+    assert "credence://subjects/leaderboard" in resource_uris
+    assert "credence://feeds/status" in resource_uris
 
     prompts = await server.list_prompts()
     prompt_names = [p.name for p in prompts]
@@ -106,6 +115,18 @@ async def test_fastmcp_quota_and_resources() -> None:
     quota_data = json.loads(quota_res.content[0].text)
     assert "hourly_headroom_pct" in quota_data
     assert "daily_spend_usd" in quota_data
+
+    # Profiles resource
+    prof_res: Any = await server.read_resource("credence://profiles")
+    prof_data = json.loads(prof_res[0].content)
+    assert "free" in prof_data
+    assert "balanced" in prof_data
+    assert "ultra" in prof_data
+
+    # Subjects registry resource
+    subj_res: Any = await server.read_resource("credence://subjects/registry")
+    subj_data = json.loads(subj_res[0].content)
+    assert len(subj_data) >= 3
 
     # Taxonomies resource
     tax_res: Any = await server.read_resource("credence://taxonomies")

@@ -36,15 +36,44 @@ Cryptographically verifies an Ed25519 signed attestation.
 Returns real-time token safety headroom %, daily spend, and circuit breaker health.
 
 ### `credence_get_consensus`
-Calculates Bayesian multi-node consensus across peer evaluations for a given content hash.
+Calculates Bayesian multi-node consensus across peer evaluations for a given content hash, with optional empirical subject-weighted scoring.
+- **Parameters**: `content_sha256: str`, `subject_id: Optional[str] = None`
+
+### `credence_sync_feeds`
+Polls all active syndicated RSS/Atom/JSON feeds, executes mesh effort avoidance, and adopts peer attestations at $0.00 token cost.
+- **Parameters**: `dry_run: bool = False`, `evaluate_novel: bool = True`
+
+### `credence_add_feed_subscription`
+Registers a new syndicated RSS 2.0, Atom 1.0, or JSON Feed subscription.
+- **Parameters**: `feed_url: str`, `title: str = ""`, `priority_tier: int = 2`, `subject_tag: str = "journalism.news"`, `is_satire: bool = False`
+
+### `credence_list_feeds`
+Lists all active syndicated feed subscriptions with priority tier, subject tags, and polling states.
+
+### `credence_remove_feed_subscription`
+Unsubscribes from a syndicated feed by URL.
+- **Parameters**: `feed_url: str`
+
+### `credence_get_feed_stats`
+Returns aggregate statistics on discovered feed items, zero-token mesh adoptions, and total tokens saved.
+
+### `credence_get_seed_nodes`
+Retrieves verified bootstrap seed nodes from `seeds.credence.nexus` or fallback sources.
+- **Parameters**: `seed_url: Optional[str] = None`
 
 ---
 
 ## 3. Dynamic MCP Resources
 
+- **`credence://profiles`**: Lists operational cost profiles (Free, Balanced, Ultra), budget limits, and thinking token allocations.
 - **`credence://taxonomies`**: Lists all registered taxonomy catalogs and canonical SHA-256 hashes.
 - **`credence://taxonomies/{catalog_id}`**: Retrieves catalog definitions, cluster rules, and prompt checklists.
-- **`credence://node/identity`**: Returns local Ed25519 node public key.
+- **`credence://subjects/registry`**: Full hierarchical epistemic subject registry tree.
+- **`credence://subjects/{subject_id}`**: Detailed metadata, taxonomies, and keyword triggers for a specific subject namespace.
+- **`credence://subjects/leaderboard`**: Leaderboard of nodes with empirical domain expertise track records.
+- **`credence://feeds/status`**: Active feed subscriptions count, discovered articles, and mesh tokens saved.
+- **`credence://mesh/seeds`**: Canonical bootstrap seed nodes from `seeds.credence.nexus`.
+- **`credence://node/identity`**: Local Ed25519 node public key.
 
 ---
 

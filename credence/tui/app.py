@@ -174,9 +174,13 @@ class CredenceApp(App):
         ("q", "quit", "Quit"),
         ("slash", "open_audit_dialog", "Audit URL"),
         ("r", "refresh_data", "Refresh"),
-        ("t", "switch_to_taxonomies", "Taxonomies"),
-        ("i", "switch_to_identity", "Node Identity"),
-        ("k", "switch_to_quota", "Token Quota"),
+        ("1", "switch_to_inspector", "Inspector"),
+        ("2", "switch_to_taxonomies", "Taxonomies"),
+        ("3", "switch_to_subjects", "Subjects"),
+        ("4", "switch_to_feeds", "Feeds"),
+        ("5", "switch_to_quota", "Quota"),
+        ("6", "switch_to_identity", "Identity"),
+        ("s", "sync_feeds_action", "Sync Feeds"),
     ]
 
     def __init__(self) -> None:
@@ -509,17 +513,45 @@ class CredenceApp(App):
         await self._populate_quota_panel()
         self.notify("Refreshed recent audits and quota metrics.")
 
+    def action_switch_to_inspector(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_inspector"
+
     def action_switch_to_taxonomies(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_taxonomies"
+
+    def action_switch_to_subjects(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_subjects"
+
+    def action_switch_to_feeds(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_feeds"
+
+    def action_switch_to_quota(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_quota"
 
     def action_switch_to_identity(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_identity"
 
-    def action_switch_to_quota(self) -> None:
-        tabs = self.query_one("#tabs", TabbedContent)
-        tabs.active = "tab_quota"
+    def action_sync_feeds_action(self) -> None:
+        """Trigger background syndicated feed synchronization."""
+        self.run_worker(self._perform_feed_sync(), exclusive=True)
+
+    async def _perform_feed_sync(self) -> None:
+        from credence.feeds.worker import sync_all_feeds
+
+        self.notify("Synchronizing syndicated feeds and checking mesh effort avoidance...")
+        async for session in get_session():
+            summary = await sync_all_feeds(session=session, dry_run=False)
+            await self._populate_feeds_table()
+            self.notify(
+                f"Feeds synced: {summary.new_items_discovered} new, {summary.items_adopted_from_mesh} adopted from mesh!"
+            )
+            break
 
 
 def run_tui() -> None:

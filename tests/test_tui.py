@@ -7,7 +7,7 @@ from credence.tui.app import CredenceApp
 
 @pytest.mark.unit
 async def test_credence_tui_app_lifecycle() -> None:
-    """Verify CredenceApp boots, loads widgets, populates tree, quota, and panels, and closes cleanly."""
+    """Verify CredenceApp boots, loads widgets, switches all tabs via keys and actions, and executes sync."""
     app = CredenceApp()
 
     async with app.run_test() as pilot:
@@ -16,11 +16,22 @@ async def test_credence_tui_app_lifecycle() -> None:
         assert app.query_one("#sidebar") is not None
         assert app.query_one("#history_table") is not None
         assert app.query_one("#taxonomy_tree") is not None
+        assert app.query_one("#subjects_tree") is not None
+        assert app.query_one("#feeds_table") is not None
         assert app.query_one("#identity_panel") is not None
         assert app.query_one("#quota_panel") is not None
 
-        # Test switching tabs
+        # Test switching tabs via action handlers
+        app.action_switch_to_inspector()
+        await pilot.pause()
+
         app.action_switch_to_taxonomies()
+        await pilot.pause()
+
+        app.action_switch_to_subjects()
+        await pilot.pause()
+
+        app.action_switch_to_feeds()
         await pilot.pause()
 
         app.action_switch_to_quota()
@@ -29,6 +40,24 @@ async def test_credence_tui_app_lifecycle() -> None:
         app.action_switch_to_identity()
         await pilot.pause()
 
-        # Test refresh
+        # Test keybindings 1-6
+        await pilot.press("1")
+        await pilot.pause()
+        await pilot.press("2")
+        await pilot.pause()
+        await pilot.press("3")
+        await pilot.pause()
+        await pilot.press("4")
+        await pilot.pause()
+        await pilot.press("5")
+        await pilot.pause()
+        await pilot.press("6")
+        await pilot.pause()
+
+        # Test refresh data action
         await app.action_refresh_data()
+        await pilot.pause()
+
+        # Test sync feeds action
+        app.action_sync_feeds_action()
         await pilot.pause()

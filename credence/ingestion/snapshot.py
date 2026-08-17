@@ -49,6 +49,10 @@ async def capture_webpage(
 
     Executes under an asyncio Semaphore to enforce strict concurrency limits.
     """
+    from credence.ingestion.security import validate_safe_url
+
+    is_local_file = url.startswith("file://") or url.startswith("text://")
+    clean_url = validate_safe_url(url, allow_local=is_local_file)
     target_dir = output_dir or settings.SNAPSHOT_DIR
     target_timeout = timeout_ms or settings.PLAYWRIGHT_TIMEOUT_MS
 
@@ -73,7 +77,7 @@ async def capture_webpage(
             page = await context.new_page()
 
             try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=target_timeout)
+                await page.goto(clean_url, wait_until="domcontentloaded", timeout=target_timeout)
                 # Wait briefly for client-side hydration / rendering
                 await page.wait_for_timeout(1000)
 
@@ -84,34 +88,32 @@ async def capture_webpage(
                 await browser.close()
 
     # Extract clean text and calculate hashes
-    extracted = extract_clean_content(raw_html, url=url)
-    content_sha256 = compute_content_sha256(extracted.clean_text)
-    simhash_64 = compute_simhash(extracted.clean_text)
+    extracted = extract_clean_content(raw_html, url=clean_url)
+    content_hash = compute_content_sha256(extracted.clean_text)
+    simhash_hex = compute_simhash(extracted.clean_text)
 
-    # Save artifacts to disk if requested
-    dom_path_str: Optional[str] = None
-    screenshot_path_str: Optional[str] = None
+    dom_path: Optional[str] = None
+    screenshot_path: Optional[str] = None
 
-    if save_artifacts:
+    if save_artifacts and target_dir:
         target_dir.mkdir(parents=True, exist_ok=True)
-        hash_slug = content_sha256.replace("sha256:", "")[:16]
-
-        dom_file = target_dir / f"{hash_slug}.html"
+        base_name = f"{content_hash[:16]}"
+        dom_file = target_dir / f"{base_name}.html"
         dom_file.write_text(raw_html, encoding="utf-8")
-        dom_path_str = str(dom_file)
+        dom_path = str(dom_file)
 
         if screenshot_bytes:
-            screenshot_file = target_dir / f"{hash_slug}.png"
-            screenshot_file.write_bytes(screenshot_bytes)
-            screenshot_path_str = str(screenshot_file)
+            shot_file = target_dir / f"{base_name}.png"
+            shot_file.write_bytes(screenshot_bytes)
+            screenshot_path = str(shot_file)
 
     return DualCaptureResult(
-        url=url,
-        content_sha256=content_sha256,
-        simhash_64=simhash_64,
+        url=clean_url,
+        content_sha256=content_hash,
+        simhash_64=simhash_hex,
         raw_html=raw_html,
         extracted=extracted,
-        dom_file_path=dom_path_str,
-        screenshot_file_path=screenshot_path_str,
+        dom_file_path=dom_path,
+        screenshot_file_path=screenshot_path,
         screenshot_bytes=screenshot_bytes,
     )

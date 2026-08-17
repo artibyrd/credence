@@ -212,9 +212,11 @@ def _register_consensus_tools(server: MCPServer) -> None:
 
     @server.tool(
         name="credence_get_consensus",
-        description="Get Bayesian consensus suspicion score across known mesh peer attestations.",
+        description="Get Bayesian consensus suspicion score across known mesh peer attestations, with optional subject-weighted expertise weighting.",
     )
-    async def get_consensus(content_sha256: str) -> str:
+    async def get_consensus(content_sha256: str, subject_id: Optional[str] = None) -> str:
+        from credence.models import DomainMetricRecord
+
         await init_db()
         clean_hash = content_sha256 if content_sha256.startswith("sha256:") else f"sha256:{content_sha256}"
         async for s in get_session():
@@ -262,8 +264,20 @@ def _register_consensus_tools(server: MCPServer) -> None:
                     )
                 )
 
+            # Load domain expertise map if subject_id specified
+            exp_map = {}
+            if subject_id:
+                stmt_metrics = select(DomainMetricRecord).where(DomainMetricRecord.subject_id == subject_id)
+                metrics = (await s.exec(stmt_metrics)).all()
+                for m in metrics:
+                    exp_map[m.node_pubkey] = m.expertise_score
+
             aggregator = BayesianConsensusAggregator()
-            verdict = aggregator.calculate_consensus(reports)
+            verdict = aggregator.calculate_consensus(
+                attestations=reports,
+                subject_id=subject_id,
+                subject_expertise_map=exp_map,
+            )
             if verdict:
                 return json.dumps(verdict.model_dump(mode="json"), indent=2)
             return json.dumps({"error": "Failed to calculate consensus verdict."})
@@ -272,7 +286,7 @@ def _register_consensus_tools(server: MCPServer) -> None:
 
 
 def _register_mesh_tools(server: MCPServer) -> None:
-    """Register P2P mesh discovery, feed synchronization, and expert consensus tools."""
+    """Register P2P mesh discovery tools."""
 
     @server.tool(
         name="credence_get_seed_nodes",
@@ -291,6 +305,10 @@ def _register_mesh_tools(server: MCPServer) -> None:
             },
             indent=2,
         )
+
+
+def _register_feed_sync_tools(server: MCPServer) -> None:
+    """Register syndicated RSS/Atom/JSON feed synchronization tools."""
 
     @server.tool(
         name="credence_sync_feeds",
@@ -316,6 +334,38 @@ def _register_mesh_tools(server: MCPServer) -> None:
                 indent=2,
             )
         return "{}"
+
+    @server.tool(
+        name="credence_get_feed_stats",
+        description="Get aggregate feed pre-ingestion metrics, zero-token adoptions, and tokens saved.",
+    )
+    async def get_feed_stats_tool() -> str:
+        from credence.db import get_session, init_db
+        from credence.models import FeedItemRecord, FeedSubscriptionRecord
+
+        await init_db()
+        async for session in get_session():
+            stmt_subs = select(FeedSubscriptionRecord)
+            subs = (await session.exec(stmt_subs)).all()
+            stmt_items = select(FeedItemRecord)
+            items = (await session.exec(stmt_items)).all()
+
+            adopted = [i for i in items if i.processing_status == "mesh_adopted"]
+            return json.dumps(
+                {
+                    "active_subscriptions_count": len([s for s in subs if s.is_active]),
+                    "total_articles_discovered": len(items),
+                    "zero_token_adoptions_count": len(adopted),
+                    "total_tokens_saved": sum(i.tokens_saved for i in items),
+                    "attestation_seeding_active": True,
+                },
+                indent=2,
+            )
+        return "{}"
+
+
+def _register_feed_management_tools(server: MCPServer) -> None:
+    """Register syndicated feed subscription management tools."""
 
     @server.tool(
         name="credence_add_feed_subscription",
@@ -345,9 +395,79 @@ def _register_mesh_tools(server: MCPServer) -> None:
             return json.dumps({"status": "success", "feed_url": feed_url, "priority_tier": priority_tier})
         return "{}"
 
+    @server.tool(
+        name="credence_list_feeds",
+        description="List all registered syndicated RSS/Atom/JSON feed subscriptions.",
+    )
+    async def list_feeds_tool() -> str:
+        from sqlmodel import col
 
-def _register_resources(server: MCPServer) -> None:
-    """Register all FastMCP dynamic resources."""
+        from credence.db import get_session, init_db
+        from credence.models import FeedSubscriptionRecord
+
+        await init_db()
+        async for session in get_session():
+            stmt = select(FeedSubscriptionRecord).order_by(col(FeedSubscriptionRecord.priority_tier).asc())
+            subs = (await session.exec(stmt)).all()
+            return json.dumps(
+                [
+                    {
+                        "id": s.id,
+                        "feed_url": s.feed_url,
+                        "title": s.title,
+                        "priority_tier": s.priority_tier,
+                        "subject_tag": s.subject_tag,
+                        "is_active": s.is_active,
+                        "is_satire": s.is_satire,
+                        "etag": s.etag,
+                        "last_polled_at": s.last_polled_at.isoformat() if s.last_polled_at else None,
+                    }
+                    for s in subs
+                ],
+                indent=2,
+            )
+        return "[]"
+
+    @server.tool(
+        name="credence_remove_feed_subscription",
+        description="Unsubscribe and remove a syndicated feed by URL.",
+    )
+    async def remove_feed_subscription_tool(feed_url: str) -> str:
+        from credence.db import get_session, init_db
+        from credence.models import FeedSubscriptionRecord
+
+        await init_db()
+        async for session in get_session():
+            stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == feed_url)
+            sub = (await session.exec(stmt)).first()
+            if sub:
+                await session.delete(sub)
+                await session.commit()
+                return json.dumps({"status": "removed", "feed_url": feed_url})
+            return json.dumps({"error": f"Feed subscription not found for: {feed_url}"})
+        return "{}"
+
+
+def _register_taxonomy_resources(server: MCPServer) -> None:
+    """Register taxonomy, profile, identity, and seed resources."""
+
+    @server.resource("credence://profiles")
+    def list_profiles_resource() -> str:
+        from credence.config import COST_PROFILES
+
+        data = {
+            prof.value: {
+                "name": cfg.name,
+                "description": cfg.description,
+                "max_daily_budget_usd": cfg.max_daily_budget_usd,
+                "max_tokens_per_hour": cfg.max_tokens_per_hour,
+                "max_tokens_per_day": cfg.max_tokens_per_day,
+                "default_thinking_budget": cfg.default_thinking_budget,
+                "max_article_words": cfg.max_article_words,
+            }
+            for prof, cfg in COST_PROFILES.items()
+        }
+        return json.dumps(data, indent=2)
 
     @server.resource("credence://taxonomies")
     def list_taxonomies_resource() -> str:
@@ -398,12 +518,51 @@ def _register_resources(server: MCPServer) -> None:
             indent=2,
         )
 
+
+def _register_subject_resources(server: MCPServer) -> None:
+    """Register subject catalog and empirical expertise resources."""
+
     @server.resource("credence://subjects/registry")
     def get_subjects_registry_resource() -> str:
         from credence.subjects.registry import get_subject_registry
 
         reg = get_subject_registry()
         return json.dumps(reg.get_hierarchy_tree(), indent=2)
+
+    @server.resource("credence://subjects/{subject_id}")
+    def get_subject_detail_resource(subject_id: str) -> str:
+        from credence.subjects.registry import get_subject_registry
+
+        reg = get_subject_registry()
+        subj = reg.get_subject(subject_id)
+        if not subj:
+            return json.dumps({"error": f"Subject '{subject_id}' not found."})
+        return json.dumps(subj.model_dump(mode="json"), indent=2)
+
+    @server.resource("credence://subjects/leaderboard")
+    async def get_subjects_leaderboard_resource() -> str:
+        from credence.db import get_session, init_db
+        from credence.models import DomainMetricRecord
+
+        await init_db()
+        async for session in get_session():
+            stmt = select(DomainMetricRecord).order_by(DomainMetricRecord.expertise_score.desc()).limit(50)  # type: ignore[attr-defined]
+            records = (await session.exec(stmt)).all()
+            return json.dumps(
+                [
+                    {
+                        "node_pubkey": r.node_pubkey,
+                        "subject_id": r.subject_id,
+                        "expertise_score": r.expertise_score,
+                        "evaluations_count": r.evaluations_count,
+                        "grounded_ratio": round(r.grounded_quotes_count / max(1, r.total_quotes_count), 3),
+                        "slashing_count": r.slashing_count,
+                    }
+                    for r in records
+                ],
+                indent=2,
+            )
+        return "[]"
 
     @server.resource("credence://feeds/status")
     async def get_feeds_status_resource() -> str:
@@ -477,7 +636,10 @@ def create_mcp_server() -> MCPServer:
     _register_query_tools(server)
     _register_consensus_tools(server)
     _register_mesh_tools(server)
-    _register_resources(server)
+    _register_feed_sync_tools(server)
+    _register_feed_management_tools(server)
+    _register_taxonomy_resources(server)
+    _register_subject_resources(server)
     _register_prompts(server)
     return server
 

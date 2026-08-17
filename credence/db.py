@@ -67,3 +67,11 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     )
     async with session_factory() as session:
         yield session
+
+
+async def close_db() -> None:
+    """Dispose the global async engine connection pool."""
+    global _engine
+    if _engine is not None:
+        await _engine.dispose()
+        _engine = None

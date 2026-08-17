@@ -65,6 +65,12 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
     - Background feed ingestion must automatically pause whenever daily token headroom falls below 30% to preserve quota for interactive development sessions.
 24. **Universal Presentation Layer Feature Parity Invariant**:
     - All system features, inspection tools, and configuration options must maintain synchronous feature parity across all four official interfaces: **CLI** (`credence`), **FastMCP 2.0** (`credence_` tools & `credence://` resources), **Textual TUI** (`credence tui`), and **Zero-Build Web UI** (`web/`).
+25. **Pure Logic Decoupling & Multi-Interface Testing Invariant**:
+    - All core evaluation pipelines, heuristic analyzers, Bayesian consensus math, cryptographic signers, and feed parsers MUST be implemented and tested completely decoupled from presentation layers.
+    - Test suites MUST maintain explicit, dedicated test modules for every supported presentation layer (**CLI**, **FastMCP 2.0**, **Textual TUI**, and **Zero-Build Web UI**) as well as pure logic isolation tests (`tests/test_interfaces_isolation.py`).
+26. **Network Ingestion SSRF & Non-Routable IP Guard Invariant**:
+    - All network fetching modules (dual-capture HTML extractor, syndicated RSS/Atom/JSON feed parsers, and remote seed downloaders) must enforce strict SSRF guards rejecting cloud metadata services (`169.254.169.254`, `metadata.google.internal`), loopback addresses (`127.0.0.1`, `localhost`, `::1`), and RFC 1918 private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
+    - Offline local HTML fixtures (`file://` / `text://`) are permitted only during hermetic test executions with explicit test authorization (`allow_local=True`).
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic unit test suite (<45s).

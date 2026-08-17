@@ -881,6 +881,36 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         _dispatch_subjects_cli(args)
 
 
+async def cli_feeds(
+    action: str = "list",
+    url: Optional[str] = None,
+    title: str = "",
+    priority: int = 2,
+    tag: str = "journalism.news",
+    satire: bool = False,
+    dry_run: bool = False,
+    evaluate: bool = True,
+) -> None:
+    """Entrypoint for feeds CLI commands."""
+    args = argparse.Namespace(
+        action=action,
+        url=url,
+        title=title,
+        priority=priority,
+        subject=tag,
+        satire=satire,
+        dry_run=dry_run,
+        evaluate=evaluate,
+    )
+    await _dispatch_feeds_cli(args)
+
+
+def cli_subjects(action: str = "list", subject_id: Optional[str] = None) -> None:
+    """Entrypoint for subjects CLI commands."""
+    args = argparse.Namespace(action=action, subject_id=subject_id)
+    _dispatch_subjects_cli(args)
+
+
 async def _dispatch_feeds_cli(args: argparse.Namespace) -> None:
     """Dispatch feed subcommands."""
     from credence.db import get_session, init_db
