@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "credence"
-version = "0.1.0"
+version = "1.0.0"
 description = "Autonomous epistemic evaluation engine, FastMCP server, and decentralized trust network (Credence Mesh)."
 authors = ["Credence Network Contributors"]
-license = "MIT"
+license = "Apache-2.0"
 readme = "README.md"
 packages = [{ include = "credence" }]
 

@@ -1,0 +1,20 @@
+# Terraform Remote State Persistence (GCS Backend Example)
+#
+# To use Google Cloud Storage for remote state persistence and locking:
+#
+# 1. Create a private GCS bucket with uniform access and versioning:
+#    gcloud storage buckets create gs://YOUR_PROJECT_ID-tfstate --project=YOUR_PROJECT_ID --location=us-central1 --uniform-bucket-level-access
+#    gcloud storage buckets update gs://YOUR_PROJECT_ID-tfstate --versioning
+#
+# 2. Copy this file to backend.tf:
+#    cp backend.tf.example backend.tf
+#
+# 3. Initialize Terraform with the backend configuration:
+#    terraform init -backend-config="bucket=YOUR_PROJECT_ID-tfstate" -backend-config="prefix=credence/state"
+
+terraform {
+  backend "gcs" {
+    bucket = "YOUR_PROJECT_ID-tfstate"
+    prefix = "credence/state"
+  }
+}
