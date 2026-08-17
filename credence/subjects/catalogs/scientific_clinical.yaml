@@ -1,0 +1,35 @@
+subject_id: "scientific.clinical"
+title: "Clinical Medicine & Randomized Trials"
+description: "Evaluations concerning human clinical trials, randomized controlled trials (RCTs), oncology, pharmacology, and clinical health claims."
+parent_id: null
+taxonomies:
+  - "spj_ethics"
+  - "iep_fallacies"
+keywords:
+  - "clinical trial"
+  - "randomized controlled trial"
+  - "placebo"
+  - "double blind"
+  - "p-value"
+  - "sample size"
+  - "oncology"
+  - "pharmacology"
+  - "in-vitro"
+  - "animal model"
+  - "therapeutic"
+  - "efficacy"
+schema_org_types:
+  - "ScholarlyArticle"
+  - "MedicalWebPage"
+  - "MedicalCondition"
+sub_subjects:
+  - subject_id: "scientific.clinical.oncology"
+    title: "Clinical Oncology & Cancer Therapeutics"
+    description: "Evaluations of clinical cancer research, immunotherapies, and oncology trials."
+    keywords:
+      - "oncology"
+      - "carcinoma"
+      - "chemotherapy"
+      - "immunotherapy"
+      - "tumor"
+      - "remission"

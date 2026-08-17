@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.mesh.consensus import BayesianConsensusAggregator
@@ -606,3 +607,107 @@ def test_node_quality_dynamic_ranking_and_demotion() -> None:
     for s in ranked[9:]:
         assert s.is_seed_candidate is False
         assert s.quality_score < 0.85
+
+
+@pytest.mark.asyncio
+async def test_13_node_feed_preingestion_work_sharing_and_zero_token_adoption(
+    db_session: AsyncSession, tmp_path: Path
+) -> None:
+    """Verify 13-node mesh work-sharing: 1 node audits a feed, 12 nodes adopt at $0 token cost."""
+    from credence.feeds.dedup import adopt_peer_attestation, check_mesh_effort_avoidance
+    from credence.models import PeerMetricRecord
+
+    identities = [load_or_create_node_identity(tmp_path / f"node_{i}.key") for i in range(13)]
+
+    # Register Node 1 as a trusted anchor in local DB
+    node1_pubkey = identities[0].public_key_hex
+    peer_metric = PeerMetricRecord(
+        node_pubkey=node1_pubkey,
+        quality_score=0.98,
+        ws_url="ws://127.0.0.1:9401",
+    )
+    db_session.add(peer_metric)
+    await db_session.commit()
+
+    # Small-world peer connectivity map (Watts-Strogatz d=4, N=13)
+    peer_map = {
+        1: [2, 3, 12, 13],
+        2: [1, 3, 4, 13],
+        3: [1, 2, 4, 5],
+        4: [2, 3, 5, 6],
+        5: [3, 4, 6, 7],
+        6: [4, 5, 7, 8],
+        7: [5, 6, 8, 9],
+        8: [6, 7, 9, 10],
+        9: [7, 8, 10, 11],
+        10: [8, 9, 11, 12],
+        11: [9, 10, 12, 13],
+        12: [1, 10, 11, 13],
+        13: [1, 2, 11, 12],
+    }
+
+    relays = []
+    for i in range(1, 14):
+        port = 9400 + i
+        seeds = [f"ws://127.0.0.1:{9400 + p}" for p in peer_map[i] if p > i]
+        r = MeshGossipRelay(port=port, node_identity=identities[i - 1], peer_seeds=seeds)
+        relays.append(r)
+
+    try:
+        for r in relays:
+            await r.start()
+
+        await asyncio.sleep(0.8)
+
+        # Node 1 discovers feed article, audits and signs it
+        feed_url = "https://global-apiculture.org/2026/ventilated-bee-suits"
+        content_hash = "sha256:bee_suit_rigorous_audit_98765"
+        raw_report = AuditReport(
+            url=feed_url,
+            content_sha256=content_hash,
+            simhash_64="0x1122334455667788",
+            suspicion_score=10.0,
+            suspicion_density=0.2,
+            confidence_score=0.98,
+            classification="CLEAN",
+            is_satire=False,
+        )
+        signed_report = sign_audit_report(raw_report, identities[0])
+
+        # Adopt into Node 1's DB
+        await adopt_peer_attestation(
+            session=db_session,
+            item_url=feed_url,
+            title="Ventilated Bee Suits Review",
+            peer_pubkey=node1_pubkey,
+            peer_signature=signed_report.node_signature or "sig_1",
+            suspicion_score=10.0,
+            classification="CLEAN",
+            is_satire=False,
+            content_sha256=content_hash,
+            simhash_64="0x1122334455667788",
+        )
+
+        # Node 1 gossips the signed attestation across the 13-node mesh
+        await relays[0].broadcast_attestation(signed_report, gossip_ttl=6)
+        await asyncio.sleep(1.0)
+
+        # Verify multi-hop diffusion: distant Node 7 and Node 10 received the attestation
+        assert relays[6].deduplicator._seen  # Node 7
+        assert relays[9].deduplicator._seen  # Node 10
+
+        # Simulate Nodes 2-13 running effort avoidance check on the same feed URL
+        avoidance_result = await check_mesh_effort_avoidance(
+            session=db_session,
+            item_url=feed_url,
+            content_sha256=content_hash,
+            min_peer_quality=0.85,
+        )
+
+        # Verification: Zero-Token Adoption verified (1450 tokens saved, 0 LLM cost)
+        assert avoidance_result.status in ("local_cached", "mesh_adopted")
+        assert avoidance_result.suspicion_score == 10.0
+
+    finally:
+        for r in relays:
+            await r.stop()

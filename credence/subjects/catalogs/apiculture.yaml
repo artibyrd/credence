@@ -1,0 +1,35 @@
+subject_id: "apiculture"
+title: "Apiculture & Beekeeping"
+description: "Evaluations concerning honeybees, apiary management, bee health, hive equipment, and protective gear."
+parent_id: null
+taxonomies:
+  - "spj_ethics"
+keywords:
+  - "apiculture"
+  - "beekeeping"
+  - "apiary"
+  - "honeybee"
+  - "hive"
+  - "queen bee"
+  - "varroa"
+  - "sting resistance"
+  - "bee suit"
+  - "smoker"
+  - "propolis"
+  - "apismellifera"
+schema_org_types:
+  - "Product"
+  - "HowTo"
+  - "Article"
+sub_subjects:
+  - subject_id: "apiculture.equipment"
+    title: "Beekeeping Equipment & Protective Gear"
+    description: "Specialized reviews of bee suits, veils, hive tools, extractors, and smoker gear."
+    keywords:
+      - "bee suit"
+      - "veil"
+      - "protective gear"
+      - "sting proof"
+      - "hive tool"
+      - "smoker"
+      - "mesh ventilation"

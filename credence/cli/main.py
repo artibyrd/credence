@@ -875,6 +875,146 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
     elif cmd == "db-clean":
         asyncio.run(cli_db_clean(retention_days=args.retention_days))
+    elif cmd == "feeds":
+        asyncio.run(_dispatch_feeds_cli(args))
+    elif cmd == "subjects":
+        _dispatch_subjects_cli(args)
+
+
+async def _dispatch_feeds_cli(args: argparse.Namespace) -> None:
+    """Dispatch feed subcommands."""
+    from credence.db import get_session, init_db
+    from credence.feeds.worker import sync_all_feeds
+    from credence.models import FeedItemRecord, FeedSubscriptionRecord
+
+    await init_db()
+    action = args.action or "list"
+
+    async for session in get_session():
+        if action == "list":
+            stmt = select(FeedSubscriptionRecord).order_by(col(FeedSubscriptionRecord.priority_tier).asc())
+            subs = (await session.exec(stmt)).all()
+            table = Table(
+                title="[bold]Syndicated Feed Subscriptions[/bold]", show_header=True, header_style="bold magenta"
+            )
+            table.add_column("ID", style="dim", width=4)
+            table.add_column("Title / Channel", style="bold cyan", width=26)
+            table.add_column("Feed URL", style="green")
+            table.add_column("Tier", justify="center", width=6)
+            table.add_column("Subject Tag", style="yellow", width=22)
+            table.add_column("ETag / 304", style="dim", width=16)
+            table.add_column("Status", justify="center", width=8)
+
+            for s in subs:
+                status = "[green]ACTIVE[/green]" if s.is_active else "[dim]PAUSED[/dim]"
+                table.add_row(
+                    str(s.id),
+                    s.title or "(unnamed)",
+                    s.feed_url,
+                    f"Tier {s.priority_tier}",
+                    s.subject_tag,
+                    s.etag or "None",
+                    status,
+                )
+            console.print(table)
+
+        elif action == "add":
+            sub_rec = FeedSubscriptionRecord(
+                feed_url=args.url,
+                title=args.title or "",
+                priority_tier=args.priority,
+                subject_tag=args.subject or "journalism.news",
+                is_satire=args.satire,
+            )
+            session.add(sub_rec)
+            await session.commit()
+            console.print(
+                f"[bold green]Successfully subscribed to feed:[/bold green] {args.url} (Tier {args.priority})"
+            )
+
+        elif action == "remove":
+            stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == args.url)
+            sub_del = (await session.exec(stmt)).first()
+            if sub_del is not None:
+                await session.delete(sub_del)
+                await session.commit()
+                console.print(f"[bold red]Removed feed subscription:[/bold red] {args.url}")
+            else:
+                console.print(f"[yellow]Subscription not found for URL:[/yellow] {args.url}")
+
+        elif action == "sync":
+            console.print(f"[bold cyan]Synchronizing all active feeds...[/bold cyan] (Dry Run: {args.dry_run})")
+            summary = await sync_all_feeds(session=session, dry_run=args.dry_run)
+            console.print(
+                Panel(
+                    f"- [bold]Total Feeds Polled:[/bold]        {summary.total_feeds_polled}\n"
+                    f"- [bold]Feeds Unmodified (304):[/bold]    {summary.feeds_unmodified_304}\n"
+                    f"- [bold]New Articles Discovered:[/bold]   {summary.new_items_discovered}\n"
+                    f"- [bold]Zero-Token Mesh Adoptions:[/bold] [green]{summary.items_adopted_from_mesh}[/green]\n"
+                    f"- [bold]Total LLM Tokens Saved:[/bold]    [bold yellow]{summary.tokens_saved_total:,} tokens[/bold yellow]\n"
+                    f"- [bold]Deferred for Headroom:[/bold]     {summary.items_deferred_budget}\n",
+                    title="[bold]Feed Synchronization Summary[/bold]",
+                    border_style="green" if summary.items_adopted_from_mesh > 0 else "blue",
+                )
+            )
+
+        elif action == "stats":
+            stmt_items = select(FeedItemRecord)
+            items = (await session.exec(stmt_items)).all()
+            total_items = len(items)
+            adopted_count = sum(1 for i in items if i.processing_status == "mesh_adopted")
+            tokens_saved = sum(i.tokens_saved for i in items)
+
+            console.print(
+                Panel(
+                    f"- [bold]Total Articles Discovered:[/bold]   {total_items}\n"
+                    f"- [bold]Zero-Token Mesh Adoptions:[/bold]   [green]{adopted_count}[/green]\n"
+                    f"- [bold]Total Compute Tokens Saved:[/bold]  [bold yellow]{tokens_saved:,} tokens[/bold yellow]\n"
+                    f"- [bold]Attestation Seeding Status:[/bold]  [cyan]ACTIVE (BitTorrent Tit-for-Tat Enabled)[/cyan]\n",
+                    title="[bold]Generous Defaults & Mesh Work-Sharing Stats[/bold]",
+                    border_style="cyan",
+                )
+            )
+
+
+def _dispatch_subjects_cli(args: argparse.Namespace) -> None:
+    """Dispatch subject registry subcommands."""
+    from rich.tree import Tree
+
+    from credence.subjects.registry import get_subject_registry
+
+    reg = get_subject_registry()
+    action = args.action or "list"
+
+    if action == "list":
+        tree_data = reg.get_hierarchy_tree()
+        root_tree = Tree("[bold magenta]Credence Epistemic Subject Hierarchy[/bold magenta]")
+
+        for r in tree_data:
+            branch = root_tree.add(f"[bold cyan]{r['title']}[/bold cyan] ([dim]{r['subject_id']}[/dim])")
+            for c in r.get("children", []):
+                branch.add(f"[yellow]{c['title']}[/yellow] ([dim]{c['subject_id']}[/dim]) - {c['description']}")
+
+        console.print(root_tree)
+
+    elif action == "show":
+        subj = reg.get_subject(args.subject_id)
+        if not subj:
+            console.print(f"[bold red]Subject namespace '{args.subject_id}' not found.[/bold red]")
+            return
+
+        console.print(
+            Panel(
+                f"- [bold]Namespace ID:[/bold]  [cyan]{subj.subject_id}[/cyan]\n"
+                f"- [bold]Title:[/bold]         {subj.title}\n"
+                f"- [bold]Parent:[/bold]        {subj.parent_id or 'None (Root Domain)'}\n"
+                f"- [bold]Description:[/bold]   {subj.description}\n"
+                f"- [bold]Taxonomies:[/bold]    {', '.join(subj.taxonomies) if subj.taxonomies else 'Default'}\n"
+                f"- [bold]Keywords:[/bold]      {', '.join(subj.keywords[:8])}...\n",
+                title=f"[bold]Subject Details: {subj.title}[/bold]",
+                border_style="magenta",
+            )
+        )
 
 
 def cli_init_org(
@@ -1087,6 +1227,37 @@ def main() -> None:
     )
     org_parser.add_argument("--email", "-e", default=None, help="Contact email for security and alerts.")
     org_parser.add_argument("--brand-title", default=None, help="Custom brand title header.")
+
+    # feeds command
+    feeds_parser = subparsers.add_parser(
+        "feeds", help="Manage syndicated RSS/Atom/JSON feed pre-ingestion and mesh effort avoidance."
+    )
+    feeds_parser.add_argument(
+        "action",
+        choices=["list", "add", "remove", "sync", "stats"],
+        default="list",
+        nargs="?",
+        help="Action: list, add, remove, sync, stats",
+    )
+    feeds_parser.add_argument("url", nargs="?", default=None, help="Feed URL for add/remove.")
+    feeds_parser.add_argument("--title", "-t", default="", help="Custom title for feed.")
+    feeds_parser.add_argument("--priority", "-p", type=int, default=2, help="Priority tier 1-4 (default: 2).")
+    feeds_parser.add_argument("--subject", "-s", default="journalism.news", help="Subject tag namespace.")
+    feeds_parser.add_argument("--satire", action="store_true", help="Flag as satire publication.")
+    feeds_parser.add_argument("--dry-run", action="store_true", help="Inspect without modifying database.")
+
+    # subjects command
+    subjects_parser = subparsers.add_parser(
+        "subjects", help="Explore hierarchical subject registry and empirical domain expertise."
+    )
+    subjects_parser.add_argument(
+        "action",
+        choices=["list", "show"],
+        default="list",
+        nargs="?",
+        help="Action: list, show",
+    )
+    subjects_parser.add_argument("subject_id", nargs="?", default=None, help="Subject namespace ID.")
 
     if len(sys.argv) == 1:
         # Default to launching TUI if no args provided in interactive terminal

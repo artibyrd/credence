@@ -1,0 +1,33 @@
+subject_id: "journalism.news"
+title: "General Journalism & News Media"
+description: "Evaluations of general news reporting, political commentary, investigative journalism, and breaking news."
+parent_id: null
+taxonomies:
+  - "spj_ethics"
+  - "iep_fallacies"
+  - "deceptive_patterns"
+keywords:
+  - "breaking news"
+  - "report"
+  - "investigation"
+  - "politics"
+  - "government"
+  - "election"
+  - "economy"
+  - "statement"
+  - "spokesperson"
+  - "press release"
+schema_org_types:
+  - "NewsArticle"
+  - "Article"
+  - "Report"
+sub_subjects:
+  - subject_id: "journalism.news.investigative"
+    title: "Investigative Journalism"
+    description: "In-depth investigative reports, public interest exposés, and document-backed investigations."
+    keywords:
+      - "investigative"
+      - "whistleblower"
+      - "confidential documents"
+      - "foia"
+      - "financial disclosure"

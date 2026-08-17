@@ -55,6 +55,16 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 21. **Turnkey White-Label Federation & Dry-Run Governor Invariant**:
     - All deployment scripts, publishing utilities, and infrastructure templates must provide non-destructive `--dry-run` inspection modes and local preview servers (`just serve-web`) for human review ("Mk1 Eyeball") prior to cloud mutation.
     - Scaffolding tools (`credence init-org`) must generate completely sovereign, parameterized multi-cloud configurations and cryptographic root keypairs to allow independent organizations to run compatible federated mesh networks without code modifications.
+22. **Empirical Subject-Matter Expertise & Anti-Diploma Invariant**:
+    - Mesh nodes must NEVER grant subject-matter authority based on static cryptographic certificates, diplomas, or claimed credentials.
+    - Domain expertise ($E_i$) must strictly be earned and calculated from historical performance metrics ($E_i = 0.40 C + 0.35 G + 0.15 V + 0.10 L$) and combined with node quality ($W_i = 0.20 Q_i + 0.80 E_i$).
+    - Any node citing an ungrounded or fabricated quote in a specialized domain is penalized with an immediate 50% domain score slash ($E_i \leftarrow E_i \times 0.50$).
+23. **Epistemic BitTorrent Work-Sharing & Generous Defaults Invariant**:
+    - Credence nodes must adopt generous default behaviors: Attestation Seeding (broadcasting evaluated audits freely at $0.00 compute) and Mesh Work-Sharing (dividing syndicated RSS/Atom/JSON feeds across the mesh to cover $N \times$ more internet without token duplication).
+    - Nodes must query the local attestation cache and verified peer signatures ($Q_i \ge 0.85$) prior to LLM ingestion to adopt peer audits at $0.00 token cost.
+    - Background feed ingestion must automatically pause whenever daily token headroom falls below 30% to preserve quota for interactive development sessions.
+24. **Universal Presentation Layer Feature Parity Invariant**:
+    - All system features, inspection tools, and configuration options must maintain synchronous feature parity across all four official interfaces: **CLI** (`credence`), **FastMCP 2.0** (`credence_` tools & `credence://` resources), **Textual TUI** (`credence tui`), and **Zero-Build Web UI** (`web/`).
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic unit test suite (<45s).

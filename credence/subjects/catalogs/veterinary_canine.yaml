@@ -1,0 +1,31 @@
+subject_id: "veterinary.canine"
+title: "Canine Veterinary Care & Training"
+description: "Evaluations concerning dog health, veterinary medicine, canine nutrition, behavioral training, leashes, and equipment."
+parent_id: null
+taxonomies:
+  - "spj_ethics"
+keywords:
+  - "canine"
+  - "dog"
+  - "puppy"
+  - "veterinary"
+  - "dog training"
+  - "dog food"
+  - "leash"
+  - "harness"
+  - "bark collar"
+  - "canis lupus familiaris"
+schema_org_types:
+  - "Product"
+  - "HowTo"
+  - "Article"
+sub_subjects:
+  - subject_id: "veterinary.canine.nutrition"
+    title: "Canine Nutrition & Dietary Supplements"
+    description: "Reviews of dog foods, raw diets, veterinary kibble, and supplements."
+    keywords:
+      - "dog food"
+      - "kibble"
+      - "raw diet"
+      - "crude protein"
+      - "grain free"

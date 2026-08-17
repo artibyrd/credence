@@ -145,3 +145,74 @@ class PeerMetricRecord(SQLModel, table=True):
     is_seed_candidate: bool = Field(
         default=False, index=True, description="True if node qualifies as a top seed candidate"
     )
+
+
+class SubjectRecord(SQLModel, table=True):
+    """Stores registered hierarchical subject namespaces and evaluation taxonomy mappings."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    subject_id: str = Field(
+        index=True, unique=True, description="Hierarchical namespace ID (e.g. apiculture.equipment)"
+    )
+    title: str = Field(description="Human-readable subject title")
+    description: str = Field(default="", description="Subject scope explanation")
+    parent_id: Optional[str] = Field(default=None, index=True, description="Parent subject namespace ID")
+    is_active: bool = Field(default=True, index=True, description="Whether subject is active for classification")
+    created_at: datetime = Field(default_factory=utc_now, description="UTC registration timestamp")
+
+
+class DomainMetricRecord(SQLModel, table=True):
+    """Stores observed empirical domain expertise metrics for a node within a specific subject."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    node_pubkey: str = Field(index=True, description="Ed25519 public key hex of the node")
+    subject_id: str = Field(index=True, description="Subject namespace ID (e.g. apiculture.equipment)")
+    evaluations_count: int = Field(default=0, description="Total audits completed in this subject")
+    median_deviations_sum: float = Field(default=0.0, description="Cumulative deviation from domain robust median")
+    grounded_quotes_count: int = Field(default=0, description="Verbatim grounded technical citations")
+    total_quotes_count: int = Field(default=0, description="Total citations submitted in this domain")
+    slashing_count: int = Field(default=0, description="Number of times expertise was slashed for hallucinations")
+    expertise_score: float = Field(default=0.05, description="Empirical expertise score E_i(subject) from 0.05 to 1.0")
+    first_evaluated_at: datetime = Field(default_factory=utc_now, description="First evaluation timestamp in domain")
+    last_evaluated_at: datetime = Field(default_factory=utc_now, description="Most recent evaluation timestamp")
+
+
+class FeedSubscriptionRecord(SQLModel, table=True):
+    """Stores syndicated RSS/Atom/JSON feed subscriptions and polling metadata."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    feed_url: str = Field(index=True, unique=True, description="Syndicated feed URL (RSS, Atom, or JSON)")
+    title: str = Field(default="", description="Human-readable feed title")
+    feed_format: str = Field(default="rss", description="Feed format: rss, atom, or json")
+    subject_tag: str = Field(default="journalism.news", index=True, description="Default subject namespace tag")
+    priority_tier: int = Field(
+        default=2, ge=1, le=4, description="Priority tier (1=Breaking/Volatile, 2=News, 3=Blogs, 4=Satire)"
+    )
+    etag: Optional[str] = Field(default=None, description="HTTP ETag header for conditional requests")
+    last_modified: Optional[str] = Field(default=None, description="HTTP Last-Modified header for conditional requests")
+    polling_interval_seconds: int = Field(default=900, description="Polling interval in seconds")
+    last_polled_at: Optional[datetime] = Field(default=None, description="UTC timestamp of last poll")
+    is_active: bool = Field(default=True, index=True, description="Whether feed polling is active")
+    is_satire: bool = Field(default=False, description="True if feed is a dedicated satire publication")
+    created_at: datetime = Field(default_factory=utc_now, description="Subscription creation timestamp")
+
+
+class FeedItemRecord(SQLModel, table=True):
+    """Stores discovered syndicated feed items, processing status, and mesh adoption records."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    item_url: str = Field(index=True, unique=True, description="Target article URL")
+    feed_id: Optional[int] = Field(default=None, foreign_key="feedsubscriptionrecord.id", index=True)
+    title: str = Field(default="", description="Article headline title")
+    subject_id: str = Field(default="journalism.news", index=True, description="Classified subject namespace")
+    published_at: Optional[datetime] = Field(default=None, description="Article published timestamp")
+    discovered_at: datetime = Field(default_factory=utc_now, description="Feed item discovery timestamp")
+    processing_status: str = Field(
+        default="pending",
+        index=True,
+        description="Status: pending, mesh_adopted, evaluated, skipped, failed, specialist_needed",
+    )
+    adopted_from_node: Optional[str] = Field(
+        default=None, description="Node pubkey whose signed attestation was adopted at 0 token cost"
+    )
+    tokens_saved: int = Field(default=0, description="Estimated LLM tokens saved via zero-token mesh adoption")

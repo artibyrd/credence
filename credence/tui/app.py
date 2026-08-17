@@ -206,6 +206,12 @@ class CredenceApp(App):
                     with TabPane("📚 Taxonomies", id="tab_taxonomies"):
                         yield Tree("Registered Taxonomy Catalogs", id="taxonomy_tree")
 
+                    with TabPane("🧠 Domain Subjects", id="tab_subjects"):
+                        yield Tree("Hierarchical Subject Registry", id="subjects_tree")
+
+                    with TabPane("📡 Feeds & Dedup", id="tab_feeds"):
+                        yield DataTable(id="feeds_table")
+
                     with TabPane("⚡ Token Quota", id="tab_quota"):
                         yield Static("Loading Token Headroom & Safety Status...", id="quota_panel")
 
@@ -229,8 +235,15 @@ class CredenceApp(App):
         v_table.cursor_type = "row"
         v_table.add_columns("Rule ID", "Sev", "Domain", "Excerpt")
 
+        # Set up feeds table
+        feeds_table = self.query_one("#feeds_table", DataTable)
+        feeds_table.cursor_type = "row"
+        feeds_table.add_columns("Tier", "Title", "Feed URL", "Subject", "Status")
+
         # Populate Views
         self._populate_taxonomy_tree()
+        self._populate_subjects_tree()
+        await self._populate_feeds_table()
         self._populate_identity_panel()
         await self._populate_quota_panel()
 
@@ -247,6 +260,31 @@ class CredenceApp(App):
                 clus_node = cat_node.add(f"[bold yellow]{clus.cluster_id}[/bold yellow]: {clus.name}")
                 for rule in clus.rules:
                     clus_node.add_leaf(f"[bold]{rule.rule_id}[/bold] (Sev {rule.severity}): {rule.name}")
+
+    def _populate_subjects_tree(self) -> None:
+        from credence.subjects.registry import get_subject_registry
+
+        tree = self.query_one("#subjects_tree", Tree)
+        tree.root.expand()
+        reg = get_subject_registry()
+        for root in reg.get_hierarchy_tree():
+            root_node = tree.root.add(f"[bold cyan]{root['title']}[/bold cyan] ([dim]{root['subject_id']}[/dim])")
+            for child in root.get("children", []):
+                root_node.add_leaf(f"[bold yellow]{child['title']}[/bold yellow] ([dim]{child['subject_id']}[/dim])")
+
+    async def _populate_feeds_table(self) -> None:
+        from sqlmodel import col
+
+        from credence.models import FeedSubscriptionRecord
+
+        table = self.query_one("#feeds_table", DataTable)
+        table.clear()
+        async for session in get_session():
+            stmt = select(FeedSubscriptionRecord).order_by(col(FeedSubscriptionRecord.priority_tier).asc())
+            subs = (await session.exec(stmt)).all()
+            for s in subs:
+                status = "[green]ACTIVE[/green]" if s.is_active else "[dim]PAUSED[/dim]"
+                table.add_row(f"T{s.priority_tier}", s.title or "(feed)", s.feed_url, s.subject_tag, status)
 
     def _populate_identity_panel(self) -> None:
         panel = self.query_one("#identity_panel", Static)

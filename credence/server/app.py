@@ -272,7 +272,7 @@ def _register_consensus_tools(server: MCPServer) -> None:
 
 
 def _register_mesh_tools(server: MCPServer) -> None:
-    """Register P2P mesh discovery and bootstrap tools."""
+    """Register P2P mesh discovery, feed synchronization, and expert consensus tools."""
 
     @server.tool(
         name="credence_get_seed_nodes",
@@ -291,6 +291,59 @@ def _register_mesh_tools(server: MCPServer) -> None:
             },
             indent=2,
         )
+
+    @server.tool(
+        name="credence_sync_feeds",
+        description="Poll all active syndicated RSS/Atom/JSON feeds, perform mesh effort avoidance, and adopt peer attestations at $0 token cost.",
+    )
+    async def sync_feeds_tool(dry_run: bool = False, evaluate_novel: bool = True) -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.worker import sync_all_feeds
+
+        await init_db()
+        async for session in get_session():
+            summary = await sync_all_feeds(session=session, dry_run=dry_run, evaluate_novel=evaluate_novel)
+            return json.dumps(
+                {
+                    "total_feeds_polled": summary.total_feeds_polled,
+                    "feeds_unmodified_304": summary.feeds_unmodified_304,
+                    "new_items_discovered": summary.new_items_discovered,
+                    "items_adopted_from_mesh": summary.items_adopted_from_mesh,
+                    "tokens_saved_total": summary.tokens_saved_total,
+                    "items_deferred_budget": summary.items_deferred_budget,
+                    "dry_run": dry_run,
+                },
+                indent=2,
+            )
+        return "{}"
+
+    @server.tool(
+        name="credence_add_feed_subscription",
+        description="Subscribe node to a syndicated RSS 2.0, Atom 1.0, or JSON Feed.",
+    )
+    async def add_feed_subscription_tool(
+        feed_url: str,
+        title: str = "",
+        priority_tier: int = 2,
+        subject_tag: str = "journalism.news",
+        is_satire: bool = False,
+    ) -> str:
+        from credence.db import get_session, init_db
+        from credence.models import FeedSubscriptionRecord
+
+        await init_db()
+        async for session in get_session():
+            sub = FeedSubscriptionRecord(
+                feed_url=feed_url,
+                title=title,
+                priority_tier=priority_tier,
+                subject_tag=subject_tag,
+                is_satire=is_satire,
+            )
+            session.add(sub)
+            await session.commit()
+            return json.dumps({"status": "success", "feed_url": feed_url, "priority_tier": priority_tier})
+        return "{}"
 
 
 def _register_resources(server: MCPServer) -> None:
@@ -344,6 +397,36 @@ def _register_resources(server: MCPServer) -> None:
             },
             indent=2,
         )
+
+    @server.resource("credence://subjects/registry")
+    def get_subjects_registry_resource() -> str:
+        from credence.subjects.registry import get_subject_registry
+
+        reg = get_subject_registry()
+        return json.dumps(reg.get_hierarchy_tree(), indent=2)
+
+    @server.resource("credence://feeds/status")
+    async def get_feeds_status_resource() -> str:
+        from credence.db import get_session, init_db
+        from credence.models import FeedItemRecord, FeedSubscriptionRecord
+
+        await init_db()
+        async for session in get_session():
+            stmt_subs = select(FeedSubscriptionRecord)
+            subs = (await session.exec(stmt_subs)).all()
+            stmt_items = select(FeedItemRecord)
+            items = (await session.exec(stmt_items)).all()
+
+            return json.dumps(
+                {
+                    "active_subscriptions_count": len([s for s in subs if s.is_active]),
+                    "total_articles_discovered": len(items),
+                    "zero_token_adoptions_count": len([i for i in items if i.processing_status == "mesh_adopted"]),
+                    "total_tokens_saved": sum(i.tokens_saved for i in items),
+                },
+                indent=2,
+            )
+        return "{}"
 
 
 def _register_prompts(server: MCPServer) -> None:
