@@ -200,6 +200,20 @@ def parse_json_feed(data: Dict[str, Any]) -> ParsedFeed:
     )
 
 
+def safe_parse_xml(content: str, max_bytes: int = 10 * 1024 * 1024) -> ET.Element:
+    """Safely parse XML content, strictly disallowing DTD entity expansion (Billion Laughs protection)."""
+    if len(content.encode("utf-8")) > max_bytes:
+        raise ValueError(f"XML payload exceeds maximum allowed size of {max_bytes} bytes.")
+
+    content_upper = content.upper()
+    if "<!DOCTYPE" in content_upper or "<!ENTITY" in content_upper or "SYSTEM" in content_upper:
+        raise ValueError(
+            "XML contains prohibited DTD entity or DOCTYPE declaration (rejected for entity expansion safety)."
+        )
+
+    return ET.fromstring(content)  # noqa: S314
+
+
 def parse_feed_content(content: str) -> ParsedFeed:
     """Detect and parse raw XML/JSON feed content."""
     clean_content = content.strip()
@@ -211,7 +225,7 @@ def parse_feed_content(content: str) -> ParsedFeed:
             raise ValueError(f"Failed to parse JSON Feed: {e}") from e
 
     try:
-        root = ET.fromstring(clean_content)  # noqa: S314
+        root = safe_parse_xml(clean_content)
         tag = root.tag.lower()
         if "rss" in tag or root.find("channel") is not None:
             return parse_rss(root)

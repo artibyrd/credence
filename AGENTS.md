@@ -11,6 +11,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Human Review Before Commits ("Mk1 Eyeball")**: Never execute `git commit` automatically. Always present changes and live verification results for human approval first.
 - **Token Budget & Coexistence**: Prioritize `CREDENCE_GEMINI_API_KEY`. Enforce token budgets and automatic offline circuit-breaker fallbacks (`QUOTA_PRESERVED`) at 30% headroom to protect interactive dev sessions.
 - **Network Ingestion SSRF Guard**: Reject cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback (`127.0.0.1`, `localhost`), and RFC 1918 private subnets unless running hermetic local fixtures (`allow_local=True`).
+- **Red Team Ingestion & Protocol Defense**: XML parsers must reject `<!DOCTYPE` / `<!ENTITY` declarations (Billion Laughs protection). External LLM inputs must be enclosed in `<untrusted_source_text>` containers with prompt injection guard directives. FastMCP and P2P relay endpoints must enforce token-bucket rate limiters.
 - **Context Governance & Progressive Disclosure**: Keep `AGENTS.md` lean (<1,000 tokens) in thematic categories. Place multi-step runbooks in `.agents/skills/` and complete specifications in `docs/`.
 
 ---

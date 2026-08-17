@@ -19,6 +19,7 @@ Exposes:
 from __future__ import annotations
 
 import json
+import time
 from typing import List, Optional
 
 from mcp.server.mcpserver import MCPServer
@@ -37,6 +38,31 @@ from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 from credence.taxonomy_loader import registry
 
 
+class ServerRateLimiter:
+    """In-memory rate limiter per tool to defend against token starvation and burst DoS."""
+
+    def __init__(self, max_requests: int = 60, window_seconds: float = 60.0, max_chars: int = 100_000) -> None:
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.max_chars = max_chars
+        self._calls: List[float] = []
+
+    def check_and_record(self, payload_length: int = 0) -> bool:
+        if payload_length > self.max_chars:
+            raise ValueError(
+                f"Payload size ({payload_length} chars) exceeds maximum allowed limit ({self.max_chars} chars)."
+            )
+        now = time.time()
+        self._calls = [t for t in self._calls if now - t < self.window_seconds]
+        if len(self._calls) >= self.max_requests:
+            return False
+        self._calls.append(now)
+        return True
+
+
+_global_rate_limiter = ServerRateLimiter()
+
+
 def _register_eval_tools(server: MCPServer) -> None:
     """Register evaluation tools."""
     from credence.config import COST_PROFILES, CostProfile
@@ -50,6 +76,8 @@ def _register_eval_tools(server: MCPServer) -> None:
         force_refresh: bool = False,
         profile: Optional[str] = None,
     ) -> str:
+        if not _global_rate_limiter.check_and_record(len(url)):
+            raise ValueError("FastMCP tool rate limit exceeded (maximum 60 requests/minute). Please retry shortly.")
         await init_db()
         prof_cfg = None
         if profile:
@@ -70,6 +98,8 @@ def _register_eval_tools(server: MCPServer) -> None:
         byline: Optional[str] = None,
         profile: Optional[str] = None,
     ) -> str:
+        if not _global_rate_limiter.check_and_record(len(text)):
+            raise ValueError("FastMCP tool rate limit exceeded (maximum 60 requests/minute). Please retry shortly.")
         await init_db()
         content_hash = compute_content_sha256(text)
         simhash_hex = compute_simhash(text)

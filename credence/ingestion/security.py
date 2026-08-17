@@ -19,18 +19,33 @@ _BLOCKED_HOSTNAMES = {
     "instance-data",
     "local",
     "internal",
+    "0.0.0.0",  # noqa: S104
+    "::",
+    "::1",
+    "0",
 }
 
 _VALID_DOMAIN_REGEX = re.compile(r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$")
 
 
 def _is_blocked_ip(ip_obj: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    """Check if IP address is private, loopback, link-local, or reserved."""
-    return ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_reserved or ip_obj.is_multicast
+    """Check if IP address is private, loopback, link-local, unspecified, or reserved."""
+    return (
+        ip_obj.is_private
+        or ip_obj.is_loopback
+        or ip_obj.is_link_local
+        or ip_obj.is_reserved
+        or ip_obj.is_multicast
+        or ip_obj.is_unspecified
+    )
 
 
 def _is_safe_domain(hostname: str, require_resolvable: bool) -> bool:
     """Resolve and validate a domain name."""
+    # Reject raw numeric, hex, or octal hostnames mimicking IPs (e.g., 2130706433, 0x7f000001, 0177.0.0.1)
+    if hostname.isdigit() or hostname.startswith(("0x", "0X")) or re.match(r"^0\d+", hostname):
+        return False
+
     try:
         addr_info = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)
         for _, _, _, _, sockaddr in addr_info:

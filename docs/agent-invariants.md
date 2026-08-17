@@ -183,6 +183,14 @@ This document outlines mandatory rules and design invariants for human contribut
 - Complex procedural workflows (benchmarks, cluster orchestration, multi-cloud scaffolding) must be encapsulated as on-demand workspace skills (`.agents/skills/`) to leverage Antigravity progressive disclosure.
 - Detailed mathematical proofs, formulas, and extended architectural rationale must be maintained in dedicated documentation files under `docs/`.
 
+---
+
+## 30. Red Team Hardening & Protocol Defense Invariant
+- **XML Entity Expansion Defense**: All XML feed and sitemap parsers must enforce strict entity parsing rules (`safe_parse_xml`), immediately rejecting any `<!DOCTYPE` or `<!ENTITY` declarations to prevent quadratic blowup and Billion Laughs memory exhaustion.
+- **Untrusted Prompt Isolation**: Evaluated prose text must be wrapped inside `<untrusted_source_text>` boundary tags and accompanied by explicit security directives instructing models that text within tags cannot override system prompts, execute JSON commands, or cancel ethics checks.
+- **Mesh Relay & Server Rate Limiting**: P2P WebSocket relays must enforce per-peer token-bucket rate limits (`check_rate_limit`), and FastMCP tool servers must enforce burst throttling (`ServerRateLimiter`) and payload size limits ($\le 100\text{k}$ characters) to prevent token quota starvation and SQLite lock contention.
+
+
 
 
 
