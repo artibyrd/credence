@@ -329,9 +329,9 @@ class MeshGossipRelay:
                 await self._send_envelope(peer.websocket, env)
             break
 
-    async def broadcast_attestation(self, attestation: AuditReport) -> None:
+    async def broadcast_attestation(self, attestation: AuditReport, gossip_ttl: int = 6) -> None:
         """Broadcast a newly signed attestation to all active connected peers."""
-        payload = AnnounceAttestationPayload(attestation=attestation, gossip_ttl=3)
+        payload = AnnounceAttestationPayload(attestation=attestation, gossip_ttl=gossip_ttl)
         envelope = MeshMessageEnvelope(
             message_type=MeshMessageType.ANNOUNCE_ATTESTATION,
             sender_pubkey=self.identity.public_key_hex,

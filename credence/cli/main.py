@@ -370,8 +370,17 @@ async def cli_mesh(port: int, seeds: list[str]) -> None:
         await relay.stop()
 
 
+async def cli_benchmark() -> None:
+    """Run the Golden 12 epistemic benchmark across FREE, BALANCED, and ULTRA profiles."""
+    from credence.pipeline.benchmark import render_benchmark_table, run_epistemic_benchmark
+
+    with console.status("[bold green]Executing 'Golden 12' multi-profile benchmark...", spinner="dots"):
+        suite = await run_epistemic_benchmark()
+    render_benchmark_table(suite)
+
+
 def _dispatch_secondary_commands(args: argparse.Namespace) -> None:
-    """Dispatch secondary subcommands (identity, quota, profile, serve, mesh, taxonomy)."""
+    """Dispatch secondary subcommands (identity, quota, profile, serve, mesh, taxonomy, benchmark)."""
     cmd = args.command
     if cmd == "identity":
         cli_identity(args.action)
@@ -386,6 +395,8 @@ def _dispatch_secondary_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
     elif cmd == "taxonomy":
         cli_taxonomy(args.action, args.catalog_id)
+    elif cmd == "benchmark":
+        asyncio.run(cli_benchmark())
 
 
 def _dispatch_command(args: argparse.Namespace) -> None:
@@ -465,6 +476,12 @@ def main() -> None:
     tax_parser = subparsers.add_parser("taxonomy", help="Explore taxonomy catalogs and rules.")
     tax_parser.add_argument("action", choices=["list", "show"], default="list", nargs="?")
     tax_parser.add_argument("catalog_id", nargs="?", default=None)
+
+    # benchmark command
+    subparsers.add_parser(
+        "benchmark",
+        help="Run the 'Golden 12' epistemic benchmark suite across FREE, BALANCED, and ULTRA profiles.",
+    )
 
     if len(sys.argv) == 1:
         # Default to launching TUI if no args provided in interactive terminal

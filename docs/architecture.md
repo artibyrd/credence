@@ -118,4 +118,14 @@ Every audit is cryptographically verifiable:
 ## 7. Developer & Analyst Interfaces
 
 - **Textual TUI Workstation** (`just tui` / `credence tui`): Full-screen interactive terminal workstation featuring live sidebar history, interactive violations data table, reader view, taxonomy browser, token quota monitors, and audit modal.
-- **Rich CLI** (`credence audit`, `credence lookup`, `credence identity`, `credence quota`, `credence taxonomy`): Formatted terminal summaries with colored gauges and tables.
+- **Rich CLI** (`credence audit`, `credence lookup`, `credence identity`, `credence quota`, `credence taxonomy`, `credence benchmark`): Formatted terminal summaries with colored gauges and tables.
+
+---
+
+## 8. Decentralized P2P Mesh & Robust Median Consensus
+
+- **13-Node Heterogeneous Lattice** ($N = 13, d = 4$): Triangulates 3 Ultra anchors, 4 Balanced bridges, and 6 Free relays.
+- **Byzantine Cartel Resilience** ($N \ge 3f + 1, f = 4$): Isolates coordinated 4-node malicious cartels ($30.8\%$ adversarial fraction).
+- **Robust Median Centering**: Measures outlier deviations strictly from the median score ($|S_i - S_{\text{median}}| > 25.0$), completely preventing arithmetic mean-drag attacks.
+- **The "Golden 12" Epistemic Benchmark Suite**: Automated 12-scenario evaluation matrix testing adversarial edge cases across all 3 cost profiles (`just benchmark`).
+- **Host Resource Safety Governor**: Hardware pre-flight memory check auto-scales clusters to protect low-RAM systems (e.g. Raspberry Pis $<2\text{GB}$) alongside hard 128MB container cgroups limits.

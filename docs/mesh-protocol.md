@@ -55,32 +55,66 @@ class MeshMessageEnvelope(BaseModel):
 
 ---
 
-## 4. Bayesian Consensus & Outlier Detection (`consensus.py`)
+## 4. Bayesian Consensus & Robust Median Outlier Detection (`consensus.py`)
 
 When multiple independent mesh nodes audit the same content SHA-256, the `BayesianConsensusAggregator` calculates a confidence-weighted consensus score:
 
-$$\bar{S}_{\text{consensus}} = \frac{\sum_{i=1}^N S_i \times C_i \times R_i \times G_i}{\sum_{i=1}^N C_i \times R_i \times G_i}$$
+$$\bar{S}_{\text{consensus}} = \frac{\sum_{i=1}^N S_i \times W_i}{\sum_{i=1}^N W_i}$$
 
-Where:
+Where the effective peer attestation weight $W_i$ is computed as:
+$$W_i = \max\left(0.01, C_i \times R_i \times \left(0.5 + 0.5 \times G_i\right)\right)$$
+
 - $S_i$: Evaluator suspicion score ($0.0 \dots 100.0$).
 - $C_i$: Evaluator confidence ($0.0 \dots 1.0$).
 - $R_i$: Node peer reputation weight ($1.0$ default).
 - $G_i$: Grounded citation ratio ($\frac{\text{Grounded Citations}}{\text{Total Citations}}$).
 
-### Byzantine Outlier Defense
-If a rogue node attempts to whitewash a deceptive scam ($S_{\text{rogue}} = 0.0$) while honest nodes detect high deception ($S_1 = 65.0, S_2 = 70.0$), the consensus engine:
-1. Detects that $|S_{\text{rogue}} - \bar{S}| > 25.0$ points.
-2. Flags the rogue node's public key in `outlier_nodes`.
-3. Strips the rogue vote from consensus calculations.
+### Robust Median Baseline vs. Arithmetic Mean Drag
+In standard outlier rejection, measuring deviation against the arithmetic weighted mean ($|S_i - \bar{S}_{\text{mean}}| > 25.0$) creates a severe vulnerability in bimodal distributions. When a coordinated Sybil cartel ($f = 4$) colludes with extreme whitewashing scores ($S \approx 0.0$), their votes drag the arithmetic mean downward, causing honest nodes detecting high deception ($S \ge 85.0$) to be erroneously flagged as outliers!
+
+Credence prevents this attack by anchoring outlier detection to the **robust median score** $S_{\text{median}}$:
+$$\text{Delta}_i = |S_i - S_{\text{median}}| > 25.0$$
+
+Because the median is unaffected by extreme bimodal tails under honest quorum ($N \ge 3f + 1$), the baseline remains locked to the honest consensus, and all cartel nodes are cleanly stripped from the final weighted calculation.
 
 ---
 
-## 5. Local 3-Node Cluster Orchestration (`docker-compose.mesh.yml`)
+## 5. 13-Node Heterogeneous Mesh Topology ($N = 13, d = 4 \dots 5$)
 
-The repository includes a ready-to-run 3-node P2P mesh cluster:
+Credence benchmarks its decentralized network against a **13-node heterogeneous small-world lattice** (the mathematical point of diminishing returns):
+
+- **3 `ULTRA` Anchor Hubs** (Nodes 1, 7, 13): NYT / Reuters / institutional fact-checking grade ($16\text{k}$ reasoning tokens).
+- **4 `BALANCED` Bridges** (Nodes 3, 5, 9, 11): Standard developer and community bridges ($1\text{k}-4\text{k}$ tokens).
+- **6 `FREE` Edge Relays** (Nodes 2, 4, 6, 8, 10, 12): Lightweight zero-token signature verification relays.
+
+### Byzantine Cartel Collusion Isolation ($N \ge 3f + 1, f = 4$)
+A 13-node mesh is mathematically resilient against a coordinated **4-node malicious Sybil cartel** ($30.8\%$ malicious fraction) attempting to whitelist deceptive disinformation.
+
+---
+
+## 6. Pathological Cluster Topology Stress Testing
+
+Credence tests 4 edge-case "bad" cluster topologies in [`tests/test_mesh_cluster.py`](file:///home/pendragon/Projects/credence/tests/test_mesh_cluster.py):
+
+1. **Linear Daisy Chain ($d = 12$)**: Tests message propagation across maximum diameter, TTL decrementing ($10 \to 0$), and link death.
+2. **Barbell Chokepoint & Netsplit**: Tests two 6-node clusters separated by a single bridge link ($N_6 \leftrightarrow N_7$), simulating partition divergence and re-convergence on healing.
+3. **Sybil Eclipse Attack**: Tests an honest victim node trapped by a 4-node malicious cartel ($f = 4$) and proves eclipse shattering via a single chord link.
+4. **Star Hub-and-Spoke**: Tests fan-in buffer flooding, rate-limiting governor, and hub crash handling.
+
+---
+
+## 7. Host Resource Safety Governor (Raspberry Pi & Low-RAM Protection)
+
+To protect resource-constrained environments (e.g. Raspberry Pis, lightweight cloud VMs, and CI runners) from kernel OOM panics:
+
+1. **Pre-Flight Hardware Check**: Before launching a cluster, `hardware_guard.py` checks available host RAM:
+   - **$< 2\text{ GB}$ Available RAM**: Automatically limits cluster to a safe 3-node configuration (`CREDENCE_ALLOW_HEAVY_CLUSTER=1` to override).
+   - **$2 - 4\text{ GB}$ Available RAM**: Defaults to 7-node configuration.
+   - **$> 4\text{ GB}$ Available RAM**: Unlocks full 13-node heterogeneous cluster.
+2. **Docker Container Memory Limits**: All containers in `docker-compose.mesh.yml` are strictly capped at `mem_limit: 128m` and `cpus: "0.25"`.
 
 ```bash
-# Start 3-node cluster
+# Start 13-node cluster with automated hardware safety check
 just mesh-cluster-up
 
 # View live peer gossip logs

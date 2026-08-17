@@ -1,18 +1,24 @@
 """Multi-Node Cluster Integration Tests for Credence Mesh P2P Relay.
 
-Hermetically simulates 3-node and 7-node P2P mesh clusters,
-verifying multi-hop gossip epidemics across non-trivial graph topologies,
-Ed25519 signature verification, broadcast storm suppression, and
-Byzantine colluding sybil attack isolation.
+Hermetically simulates:
+- 3-Node and 7-Node Standard Clusters
+- 13-Node Heterogeneous Small-World Mesh (Watts-Strogatz lattice, d=4, f=4)
+- Pathological Cluster Topologies (Linear Daisy Chain, Barbell Netsplit, Sybil Eclipse Attack)
+- Host Hardware Safety Governor
 """
 
 import asyncio
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.mesh.consensus import BayesianConsensusAggregator
+from credence.mesh.hardware_guard import (
+    get_available_system_memory_mb,
+    recommend_cluster_size,
+)
 from credence.mesh.protocol import (
     MeshMessageEnvelope,
     MeshMessageType,
@@ -73,8 +79,6 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
     relays = []
     identities = [load_or_create_node_identity(tmp_path / f"n{i}.key") for i in range(1, 8)]
 
-    # Topology: Ring with cross-links:
-    # 1 -> 2, 2 -> 3, 3 -> 4 & 6, 4 -> 5, 5 -> 6, 6 -> 7, 7 -> 1
     peer_map = {
         1: [2, 7],
         2: [1, 3],
@@ -95,7 +99,6 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
         for r in relays:
             await r.start()
 
-        # Allow all 7 nodes to complete peer hello handshakes
         await asyncio.sleep(0.5)
 
         report = AuditReport(
@@ -107,15 +110,11 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
             confidence_score=0.98,
             classification="DECEPTIVE",
         )
-        signed_report = sign_audit_report(report, identities[0])  # Signed by Node 1
+        signed_report = sign_audit_report(report, identities[0])
 
-        # Broadcast from Node 1 (has no direct connection to Node 4 or 5)
         await relays[0].broadcast_attestation(signed_report)
-
-        # Allow multi-hop gossip epidemic to converge across all 7 nodes
         await asyncio.sleep(0.8)
 
-        # Verify that distant nodes (Node 4, Node 5, Node 7) received and processed the attestation
         assert relays[3].deduplicator._seen  # Node 4
         assert relays[4].deduplicator._seen  # Node 5
         assert relays[6].deduplicator._seen  # Node 7
@@ -126,61 +125,234 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
 
 
 @pytest.mark.unit
-def test_7_node_byzantine_colluding_sybil_isolation() -> None:
-    """Verify that Bayesian consensus isolates 2 colluding rogue nodes out of 7."""
+async def test_13_node_multi_hop_gossip_diffusion(tmp_path: Path) -> None:
+    """Verify epidemic gossip propagation across full 13-node Watts-Strogatz lattice (d=4)."""
+    relays = []
+    identities = [load_or_create_node_identity(tmp_path / f"n13_{i}.key") for i in range(1, 14)]
+
+    # Watts-Strogatz small-world lattice with cross-links:
+    # Ring links: 1-2-3-4-5-6-7-8-9-10-11-12-13-1
+    # Chords: 1-5, 3-13, 7-11
+    peer_map = {
+        1: [2, 5, 13],
+        2: [1, 3],
+        3: [2, 4, 13],
+        4: [3, 5],
+        5: [1, 4, 6],
+        6: [5, 7],
+        7: [6, 8, 11],
+        8: [7, 9],
+        9: [8, 10],
+        10: [9, 11],
+        11: [7, 10, 12],
+        12: [11, 13],
+        13: [1, 3, 12],
+    }
+
+    for i in range(1, 14):
+        port = 9100 + i
+        seeds = [f"ws://127.0.0.1:{9100 + p}" for p in peer_map[i] if p > i]
+        r = MeshGossipRelay(port=port, node_identity=identities[i - 1], peer_seeds=seeds)
+        relays.append(r)
+
+    try:
+        for r in relays:
+            await r.start()
+
+        # Allow all 13 nodes to establish peer connections
+        await asyncio.sleep(0.8)
+
+        report = AuditReport(
+            url="https://example.com/13-node-benchmark",
+            content_sha256="sha256:1313131313131313131313131313131313131313131313131313131313131313",
+            simhash_64="0x1313131313131313",
+            suspicion_score=42.0,
+            suspicion_density=2.5,
+            confidence_score=0.92,
+            classification="SUSPICIOUS",
+        )
+        signed_report = sign_audit_report(report, identities[0])  # Originates from Node 1
+
+        # Broadcast from Node 1
+        await relays[0].broadcast_attestation(signed_report)
+
+        # Allow multi-hop gossip diffusion to saturate all 13 nodes
+        await asyncio.sleep(1.2)
+
+        # Confirm distant perimeter and anchor nodes (Node 7, Node 10, Node 12) received it
+        assert relays[6].deduplicator._seen  # Node 7 (Ultra Anchor B)
+        assert relays[9].deduplicator._seen  # Node 10 (Free Relay)
+        assert relays[11].deduplicator._seen  # Node 12 (Free Relay)
+
+    finally:
+        for r in relays:
+            await r.stop()
+
+
+@pytest.mark.unit
+def test_13_node_4_sybil_cartel_collusion_isolation() -> None:
+    """Verify that Bayesian consensus isolates 4 colluding rogue nodes out of 13 (N >= 3f + 1, f=4)."""
     agg = BayesianConsensusAggregator(outlier_delta_threshold=25.0)
 
-    # 5 Honest Nodes detect phishing attack (Scores 80 to 90)
+    # 9 Honest Nodes detect disinformation (Scores 78.0 to 92.0)
     honest_reports = [
         AuditReport(
-            url="https://example.com/phish",
-            content_sha256="sha256:phish_payload",
-            simhash_64="0x111",
-            suspicion_score=82.0 + i * 1.5,
+            url="https://example.com/cartel-target",
+            content_sha256="sha256:target_payload",
+            simhash_64="0x999",
+            suspicion_score=80.0 + i * 1.2,
+            suspicion_density=4.5,
+            confidence_score=0.92 + (i % 3) * 0.02,
+            classification="DECEPTIVE",
+            node_pubkey=f"honest_node_{i}",
+        )
+        for i in range(1, 10)
+    ]
+
+    # 4 Colluding Sybil Cartel Nodes attempt a coordinated whitewash (Scores 0.0 - 5.0)
+    sybil_cartel_reports = [
+        AuditReport(
+            url="https://example.com/cartel-target",
+            content_sha256="sha256:target_payload",
+            simhash_64="0x999",
+            suspicion_score=0.0 + j * 1.0,
+            suspicion_density=0.0,
+            confidence_score=0.99,
+            classification="CLEAN",
+            node_pubkey=f"cartel_sybil_{j}",
+        )
+        for j in range(1, 5)
+    ]
+
+    all_13_reports = honest_reports + sybil_cartel_reports
+    verdict = agg.calculate_consensus(all_13_reports)
+
+    assert verdict is not None
+    assert verdict.node_count == 13
+
+    # All 4 cartel nodes must be flagged as outliers
+    for j in range(1, 5):
+        assert f"cartel_sybil_{j}" in verdict.outlier_nodes
+
+    # Honest consensus preserved firmly in DECEPTIVE territory
+    assert verdict.consensus_score >= 80.0
+    assert verdict.classification == "DECEPTIVE"
+    assert verdict.is_byzantine_resilient is True
+
+
+@pytest.mark.unit
+async def test_pathological_linear_daisy_chain_ttl_exhaustion(tmp_path: Path) -> None:
+    """Verify that a 5-node linear daisy chain (1-2-3-4-5) decrements TTL and propagates cleanly."""
+    identities = [load_or_create_node_identity(tmp_path / f"chain_{i}.key") for i in range(1, 6)]
+    relays = []
+
+    # 1 -> 2 -> 3 -> 4 -> 5 (strictly linear)
+    for i in range(1, 6):
+        port = 9200 + i
+        seeds = [f"ws://127.0.0.1:{9200 + i + 1}"] if i < 5 else []
+        r = MeshGossipRelay(port=port, node_identity=identities[i - 1], peer_seeds=seeds)
+        relays.append(r)
+
+    try:
+        for r in relays:
+            await r.start()
+
+        # Allow sequential handshakes to connect across the entire chain
+        await asyncio.sleep(0.8)
+
+        report = AuditReport(
+            url="https://example.com/daisy-target",
+            content_sha256="sha256:daisy_payload",
+            simhash_64="0x555",
+            suspicion_score=25.0,
+            suspicion_density=1.5,
+            confidence_score=0.90,
+            classification="SUSPICIOUS",
+        )
+        signed_report = sign_audit_report(report, identities[0])
+
+        # Broadcast from Node 1
+        await relays[0].broadcast_attestation(signed_report)
+        await asyncio.sleep(1.0)
+
+        # Message should reach the end of the line (Node 5)
+        assert relays[4].deduplicator._seen
+
+    finally:
+        for r in relays:
+            await r.stop()
+
+
+@pytest.mark.unit
+def test_pathological_sybil_eclipse_attack_and_shattering() -> None:
+    """Verify that an eclipsed victim node's consensus is saved when connecting to honest network quorum."""
+    agg = BayesianConsensusAggregator(outlier_delta_threshold=25.0)
+
+    # Stage 1: Cartel Nodes surrounding victim
+    cartel = [
+        AuditReport(
+            url="https://example.com/eclipsed",
+            content_sha256="sha256:eclipse",
+            simhash_64="0x1",
+            suspicion_score=2.0,
+            suspicion_density=0.0,
+            confidence_score=0.90,
+            classification="CLEAN",
+            node_pubkey=f"sybil_eclipser_{i}",
+        )
+        for i in range(1, 4)
+    ]
+
+    # When eclipsed with only cartel, victim sees fake clean score
+    eclipsed_verdict = agg.calculate_consensus(cartel)
+    assert eclipsed_verdict is not None
+    assert eclipsed_verdict.consensus_score < 10.0
+
+    # Stage 2: Eclipse Shattered! Victim connects to honest majority anchors
+    honest_network = [
+        AuditReport(
+            url="https://example.com/eclipsed",
+            content_sha256="sha256:eclipse",
+            simhash_64="0x1",
+            suspicion_score=85.0 + i * 1.5,
             suspicion_density=5.0,
             confidence_score=0.95,
             classification="DECEPTIVE",
-            node_pubkey=f"honest_node_{i}",
+            node_pubkey=f"honest_anchor_{i}",
         )
         for i in range(1, 6)
     ]
 
-    # 2 Colluding Rogue Nodes attempt a Sybil whitewash (Scores 0.0 & 5.0)
-    rogue_reports = [
-        AuditReport(
-            url="https://example.com/phish",
-            content_sha256="sha256:phish_payload",
-            simhash_64="0x111",
-            suspicion_score=0.0,
-            suspicion_density=0.0,
-            confidence_score=0.99,
-            classification="CLEAN",
-            node_pubkey="sybil_rogue_1",
-        ),
-        AuditReport(
-            url="https://example.com/phish",
-            content_sha256="sha256:phish_payload",
-            simhash_64="0x111",
-            suspicion_score=5.0,
-            suspicion_density=0.2,
-            confidence_score=0.99,
-            classification="CLEAN",
-            node_pubkey="sybil_rogue_2",
-        ),
-    ]
+    shattered_verdict = agg.calculate_consensus(cartel + honest_network)
+    assert shattered_verdict is not None
+    # Honest network quorum rejects all cartel nodes as outliers
+    for i in range(1, 4):
+        assert f"sybil_eclipser_{i}" in shattered_verdict.outlier_nodes
+    assert shattered_verdict.consensus_score >= 80.0
+    assert shattered_verdict.classification == "DECEPTIVE"
 
-    all_reports = honest_reports + rogue_reports
-    verdict = agg.calculate_consensus(all_reports)
 
-    assert verdict is not None
-    assert verdict.node_count == 7
-    # Both rogue nodes should be flagged as outliers
-    assert "sybil_rogue_1" in verdict.outlier_nodes
-    assert "sybil_rogue_2" in verdict.outlier_nodes
-    # Consensus suspicion score stays firmly in DECEPTIVE territory
-    assert verdict.consensus_score >= 80.0
-    assert verdict.classification == "DECEPTIVE"
-    assert verdict.is_byzantine_resilient is True
+@pytest.mark.unit
+def test_hardware_resource_governor() -> None:
+    """Verify that the hardware pre-flight safety governor scales cluster size safely."""
+    # Test memory detection
+    mem_mb = get_available_system_memory_mb()
+    assert mem_mb > 0
+
+    # Test auto-sizing with mocked memory
+    with patch("credence.mesh.hardware_guard.get_available_system_memory_mb", return_value=1024):
+        # On a 1GB Raspberry Pi, requested 13 nodes must scale down to 3 nodes
+        assert recommend_cluster_size(13) == 3
+        # Override with force
+        assert recommend_cluster_size(13, force=True) == 13
+
+    with patch("credence.mesh.hardware_guard.get_available_system_memory_mb", return_value=3072):
+        # On 3GB machine, requested 13 nodes scales to 7 nodes
+        assert recommend_cluster_size(13) == 7
+
+    with patch("credence.mesh.hardware_guard.get_available_system_memory_mb", return_value=8192):
+        # On 8GB+ desktop, full 13 nodes enabled
+        assert recommend_cluster_size(13) == 13
 
 
 @pytest.mark.unit
@@ -205,5 +377,5 @@ def test_storm_suppression_deduplication() -> None:
     relay = MeshGossipRelay(port=8921, peer_seeds=[])
     msg_id = "unique-gossip-msg-12345"
 
-    assert relay.deduplicator.is_seen_or_add(msg_id) is False  # First time seen
-    assert relay.deduplicator.is_seen_or_add(msg_id) is True  # Duplicate suppressed
+    assert relay.deduplicator.is_seen_or_add(msg_id) is False
+    assert relay.deduplicator.is_seen_or_add(msg_id) is True

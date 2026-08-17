@@ -13,7 +13,22 @@
 4. **Poe's Law Parody & Satire Classification Layer** (`content_type: SATIRE_PARODY` / `is_satire: bool`)
 5. **Future Domain Extensions** (`domain: DOMAIN_SPECIFIC`, e.g. medical claims, financial disclosures)
 
-Credence calculates a calibrated **Suspicion Score & Density Index**, eliminates hallucinations via **Grounded Citation Verification**, cryptographically signs evaluations using an **Ed25519 Node Identity**, gossips signed attestations across a **7-Node P2P Mesh Network**, exposes tools over **FastMCP 2.0**, and deploys to **Google Cloud Run** via **Terraform** with strict cost controls ($15/mo budget ceiling, scale-to-zero).
+Credence calculates a calibrated **Suspicion Score & Density Index**, eliminates hallucinations via **Grounded Citation Verification**, cryptographically signs evaluations using an **Ed25519 Node Identity**, gossips signed attestations across a **13-Node Heterogeneous P2P Mesh Network**, exposes tools over **FastMCP 2.0**, benchmarks against the **"Golden 12" Epistemic Testbed**, and deploys to **Google Cloud Run** via **Terraform** with strict cost controls ($15/mo budget ceiling, scale-to-zero).
+
+---
+
+## The "Golden 12" Epistemic Benchmark Suite
+
+Credence includes an automated cross-profile benchmark suite that evaluates 12 diverse content scenarios across `FREE`, `BALANCED`, and `ULTRA` profiles:
+
+```bash
+# Run the Golden 12 Benchmark Suite
+just benchmark
+# or
+poetry run credence benchmark
+```
+
+See the full rubric and expected verdict matrix in 📘 **[Golden 12 Benchmark Suite Documentation](docs/benchmark-suite.md)**.
 
 ---
 
@@ -82,12 +97,12 @@ poetry run credence serve --transport sse --host 0.0.0.0 --port 8000 --profile=b
 
 ---
 
-## 7-Node Decentralized Credence Mesh Cluster
+## 13-Node Decentralized Credence Mesh Cluster
 
-Run an isolated 7-node P2P mesh cluster with multi-hop gossip routing and Byzantine Sybil fault tolerance:
+Run an isolated 13-node heterogeneous P2P mesh cluster with multi-hop gossip routing ($d = 4$), robust median Bayesian consensus, $f = 4$ Byzantine cartel isolation, and hardware safety governance:
 
 ```bash
-# Start 7-node mesh cluster
+# Start 13-node mesh cluster with hardware pre-flight check
 just mesh-cluster-up
 
 # View live P2P gossip logs
@@ -146,7 +161,7 @@ cp .env.example .env
 
 ### Task Runner Commands (`Justfile`)
 ```bash
-# Run hermetic unit test suite (67 tests, <2s)
+# Run hermetic unit test suite (76 tests, <25s)
 just test
 
 # Run code linters and type checkers (Ruff & Mypy)
@@ -154,6 +169,9 @@ just lint
 
 # Autoformat code with Ruff
 just format
+
+# Run Golden 12 benchmark suite
+just benchmark
 
 # Launch interactive Textual TUI
 just tui
@@ -168,9 +186,10 @@ just docker-test
 ## Core Documentation Suite (`/docs`)
 
 - 📘 **[Architecture Overview](docs/architecture.md)**: End-to-end system topology, dual-capture ingestion, multi-agent pipeline, and cryptographic attestation flow.
+- 📘 **[The "Golden 12" Benchmark Suite](docs/benchmark-suite.md)**: 12 standardized epistemic evaluation fixtures across Free, Balanced, and Ultra operational cost profiles.
 - 📘 **[Operational Cost Profiles](docs/cost-profiles.md)**: Detailed comparison matrix for Free, Balanced, and Ultra operational presets.
 - 📘 **[Cloud Run Deployment & Terraform](docs/deployment-cloudrun.md)**: Step-by-step GCP operator guide with $15/mo budget cap, scale-to-zero, and Cloud Build CI/CD.
-- 📘 **[P2P Mesh Protocol & Consensus](docs/mesh-protocol.md)**: Multi-hop gossip routing, 7-node topology, LRU storm suppression, and Byzantine Sybil collusion isolation.
+- 📘 **[P2P Mesh Protocol & Consensus](docs/mesh-protocol.md)**: Multi-hop gossip routing, 13-node heterogeneous topology, robust median consensus, and Byzantine Sybil cartel isolation ($f = 4$).
 - 📘 **[FastMCP Server & Client Integration](docs/mcp-integration.md)**: FastMCP tool catalogs, dynamic resources, prompts, and Claude Desktop / Antigravity configs.
 - 📘 **[Scoring Calibration & Mathematical Rubrics](docs/scoring-calibration.md)**: Mathematical definitions for linear raw suspicion, exponential saturation curves, density indices, and satire neutralization.
 - 📘 **[Token Safety Governor & Model Tiering](docs/token-governor.md)**: Token budget safety, Gemini 3.7 Flash thinking token accounting, circuit breaker behavior, and quality gates.

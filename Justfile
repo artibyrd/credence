@@ -48,8 +48,13 @@ serve-stdio:
 serve-sse:
     poetry run credence serve --transport sse --port 8000
 
-# Credence Mesh 3-Node Cluster Management
+# Run the Golden 12 epistemic cross-profile benchmark
+benchmark:
+    poetry run credence benchmark
+
+# Credence Mesh 13-Node Heterogeneous Cluster Management
 mesh-cluster-up:
+    poetry run python -c "from credence.mesh.hardware_guard import recommend_cluster_size; recommend_cluster_size(13)"
     docker compose -f docker-compose.mesh.yml up -d --build
 
 mesh-cluster-down:
@@ -61,3 +66,4 @@ mesh-cluster-logs:
 # Run fastmcp dev server
 dev:
     poetry run credence serve --transport sse --port 8000
+

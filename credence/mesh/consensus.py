@@ -88,16 +88,21 @@ class BayesianConsensusAggregator:
                 }
             )
 
-        # Step 2: Initial weighted mean score
-        total_weight = sum(p["weight"] for p in peer_meta)
-        initial_weighted_score = sum(p["score"] * p["weight"] for p in peer_meta) / total_weight
+        # Step 2: Reference Median Score (Robust to Byzantine Skew)
+        sorted_scores = sorted(p["score"] for p in peer_meta)
+        mid = len(sorted_scores) // 2
+        median_score = (
+            (sorted_scores[mid - 1] + sorted_scores[mid]) / 2.0
+            if len(sorted_scores) % 2 == 0
+            else float(sorted_scores[mid])
+        )
 
-        # Step 3: Outlier Detection (deviates > outlier_delta_threshold from weighted mean)
+        # Step 3: Outlier Detection (deviates > outlier_delta_threshold from robust median)
         outlier_pubkeys: List[str] = []
         valid_peers: List[Dict[str, Any]] = []
 
         for p in peer_meta:
-            delta = abs(p["score"] - initial_weighted_score)
+            delta = abs(p["score"] - median_score)
             if delta > self.outlier_delta_threshold and len(peer_meta) >= 3:
                 p["is_outlier"] = True
                 outlier_pubkeys.append(p["pubkey"])

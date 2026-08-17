@@ -67,8 +67,8 @@ This document outlines mandatory rules and design invariants for human contribut
 
 ---
 
-## 11. Mesh Network Topology & Multi-Hop Testing ($N \ge 7$)
-- Realistic mesh testing requires $N \ge 7$ nodes arranged in non-trivial graph topologies ($d \ge 3$) to verify relay TTL decrements and $N \ge 3f + 1$ ($f = 2$) Byzantine Sybil collusion isolation.
+## 11. Mesh Network Topology & Cartel Resilience ($N = 13, f = 4$)
+- Comprehensive mesh testing requires $N = 13$ nodes in a Watts-Strogatz small-world lattice ($d = 4$) to verify relay TTL decrements, 4 pathological topologies (Daisy Chain, Barbell Netsplit, Sybil Eclipse, Star Flooding), and $N \ge 3f + 1$ ($f = 4$) Byzantine Sybil cartel isolation.
 
 ---
 
@@ -83,3 +83,8 @@ This document outlines mandatory rules and design invariants for human contribut
 - Production Cloud Run v2 services must configure `min_instance_count = 0` (scale-to-zero), `cpu_idle = true`, and resource limits dynamically tuned to the active cost profile.
 - GCP projects must configure a **$15.00 USD/month Cloud Billing Budget ceiling** (`google_billing_budget`) with automated 50%, 80%, and 100% threshold alarms.
 - All API keys must be referenced securely through Google Secret Manager (`CREDENCE_GEMINI_API_KEY`).
+
+---
+
+## 14. Host Resource Safety & Pre-Flight Governor Invariant
+- Local multi-node cluster orchestration must run pre-flight memory checks via `hardware_guard.py` (throttling to $\le 3$ nodes on $< 2\text{GB}$ RAM hosts like Raspberry Pis) and enforce hard `mem_limit: 128m` Docker cgroups limits per container.
