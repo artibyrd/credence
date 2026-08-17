@@ -104,3 +104,15 @@ This document outlines mandatory rules and design invariants for human contribut
 
 ## 17. Attestation Timestamp & Canonical Payload Precision Invariant
 - When persisting signed `AuditReport` models to SQLModel database tables (`AuditRecord`) and reconstructing them for export or verification (`credence verify-file`), explicitly preserve the exact signed `audited_at` timestamp with timezone awareness (`UTC`) to guarantee 100% cryptographic signature validity under RFC 8785.
+
+---
+
+## 18. Epistemic Node Quality & Seed Signature Invariant
+- Peer node reputation must strictly evaluate the 5-factor quality equation ($Q_i = 0.25 U_i + 0.30 C_i + 0.25 G_i + 0.10 T_i + 0.10 K_i$).
+- Remote bootstrap seed manifests (`peers.json`) fetched from `seeds.credence.nexus` or any mirror MUST be cryptographically verified against the network root Ed25519 public key using RFC 8785 canonical bytes before adopting peer addresses into active routing tables.
+
+---
+
+## 19. Gossip Envelope Signature Preservation & Invariant Normalization
+- When relaying or re-broadcasting gossip envelopes, intermediate mesh relay nodes must NEVER re-sign an envelope with their local private key if `envelope.signature` is already present from the originating node. Overwriting original signatures causes downstream signature verification failures (`Received message with INVALID envelope signature`) across multi-hop small-world lattices.
+- When packing payloads into `MeshMessageEnvelope`, always normalize inner Pydantic models using `model_dump(mode="json")` and provide a fallback datetime serializer in `get_canonical_bytes()` to guarantee bitwise deterministic Ed25519 signing across heterogeneous serialization boundaries.

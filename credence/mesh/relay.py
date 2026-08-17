@@ -114,6 +114,16 @@ class MeshGossipRelay:
         )
         self._server = await websockets.serve(self._handle_inbound_connection, self.host, self.port)
 
+        # Discover dynamic seeds if none configured explicitly
+        if not self.peer_seeds:
+            from credence.mesh.discovery import BootstrapDiscovery
+
+            discovery = BootstrapDiscovery()
+            try:
+                self.peer_seeds = await discovery.discover_peers()
+            except Exception as e:
+                logger.debug(f"Bootstrap discovery skipped: {e}")
+
         # Connect to seed peers
         for seed_url in self.peer_seeds:
             task = asyncio.create_task(self._connect_to_peer_loop(seed_url))
@@ -159,9 +169,10 @@ class MeshGossipRelay:
             return False
 
     async def _send_envelope(self, websocket: Any, envelope: MeshMessageEnvelope) -> None:
-        """Sign and transmit an envelope over a WebSocket."""
-        signed = self._sign_envelope(envelope)
-        await websocket.send(signed.model_dump_json())
+        """Sign and transmit an envelope over a WebSocket if not already signed."""
+        if not envelope.signature:
+            envelope = self._sign_envelope(envelope)
+        await websocket.send(envelope.model_dump_json())
 
     async def _handle_inbound_connection(self, websocket: Any) -> None:
         """Handle incoming WebSocket peer connection."""
@@ -181,7 +192,7 @@ class MeshGossipRelay:
             env = MeshMessageEnvelope(
                 message_type=MeshMessageType.PEER_HELLO,
                 sender_pubkey=self.identity.public_key_hex,
-                payload=hello_payload.model_dump(),
+                payload=hello_payload.model_dump(mode="json"),
             )
             await self._send_envelope(websocket, env)
 
@@ -219,7 +230,7 @@ class MeshGossipRelay:
                     env = MeshMessageEnvelope(
                         message_type=MeshMessageType.PEER_HELLO,
                         sender_pubkey=self.identity.public_key_hex,
-                        payload=hello_payload.model_dump(),
+                        payload=hello_payload.model_dump(mode="json"),
                     )
                     await self._send_envelope(ws, env)
 
@@ -304,7 +315,7 @@ class MeshGossipRelay:
             rebroadcast_env = MeshMessageEnvelope(
                 message_type=MeshMessageType.ANNOUNCE_ATTESTATION,
                 sender_pubkey=self.identity.public_key_hex,
-                payload=announce.model_dump(),
+                payload=announce.model_dump(mode="json"),
             )
             self.deduplicator.is_seen_or_add(rebroadcast_env.message_id)
             await self._broadcast_envelope(rebroadcast_env, exclude_peer=peer)
@@ -324,7 +335,7 @@ class MeshGossipRelay:
                 env = MeshMessageEnvelope(
                     message_type=MeshMessageType.ATTESTATION_RESPONSE,
                     sender_pubkey=self.identity.public_key_hex,
-                    payload=resp_payload.model_dump(),
+                    payload=resp_payload.model_dump(mode="json"),
                 )
                 await self._send_envelope(peer.websocket, env)
             break
@@ -335,7 +346,7 @@ class MeshGossipRelay:
         envelope = MeshMessageEnvelope(
             message_type=MeshMessageType.ANNOUNCE_ATTESTATION,
             sender_pubkey=self.identity.public_key_hex,
-            payload=payload.model_dump(),
+            payload=payload.model_dump(mode="json"),
         )
         self.deduplicator.is_seen_or_add(envelope.message_id)
         await self._broadcast_envelope(envelope)

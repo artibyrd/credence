@@ -15,8 +15,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import sys
-from typing import Optional
+from typing import List, Optional
 
 from rich.console import Console
 from rich.panel import Panel
@@ -617,6 +618,218 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
     return False
 
 
+async def cli_seeds(
+    action: str = "fetch",
+    url_or_path: Optional[str] = None,
+    output_path: Optional[str] = None,
+    valid_hours: int = 24,
+) -> None:
+    """Manage, fetch, generate, and cryptographically verify P2P bootstrap seed manifests."""
+    from pathlib import Path
+
+    from credence.identity import load_or_create_node_identity
+    from credence.mesh.discovery import BootstrapDiscovery
+    from credence.mesh.seed import (
+        BootstrapSeedFile,
+        SeedNodeEntry,
+        generate_seed_file,
+        verify_seed_file,
+    )
+    from credence.models import PeerMetricRecord
+
+    target_url = url_or_path or settings.DEFAULT_SEED_URL
+
+    if action == "fetch":
+        console.print(f"[bold cyan]Fetching bootstrap seed manifest from:[/bold cyan] {target_url}")
+        discovery = BootstrapDiscovery(seed_url=target_url)
+        peer_urls = await discovery.discover_peers()
+
+        table = Table(
+            title=f"[bold]Discovered Bootstrap Seed Peers ({len(peer_urls)})[/bold]",
+            show_header=True,
+            header_style="bold cyan",
+        )
+        table.add_column("Index", style="dim", justify="right")
+        table.add_column("WebSocket Endpoint URL", style="bold green")
+
+        for idx, url in enumerate(peer_urls, 1):
+            table.add_row(str(idx), url)
+        console.print(table)
+
+        if output_path and peer_urls:
+            Path(output_path).write_text(json.dumps(peer_urls, indent=2), encoding="utf-8")
+            console.print(f"[green]Saved {len(peer_urls)} peer URLs to:[/green] {output_path}")
+
+    elif action == "generate":
+        await init_db()
+        identity = load_or_create_node_identity()
+        candidates: List[SeedNodeEntry] = []
+
+        async for session in get_session():
+            stmt = select(PeerMetricRecord).order_by(col(PeerMetricRecord.quality_score).desc()).limit(20)
+            records = (await session.exec(stmt)).all()
+            for r in records:
+                candidates.append(
+                    SeedNodeEntry(
+                        node_pubkey=r.node_pubkey,
+                        node_alias=r.node_alias,
+                        ws_url=r.ws_url,
+                        quality_score=r.quality_score,
+                        uptime_pct=100.0 * (r.successful_heartbeats / max(1, r.total_heartbeats_sent)),
+                        region="us-central1",
+                    )
+                )
+
+        # If no DB records, include local node identity as initial bootstrap seed entry
+        if not candidates:
+            candidates.append(
+                SeedNodeEntry(
+                    node_pubkey=identity.public_key_hex,
+                    node_alias="local-root-seed",
+                    ws_url=f"ws://{settings.MESH_HOST}:{settings.MESH_PORT}",
+                    quality_score=1.0,
+                    uptime_pct=100.0,
+                    region="us-central1",
+                )
+            )
+
+        manifest = generate_seed_file(
+            nodes=candidates,
+            identity=identity,
+            valid_hours=valid_hours,
+            canonical_domain="https://seeds.credence.nexus/peers.json",
+        )
+
+        out_file = Path(output_path or "seeds.json")
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        out_file.write_text(json.dumps(manifest.model_dump(mode="json"), indent=2), encoding="utf-8")
+
+        console.print(
+            Panel(
+                f"[bold green]Generated and Signed Bootstrap Seed Manifest[/bold green]\n\n"
+                f"- [bold]Target File:[/bold]        {out_file.absolute()}\n"
+                f"- [bold]Canonical Domain:[/bold]   {manifest.canonical_domain}\n"
+                f"- [bold]Seed Nodes Included:[/bold]{len(manifest.seed_nodes)}\n"
+                f"- [bold]Valid Duration:[/bold]     {valid_hours} hours (expires: {manifest.expires_at.isoformat()})\n"
+                f"- [bold]Root Signer Pubkey:[/bold] [cyan]{manifest.root_pubkey}[/cyan]\n"
+                f"- [bold]Signature Hex:[/bold]      [dim]{(manifest.root_signature or '')[:32]}...[/dim]",
+                title="[bold]P2P Bootstrap Seed Manifest[/bold]",
+                border_style="green",
+            )
+        )
+
+    elif action == "verify":
+        file_path = Path(url_or_path or "seeds.json")
+        if not file_path.exists():
+            console.print(f"[bold red]Seed file not found:[/bold red] {file_path}")
+            return
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+        manifest = BootstrapSeedFile.model_validate(data)
+        is_valid = verify_seed_file(manifest)
+
+        status_text = "✅ CRYPTOGRAPHICALLY VALID" if is_valid else "❌ INVALID SIGNATURE OR EXPIRED"
+        status_style = "bold green" if is_valid else "bold red"
+
+        console.print(
+            Panel(
+                f"[bold]File:[/bold]               {file_path}\n"
+                f"[bold]Canonical Domain:[/bold]   {manifest.canonical_domain}\n"
+                f"[bold]Root Pubkey:[/bold]        [cyan]{manifest.root_pubkey}[/cyan]\n"
+                f"[bold]Generated At:[/bold]       {manifest.generated_at.isoformat()}\n"
+                f"[bold]Expires At:[/bold]         {manifest.expires_at.isoformat()}\n"
+                f"[bold]Seed Nodes Count:[/bold]   {len(manifest.seed_nodes)}\n\n"
+                f"[{status_style}]{status_text}[/{status_style}]",
+                title="[bold]Seed Manifest Verification[/bold]",
+                border_style="green" if is_valid else "red",
+            )
+        )
+
+
+async def cli_rank() -> None:
+    """Display Rich terminal leaderboard of mesh nodes ranked by the 5-factor quality score."""
+    from credence.mesh.quality import NodeMetrics, rank_nodes
+    from credence.models import PeerMetricRecord
+
+    await init_db()
+    metrics_list: List[NodeMetrics] = []
+
+    async for session in get_session():
+        stmt = select(PeerMetricRecord)
+        records = (await session.exec(stmt)).all()
+        for r in records:
+            metrics_list.append(
+                NodeMetrics(
+                    node_pubkey=r.node_pubkey,
+                    node_alias=r.node_alias,
+                    ws_url=r.ws_url,
+                    total_heartbeats_sent=r.total_heartbeats_sent,
+                    successful_heartbeats=r.successful_heartbeats,
+                    average_latency_ms=r.average_latency_ms,
+                    total_attestations_evaluated=r.total_attestations_evaluated,
+                    median_score_deviations_sum=r.median_score_deviations_sum,
+                    grounded_citations_count=r.grounded_citations_count,
+                    total_citations_count=r.total_citations_count,
+                    has_valid_catalog_hashes=r.has_valid_catalog_hashes,
+                )
+            )
+
+    if not metrics_list:
+        # Create representative sample for demonstration if database is empty
+        identity = load_or_create_node_identity()
+        metrics_list.append(
+            NodeMetrics(
+                node_pubkey=identity.public_key_hex,
+                node_alias="local-node",
+                ws_url=f"ws://{settings.MESH_HOST}:{settings.MESH_PORT}",
+                total_heartbeats_sent=100,
+                successful_heartbeats=100,
+                average_latency_ms=25.0,
+                total_attestations_evaluated=12,
+                median_score_deviations_sum=1.2,
+                grounded_citations_count=15,
+                total_citations_count=15,
+                has_valid_catalog_hashes=True,
+            )
+        )
+
+    ranked = rank_nodes(metrics_list, top_k=25)
+
+    table = Table(
+        title="[bold]Credence Epistemic Node Quality Leaderboard ($Q_i$)[/bold]",
+        show_header=True,
+        header_style="bold magenta",
+    )
+    table.add_column("Rank", justify="right", style="dim")
+    table.add_column("Node Alias", style="bold cyan")
+    table.add_column("Pubkey", style="dim")
+    table.add_column("Endpoint URL", style="green")
+    table.add_column("Q_i Total", justify="right", style="bold yellow")
+    table.add_column("Uptime (25%)", justify="right")
+    table.add_column("Concord (30%)", justify="right")
+    table.add_column("Ground (25%)", justify="right")
+    table.add_column("Tax (10%)", justify="right")
+    table.add_column("Age (10%)", justify="right")
+    table.add_column("Status", justify="center")
+
+    for idx, s in enumerate(ranked, 1):
+        status_label = "[bold green]SEED CANDIDATE[/bold green]" if s.is_seed_candidate else "[dim]PEER[/dim]"
+        table.add_row(
+            f"#{idx}",
+            s.node_alias,
+            f"{s.node_pubkey[:12]}...",
+            s.ws_url,
+            f"{s.quality_score:.4f}",
+            f"{s.uptime_factor:.2f}",
+            f"{s.concordance_factor:.2f}",
+            f"{s.grounding_factor:.2f}",
+            f"{s.taxonomy_factor:.2f}",
+            f"{s.longevity_factor:.2f}",
+            status_label,
+        )
+
+    console.print(table)
+
+
 def _dispatch_utility_commands(args: argparse.Namespace) -> None:
     """Dispatch inspection and maintenance subcommands."""
     cmd = args.command
@@ -634,6 +847,17 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
     elif cmd == "db-clean":
         asyncio.run(cli_db_clean(retention_days=args.retention_days))
+    elif cmd == "seeds":
+        asyncio.run(
+            cli_seeds(
+                action=args.action,
+                url_or_path=args.url or args.path,
+                output_path=args.output,
+                valid_hours=getattr(args, "valid_hours", 24),
+            )
+        )
+    elif cmd == "rank":
+        asyncio.run(cli_rank())
 
 
 def _dispatch_command(args: argparse.Namespace) -> None:
@@ -748,6 +972,50 @@ def main() -> None:
         type=int,
         default=30,
         help="Retention window in days (default: 30).",
+    )
+
+    # seeds command
+    seeds_parser = subparsers.add_parser(
+        "seeds", help="Fetch, generate, or verify cryptographically signed bootstrap seed manifests."
+    )
+    seeds_parser.add_argument(
+        "action",
+        choices=["fetch", "generate", "verify"],
+        default="fetch",
+        nargs="?",
+        help="Action to perform on seeds.",
+    )
+    seeds_parser.add_argument(
+        "--url",
+        "-u",
+        type=str,
+        default=None,
+        help="Target seed file URL or path for fetch/verify.",
+    )
+    seeds_parser.add_argument(
+        "--path",
+        type=str,
+        default=None,
+        help="Path for verify action.",
+    )
+    seeds_parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=None,
+        help="Output filepath for generated/fetched seeds.",
+    )
+    seeds_parser.add_argument(
+        "--valid-hours",
+        type=int,
+        default=24,
+        help="Validity duration in hours for generated seed manifest (default: 24).",
+    )
+
+    # rank command
+    subparsers.add_parser(
+        "rank",
+        help="Display Rich terminal leaderboard of mesh nodes ranked by the 5-factor quality score ($Q_i$).",
     )
 
     if len(sys.argv) == 1:

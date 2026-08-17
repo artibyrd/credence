@@ -88,6 +88,11 @@ class MeshMessageEnvelope(BaseModel):
         """Serialize envelope payload deterministically for Ed25519 signing/verification."""
         import json
 
+        def _json_default(obj: Any) -> str:
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            return str(obj)
+
         payload_data = {
             "message_id": self.message_id,
             "message_type": self.message_type.value,
@@ -95,4 +100,4 @@ class MeshMessageEnvelope(BaseModel):
             "timestamp": self.timestamp.isoformat(),
             "payload": self.payload,
         }
-        return json.dumps(payload_data, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return json.dumps(payload_data, sort_keys=True, separators=(",", ":"), default=_json_default).encode("utf-8")

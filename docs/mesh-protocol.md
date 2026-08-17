@@ -123,3 +123,27 @@ just mesh-cluster-logs
 # Stop cluster
 just mesh-cluster-down
 ```
+
+---
+
+## 8. P2P Bootstrap Seed Manifest & 5-Factor Node Quality ($Q_i$)
+
+Credence eliminates centralized bootstrap gateways using cryptographically verifiable seed manifests (`peers.json`) and an epistemic node ranking engine.
+
+### 5-Factor Quality Scoring Equation
+$$Q_i = 0.25 U_i + 0.30 C_i + 0.25 G_i + 0.10 T_i + 0.10 K_i$$
+
+- **$U_i$ (Uptime & Latency, 25%)**: Heartbeat success ratio discounted for high latency.
+- **$C_i$ (Consensus Concordance, 30%)**: Proximity to network Robust Median; flags Sybil cartels as outliers.
+- **$G_i$ (Quote Grounding, 25%)**: Ratio of DOM/text-grounded citations; drops to 0 for hallucinating nodes.
+- **$T_i$ (Taxonomy Currency, 10%)**: Matching official catalog SHA-256 hashes.
+- **$K_i$ (Key Longevity, 10%)**: Damps unproven "burner" identities via logarithmic age scaling.
+
+### 4-Tier Multi-Source Discovery Sequence
+1. **Tier 1 (SQLite Cache)**: Connects to known high-quality peers in local database.
+2. **Tier 2 (LAN UDP Beacon)**: Broadcasts/listens on multicast UDP port `8766` for local subnet peers.
+3. **Tier 3 (Signed HTTPS Seed)**: Fetches and verifies `https://seeds.credence.nexus/peers.json` against trusted root Ed25519 key.
+4. **Tier 4 (Static Fallback)**: Hardcoded seed gateways (`PEER_SEEDS`).
+
+See full protocol documentation in 📘 **[Bootstrap Seeds & Node Quality ($Q_i$)](docs/bootstrap-seeds.md)**.
+

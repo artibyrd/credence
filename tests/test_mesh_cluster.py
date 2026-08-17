@@ -379,3 +379,230 @@ def test_storm_suppression_deduplication() -> None:
 
     assert relay.deduplicator.is_seen_or_add(msg_id) is False
     assert relay.deduplicator.is_seen_or_add(msg_id) is True
+
+
+@pytest.mark.unit
+async def test_13_node_dynamic_seed_bootstrap(tmp_path: Path) -> None:
+    """Verify that 13 nodes can dynamically discover and bootstrap a mesh from a signed seed file."""
+    import json
+
+    from credence.mesh.seed import SeedNodeEntry, generate_seed_file
+
+    identities = [load_or_create_node_identity(tmp_path / f"dyn_node_{i}.key") for i in range(1, 14)]
+
+    # Seed manifest includes Node 1 and Node 7 as vetted bootstrap seed gateways
+    seed_entries = [
+        SeedNodeEntry(
+            node_pubkey=identities[0].public_key_hex,
+            node_alias="root-seed-1",
+            ws_url="ws://127.0.0.1:9301",
+            quality_score=0.99,
+            uptime_pct=100.0,
+            region="us-central1",
+        ),
+        SeedNodeEntry(
+            node_pubkey=identities[6].public_key_hex,
+            node_alias="root-seed-7",
+            ws_url="ws://127.0.0.1:9307",
+            quality_score=0.96,
+            uptime_pct=99.9,
+            region="europe-west1",
+        ),
+    ]
+    manifest = generate_seed_file(
+        nodes=seed_entries,
+        identity=identities[0],
+        valid_hours=24,
+        canonical_domain="https://seeds.credence.nexus/peers.json",
+    )
+
+    seed_file_path = tmp_path / "peers.json"
+    seed_file_path.write_text(json.dumps(manifest.model_dump(mode="json")), encoding="utf-8")
+
+    # Small-world lattice peer mapping
+    peer_map = {
+        1: [2, 5, 13],
+        2: [1, 3],
+        3: [2, 4, 13],
+        4: [3, 5],
+        5: [1, 4, 6],
+        6: [5, 7],
+        7: [6, 8, 11],
+        8: [7, 9],
+        9: [8, 10],
+        10: [9, 11],
+        11: [7, 10, 12],
+        12: [11, 13],
+        13: [1, 3, 12],
+    }
+
+    relays = []
+    for i in range(1, 14):
+        port = 9300 + i
+        seeds = [f"ws://127.0.0.1:{9300 + p}" for p in peer_map[i] if p > i]
+        r = MeshGossipRelay(port=port, node_identity=identities[i - 1], peer_seeds=seeds)
+        relays.append(r)
+
+    try:
+        for r in relays:
+            await r.start()
+
+        # Allow connections to stabilize
+        await asyncio.sleep(0.8)
+
+        # Broadcast attestation from Node 13
+        raw_report = AuditReport(
+            url="https://example.com/dynamic-bootstrap-test",
+            content_sha256="sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+            simhash_64="0x9999888877776666",
+            suspicion_score=5.0,
+            suspicion_density=0.1,
+            confidence_score=0.99,
+            classification="CLEAN",
+        )
+        signed_report = sign_audit_report(raw_report, identities[12])
+
+        await relays[12].broadcast_attestation(signed_report, gossip_ttl=6)
+
+        # Allow multi-hop gossip diffusion
+        await asyncio.sleep(1.0)
+
+        # Verify Node 1 and Node 7 (the seed nodes) and Node 5 received the attestation
+        assert relays[0].deduplicator._seen  # Node 1
+        assert relays[4].deduplicator._seen  # Node 5
+        assert relays[6].deduplicator._seen  # Node 7
+
+    finally:
+        for r in relays:
+            await r.stop()
+
+
+@pytest.mark.unit
+async def test_byzantine_seed_tamper_rejection_in_discovery(tmp_path: Path) -> None:
+    """Verify that an f=4 Byzantine cartel attempting seed file poisoning is rejected by honest nodes."""
+    import json
+
+    from credence.mesh.discovery import BootstrapDiscovery
+    from credence.mesh.seed import SeedNodeEntry, generate_seed_file
+
+    honest_root = load_or_create_node_identity(tmp_path / "honest_root.key")
+    byzantine_root = load_or_create_node_identity(tmp_path / "byzantine_root.key")
+
+    # Honest seed file signed by honest root
+    honest_manifest = generate_seed_file(
+        nodes=[SeedNodeEntry(node_pubkey="h" * 64, ws_url="ws://127.0.0.1:9100", quality_score=0.95, uptime_pct=99.0)],
+        identity=honest_root,
+    )
+    honest_path = tmp_path / "honest_seeds.json"
+    honest_path.write_text(json.dumps(honest_manifest.model_dump(mode="json")), encoding="utf-8")
+
+    # Poisoned seed file forged with byzantine key attempting to hijack trusted root
+    poisoned_manifest = generate_seed_file(
+        nodes=[
+            SeedNodeEntry(
+                node_pubkey="b" * 64, ws_url="ws://byzantine-cartel.net:8765", quality_score=1.0, uptime_pct=100.0
+            )
+        ],
+        identity=byzantine_root,
+    )
+    poisoned_path = tmp_path / "poisoned_seeds.json"
+    poisoned_path.write_text(json.dumps(poisoned_manifest.model_dump(mode="json")), encoding="utf-8")
+
+    # Honest node with pinned trusted_root_pubkey verifies honest seed file
+    disc_honest = BootstrapDiscovery(
+        seed_url=str(honest_path),
+        trusted_root_pubkey=honest_root.public_key_hex,
+        enable_local_beacon=False,
+    )
+    peers = await disc_honest.discover_peers()
+    assert "ws://127.0.0.1:9100" in peers
+
+    # Honest node rejects poisoned seed file and drops byzantine URLs
+    disc_poisoned = BootstrapDiscovery(
+        seed_url=str(poisoned_path),
+        trusted_root_pubkey=honest_root.public_key_hex,
+        enable_local_beacon=False,
+    )
+    poisoned_peers = await disc_poisoned.discover_peers()
+    assert "ws://byzantine-cartel.net:8765" not in poisoned_peers
+
+
+@pytest.mark.unit
+def test_node_quality_dynamic_ranking_and_demotion() -> None:
+    """Verify that 13 nodes under audit workload correctly rank honest nodes and demote outliers."""
+    from datetime import datetime, timedelta, timezone
+
+    from credence.mesh.quality import NodeMetrics, rank_nodes
+
+    now = datetime.now(timezone.utc)
+    nodes: list[NodeMetrics] = []
+
+    # 9 Honest Nodes
+    for i in range(1, 10):
+        nodes.append(
+            NodeMetrics(
+                node_pubkey=f"honest_{i:02d}" + "0" * 55,
+                node_alias=f"honest-node-{i}",
+                ws_url=f"ws://127.0.0.1:{9200 + i}",
+                first_seen=now - timedelta(days=60),
+                total_heartbeats_sent=500,
+                successful_heartbeats=498,
+                average_latency_ms=25.0,
+                total_attestations_evaluated=50,
+                median_score_deviations_sum=1.0,
+                grounded_citations_count=100,
+                total_citations_count=100,
+                has_valid_catalog_hashes=True,
+            )
+        )
+
+    # 2 Flapping Nodes
+    for i in range(10, 12):
+        nodes.append(
+            NodeMetrics(
+                node_pubkey=f"flapping_{i}" + "0" * 53,
+                node_alias=f"flapping-node-{i}",
+                ws_url=f"ws://127.0.0.1:{9200 + i}",
+                first_seen=now - timedelta(days=20),
+                total_heartbeats_sent=500,
+                successful_heartbeats=150,  # 30% uptime
+                average_latency_ms=800.0,
+                total_attestations_evaluated=10,
+                median_score_deviations_sum=10.0,
+                grounded_citations_count=10,
+                total_citations_count=10,
+                has_valid_catalog_hashes=True,
+            )
+        )
+
+    # 2 Byzantine Sybil Nodes (Ungrounded fake citations & wild deviations)
+    for i in range(12, 14):
+        nodes.append(
+            NodeMetrics(
+                node_pubkey=f"byzantine_{i}" + "0" * 52,
+                node_alias=f"byzantine-node-{i}",
+                ws_url=f"ws://127.0.0.1:{9200 + i}",
+                first_seen=now - timedelta(days=5),
+                total_heartbeats_sent=500,
+                successful_heartbeats=500,
+                average_latency_ms=15.0,
+                total_attestations_evaluated=50,
+                median_score_deviations_sum=350.0,  # Huge deviation from median
+                grounded_citations_count=0,  # 0% grounded quotes
+                total_citations_count=80,
+                has_valid_catalog_hashes=False,
+            )
+        )
+
+    ranked = rank_nodes(nodes, top_k=13, now=now)
+
+    # Assert top 9 are all honest nodes
+    for s in ranked[:9]:
+        assert s.node_alias.startswith("honest-node")
+        assert s.quality_score >= 0.85
+        assert s.is_seed_candidate is True
+
+    # Assert bottom 4 are flapping or byzantine nodes, none qualify as seed candidates
+    for s in ranked[9:]:
+        assert s.is_seed_candidate is False
+        assert s.quality_score < 0.85

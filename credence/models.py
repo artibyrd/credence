@@ -118,3 +118,30 @@ class TokenUsageRecord(SQLModel, table=True):
     estimated_cost_usd: float = Field(default=0.0, description="Estimated cost in USD")
     caller: str = Field(default="specialist", index=True, description="Subagent caller name")
     was_escalated: bool = Field(default=False, description="Whether this call was an escalated evaluation")
+
+
+class PeerMetricRecord(SQLModel, table=True):
+    """Stores observed peer node quality metrics and reputation history."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    node_pubkey: str = Field(index=True, unique=True, description="Ed25519 public key hex of the peer node")
+    node_alias: str = Field(default="credence-node", description="Human-readable node label")
+    ws_url: str = Field(description="WebSocket endpoint URL for the peer")
+    last_seen: datetime = Field(
+        default_factory=utc_now, index=True, description="Last successful communication timestamp"
+    )
+    first_seen: datetime = Field(default_factory=utc_now, description="First recorded appearance of node identity")
+    total_heartbeats_sent: int = Field(default=0, description="Total ping/heartbeat attempts")
+    successful_heartbeats: int = Field(default=0, description="Successful pong/heartbeat responses")
+    average_latency_ms: float = Field(default=100.0, description="Exponential moving average latency in milliseconds")
+    total_attestations_evaluated: int = Field(default=0, description="Number of consensus rounds participated in")
+    median_score_deviations_sum: float = Field(
+        default=0.0, description="Accumulated absolute deviation from robust median"
+    )
+    grounded_citations_count: int = Field(default=0, description="Verified verbatim cited quotes")
+    total_citations_count: int = Field(default=0, description="Total cited quotes submitted by peer")
+    has_valid_catalog_hashes: bool = Field(default=True, description="True if peer runs matching taxonomy versions")
+    quality_score: float = Field(default=0.5, description="Composite calculated quality score (0.0 to 1.0)")
+    is_seed_candidate: bool = Field(
+        default=False, index=True, description="True if node qualifies as a top seed candidate"
+    )

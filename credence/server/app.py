@@ -271,6 +271,28 @@ def _register_consensus_tools(server: MCPServer) -> None:
         return "{}"
 
 
+def _register_mesh_tools(server: MCPServer) -> None:
+    """Register P2P mesh discovery and bootstrap tools."""
+
+    @server.tool(
+        name="credence_get_seed_nodes",
+        description="Retrieve verified active P2P bootstrap seed nodes from seeds.credence.nexus or fallback sources.",
+    )
+    async def get_seed_nodes(seed_url: Optional[str] = None) -> str:
+        from credence.mesh.discovery import BootstrapDiscovery
+
+        discovery = BootstrapDiscovery(seed_url=seed_url)
+        peer_urls = await discovery.discover_peers()
+        return json.dumps(
+            {
+                "canonical_seed_url": discovery.seed_url,
+                "discovered_peers_count": len(peer_urls),
+                "peer_urls": peer_urls,
+            },
+            indent=2,
+        )
+
+
 def _register_resources(server: MCPServer) -> None:
     """Register all FastMCP dynamic resources."""
 
@@ -305,6 +327,20 @@ def _register_resources(server: MCPServer) -> None:
             {
                 "public_key_hex": identity.public_key_hex,
                 "key_path": str(identity.key_path),
+            },
+            indent=2,
+        )
+
+    @server.resource("credence://mesh/seeds")
+    async def get_mesh_seeds_resource() -> str:
+        from credence.mesh.discovery import BootstrapDiscovery
+
+        discovery = BootstrapDiscovery()
+        peer_urls = await discovery.discover_peers()
+        return json.dumps(
+            {
+                "canonical_domain": "https://seeds.credence.nexus/peers.json",
+                "active_seed_nodes": peer_urls,
             },
             indent=2,
         )
@@ -357,6 +393,7 @@ def create_mcp_server() -> MCPServer:
     _register_eval_tools(server)
     _register_query_tools(server)
     _register_consensus_tools(server)
+    _register_mesh_tools(server)
     _register_resources(server)
     _register_prompts(server)
     return server

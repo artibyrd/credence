@@ -24,11 +24,13 @@ async def test_fastmcp_server_initialization() -> None:
     assert "credence_verify_attestation" in tool_names
     assert "credence_get_quota_status" in tool_names
     assert "credence_get_consensus" in tool_names
+    assert "credence_get_seed_nodes" in tool_names
 
     resources = await server.list_resources()
     resource_uris = [r.uri for r in resources]
     assert "credence://taxonomies" in resource_uris
     assert "credence://node/identity" in resource_uris
+    assert "credence://mesh/seeds" in resource_uris
 
     prompts = await server.list_prompts()
     prompt_names = [p.name for p in prompts]

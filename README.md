@@ -17,6 +17,19 @@ Credence calculates a calibrated **Suspicion Score & Density Index**, eliminates
 
 ---
 
+## Canonical Domain Infrastructure
+
+The Credence network is anchored across 4 dedicated domains:
+
+| Domain | Role & Purpose | Production Endpoints |
+|---|---|---|
+| **`credence.run`** | **Primary Canonical Website, MCP Service & CLI Hub** | `https://credence.run`<br/>`https://mcp.credence.run/sse`<br/>`curl -fsSL https://credence.run/install \| sh` |
+| **`credence.nexus`** | **P2P Mesh Network & Bootstrap Seed Directory** | `https://seeds.credence.nexus/peers.json`<br/>`wss://relay.credence.nexus:8765`<br/>DNS SRV: `seed.credence.nexus` |
+| **`credence.foundation`**| **Taxonomy Governance & Root Key Custody** | `https://taxonomies.credence.foundation/v1/...`<br/>`https://keys.credence.foundation/root.pub` |
+| **`credence.report`** | **Public Audit Viewer & Shareable Permalinks** | `https://credence.report/a/{content_sha256}` |
+
+---
+
 ## The "Golden 12" Epistemic Benchmark Suite
 
 Credence includes an automated cross-profile benchmark suite that evaluates 12 diverse content scenarios across `FREE`, `BALANCED`, and `ULTRA` profiles:
@@ -140,10 +153,18 @@ poetry run credence export-report https://example.com/article --format json -o /
 # 7. Cryptographically verify an on-disk attestation JSON file
 poetry run credence verify-file /tmp/attestation.json
 
-# 8. Prune older token records and optimize SQLite database
+# 8. Inspect P2P Node Quality Leaderboard ($Q_i$)
+poetry run credence rank
+
+# 9. Fetch, generate, and verify signed bootstrap seed manifests
+poetry run credence seeds fetch --url https://seeds.credence.nexus/peers.json
+poetry run credence seeds generate --output /tmp/seeds.json --valid-hours 24
+poetry run credence seeds verify --path /tmp/seeds.json
+
+# 10. Prune older token records and optimize SQLite database
 poetry run credence db-clean --retention-days 30
 
-# 9. List registered taxonomy catalogs & rule counts
+# 11. List registered taxonomy catalogs & rule counts
 poetry run credence taxonomy list
 ```
 
@@ -171,7 +192,7 @@ cp .env.example .env
 
 ### Task Runner Commands (`Justfile`)
 ```bash
-# Run hermetic unit test suite (78 tests, <30s)
+# Run hermetic unit test suite (99 tests, <45s)
 just test
 
 # Run code linters and type checkers (Ruff & Mypy)
@@ -198,6 +219,7 @@ just docker-test
 - 📘 **[Architecture Overview](docs/architecture.md)**: End-to-end system topology, dual-capture ingestion, multi-agent pipeline, and cryptographic attestation flow.
 - 📘 **[The "Golden 12" Benchmark Suite](docs/benchmark-suite.md)**: 12 standardized epistemic evaluation fixtures across Free, Balanced, and Ultra operational cost profiles.
 - 📘 **[Operational Cost Profiles](docs/cost-profiles.md)**: Detailed comparison matrix for Free, Balanced, and Ultra operational presets.
+- 📘 **[Bootstrap Seeds & Node Quality ($Q_i$)](docs/bootstrap-seeds.md)**: 5-factor node quality scoring, RFC 8785 signed seed files (`peers.json`), and 4-tier discovery fallback.
 - 📘 **[Cloud Run Deployment & Terraform](docs/deployment-cloudrun.md)**: Step-by-step GCP operator guide with $15/mo budget cap, scale-to-zero, and Cloud Build CI/CD.
 - 📘 **[P2P Mesh Protocol & Consensus](docs/mesh-protocol.md)**: Multi-hop gossip routing, 13-node heterogeneous topology, robust median consensus, and Byzantine Sybil cartel isolation ($f = 4$).
 - 📘 **[FastMCP Server & Client Integration](docs/mcp-integration.md)**: FastMCP tool catalogs, dynamic resources, prompts, and Claude Desktop / Antigravity configs.

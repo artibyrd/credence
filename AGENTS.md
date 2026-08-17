@@ -42,6 +42,12 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
     - Never apply custom light background fill styles (`fill:#d1fae5`, `fill:#fef3c7`) in Mermaid diagrams without declaring explicit high-contrast font colors (`color:#0f172a`), or preferably rely on standard unstyled Mermaid node themes to guarantee readable text across both light and dark UI themes.
 17. **Attestation Timestamp & Canonical Payload Precision Invariant**:
     - When persisting signed `AuditReport` models to SQLModel database tables (`AuditRecord`) and reconstructing them for export or verification (`credence verify-file`), explicitly preserve the exact signed `audited_at` timestamp with timezone awareness (`UTC`) to guarantee 100% cryptographic signature validity under RFC 8785.
+18. **Epistemic Node Quality & Seed Signature Invariant**:
+    - Peer node reputation must strictly evaluate the 5-factor quality equation ($Q_i = 0.25 U_i + 0.30 C_i + 0.25 G_i + 0.10 T_i + 0.10 K_i$).
+    - Remote bootstrap seed manifests (`peers.json`) fetched from `seeds.credence.nexus` or any mirror MUST be cryptographically verified against the network root Ed25519 public key using RFC 8785 canonical bytes before adopting peer addresses into active routing tables.
+19. **Gossip Envelope Signature Preservation & Invariant Normalization**:
+    - Intermediate mesh relay nodes must NEVER re-sign an envelope if `envelope.signature` is already populated by the originating author (`if not envelope.signature: envelope = self._sign_envelope(envelope)`).
+    - All inner Pydantic models embedded within envelope payloads must be serialized with `model_dump(mode="json")`, and envelope canonical byte generators (`get_canonical_bytes()`) must provide a fallback datetime ISO serializer to prevent runtime `TypeError` during serialization.
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic test suite (<30s).

@@ -142,6 +142,16 @@ class Settings(BaseSettings):
     MCP_HOST: str = "0.0.0.0"  # noqa: S104
     MCP_PORT: int = 8000
 
+    # Canonical Domain Endpoints & P2P Bootstrapping
+    DEFAULT_SEED_URL: str = "https://seeds.credence.nexus/peers.json"
+    CANONICAL_MCP_URL: str = "https://mcp.credence.run/sse"
+    CANONICAL_TAXONOMY_URL: str = "https://taxonomies.credence.foundation"
+    CANONICAL_REPORT_URL: str = "https://credence.report"
+    TRUSTED_ROOT_PUBKEY: Optional[str] = None
+    ENABLE_LOCAL_DISCOVERY: bool = True
+    DISCOVERY_BEACON_PORT: int = 8766
+    DISCOVERY_TIMEOUT_SEC: float = 2.0
+
     def get_profile_config(self) -> CostProfileConfig:
         """Retrieve the CostProfileConfig for the active CREDENCE_PROFILE."""
         cfg = COST_PROFILES.get(self.CREDENCE_PROFILE, COST_PROFILES[CostProfile.BALANCED]).model_copy()

@@ -132,3 +132,23 @@ async def test_cli_db_clean() -> None:
     from credence.cli.main import cli_db_clean
 
     await cli_db_clean(retention_days=30)
+
+
+@pytest.mark.unit
+async def test_cli_seeds_and_rank(tmp_path: Path) -> None:
+    """Verify seeds and rank CLI subcommands."""
+    from credence.cli.main import cli_rank, cli_seeds
+
+    # Test seed generation
+    seed_output = tmp_path / "seeds.json"
+    await cli_seeds(action="generate", output_path=str(seed_output), valid_hours=48)
+    assert seed_output.exists()
+
+    # Test seed verification
+    await cli_seeds(action="verify", url_or_path=str(seed_output))
+
+    # Test seed fetch from local path
+    await cli_seeds(action="fetch", url_or_path=str(seed_output))
+
+    # Test node quality rank leaderboard
+    await cli_rank()
