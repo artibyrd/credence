@@ -23,7 +23,7 @@ from rich.panel import Panel
 from rich.table import Table
 from sqlmodel import select
 
-from credence.config import settings
+from credence.config import CostProfileConfig, settings
 from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
@@ -109,10 +109,14 @@ def render_audit_report(report: AuditReport) -> None:
         console.print("[green]✓ No rule violations detected on this page.[/green]\n")
 
 
-async def cli_audit(url: str, force: bool = False) -> None:
+async def cli_audit(
+    url: str,
+    force: bool = False,
+    profile_override: Optional[CostProfileConfig] = None,
+) -> None:
     """Execute live audit or cache lookup for target URL."""
     with console.status(f"[bold green]Evaluating {url}...", spinner="dots"):
-        report = await audit_url(url, force_refresh=force)
+        report = await audit_url(url, force_refresh=force, profile_override=profile_override)
     render_audit_report(report)
 
 
@@ -224,6 +228,66 @@ def cli_taxonomy(action: str, catalog_id: Optional[str] = None) -> None:
         console.print(checklist)
 
 
+def cli_profile(action: str = "list", profile_name: Optional[str] = None) -> None:
+    """List or inspect operational cost profiles."""
+    from credence.config import COST_PROFILES, CostProfile
+
+    if action == "list" and not profile_name:
+        table = Table(
+            title="[bold]Credence Operational Cost Profiles[/bold]",
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Profile", style="bold cyan")
+        table.add_column("Target Tier", style="dim")
+        table.add_column("Primary Model", style="green")
+        table.add_column("Thinking", justify="right")
+        table.add_column("Daily Cap", justify="right")
+        table.add_column("Max Words", justify="right")
+        table.add_column("Active", justify="center")
+
+        active_prof = settings.CREDENCE_PROFILE
+        for p, cfg in COST_PROFILES.items():
+            is_active = "[bold green]✓ ACTIVE[/bold green]" if p == active_prof else "[dim]-[/dim]"
+            table.add_row(
+                p.value.upper(),
+                cfg.target_tier,
+                cfg.primary_model,
+                f"{cfg.default_thinking_budget} tok",
+                f"${cfg.max_daily_budget_usd:.2f}/day",
+                f"{cfg.max_article_words:,} w",
+                is_active,
+            )
+        console.print(table)
+    else:
+        name = (profile_name or action).lower()
+        try:
+            target_profile = CostProfile(name)
+            cfg = COST_PROFILES[target_profile]
+            lines = [
+                f"[bold]Profile:[/bold] [cyan]{cfg.name}[/cyan] ({cfg.profile.value.upper()})",
+                f"[bold]Target Tier:[/bold] {cfg.target_tier}",
+                f"[bold]Description:[/bold] {cfg.description}",
+                f"[bold]Primary Model:[/bold] [green]{cfg.primary_model}[/green]",
+                f"[bold]Escalation Model:[/bold] [yellow]{cfg.escalation_model}[/yellow]",
+                f"[bold]Thinking Tokens (Default / Escalation):[/bold] {cfg.default_thinking_budget} / {cfg.escalation_thinking_budget}",
+                f"[bold]Hourly Token Cap:[/bold] {cfg.max_tokens_per_hour:,} tokens",
+                f"[bold]Daily Token Cap:[/bold] {cfg.max_tokens_per_day:,} tokens",
+                f"[bold]Daily Budget Limit:[/bold] ${cfg.max_daily_budget_usd:.2f} USD",
+                f"[bold]Article Word Limit:[/bold] {cfg.max_article_words:,} words",
+                f"[bold]Concurrency Gate:[/bold] {cfg.concurrency_limit} concurrent requests",
+            ]
+            console.print(
+                Panel(
+                    "\n".join(lines),
+                    title=f"[bold]Cost Profile: {cfg.profile.value.upper()}[/bold]",
+                    border_style="cyan",
+                )
+            )
+        except ValueError:
+            console.print(f"[red]Unknown cost profile '{name}'. Choose from: free, balanced, ultra.[/red]")
+
+
 async def cli_quota() -> None:
     """Display real-time Token Headroom, spend metrics, and Circuit Breaker safety status."""
     await init_db()
@@ -242,11 +306,12 @@ async def cli_quota() -> None:
         )
 
         lines = [
-            f"[bold]Active API Key Source:[/bold] [cyan]{status.active_api_key_source}[/cyan]",
-            f"[bold]Circuit Breaker Status:[/bold] [{cb_style}]{cb_label}[/{cb_style}]\n",
-            f"[bold]Hourly Token Headroom:[/bold] [green]{status.hourly_headroom_pct:.1f}% remaining[/green] ({status.hourly_tokens_used:,} / {status.hourly_tokens_max:,} tokens)",
-            f"[bold]Daily Token Headroom:[/bold]  [green]{status.daily_headroom_pct:.1f}% remaining[/green] ({status.daily_tokens_used:,} / {status.daily_tokens_max:,} tokens)",
-            f"[bold]24h Estimated Spend:[/bold]    [yellow]${status.daily_spend_usd:.4f}[/yellow] / ${status.daily_budget_usd:.2f} USD ({status.daily_spend_pct:.1f}% budget used)",
+            f"[bold]Active Operational Profile:[/bold] [bold cyan]{status.active_profile.upper()}[/bold cyan] ([dim]{status.profile_target_tier}[/dim])",
+            f"[bold]Active API Key Source:[/bold]      [cyan]{status.active_api_key_source}[/cyan]",
+            f"[bold]Circuit Breaker Status:[/bold]     [{cb_style}]{cb_label}[/{cb_style}]\n",
+            f"[bold]Hourly Token Headroom:[/bold]      [green]{status.hourly_headroom_pct:.1f}% remaining[/green] ({status.hourly_tokens_used:,} / {status.hourly_tokens_max:,} tokens)",
+            f"[bold]Daily Token Headroom:[/bold]       [green]{status.daily_headroom_pct:.1f}% remaining[/green] ({status.daily_tokens_used:,} / {status.daily_tokens_max:,} tokens)",
+            f"[bold]24h Estimated Spend:[/bold]        [yellow]${status.daily_spend_usd:.4f}[/yellow] / ${status.daily_budget_usd:.2f} USD ({status.daily_spend_pct:.1f}% budget used)",
         ]
 
         console.print(
@@ -259,17 +324,35 @@ async def cli_quota() -> None:
         return
 
 
-def cli_serve(transport: str = "stdio", host: str = "0.0.0.0", port: int = 8000) -> None:  # noqa: S104
+def cli_serve(
+    transport: str = "stdio",
+    host: str = "0.0.0.0",  # noqa: S104
+    port: int = 8000,
+    profile: Optional[str] = None,
+) -> None:
     """Launch the FastMCP server in Stdio or SSE mode."""
+    from credence.config import CostProfile
     from credence.server.app import mcp_server
 
+    if profile:
+        try:
+            settings.CREDENCE_PROFILE = CostProfile(profile.lower())
+        except ValueError:
+            console.print(
+                f"[yellow]Invalid profile '{profile}', using default '{settings.CREDENCE_PROFILE.value}'.[/yellow]"
+            )
+
     if transport == "stdio":
-        console.print("[green]Starting Credence FastMCP Server on stdio...[/green]")
+        console.print(
+            f"[green]Starting Credence FastMCP Server on stdio (Profile: {settings.CREDENCE_PROFILE.value.upper()})...[/green]"
+        )
         asyncio.run(mcp_server.run_stdio_async())
     elif transport == "sse":
         import uvicorn
 
-        console.print(f"[bold green]Starting Credence FastMCP Server (SSE) on http://{host}:{port}/sse[/bold green]")
+        console.print(
+            f"[bold green]Starting Credence FastMCP Server (SSE) on http://{host}:{port}/sse (Profile: {settings.CREDENCE_PROFILE.value.upper()})[/bold green]"
+        )
         uvicorn.run(mcp_server.sse_app(), host=host, port=port)
 
 
@@ -287,6 +370,42 @@ async def cli_mesh(port: int, seeds: list[str]) -> None:
         await relay.stop()
 
 
+def _dispatch_secondary_commands(args: argparse.Namespace) -> None:
+    """Dispatch secondary subcommands (identity, quota, profile, serve, mesh, taxonomy)."""
+    cmd = args.command
+    if cmd == "identity":
+        cli_identity(args.action)
+    elif cmd == "quota":
+        asyncio.run(cli_quota())
+    elif cmd == "profile":
+        cli_profile(args.action, args.profile_name)
+    elif cmd == "serve":
+        cli_serve(transport=args.transport, host=args.host, port=args.port, profile=args.profile)
+    elif cmd == "mesh":
+        seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
+        asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
+    elif cmd == "taxonomy":
+        cli_taxonomy(args.action, args.catalog_id)
+
+
+def _dispatch_command(args: argparse.Namespace) -> None:
+    """Dispatch parsed CLI arguments to appropriate subcommands."""
+    from credence.config import COST_PROFILES, CostProfile
+
+    cmd = args.command
+    if cmd == "tui":
+        from credence.tui.app import run_tui
+
+        run_tui()
+    elif cmd == "audit":
+        prof_cfg = COST_PROFILES.get(CostProfile(args.profile.lower())) if args.profile else None
+        asyncio.run(cli_audit(args.url, force=args.force, profile_override=prof_cfg))
+    elif cmd == "lookup":
+        asyncio.run(cli_lookup(args.identifier))
+    else:
+        _dispatch_secondary_commands(args)
+
+
 def main() -> None:
     """CLI argument parsing and router."""
     parser = argparse.ArgumentParser(
@@ -299,6 +418,12 @@ def main() -> None:
     audit_parser = subparsers.add_parser("audit", help="Audit a webpage for epistemic suspicion.")
     audit_parser.add_argument("url", type=str, help="Target URL to snapshot and audit.")
     audit_parser.add_argument("--force", action="store_true", help="Force fresh audit, bypassing cache.")
+    audit_parser.add_argument(
+        "--profile",
+        choices=["free", "balanced", "ultra"],
+        default=None,
+        help="Operational cost profile override.",
+    )
 
     # lookup command
     lookup_parser = subparsers.add_parser("lookup", help="Lookup cached audit by URL or content hash.")
@@ -311,11 +436,22 @@ def main() -> None:
     # quota command
     subparsers.add_parser("quota", help="Display token headroom, daily USD spend, and circuit breaker status.")
 
+    # profile command
+    profile_parser = subparsers.add_parser("profile", help="List and inspect operational cost profiles.")
+    profile_parser.add_argument("action", choices=["list", "show"], default="list", nargs="?")
+    profile_parser.add_argument("profile_name", nargs="?", default=None, help="Profile name (free, balanced, ultra)")
+
     # serve command
     serve_parser = subparsers.add_parser("serve", help="Launch FastMCP server.")
     serve_parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio", help="MCP transport protocol.")
     serve_parser.add_argument("--host", default=settings.MCP_HOST, help="Bind host for SSE transport.")
     serve_parser.add_argument("--port", type=int, default=settings.MCP_PORT, help="Port for SSE transport.")
+    serve_parser.add_argument(
+        "--profile",
+        choices=["free", "balanced", "ultra"],
+        default=None,
+        help="Active cost profile.",
+    )
 
     # mesh command
     mesh_parser = subparsers.add_parser("mesh", help="Launch Credence P2P Mesh relay.")
@@ -338,26 +474,7 @@ def main() -> None:
         return
 
     args = parser.parse_args()
-
-    if args.command == "tui":
-        from credence.tui.app import run_tui
-
-        run_tui()
-    elif args.command == "audit":
-        asyncio.run(cli_audit(args.url, force=args.force))
-    elif args.command == "lookup":
-        asyncio.run(cli_lookup(args.identifier))
-    elif args.command == "identity":
-        cli_identity(args.action)
-    elif args.command == "quota":
-        asyncio.run(cli_quota())
-    elif args.command == "serve":
-        cli_serve(transport=args.transport, host=args.host, port=args.port)
-    elif args.command == "mesh":
-        seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
-        asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
-    elif args.command == "taxonomy":
-        cli_taxonomy(args.action, args.catalog_id)
+    _dispatch_command(args)
 
 
 if __name__ == "__main__":

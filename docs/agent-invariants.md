@@ -69,3 +69,17 @@ This document outlines mandatory rules and design invariants for human contribut
 
 ## 11. Mesh Network Topology & Multi-Hop Testing ($N \ge 7$)
 - Realistic mesh testing requires $N \ge 7$ nodes arranged in non-trivial graph topologies ($d \ge 3$) to verify relay TTL decrements and $N \ge 3f + 1$ ($f = 2$) Byzantine Sybil collusion isolation.
+
+---
+
+## 12. Operational Cost Profile Enforcement
+- The `FREE` profile strictly enforces a $0.00 daily spend ceiling with $0$ thinking tokens.
+- The `BALANCED` profile operates at a $0.50/day cap with $1,024$ thinking tokens and dynamic escalation on ambiguity.
+- The `ULTRA` profile enables deep reasoning ($4,096 - 16,384$ tokens), `gemini-1.5-pro` escalation, and 10,000-word ingestion limits.
+
+---
+
+## 13. Cloud Run Cost Capping & Scale-to-Zero Invariant
+- Production Cloud Run v2 services must configure `min_instance_count = 0` (scale-to-zero), `cpu_idle = true`, and resource limits dynamically tuned to the active cost profile.
+- GCP projects must configure a **$15.00 USD/month Cloud Billing Budget ceiling** (`google_billing_budget`) with automated 50%, 80%, and 100% threshold alarms.
+- All API keys must be referenced securely through Google Secret Manager (`CREDENCE_GEMINI_API_KEY`).

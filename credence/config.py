@@ -1,9 +1,94 @@
-"""Configuration and environment settings for Credence."""
+"""Configuration, cost profile presets, and environment settings for Credence."""
 
+from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class CostProfile(str, Enum):
+    """Operational cost profiles mapped to Gemini subscription tiers."""
+
+    FREE = "free"
+    BALANCED = "balanced"
+    ULTRA = "ultra"
+
+
+class CostProfileConfig(BaseModel):
+    """Configuration definition for an operational cost profile."""
+
+    profile: CostProfile
+    name: str
+    description: str
+    target_tier: str
+    primary_model: str
+    escalation_model: str
+    triage_model: str
+    default_thinking_budget: int = Field(ge=0, description="Thinking tokens allocated per subagent")
+    escalation_thinking_budget: int = Field(ge=0, description="Thinking tokens on ambiguous scores")
+    max_tokens_per_hour: int = Field(gt=0)
+    max_tokens_per_day: int = Field(gt=0)
+    max_daily_budget_usd: float = Field(ge=0.0)
+    max_article_words: int = Field(gt=0)
+    concurrency_limit: int = Field(gt=0)
+    enable_deep_verification: bool = False
+
+
+COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
+    CostProfile.FREE: CostProfileConfig(
+        profile=CostProfile.FREE,
+        name="Free / Zero-Marginal-Cost",
+        description="Strict zero-spend budget enforcing Gemini API Free Tier limits (15 RPM / 1M TPM) with zero thinking tokens.",
+        target_tier="Gemini API Free Tier (Zero-Cost)",
+        primary_model="gemini-2.0-flash-lite",
+        escalation_model="gemini-2.0-flash-lite",
+        triage_model="gemini-2.0-flash-lite",
+        default_thinking_budget=0,
+        escalation_thinking_budget=0,
+        max_tokens_per_hour=50_000,
+        max_tokens_per_day=250_000,
+        max_daily_budget_usd=0.00,
+        max_article_words=1500,
+        concurrency_limit=1,
+        enable_deep_verification=False,
+    ),
+    CostProfile.BALANCED: CostProfileConfig(
+        profile=CostProfile.BALANCED,
+        name="Balanced / Developer Standard",
+        description="Standard pay-as-you-go developer profile balancing low token costs with calibrated Gemini 3.7 Flash thinking on ambiguity.",
+        target_tier="Gemini Pay-As-You-Go ($0.10/$0.40 per 1M)",
+        primary_model="gemini-3.7-flash",
+        escalation_model="gemini-3.7-flash",
+        triage_model="gemini-2.5-flash-lite",
+        default_thinking_budget=1024,
+        escalation_thinking_budget=4096,
+        max_tokens_per_hour=100_000,
+        max_tokens_per_day=1_000_000,
+        max_daily_budget_usd=0.50,
+        max_article_words=3000,
+        concurrency_limit=3,
+        enable_deep_verification=False,
+    ),
+    CostProfile.ULTRA: CostProfileConfig(
+        profile=CostProfile.ULTRA,
+        name="Ultra / Newsroom Fidelity",
+        description="Maximum epistemic depth utilizing Gemini 3.7 Flash high-reasoning budgets (8k-16k tokens) and Gemini 1.5 Pro for full long-form articles.",
+        target_tier="Gemini Advanced / Ultra / Newsroom Desk",
+        primary_model="gemini-3.7-flash",
+        escalation_model="gemini-1.5-pro",
+        triage_model="gemini-3.7-flash",
+        default_thinking_budget=4096,
+        escalation_thinking_budget=16384,
+        max_tokens_per_hour=2_000_000,
+        max_tokens_per_day=20_000_000,
+        max_daily_budget_usd=15.00,
+        max_article_words=10000,
+        concurrency_limit=8,
+        enable_deep_verification=True,
+    ),
+}
 
 
 class Settings(BaseSettings):
@@ -30,6 +115,9 @@ class Settings(BaseSettings):
     BROWSER_TIMEOUT_MS: int = 15000
     MAX_CONCURRENT_SNAPSHOTS: int = 1  # Memory-safe concurrency gate
 
+    # Active Cost & Operational Profile
+    CREDENCE_PROFILE: CostProfile = CostProfile.BALANCED
+
     # Multi-Agent & LLM Models (Gemini 3.7 Flash with Thinking)
     CREDENCE_GEMINI_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
@@ -53,6 +141,17 @@ class Settings(BaseSettings):
     RATE_LIMIT_MSGS_PER_SEC: int = 50
     MCP_HOST: str = "0.0.0.0"  # noqa: S104
     MCP_PORT: int = 8000
+
+    def get_profile_config(self) -> CostProfileConfig:
+        """Retrieve the CostProfileConfig for the active CREDENCE_PROFILE."""
+        cfg = COST_PROFILES.get(self.CREDENCE_PROFILE, COST_PROFILES[CostProfile.BALANCED]).model_copy()
+        if self.MAX_TOKENS_PER_HOUR != 100_000:
+            cfg.max_tokens_per_hour = self.MAX_TOKENS_PER_HOUR
+        if self.MAX_TOKENS_PER_DAY != 1_000_000:
+            cfg.max_tokens_per_day = self.MAX_TOKENS_PER_DAY
+        if self.MAX_DAILY_BUDGET_USD != 0.50:
+            cfg.max_daily_budget_usd = self.MAX_DAILY_BUDGET_USD
+        return cfg
 
 
 settings = Settings()

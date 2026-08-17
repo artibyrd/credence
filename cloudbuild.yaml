@@ -1,0 +1,67 @@
+steps:
+  # Step 1: Quality Gate (Ruff Lint & Mypy Type Checks)
+  - name: 'python:3.12-slim'
+    id: 'quality-gate'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install poetry
+        poetry install --no-root
+        poetry run ruff check .
+        poetry run ruff format --check .
+        poetry run mypy credence tests
+
+  # Step 2: Hermetic Test Gate (All unit tests must pass)
+  - name: 'python:3.12-slim'
+    id: 'test-gate'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install poetry
+        poetry install --no-root
+        poetry run pytest tests/ -m "not integration" --durations=10
+
+  # Step 3: Container Build with Docker Cache
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-build'
+    args:
+      - 'build'
+      - '-t'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA'
+      - '-t'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest'
+      - '--cache-from'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest'
+      - '.'
+
+  # Step 4: Push to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-push'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}'
+
+  # Step 5: Zero-Downtime Deployment to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'cloud-run-deploy'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA'
+      - '--region=${_LOCATION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+
+substitutions:
+  _LOCATION: 'us-central1'
+  _REPOSITORY: 'credence'
+  _IMAGE: 'credence-server'
+  _SERVICE_NAME: 'credence-server'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

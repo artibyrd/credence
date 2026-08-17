@@ -39,14 +39,25 @@ from credence.taxonomy_loader import registry
 
 def _register_eval_tools(server: MCPServer) -> None:
     """Register evaluation tools."""
+    from credence.config import COST_PROFILES, CostProfile
 
     @server.tool(
         name="credence_check_url",
         description="Audit a webpage for journalistic ethics, logical fallacies, and deceptive patterns.",
     )
-    async def check_url(url: str, force_refresh: bool = False) -> str:
+    async def check_url(
+        url: str,
+        force_refresh: bool = False,
+        profile: Optional[str] = None,
+    ) -> str:
         await init_db()
-        report = await audit_url(url, force_refresh=force_refresh)
+        prof_cfg = None
+        if profile:
+            try:
+                prof_cfg = COST_PROFILES.get(CostProfile(profile.lower()))
+            except ValueError:
+                pass
+        report = await audit_url(url, force_refresh=force_refresh, profile_override=prof_cfg)
         return json.dumps(report.model_dump(mode="json"), indent=2)
 
     @server.tool(
@@ -57,10 +68,18 @@ def _register_eval_tools(server: MCPServer) -> None:
         text: str,
         title: str = "Pasted Text Snippet",
         byline: Optional[str] = None,
+        profile: Optional[str] = None,
     ) -> str:
         await init_db()
         content_hash = compute_content_sha256(text)
         simhash_hex = compute_simhash(text)
+
+        prof_cfg = None
+        if profile:
+            try:
+                prof_cfg = COST_PROFILES.get(CostProfile(profile.lower()))
+            except ValueError:
+                pass
 
         extracted = ExtractedContent(
             title=title,
@@ -78,7 +97,7 @@ def _register_eval_tools(server: MCPServer) -> None:
         )
 
         async for s in get_session():
-            report = await evaluate_snapshot(snapshot, session=s, sign_result=True)
+            report = await evaluate_snapshot(snapshot, session=s, sign_result=True, profile_override=prof_cfg)
             return json.dumps(report.model_dump(mode="json"), indent=2)
 
         return "{}"

@@ -1,0 +1,103 @@
+locals {
+  profile_resources = {
+    free = {
+      cpu           = "1.0"
+      memory        = "384Mi"
+      max_instances = 1
+    }
+    balanced = {
+      cpu           = "1.0"
+      memory        = "512Mi"
+      max_instances = 2
+    }
+    ultra = {
+      cpu           = "2.0"
+      memory        = "1024Mi"
+      max_instances = 5
+    }
+  }
+
+  active_resources = local.profile_resources[var.credence_profile]
+}
+
+resource "google_cloud_run_v2_service" "credence" {
+  name     = var.service_name
+  location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account = google_service_account.cloud_run_sa.email
+
+    scaling {
+      min_instance_count = var.min_instance_count
+      max_instance_count = coalesce(var.max_instance_count, local.active_resources.max_instances)
+    }
+
+    containers {
+      image = var.container_image
+
+      command = ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+
+      ports {
+        container_port = 8000
+      }
+
+      resources {
+        limits = {
+          cpu    = local.active_resources.cpu
+          memory = local.active_resources.memory
+        }
+        cpu_idle = true # Scale-to-zero compute savings when idle
+      }
+
+      env {
+        name  = "ENV"
+        value = "production"
+      }
+      env {
+        name  = "CREDENCE_PROFILE"
+        value = var.credence_profile
+      }
+      env {
+        name  = "MCP_HOST"
+        value = "0.0.0.0"
+      }
+      env {
+        name  = "MCP_PORT"
+        value = "8000"
+      }
+
+      env {
+        name = "CREDENCE_GEMINI_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.gemini_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      startup_probe {
+        timeout_seconds   = 10
+        period_seconds    = 10
+        failure_threshold = 3
+        tcp_socket {
+          port = 8000
+        }
+      }
+    }
+  }
+
+  traffic {
+    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+    percent = 100
+  }
+}
+
+# Public access policy (or customize for IAM authentication)
+resource "google_cloud_run_service_iam_member" "public_access" {
+  location = google_cloud_run_v2_service.credence.location
+  service  = google_cloud_run_v2_service.credence.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}

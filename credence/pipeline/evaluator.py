@@ -19,6 +19,7 @@ from typing import List, Optional
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from credence.config import CostProfileConfig
 from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.ingestion.extractor import ExtractedContent
@@ -177,6 +178,7 @@ async def evaluate_snapshot(
     reg: Optional[TaxonomyRegistry] = None,
     session: Optional[AsyncSession] = None,
     sign_result: bool = True,
+    profile_override: Optional[CostProfileConfig] = None,
 ) -> AuditReport:
     """Execute the multi-agent evaluation pipeline against a captured snapshot."""
     active_reg = reg or registry
@@ -188,7 +190,9 @@ async def evaluate_snapshot(
     api_key, key_source = get_active_api_key()
 
     if session is not None:
-        budget_ok, reason = await check_budget_before_call(session, estimated_tokens=3000)
+        budget_ok, reason = await check_budget_before_call(
+            session, estimated_tokens=3000, profile_override=profile_override
+        )
         if not budget_ok:
             quota_preserved = True
 
@@ -265,6 +269,7 @@ async def audit_url(
     url: str,
     session: Optional[AsyncSession] = None,
     force_refresh: bool = False,
+    profile_override: Optional[CostProfileConfig] = None,
 ) -> AuditReport:
     """Audit a URL with database cache checking, token budgeting, and automatic persistence."""
     await init_db()
@@ -322,7 +327,7 @@ async def audit_url(
                 )
 
         # Step 3: Run fresh evaluation
-        report = await evaluate_snapshot(snapshot_result, session=s)
+        report = await evaluate_snapshot(snapshot_result, session=s, profile_override=profile_override)
 
         # Step 4: Persist to database
         snap_record = SnapshotRecord(

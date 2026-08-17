@@ -1,0 +1,18 @@
+# Sample Terraform Variable Values for Credence Cloud Run Deployment
+
+project_id                  = "my-gcp-project-id"
+region                      = "us-central1"
+service_name                = "credence-server"
+container_image             = "us-central1-docker.pkg.dev/my-gcp-project-id/credence/credence-server:latest"
+
+# Operational Cost Profile: 'free', 'balanced', or 'ultra'
+credence_profile            = "balanced"
+
+# Cost Capping ($15/mo maximum project ceiling)
+monthly_budget_limit_usd    = 15.00
+billing_account_id          = "012345-567890-ABCDEF"
+alert_email_addresses       = ["admin@example.com"]
+
+# Cloud Run Scaling Invariants (Scale-to-Zero)
+min_instance_count          = 0
+max_instance_count          = 2

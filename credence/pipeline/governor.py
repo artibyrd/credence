@@ -5,6 +5,7 @@ Guarantees:
 2. In-database token consumption, thinking tokens, and USD cost tracking in SQLite.
 3. Automated circuit breaker tripping into offline heuristic mode (QUOTA_PRESERVED).
 4. Response quality evaluation with Grounded Citation Ratio and Dynamic Escalation.
+5. Multi-tier Cost Profiles (FREE, BALANCED, ULTRA) mapped to Gemini subscription tiers.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.config import settings
+from credence.config import CostProfileConfig, settings
 from credence.models import TokenUsageRecord
 from credence.pipeline.schemas import SpecialistViolationFinding
 
@@ -24,6 +25,7 @@ from credence.pipeline.schemas import SpecialistViolationFinding
 MODEL_PRICING_PER_MILLION: Dict[str, Dict[str, float]] = {
     "gemini-3.7-flash": {"prompt": 0.15, "completion": 0.60, "thinking": 0.60},
     "gemini-2.5-flash-lite": {"prompt": 0.075, "completion": 0.30, "thinking": 0.30},
+    "gemini-2.0-flash-lite": {"prompt": 0.075, "completion": 0.30, "thinking": 0.30},
     "gemini-2.0-flash": {"prompt": 0.10, "completion": 0.40, "thinking": 0.40},
     "gemini-1.5-pro": {"prompt": 1.25, "completion": 5.00, "thinking": 5.00},
 }
@@ -37,20 +39,35 @@ def utc_now() -> datetime:
 class TokenHeadroomStatus(BaseModel):
     """Real-time token headroom, spend tracking, and circuit breaker status."""
 
+    active_profile: str = Field(default="balanced", description="Active operational cost profile")
+    profile_target_tier: str = Field(
+        default="Gemini Pay-As-You-Go",
+        description="Target subscription/quota tier",
+    )
+
     hourly_tokens_used: int = Field(default=0, description="Tokens consumed in the rolling 1-hour window")
     hourly_tokens_max: int = Field(default=100_000, description="Hourly token limit")
-    hourly_headroom_pct: float = Field(default=100.0, description="Remaining hourly headroom percentage (0-100%)")
+    hourly_headroom_pct: float = Field(
+        default=100.0,
+        description="Remaining hourly headroom percentage (0-100%)",
+    )
 
     daily_tokens_used: int = Field(default=0, description="Tokens consumed in the rolling 24-hour window")
     daily_tokens_max: int = Field(default=1_000_000, description="Daily token limit")
-    daily_headroom_pct: float = Field(default=100.0, description="Remaining daily headroom percentage (0-100%)")
+    daily_headroom_pct: float = Field(
+        default=100.0,
+        description="Remaining daily headroom percentage (0-100%)",
+    )
 
     daily_spend_usd: float = Field(default=0.0, description="Total USD cost incurred in last 24 hours")
     daily_budget_usd: float = Field(default=0.50, description="Daily cost budget limit in USD")
     daily_spend_pct: float = Field(default=0.0, description="Percentage of daily spend budget utilized")
 
     circuit_breaker_tripped: bool = Field(default=False, description="True if quota limits have been reached")
-    throttle_active: bool = Field(default=False, description="True if concurrency is throttled (>80% usage)")
+    throttle_active: bool = Field(
+        default=False,
+        description="True if concurrency is throttled (>80% usage)",
+    )
     active_api_key_source: str = Field(
         default="NONE_OFFLINE",
         description="Source of active API key (CREDENCE_GEMINI_API_KEY, GEMINI_API_KEY, or NONE_OFFLINE)",
@@ -115,11 +132,16 @@ async def record_token_usage(
     return record
 
 
-async def get_token_headroom_status(session: AsyncSession) -> TokenHeadroomStatus:
+async def get_token_headroom_status(
+    session: AsyncSession,
+    profile_override: Optional[CostProfileConfig] = None,
+) -> TokenHeadroomStatus:
     """Calculate rolling 1-hour and 24-hour token headroom from SQLite records."""
     now = utc_now()
     one_hour_ago = now - timedelta(hours=1)
     twenty_four_hours_ago = now - timedelta(hours=24)
+
+    prof = profile_override or settings.get_profile_config()
 
     # 1-Hour window query
     h_stmt = select(TokenUsageRecord).where(TokenUsageRecord.timestamp >= one_hour_ago)
@@ -132,21 +154,29 @@ async def get_token_headroom_status(session: AsyncSession) -> TokenHeadroomStatu
     daily_tokens = sum(r.total_tokens for r in d_records)
     daily_spend = sum(r.estimated_cost_usd for r in d_records)
 
-    # Calculate Headroom Percentages
-    hourly_max = settings.MAX_TOKENS_PER_HOUR
-    daily_max = settings.MAX_TOKENS_PER_DAY
-    daily_budget = settings.MAX_DAILY_BUDGET_USD
+    # Calculate Headroom Percentages based on active profile
+    hourly_max = prof.max_tokens_per_hour
+    daily_max = prof.max_tokens_per_day
+    daily_budget = prof.max_daily_budget_usd
 
     hourly_headroom = max(0.0, min(100.0, 100.0 * (1.0 - (hourly_tokens / max(1, hourly_max)))))
     daily_headroom = max(0.0, min(100.0, 100.0 * (1.0 - (daily_tokens / max(1, daily_max)))))
-    daily_spend_pct = min(100.0, 100.0 * (daily_spend / max(0.001, daily_budget)))
+
+    if daily_budget > 0.0:
+        daily_spend_pct = min(100.0, 100.0 * (daily_spend / daily_budget))
+    else:
+        daily_spend_pct = 100.0 if daily_spend > 0.0 else 0.0
 
     # Determine Circuit Breaker & Throttle States
     circuit_breaker_tripped = False
     throttle_active = False
 
     if settings.ENABLE_CIRCUIT_BREAKER:
-        if hourly_tokens >= hourly_max or daily_tokens >= daily_max or daily_spend >= daily_budget:
+        if (
+            hourly_tokens >= hourly_max
+            or daily_tokens >= daily_max
+            or (daily_budget > 0.0 and daily_spend >= daily_budget)
+        ):
             circuit_breaker_tripped = True
         elif hourly_headroom < 20.0 or daily_headroom < 20.0 or daily_spend_pct > 80.0:
             throttle_active = True
@@ -154,6 +184,8 @@ async def get_token_headroom_status(session: AsyncSession) -> TokenHeadroomStatu
     _, key_source = get_active_api_key()
 
     return TokenHeadroomStatus(
+        active_profile=prof.profile.value,
+        profile_target_tier=prof.target_tier,
         hourly_tokens_used=hourly_tokens,
         hourly_tokens_max=hourly_max,
         hourly_headroom_pct=round(hourly_headroom, 1),
@@ -172,12 +204,16 @@ async def get_token_headroom_status(session: AsyncSession) -> TokenHeadroomStatu
 async def check_budget_before_call(
     session: AsyncSession,
     estimated_tokens: int = 2000,
+    profile_override: Optional[CostProfileConfig] = None,
 ) -> Tuple[bool, str]:
     """Check whether token budget permits an LLM call or if circuit breaker should trip."""
-    headroom = await get_token_headroom_status(session)
+    headroom = await get_token_headroom_status(session, profile_override=profile_override)
 
     if headroom.circuit_breaker_tripped:
-        return False, "Circuit breaker TRIPPED: Token or USD spend budget exceeded. Operating in QUOTA_PRESERVED mode."
+        return (
+            False,
+            "Circuit breaker TRIPPED: Token or USD spend budget exceeded. Operating in QUOTA_PRESERVED mode.",
+        )
 
     if headroom.hourly_tokens_used + estimated_tokens > headroom.hourly_tokens_max:
         return (
@@ -186,7 +222,10 @@ async def check_budget_before_call(
         )
 
     if headroom.daily_tokens_used + estimated_tokens > headroom.daily_tokens_max:
-        return False, "Daily token limit reached. Falling back to offline heuristics to protect developer pairing."
+        return (
+            False,
+            "Daily token limit reached. Falling back to offline heuristics to protect developer pairing.",
+        )
 
     return True, "BUDGET_AVAILABLE"
 
@@ -207,14 +246,23 @@ def evaluate_quality_and_should_escalate(
 
         # Quality Gate 1: Grounded citation ratio below 75%
         if grounded_ratio < 0.75:
-            return True, f"Low grounded citation ratio ({grounded_ratio * 100:.0f}% < 75%). Potential hallucination."
+            return (
+                True,
+                f"Low grounded citation ratio ({grounded_ratio * 100:.0f}% < 75%). Potential hallucination.",
+            )
 
     # Quality Gate 2: Low evaluator confidence
     if confidence < 0.80:
-        return True, f"Subagent confidence low ({confidence:.2f} < 0.80). Escalating for secondary verification."
+        return (
+            True,
+            f"Subagent confidence low ({confidence:.2f} < 0.80). Escalating for secondary verification.",
+        )
 
     # Quality Gate 3: High-uncertainty decision boundary (between clean and suspicious)
     if 12.0 <= suspicion_score <= 18.0:
-        return True, f"Suspicion score on ambiguous decision boundary ({suspicion_score:.1f}). Escalating for tiebreak."
+        return (
+            True,
+            f"Suspicion score on ambiguous decision boundary ({suspicion_score:.1f}). Escalating for tiebreak.",
+        )
 
     return False, "QUALITY_VERIFIED"

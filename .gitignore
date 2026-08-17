@@ -59,3 +59,12 @@ data/*.key
 # Playwright binaries if downloaded locally
 .playwright/
 ms-playwright/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+!*.tfvars.example
+

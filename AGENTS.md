@@ -26,9 +26,13 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 9. **Whitespace-Insensitive Citation Grounding**:
    - Grounded quote validators must collapse all whitespace sequences (`\s+` -> ` `) in both citations and source HTML text before substring matching.
 10. **FastMCP 2.0 & Datetime Serialization**:
-   - Always use `model_dump(mode="json")` for Pydantic models containing datetimes before calling `json.dumps()` in FastMCP tool handlers and tests.
+    - Always use `model_dump(mode="json")` for Pydantic models containing datetimes before calling `json.dumps()` in FastMCP tool handlers and tests.
 11. **Mesh Network Topology & Multi-Hop Testing ($N \ge 7$)**:
-   - Realistic mesh testing requires $N \ge 7$ nodes arranged in non-trivial graph topologies ($d \ge 3$) to verify relay TTL decrements and $N \ge 3f + 1$ ($f = 2$) Byzantine Sybil collusion isolation.
+    - Realistic mesh testing requires $N \ge 7$ nodes arranged in non-trivial graph topologies ($d \ge 3$) to verify relay TTL decrements and $N \ge 3f + 1$ ($f = 2$) Byzantine Sybil collusion isolation.
+12. **Operational Cost Profile Enforcement**:
+    - The `FREE` profile strictly enforces a $0.00 daily spend ceiling with $0$ thinking tokens. The `BALANCED` profile operates at a $0.50/day cap with $1,024$ thinking tokens, while `ULTRA` enables deep reasoning ($4,096 - 16,384$ tokens) and 10,000-word ingestion limits.
+13. **Cloud Run Cost Capping & Scale-to-Zero Invariant**:
+    - Production Cloud Run v2 services must configure `min_instance_count = 0` (scale-to-zero), `cpu_idle = true`, a **$15.00 USD/month Cloud Billing Budget ceiling** with automated 50%, 80%, 100% threshold alarms, and Secret Manager API key references.
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic test suite (<2s).
