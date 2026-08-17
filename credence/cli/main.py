@@ -6,6 +6,8 @@ Commands:
 - credence identity [show|generate]
 - credence taxonomy [list|show <catalog_id>]
 - credence quota
+- credence serve [--transport {stdio,sse}] [--host HOST] [--port PORT]
+- credence mesh [--port PORT] [--seeds SEEDS]
 - credence tui
 """
 
@@ -21,6 +23,7 @@ from rich.panel import Panel
 from rich.table import Table
 from sqlmodel import select
 
+from credence.config import settings
 from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
@@ -256,6 +259,34 @@ async def cli_quota() -> None:
         return
 
 
+def cli_serve(transport: str = "stdio", host: str = "0.0.0.0", port: int = 8000) -> None:  # noqa: S104
+    """Launch the FastMCP server in Stdio or SSE mode."""
+    from credence.server.app import mcp_server
+
+    if transport == "stdio":
+        console.print("[green]Starting Credence FastMCP Server on stdio...[/green]")
+        asyncio.run(mcp_server.run_stdio_async())
+    elif transport == "sse":
+        import uvicorn
+
+        console.print(f"[bold green]Starting Credence FastMCP Server (SSE) on http://{host}:{port}/sse[/bold green]")
+        uvicorn.run(mcp_server.sse_app(), host=host, port=port)
+
+
+async def cli_mesh(port: int, seeds: list[str]) -> None:
+    """Launch the P2P Mesh Relay node."""
+    from credence.mesh.relay import MeshGossipRelay
+
+    relay = MeshGossipRelay(port=port, peer_seeds=seeds)
+    await relay.start()
+    console.print(f"[bold cyan]Credence Mesh Relay active on ws://{settings.MESH_HOST}:{port}[/bold cyan]")
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        await relay.stop()
+
+
 def main() -> None:
     """CLI argument parsing and router."""
     parser = argparse.ArgumentParser(
@@ -279,6 +310,17 @@ def main() -> None:
 
     # quota command
     subparsers.add_parser("quota", help="Display token headroom, daily USD spend, and circuit breaker status.")
+
+    # serve command
+    serve_parser = subparsers.add_parser("serve", help="Launch FastMCP server.")
+    serve_parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio", help="MCP transport protocol.")
+    serve_parser.add_argument("--host", default=settings.MCP_HOST, help="Bind host for SSE transport.")
+    serve_parser.add_argument("--port", type=int, default=settings.MCP_PORT, help="Port for SSE transport.")
+
+    # mesh command
+    mesh_parser = subparsers.add_parser("mesh", help="Launch Credence P2P Mesh relay.")
+    mesh_parser.add_argument("--port", type=int, default=settings.MESH_PORT, help="Port for Mesh WebSocket listener.")
+    mesh_parser.add_argument("--seeds", default="", help="Comma-separated list of peer seed WebSocket URLs.")
 
     # tui command
     subparsers.add_parser("tui", help="Launch interactive Terminal User Interface (TUI) dashboard.")
@@ -309,6 +351,11 @@ def main() -> None:
         cli_identity(args.action)
     elif args.command == "quota":
         asyncio.run(cli_quota())
+    elif args.command == "serve":
+        cli_serve(transport=args.transport, host=args.host, port=args.port)
+    elif args.command == "mesh":
+        seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
+        asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
     elif args.command == "taxonomy":
         cli_taxonomy(args.action, args.catalog_id)
 

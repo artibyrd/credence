@@ -125,3 +125,7 @@ def verify_audit_signature(report: AuditReport) -> bool:
         return True
     except (ValueError, InvalidSignature):
         return False
+
+
+# Alias for backward compatibility
+verify_audit_report = verify_audit_signature

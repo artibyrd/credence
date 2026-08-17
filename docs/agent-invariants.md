@@ -59,3 +59,13 @@ This document outlines mandatory rules and design invariants for human contribut
 
 ## 9. Textual & Rich Markup Escaping
 - Never use unescaped `[/]` or bracket shortcuts in Textual/Rich widget strings; format as `[bold]/[/bold]` or escape as `[\]`.
+
+---
+
+## 10. FastMCP 2.0 & Datetime Serialization
+- Always use `model_dump(mode="json")` for Pydantic models containing datetimes before calling `json.dumps()` in FastMCP tool handlers and tests.
+
+---
+
+## 11. Mesh Network Topology & Multi-Hop Testing ($N \ge 7$)
+- Realistic mesh testing requires $N \ge 7$ nodes arranged in non-trivial graph topologies ($d \ge 3$) to verify relay TTL decrements and $N \ge 3f + 1$ ($f = 2$) Byzantine Sybil collusion isolation.

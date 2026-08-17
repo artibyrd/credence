@@ -13,7 +13,7 @@
 4. **Poe's Law Parody & Satire Classification Layer** (`content_type: SATIRE_PARODY` / `is_satire: bool`)
 5. **Future Domain Extensions** (`domain: DOMAIN_SPECIFIC`, e.g. medical claims, financial disclosures)
 
-Credence calculates a calibrated **Suspicion Score & Density Index**, eliminates hallucinations via **Grounded Citation Verification**, cryptographically signs evaluations using an **Ed25519 Node Identity**, and protects developer token quotas with an in-database **Token Safety Governor**.
+Credence calculates a calibrated **Suspicion Score & Density Index**, eliminates hallucinations via **Grounded Citation Verification**, cryptographically signs evaluations using an **Ed25519 Node Identity**, gossips signed attestations across a **7-Node P2P Mesh Network**, and exposes tools over **FastMCP 2.0**.
 
 ---
 
@@ -35,6 +35,49 @@ poetry run credence tui
 - **`i`**: Switch to Node Cryptographic Identity tab
 - **`r`**: Refresh data from SQLite database
 - **`q`**: Quit
+
+---
+
+## Model Context Protocol (FastMCP 2.0) Server
+
+Credence natively exposes its multi-agent evaluation pipeline and dynamic taxonomy catalogs over standard MCP transports:
+
+```bash
+# 1. Start FastMCP Server on stdio (Antigravity & Claude Desktop)
+just serve-stdio
+# or
+poetry run credence serve --transport stdio
+
+# 2. Start FastMCP Server on SSE / HTTP (Port 8000)
+just serve-sse
+# or
+poetry run credence serve --transport sse --host 0.0.0.0 --port 8000
+```
+
+### Registered FastMCP Tools
+- `credence_check_url`: Audits target webpage, calculates suspicion score, and signs Ed25519 attestation.
+- `credence_evaluate_text`: Audits raw prose text directly without web scraping (zero network overhead).
+- `credence_get_audit`: Queries cached audits by URL or content SHA-256 in $0$ LLM tokens.
+- `credence_verify_attestation`: Cryptographically verifies signed audit reports.
+- `credence_get_quota_status`: Returns token headroom %, daily spend, and circuit breaker status.
+- `credence_get_consensus`: Calculates Bayesian multi-node consensus across peer attestations.
+
+---
+
+## 7-Node Decentralized Credence Mesh Cluster
+
+Run an isolated 7-node P2P mesh cluster with multi-hop gossip routing and Byzantine Sybil fault tolerance:
+
+```bash
+# Start 7-node mesh cluster
+just mesh-cluster-up
+
+# View live P2P gossip logs
+just mesh-cluster-logs
+
+# Stop cluster
+just mesh-cluster-down
+```
 
 ---
 
@@ -83,7 +126,7 @@ cp .env.example .env
 
 ### Task Runner Commands (`Justfile`)
 ```bash
-# Run hermetic unit test suite (49 tests, <2s)
+# Run hermetic unit test suite (63 tests, <2s)
 just test
 
 # Run code linters and type checkers (Ruff & Mypy)
@@ -105,6 +148,8 @@ just docker-test
 ## Core Documentation Suite (`/docs`)
 
 - 📘 **[Architecture Overview](docs/architecture.md)**: End-to-end system topology, dual-capture ingestion, multi-agent pipeline, and cryptographic attestation flow.
+- 📘 **[P2P Mesh Protocol & Consensus](docs/mesh-protocol.md)**: Multi-hop gossip routing, 7-node topology, LRU storm suppression, and Byzantine Sybil collusion isolation.
+- 📘 **[FastMCP Server & Client Integration](docs/mcp-integration.md)**: FastMCP tool catalogs, dynamic resources, prompts, and Claude Desktop / Antigravity configs.
 - 📘 **[Scoring Calibration & Mathematical Rubrics](docs/scoring-calibration.md)**: Mathematical definitions for linear raw suspicion, exponential saturation curves, density indices, and satire neutralization.
 - 📘 **[Token Safety Governor & Model Tiering](docs/token-governor.md)**: Token budget safety, Gemini 3.7 Flash thinking token accounting, circuit breaker behavior, and quality gates.
 - 📘 **[Agent Invariants & Architectural Rules](docs/agent-invariants.md)**: Strict invariants for human developers and autonomous AI coding agents.
@@ -134,12 +179,19 @@ just docker-test
 │   │   ├── scoring.py         # Calibrated Saturation Scoring
 │   │   ├── subagents.py       # Specialist Prompts & Grounded Quote Validator
 │   │   └── evaluator.py       # Orchestrator with SQLite Caching
+│   ├── server/                # FastMCP 2.0 Server
+│   │   └── app.py
+│   ├── mesh/                  # P2P Mesh Protocol & Bayesian Consensus
+│   │   ├── protocol.py
+│   │   ├── relay.py
+│   │   └── consensus.py
 │   ├── cli/                   # Rich Terminal CLI
 │   │   └── main.py
 │   └── tui/                   # Textual Terminal Workstation
 │       └── app.py
-├── tests/                     # Hermetic Pytest Suite (49 unit tests)
+├── tests/                     # Hermetic Pytest Suite (63 unit tests)
 ├── docs/                      # Copious Documentation Suite
+├── docker-compose.mesh.yml    # 7-Node Local Mesh Cluster Configuration
 ├── Dockerfile                 # Multi-stage Container with Python 3.12 + Chromium
 ├── Justfile                   # Task runner
 └── pyproject.toml

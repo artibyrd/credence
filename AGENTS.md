@@ -25,9 +25,15 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
    - Never use unescaped `[/]` or bracket shortcuts in Textual/Rich widget strings; format as `[bold]/[/bold]` or escape as `[\]`.
 9. **Whitespace-Insensitive Citation Grounding**:
    - Grounded quote validators must collapse all whitespace sequences (`\s+` -> ` `) in both citations and source HTML text before substring matching.
+10. **FastMCP 2.0 & Datetime Serialization**:
+   - Always use `model_dump(mode="json")` for Pydantic models containing datetimes before calling `json.dumps()` in FastMCP tool handlers and tests.
+11. **Mesh Network Topology & Multi-Hop Testing ($N \ge 7$)**:
+   - Realistic mesh testing requires $N \ge 7$ nodes arranged in non-trivial graph topologies ($d \ge 3$) to verify relay TTL decrements and $N \ge 3f + 1$ ($f = 2$) Byzantine Sybil collusion isolation.
 
 ## Standard Task Commands (`Justfile`)
 - `just test`: Run fast hermetic test suite (<2s).
 - `just lint`: Run `ruff check`, `ruff format --check`, and `mypy credence tests`.
 - `just format`: Autoformat code with Ruff.
 - `just tui`: Launch interactive Textual terminal workstation.
+- `just mesh-cluster-up`: Launch 7-node local P2P mesh cluster.
+- `just serve-sse`: Start FastMCP server in SSE mode on port 8000.

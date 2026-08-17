@@ -45,8 +45,12 @@ class Settings(BaseSettings):
     ENABLE_CIRCUIT_BREAKER: bool = True
 
     # P2P Mesh & MCP Networking
-    MESH_ENABLED: bool = False
+    MESH_ENABLED: bool = True
+    MESH_HOST: str = "0.0.0.0"  # noqa: S104
     MESH_PORT: int = 8765
+    PEER_SEEDS: str = ""  # Comma-separated list of peer ws://host:port endpoints
+    CONSENSUS_THRESHOLD: float = 0.66
+    RATE_LIMIT_MSGS_PER_SEC: int = 50
     MCP_HOST: str = "0.0.0.0"  # noqa: S104
     MCP_PORT: int = 8000
 

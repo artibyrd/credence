@@ -41,6 +41,23 @@ docker-test:
 tui:
     poetry run credence tui
 
+# Run FastMCP server
+serve-stdio:
+    poetry run credence serve --transport stdio
+
+serve-sse:
+    poetry run credence serve --transport sse --port 8000
+
+# Credence Mesh 3-Node Cluster Management
+mesh-cluster-up:
+    docker compose -f docker-compose.mesh.yml up -d --build
+
+mesh-cluster-down:
+    docker compose -f docker-compose.mesh.yml down -v
+
+mesh-cluster-logs:
+    docker compose -f docker-compose.mesh.yml logs -f
+
 # Run fastmcp dev server
 dev:
-    poetry run python -m credence.server.app
+    poetry run credence serve --transport sse --port 8000

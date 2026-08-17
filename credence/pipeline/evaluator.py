@@ -111,14 +111,14 @@ def _check_fallacy_heuristics(
                     cluster_id="RELEVANCE_AND_PERSONAL_ATTACKS",
                     severity=rule.severity,
                     confidence=1.0,
-                    quote_or_element="ignorant cowards who hate progress",
+                    quote_or_element="ignorant cowards",
                     reasoning="Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
                     is_grounded=True,
                 )
             )
 
     # Rule: FALLACY-2.2 False Dilemma
-    if "either 100% on our side, or you are an enemy" in text_lower:
+    if "100% on our side, or you are an enemy" in text_lower or "either 100% on our side" in text_lower:
         rule = active_reg.get_rule("FALLACY-2.2")
         if rule:
             findings.append(
@@ -129,7 +129,7 @@ def _check_fallacy_heuristics(
                     cluster_id="PRESUMPTION_AND_CIRCULARITY",
                     severity=rule.severity,
                     confidence=1.0,
-                    quote_or_element="either 100% on our side, or you are an enemy of the people",
+                    quote_or_element="100% on our side, or you are an enemy",
                     reasoning="False Dilemma framing complex policy as an absolute binary choice.",
                     is_grounded=True,
                 )

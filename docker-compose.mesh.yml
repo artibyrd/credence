@@ -1,0 +1,221 @@
+services:
+  credence-node-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-1
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8001:8000"
+      - "8761:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-2:8765,ws://credence-node-7:8765
+    volumes:
+      - ./data/cluster/node1:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+  credence-node-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-2
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8002:8000"
+      - "8762:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-1:8765,ws://credence-node-3:8765
+    volumes:
+      - ./data/cluster/node2:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+  credence-node-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-3
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8003:8000"
+      - "8763:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-2:8765,ws://credence-node-4:8765,ws://credence-node-6:8765
+    volumes:
+      - ./data/cluster/node3:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+  credence-node-4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-4
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8004:8000"
+      - "8764:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-3:8765,ws://credence-node-5:8765
+    volumes:
+      - ./data/cluster/node4:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+  credence-node-5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-5
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8005:8000"
+      - "8765:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-4:8765,ws://credence-node-6:8765
+    volumes:
+      - ./data/cluster/node5:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+  credence-node-6:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-6
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8006:8000"
+      - "8766:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-3:8765,ws://credence-node-5:8765,ws://credence-node-7:8765
+    volumes:
+      - ./data/cluster/node6:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+  credence-node-7:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credence-node-7
+    command: ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8007:8000"
+      - "8767:8765"
+    environment:
+      - ENV=cluster
+      - DATA_DIR=/app/data
+      - DB_PATH=/app/data/credence.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/credence.db
+      - NODE_KEY_PATH=/app/data/node_identity.key
+      - MESH_ENABLED=true
+      - MESH_HOST=0.0.0.0
+      - MESH_PORT=8765
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - PEER_SEEDS=ws://credence-node-1:8765,ws://credence-node-6:8765
+    volumes:
+      - ./data/cluster/node7:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    networks:
+      - credence-mesh-net
+
+networks:
+  credence-mesh-net:
+    driver: bridge
