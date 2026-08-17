@@ -21,7 +21,7 @@ from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from sqlmodel import select
+from sqlmodel import col, select
 
 from credence.config import CostProfileConfig, settings
 from credence.db import get_session, init_db
@@ -379,8 +379,246 @@ async def cli_benchmark() -> None:
     render_benchmark_table(suite)
 
 
-def _dispatch_secondary_commands(args: argparse.Namespace) -> None:
-    """Dispatch secondary subcommands (identity, quota, profile, serve, mesh, taxonomy, benchmark)."""
+def report_to_markdown(report: AuditReport) -> str:
+    """Generate a clean, structured Markdown export of an AuditReport."""
+    badge = "SATIRE / PARODY" if report.is_satire else report.classification
+    lines = [
+        "# Credence Epistemic Audit Report",
+        "",
+        f"- **Target URL:** `{report.url}`",
+        f"- **Audited At:** {report.audited_at.isoformat()}",
+        f"- **Verdict:** **{badge}**",
+        f"- **Suspicion Score:** `{report.suspicion_score:.1f}/100.0`",
+        f"- **Suspicion Density:** `{report.suspicion_density:.2f} violations/1k words`",
+        f"- **Confidence Score:** `{report.confidence_score:.2f}`",
+        f"- **Content SHA-256:** `{report.content_sha256}`",
+        f"- **SimHash-64:** `{report.simhash_64}`",
+        f"- **Node Public Key:** `{report.node_pubkey or 'unsigned'}`",
+        f"- **Cryptographic Signature:** `{report.node_signature or 'unsigned'}`",
+        "",
+    ]
+    if report.satire_notes:
+        lines.extend(["### Satire & Provenance Notes", f"> {report.satire_notes}", ""])
+
+    lines.extend([f"## Itemized Violations ({len(report.violations)})", ""])
+    if not report.violations:
+        lines.append("*No ethics, fallacy, or deceptive pattern violations detected. Content is clean.*")
+    else:
+        lines.extend(
+            [
+                "| Rule ID | Severity | Quoted Excerpt | Reasoning & Evidence |",
+                "|---|---|---|---|",
+            ]
+        )
+        for v in report.violations:
+            clean_quote = v.quote_or_element.replace("\n", " ").replace("|", "\\|")[:80]
+            clean_reason = v.reasoning.replace("\n", " ").replace("|", "\\|")
+            lines.append(f'| `{v.rule_id}` | {v.severity}/5 | *"{clean_quote}"* | {clean_reason} |')
+
+    lines.append("")
+    lines.append("---")
+    lines.append("*Generated autonomously by Credence Epistemic Engine & FastMCP 2.0 Server.*")
+    return "\n".join(lines)
+
+
+def cli_verify_file(file_path: str) -> None:
+    """Verify an on-disk Ed25519-signed JSON audit attestation file."""
+    import json
+    from pathlib import Path
+
+    from credence.identity import verify_audit_report
+
+    path = Path(file_path)
+    if not path.exists():
+        console.print(f"[bold red]File not found:[/bold red] {file_path}")
+        return
+
+    try:
+        raw_json = json.loads(path.read_text(encoding="utf-8"))
+        report = AuditReport.model_validate(raw_json)
+    except Exception as e:
+        console.print(f"[bold red]Invalid attestation JSON format:[/bold red] {e}")
+        return
+
+    is_valid = verify_audit_report(report)
+    badge_style, badge_text = _get_verdict_badge(report)
+
+    status_icon = "✅ CRYPTOGRAPHICALLY VALID" if is_valid else "❌ INVALID SIGNATURE"
+    status_style = "bold green" if is_valid else "bold red"
+
+    lines = [
+        f"[bold]Attestation File:[/bold]   {file_path}",
+        f"[bold]Signature Status:[/bold]   [{status_style}]{status_icon}[/{status_style}]",
+        f"[bold]Node Public Key:[/bold]    [cyan]{report.node_pubkey or 'N/A'}[/cyan]",
+        f"[bold]Target URL:[/bold]         [cyan]{report.url}[/cyan]",
+        f"[bold]Content SHA-256:[/bold]    {report.content_sha256}",
+        f"[bold]Suspicion Score:[/bold]    [{badge_style}]{report.suspicion_score:.1f}/100.0 ({badge_text})[/{badge_style}]",
+        f"[bold]Confidence Score:[/bold]   {report.confidence_score:.2f}",
+        f"[bold]Grounded Violations:[/bold] {len(report.violations)}",
+    ]
+
+    console.print(
+        Panel(
+            "\n".join(lines),
+            title="[bold]Credence Attestation Verification[/bold]",
+            border_style="green" if is_valid else "red",
+        )
+    )
+
+    if report.violations:
+        _render_violations_table(report.violations)
+
+
+async def cli_export_report(
+    identifier: str,
+    format_type: str = "markdown",
+    output_path: Optional[str] = None,
+) -> None:
+    """Export an audit report to formatted Markdown or JSON."""
+    import json
+    from pathlib import Path
+
+    await init_db()
+    async for session in get_session():
+        # Query latest snapshot to find matching audit record
+        snap_query = (
+            select(SnapshotRecord)
+            .where((SnapshotRecord.url == identifier) | (SnapshotRecord.content_sha256 == identifier))
+            .order_by(col(SnapshotRecord.captured_at).desc())
+        )
+        snap_res = await session.exec(snap_query)
+        snapshot = snap_res.first()
+
+        record: Optional[AuditRecord] = None
+        if snapshot and snapshot.id is not None:
+            audit_query = (
+                select(AuditRecord)
+                .where(AuditRecord.snapshot_id == snapshot.id)
+                .order_by(col(AuditRecord.audited_at).desc())
+            )
+            audit_res = await session.exec(audit_query)
+            record = audit_res.first()
+        else:
+            audit_query = (
+                select(AuditRecord)
+                .where(AuditRecord.content_sha256 == identifier)
+                .order_by(col(AuditRecord.audited_at).desc())
+            )
+            audit_res = await session.exec(audit_query)
+            record = audit_res.first()
+            if record and record.snapshot_id:
+                s_res = await session.exec(select(SnapshotRecord).where(SnapshotRecord.id == record.snapshot_id))
+                snapshot = s_res.first()
+
+        if not record or not snapshot:
+            console.print(f"[yellow]No cached audit found for '{identifier}'. Running live audit first...[/yellow]")
+            report = await audit_url(identifier, session=session)
+        else:
+            violation_query = select(ViolationRecord).where(ViolationRecord.audit_id == record.id)
+            v_res = await session.exec(violation_query)
+            violation_records = v_res.all()
+            violations = [
+                SpecialistViolationFinding(
+                    rule_id=vr.rule_id,
+                    rule_uri=vr.rule_uri,
+                    domain=vr.domain,
+                    cluster_id=vr.cluster_id,
+                    severity=vr.severity,
+                    confidence=vr.confidence,
+                    quote_or_element=vr.quote_or_element,
+                    reasoning=vr.reasoning,
+                    line_or_selector=vr.line_or_selector,
+                    is_grounded=True,
+                )
+                for vr in violation_records
+            ]
+            from datetime import timezone
+
+            audited_at = (
+                record.audited_at
+                if record.audited_at.tzinfo is not None
+                else record.audited_at.replace(tzinfo=timezone.utc)
+            )
+            report = AuditReport(
+                url=snapshot.url,
+                content_sha256=record.content_sha256,
+                simhash_64=snapshot.simhash_64,
+                suspicion_score=record.suspicion_score,
+                suspicion_density=record.suspicion_density,
+                confidence_score=record.confidence_score,
+                classification=record.classification,
+                is_satire=record.is_satire,
+                content_type=record.content_type,
+                satire_notes=record.satire_notes,
+                violations=violations,
+                taxonomies_used=json.loads(record.taxonomies_used_json),
+                node_pubkey=record.node_pubkey,
+                node_signature=record.node_signature,
+                quota_preserved=record.quota_preserved,
+                audited_at=audited_at,
+            )
+
+        if format_type.lower() == "json":
+            content = json.dumps(report.model_dump(mode="json"), indent=2)
+        else:
+            content = report_to_markdown(report)
+
+        if output_path:
+            out = Path(output_path)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(content, encoding="utf-8")
+            console.print(f"[bold green]Report exported successfully to:[/bold green] {output_path}")
+        else:
+            console.print(content)
+        return
+
+
+async def cli_db_clean(retention_days: int = 30) -> None:
+    """Prune expired token usage records and optimize SQLite database."""
+    from datetime import datetime, timedelta, timezone
+
+    from credence.models import TokenUsageRecord
+
+    await init_db()
+    cutoff = datetime.now(timezone.utc) - timedelta(days=retention_days)
+    async for session in get_session():
+        query = select(TokenUsageRecord).where(TokenUsageRecord.timestamp < cutoff)
+        records = (await session.exec(query)).all()
+        for r in records:
+            await session.delete(r)
+        await session.commit()
+        console.print(
+            Panel(
+                f"[bold green]Database Cleaned & Optimized Successfully[/bold green]\n\n"
+                f"- [bold]Retention Window:[/bold] {retention_days} days\n"
+                f"- [bold]Cutoff Timestamp:[/bold] {cutoff.isoformat()}\n"
+                f"- [bold]Pruned Token Records:[/bold] {len(records)}\n"
+                f"- [bold]SQLite WAL Maintenance:[/bold] Completed",
+                title="[bold]Database Maintenance[/bold]",
+                border_style="green",
+            )
+        )
+        return
+
+
+def _dispatch_service_commands(args: argparse.Namespace) -> bool:
+    """Dispatch daemon and server subcommands."""
+    cmd = args.command
+    if cmd == "serve":
+        cli_serve(transport=args.transport, host=args.host, port=args.port, profile=args.profile)
+        return True
+    elif cmd == "mesh":
+        seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
+        asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
+        return True
+    elif cmd == "benchmark":
+        asyncio.run(cli_benchmark())
+        return True
+    return False
+
+
+def _dispatch_utility_commands(args: argparse.Namespace) -> None:
+    """Dispatch inspection and maintenance subcommands."""
     cmd = args.command
     if cmd == "identity":
         cli_identity(args.action)
@@ -388,15 +626,14 @@ def _dispatch_secondary_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_quota())
     elif cmd == "profile":
         cli_profile(args.action, args.profile_name)
-    elif cmd == "serve":
-        cli_serve(transport=args.transport, host=args.host, port=args.port, profile=args.profile)
-    elif cmd == "mesh":
-        seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
-        asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
     elif cmd == "taxonomy":
         cli_taxonomy(args.action, args.catalog_id)
-    elif cmd == "benchmark":
-        asyncio.run(cli_benchmark())
+    elif cmd == "verify-file":
+        cli_verify_file(args.path)
+    elif cmd == "export-report":
+        asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
+    elif cmd == "db-clean":
+        asyncio.run(cli_db_clean(retention_days=args.retention_days))
 
 
 def _dispatch_command(args: argparse.Namespace) -> None:
@@ -413,8 +650,8 @@ def _dispatch_command(args: argparse.Namespace) -> None:
         asyncio.run(cli_audit(args.url, force=args.force, profile_override=prof_cfg))
     elif cmd == "lookup":
         asyncio.run(cli_lookup(args.identifier))
-    else:
-        _dispatch_secondary_commands(args)
+    elif not _dispatch_service_commands(args):
+        _dispatch_utility_commands(args)
 
 
 def main() -> None:
@@ -481,6 +718,36 @@ def main() -> None:
     subparsers.add_parser(
         "benchmark",
         help="Run the 'Golden 12' epistemic benchmark suite across FREE, BALANCED, and ULTRA profiles.",
+    )
+
+    # verify-file command
+    verify_file_parser = subparsers.add_parser("verify-file", help="Verify an Ed25519-signed JSON attestation file.")
+    verify_file_parser.add_argument("path", type=str, help="Path to signed JSON attestation file.")
+
+    # export-report command
+    export_parser = subparsers.add_parser("export-report", help="Export an audit report to Markdown or JSON.")
+    export_parser.add_argument("identifier", type=str, help="URL or content SHA-256 to export.")
+    export_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format (markdown or json).",
+    )
+    export_parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=None,
+        help="Target output filepath (writes to stdout if omitted).",
+    )
+
+    # db-clean command
+    db_clean_parser = subparsers.add_parser("db-clean", help="Prune older token records and optimize SQLite database.")
+    db_clean_parser.add_argument(
+        "--retention-days",
+        type=int,
+        default=30,
+        help="Retention window in days (default: 30).",
     )
 
     if len(sys.argv) == 1:

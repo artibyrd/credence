@@ -81,3 +81,54 @@ async def test_cli_audit_and_lookup(fixtures_dir: Path) -> None:
     file_url = f"file://{fixtures_dir / 'clean_article.html'}"
     await cli_audit(file_url, force=True)
     await cli_lookup(file_url)
+
+
+@pytest.mark.unit
+async def test_cli_verify_file_and_export(tmp_path: Path) -> None:
+    """Verify verify-file and export-report CLI subcommands."""
+    import json
+
+    from credence.cli.main import cli_export_report, cli_verify_file, report_to_markdown
+    from credence.identity import load_or_create_node_identity, sign_audit_report
+
+    report = AuditReport(
+        url="https://example.org/test-export",
+        content_sha256="sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+        simhash_64="0x1234567890abcdef",
+        suspicion_score=0.0,
+        suspicion_density=0.0,
+        confidence_score=1.0,
+        classification="CLEAN",
+        is_satire=False,
+    )
+    identity = load_or_create_node_identity()
+    signed_report = sign_audit_report(report, identity)
+
+    # Test report_to_markdown
+    md_content = report_to_markdown(signed_report)
+    assert "# Credence Epistemic Audit Report" in md_content
+    assert "https://example.org/test-export" in md_content
+
+    # Save to disk
+    attestation_file = tmp_path / "attestation.json"
+    attestation_file.write_text(json.dumps(signed_report.model_dump(mode="json")), encoding="utf-8")
+
+    # Test verify-file
+    cli_verify_file(str(attestation_file))
+
+    # Test export-report markdown and json
+    export_md = tmp_path / "export.md"
+    export_json = tmp_path / "export.json"
+    await cli_export_report("https://example.org/test-export", format_type="markdown", output_path=str(export_md))
+    await cli_export_report("https://example.org/test-export", format_type="json", output_path=str(export_json))
+
+    assert export_md.exists()
+    assert export_json.exists()
+
+
+@pytest.mark.unit
+async def test_cli_db_clean() -> None:
+    """Verify db-clean CLI subcommand."""
+    from credence.cli.main import cli_db_clean
+
+    await cli_db_clean(retention_days=30)

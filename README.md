@@ -133,7 +133,17 @@ poetry run credence identity show
 # 5. Lookup cached audit by URL or content SHA-256
 poetry run credence lookup https://example.com/article
 
-# 6. List registered taxonomy catalogs & rule counts
+# 6. Export formatted Markdown or JSON audit report
+poetry run credence export-report https://example.com/article --format markdown
+poetry run credence export-report https://example.com/article --format json -o /tmp/attestation.json
+
+# 7. Cryptographically verify an on-disk attestation JSON file
+poetry run credence verify-file /tmp/attestation.json
+
+# 8. Prune older token records and optimize SQLite database
+poetry run credence db-clean --retention-days 30
+
+# 9. List registered taxonomy catalogs & rule counts
 poetry run credence taxonomy list
 ```
 
@@ -161,7 +171,7 @@ cp .env.example .env
 
 ### Task Runner Commands (`Justfile`)
 ```bash
-# Run hermetic unit test suite (76 tests, <25s)
+# Run hermetic unit test suite (78 tests, <30s)
 just test
 
 # Run code linters and type checkers (Ruff & Mypy)
@@ -239,9 +249,9 @@ just docker-test
 │   ├── monitoring.tf
 │   └── outputs.tf
 ├── cloudbuild.yaml            # Cloud Build CI/CD (Lint -> Test Gate -> Build -> Deploy)
-├── tests/                     # Hermetic Pytest Suite (67 unit tests)
+├── tests/                     # Hermetic Pytest Suite (78 unit tests)
 ├── docs/                      # Copious Documentation Suite
-├── docker-compose.mesh.yml    # 7-Node Local Mesh Cluster Configuration
+├── docker-compose.mesh.yml    # 13-Node Local Mesh Cluster Configuration
 ├── Dockerfile                 # Multi-stage Container with Python 3.12 + Chromium
 ├── Justfile                   # Task runner
 └── pyproject.toml

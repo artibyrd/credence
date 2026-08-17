@@ -322,6 +322,30 @@ def _register_prompts(server: MCPServer) -> None:
             f"SPJ journalistic ethics, logical fallacies, and deceptive patterns."
         )
 
+    @server.prompt(
+        name="fallacy_review_prompt",
+        description="Structured prompt template for auditing argumentative text for formal and informal logical fallacies.",
+    )
+    def fallacy_review_prompt(text: str) -> str:
+        return (
+            f"Please analyze the following argumentative passage against the IEP Logical Fallacies taxonomy:\n\n"
+            f"---\n{text}\n---\n\n"
+            f"Use the `credence_evaluate_text` tool to detect fallacies (such as Ad Hominem, False Dilemma, "
+            f"Post Hoc Ergo Propter Hoc, or Bandwagon appeals) and extract verbatim grounded citations."
+        )
+
+    @server.prompt(
+        name="dark_pattern_review_prompt",
+        description="Prompt template for reviewing user onboarding flows or e-commerce pages for deceptive UI patterns.",
+    )
+    def dark_pattern_review_prompt(url: str) -> str:
+        return (
+            f"Please perform a deceptive design audit on this target URL:\n"
+            f"Target URL: {url}\n\n"
+            f"Use the `credence_check_url` tool to inspect the rendered DOM for confirmshaming, fake urgency countdowns, "
+            f"pre-selected options, disguised advertisements, and hidden recurring subscription terms."
+        )
+
 
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""

@@ -37,4 +37,9 @@ COPY . .
 RUN poetry install
 
 EXPOSE 8000
+
+# Container Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/sse || poetry run credence identity show || exit 1
+
 CMD ["poetry", "run", "python", "-m", "credence.server.app"]

@@ -522,6 +522,7 @@ async def audit_url(
 
         audit_record = AuditRecord(
             snapshot_id=snap_record.id,
+            audited_at=report.audited_at,
             content_sha256=report.content_sha256,
             suspicion_score=report.suspicion_score,
             suspicion_density=report.suspicion_density,

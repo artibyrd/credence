@@ -33,6 +33,8 @@ async def test_fastmcp_server_initialization() -> None:
     prompts = await server.list_prompts()
     prompt_names = [p.name for p in prompts]
     assert "audit_article_prompt" in prompt_names
+    assert "fallacy_review_prompt" in prompt_names
+    assert "dark_pattern_review_prompt" in prompt_names
 
 
 @pytest.mark.unit

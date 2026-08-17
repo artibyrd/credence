@@ -38,9 +38,13 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 15. **Epistemic Benchmark & Grounded Heuristics Invariant**:
     - Satire cue extractors must strictly target structural declarations (Schema.org `SatiricalArticle`, masthead badges, and dedicated disclaimer containers) rather than unrestricted keyword matching across arbitrary prose.
     - Heuristic evaluation engines and synthetic test fixtures must quote exact verbatim substrings from the extracted DOM text to guarantee 100% quote grounding validation (`is_grounded=True`).
+16. **Mermaid Diagram Contrast & Visual Accessibility Invariant**:
+    - Never apply custom light background fill styles (`fill:#d1fae5`, `fill:#fef3c7`) in Mermaid diagrams without declaring explicit high-contrast font colors (`color:#0f172a`), or preferably rely on standard unstyled Mermaid node themes to guarantee readable text across both light and dark UI themes.
+17. **Attestation Timestamp & Canonical Payload Precision Invariant**:
+    - When persisting signed `AuditReport` models to SQLModel database tables (`AuditRecord`) and reconstructing them for export or verification (`credence verify-file`), explicitly preserve the exact signed `audited_at` timestamp with timezone awareness (`UTC`) to guarantee 100% cryptographic signature validity under RFC 8785.
 
 ## Standard Task Commands (`Justfile`)
-- `just test`: Run fast hermetic test suite (<2s).
+- `just test`: Run fast hermetic test suite (<30s).
 - `just lint`: Run `ruff check`, `ruff format --check`, and `mypy credence tests`.
 - `just format`: Autoformat code with Ruff.
 - `just tui`: Launch interactive Textual terminal workstation.

@@ -48,7 +48,17 @@ Calculates Bayesian multi-node consensus across peer evaluations for a given con
 
 ---
 
-## 4. Connecting to Antigravity & Claude Desktop
+## 4. Dynamic FastMCP Prompts
+
+Credence registers interactive prompt templates for AI assistants:
+
+- **`audit_article_prompt(url)`**: Orchestrates an end-to-end epistemic audit on a target URL using `credence_check_url`.
+- **`fallacy_review_prompt(text)`**: Structures a formal argument inspection against the IEP Fallacies taxonomy using `credence_evaluate_text`.
+- **`dark_pattern_review_prompt(url)`**: Guides automated inspection of e-commerce checkout or signup funnels for deceptive patterns.
+
+---
+
+## 5. Connecting to Antigravity & Claude Desktop
 
 Add Credence to your MCP settings configuration (`mcp_config.json` or `claude_desktop_config.json`):
 

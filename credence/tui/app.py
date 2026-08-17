@@ -31,6 +31,7 @@ from textual.widgets import (
     Tree,
 )
 
+from credence.config import settings
 from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
@@ -165,6 +166,9 @@ class CredenceApp(App):
         background: $surface;
     }
     """
+
+    TITLE = "Credence Epistemic Workstation"
+    SUB_TITLE = f"Decentralized Trust Network [{settings.CREDENCE_PROFILE.value.upper()}]"
 
     BINDINGS = [
         ("q", "quit", "Quit"),
