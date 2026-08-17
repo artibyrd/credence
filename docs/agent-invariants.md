@@ -196,6 +196,14 @@ This document outlines mandatory rules and design invariants for human contribut
 - **ElementTree Boolean Traversal Safety**: In Python `xml.etree.ElementTree`, an Element with 0 child elements evaluates to `False` in boolean context. Never chain XML node lookups with `or` operators (`find(tag1) or find(tag2)`). All feed and XML parsers must use explicit `is not None` checks or `_find_first_elem()` helpers and extract inner text via `itertext()`.
 - **Zero-Key First-Boot Fallback**: When no API key is detected in the runtime environment, the evaluation pipeline must automatically engage the offline structural heuristic engine (`quota_preserved = True`, `evaluation_method: "offline_structural_heuristic"`, confidence capped at $\le 0.50$) to guarantee zero-crash developer onboarding.
 
+---
+
+## 32. Content Decoupling & Hermetic CI Invariant
+- **Application Code & Content Separation**: Core protocol repositories must not be cluttered with static marketing HTML or heavy blogging boilerplate. Technical walkthroughs and tutorials must be maintained in versioned Markdown under `docs/tutorials/`, while external documentation engines (`docs.credence.run`) are deployed via decoupled content pipelines.
+- **Zero-Secret Hermetic CI Boundary**: Automated pull request CI workflows (`ci.yml`) must execute 100% offline and network-free using `-backend=false` and in-memory SQLite, allowing open-source contributors to fork and test with zero cloud credentials. Remote state persistence and live multi-cloud provisioning remain strictly governed by the Bootstrap Operator Guide.
+- **Pragmatic Communication Tone**: Official project announcements and release notes must prioritize practical developer utility, CLI/MCP ergonomics, and concrete problem-solving over brash hyperbole or overly dense academic jargon.
+
+
 
 
 
