@@ -16,3 +16,13 @@ alert_email_addresses       = ["admin@example.com"]
 # Cloud Run Scaling Invariants (Scale-to-Zero)
 min_instance_count          = 0
 max_instance_count          = 2
+
+# Cloudflare Multi-Domain Configuration (Optional)
+cloudflare_api_token        = "YOUR_CLOUDFLARE_API_TOKEN"
+cloudflare_account_id       = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+
+# Canonical (or White-Labeled) Domains
+domain_credence_run         = "credence.run"
+domain_credence_nexus       = "credence.nexus"
+domain_credence_foundation  = "credence.foundation"
+domain_credence_report      = "credence.report"

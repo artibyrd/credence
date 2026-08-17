@@ -48,9 +48,20 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 19. **Gossip Envelope Signature Preservation & Invariant Normalization**:
     - Intermediate mesh relay nodes must NEVER re-sign an envelope if `envelope.signature` is already populated by the originating author (`if not envelope.signature: envelope = self._sign_envelope(envelope)`).
     - All inner Pydantic models embedded within envelope payloads must be serialized with `model_dump(mode="json")`, and envelope canonical byte generators (`get_canonical_bytes()`) must provide a fallback datetime ISO serializer to prevent runtime `TypeError` during serialization.
+20. **Web Frontend Zero-Build & Web Crypto Verification Invariant**:
+    - All public web frontends across the Credence ecosystem must be built strictly using **vanilla modern web standards** (Semantic HTML5, CSS Custom Properties, and native ES Modules) with **zero Node.js/npm build dependencies** and zero JavaScript runtime frameworks.
+    - Client-side cryptographic verification of signed audit reports and seed files must strictly use the native W3C **Web Cryptography API** (`window.crypto.subtle`) rather than external JavaScript crypto libraries.
+    - Dynamic social previews (OpenGraph / Twitter cards) must be pre-rendered or injected by edge cache rules / Cloud Run serverless endpoints with long-lived edge caching (`s-maxage=2592000`) rather than requiring client-side single-page app hydration.
+21. **Turnkey White-Label Federation & Dry-Run Governor Invariant**:
+    - All deployment scripts, publishing utilities, and infrastructure templates must provide non-destructive `--dry-run` inspection modes and local preview servers (`just serve-web`) for human review ("Mk1 Eyeball") prior to cloud mutation.
+    - Scaffolding tools (`credence init-org`) must generate completely sovereign, parameterized multi-cloud configurations and cryptographic root keypairs to allow independent organizations to run compatible federated mesh networks without code modifications.
 
 ## Standard Task Commands (`Justfile`)
-- `just test`: Run fast hermetic test suite (<30s).
+- `just test`: Run fast hermetic unit test suite (<45s).
+- `just test-e2e-mock`: Run offline mock end-to-end integration test.
+- `just test-e2e`: Run online end-to-end integration tests against live production domains (requires `CREDENCE_LIVE_TESTS=1`).
+- `just serve-web`: Launch local preview server for visual Mk1 Eyeball review of web artifacts.
+- `just tf-validate`: Validate Terraform configurations across GCP and Cloudflare.
 - `just lint`: Run `ruff check`, `ruff format --check`, and `mypy credence tests`.
 - `just format`: Autoformat code with Ruff.
 - `just tui`: Launch interactive Textual terminal workstation.

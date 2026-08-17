@@ -225,6 +225,9 @@ just docker-test
 - 📘 **[FastMCP Server & Client Integration](docs/mcp-integration.md)**: FastMCP tool catalogs, dynamic resources, prompts, and Claude Desktop / Antigravity configs.
 - 📘 **[Scoring Calibration & Mathematical Rubrics](docs/scoring-calibration.md)**: Mathematical definitions for linear raw suspicion, exponential saturation curves, density indices, and satire neutralization.
 - 📘 **[Token Safety Governor & Model Tiering](docs/token-governor.md)**: Token budget safety, Gemini 3.7 Flash thinking token accounting, circuit breaker behavior, and quality gates.
+- 📘 **[Multi-Cloud Deployment (GCP + Cloudflare)](docs/deployment-multi-domain.md)**: Operator runbook for Cloud Run, Cloudflare WAF, and zero-egress R2 seed hosting.
+- 📘 **[White-Label Mesh Federation Guide](docs/federation-whitelabel.md)**: Turnkey guide to scaffolding sovereign, brand-customized mesh organizations via `credence init-org`.
+- 📘 **[Web Frontend Architecture & Zero-Build Invariant](docs/frontend-architecture.md)**: Zero-dependency web standards, native in-browser Web Crypto Ed25519 verification, and Cloudflare edge delivery.
 - 📘 **[Agent Invariants & Architectural Rules](docs/agent-invariants.md)**: Strict invariants for human developers and autonomous AI coding agents.
 
 ---

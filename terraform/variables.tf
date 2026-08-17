@@ -61,3 +61,40 @@ variable "max_instance_count" {
   description = "Maximum instance count for Cloud Run to prevent runaway scaling."
   default     = 2
 }
+
+variable "cloudflare_api_token" {
+  type        = string
+  description = "Cloudflare scoped API token for managing DNS, WAF, and R2."
+  sensitive   = true
+  default     = ""
+}
+
+variable "cloudflare_account_id" {
+  type        = string
+  description = "The Cloudflare Account ID for R2 storage and zones."
+  default     = ""
+}
+
+variable "domain_credence_run" {
+  type        = string
+  description = "Primary canonical domain for website and FastMCP service."
+  default     = "credence.run"
+}
+
+variable "domain_credence_nexus" {
+  type        = string
+  description = "Domain for P2P mesh network, seed directory, and relay."
+  default     = "credence.nexus"
+}
+
+variable "domain_credence_foundation" {
+  type        = string
+  description = "Domain for taxonomy governance and root public key directory."
+  default     = "credence.foundation"
+}
+
+variable "domain_credence_report" {
+  type        = string
+  description = "Domain for public audit permalinks and report viewer."
+  default     = "credence.report"
+}

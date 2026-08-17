@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credence — Autonomous Epistemic Engine & Decentralized Trust Network</title>
+  <meta name="description" content="Autonomous epistemic evaluation engine, FastMCP 2.0 server, and decentralized P2P trust network.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="hero">
+    <div class="container">
+      <span class="badge-pill">🛡️ v1.0.0 Stable &bull; Ed25519 Signed &bull; FastMCP 2.0</span>
+      <h1 class="hero-title">Epistemic Trustworthiness for the Open Web</h1>
+      <p class="hero-subtitle">
+        An autonomous epistemic evaluation engine that captures web snapshots, validates claims against journalistic ethics and logical fallacies, and gossips cryptographically signed attestations across a decentralized P2P mesh network.
+      </p>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">bash &mdash; install &amp; audit</span>
+        </div>
+        <div class="terminal-body">
+          <div class="command-line">
+            <code>curl -fsSL https://credence.run/install | sh</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://credence.run/install | sh')">Copy</button>
+          </div>
+          <div class="command-line">
+            <code>credence audit https://example.com/breaking-news</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('credence audit https://example.com/breaking-news')">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2 style="font-size: 1.8rem; text-align: center; margin-bottom: 2rem;">The 4 Pillars of Credence</h2>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3>1. Rigorous Multi-Agent Pipeline</h3>
+          <p>4 specialist evaluation agents analyze rendered DOM trees, clean prose, and visual layouts against namespaced taxonomies (SPJ Code of Ethics, IEP Fallacies, and Deceptive UI Patterns).</p>
+        </div>
+
+        <div class="card">
+          <h3>2. Zero-Hallucination Grounded Citations</h3>
+          <p>Every finding requires an exact verbatim DOM quote verified against the extracted DOM text. Fictitious or hallucinated citations immediately collapse the node's quality score.</p>
+        </div>
+
+        <div class="card">
+          <h3>3. 13-Node P2P Gossip Mesh Network</h3>
+          <p>Nodes gossip signed attestations across a Watts-Strogatz small-world lattice with Bayesian consensus, Byzantine cartel resilience ($N \ge 3f + 1, f = 4$), and storm suppression.</p>
+        </div>
+
+        <div class="card">
+          <h3>4. FastMCP 2.0 & Claude Desktop Ready</h3>
+          <p>Seamlessly expose live epistemic evaluation tools, dynamic resources, and prompt templates to AI agents via Server-Sent Events (SSE) and Stdio transports.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top: 4rem;">
+      <h2 style="font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem;">FastMCP 2.0 Integration</h2>
+      <p style="text-align: center; color: var(--text-muted); max-width: 650px; margin: 0 auto 2rem;">
+        Add Credence directly to your <code>claude_desktop_config.json</code> or Antigravity MCP settings:
+      </p>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">claude_desktop_config.json</span>
+        </div>
+        <div class="terminal-body">
+          <pre><code>{
+  "mcpServers": {
+    "credence": {
+      "command": "poetry",
+      "args": ["run", "credence", "serve", "--transport", "stdio"],
+      "cwd": "/path/to/credence"
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top: 4rem;">
+      <h2 style="font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem;">Canonical Network Ecosystem</h2>
+      
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Canonical Domain</th>
+            <th>Role &amp; Purpose</th>
+            <th>Endpoint</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>credence.run</b></td>
+            <td>Main Hub &amp; FastMCP Service</td>
+            <td><a href="https://mcp.credence.run/sse">https://mcp.credence.run/sse</a></td>
+          </tr>
+          <tr>
+            <td><b>credence.nexus</b></td>
+            <td>P2P Mesh Network &amp; Seed Directory</td>
+            <td><a href="https://seeds.credence.nexus/peers.json">https://seeds.credence.nexus/peers.json</a></td>
+          </tr>
+          <tr>
+            <td><b>credence.foundation</b></td>
+            <td>Taxonomy Governance &amp; Root Keys</td>
+            <td><a href="https://taxonomies.credence.foundation">https://taxonomies.credence.foundation</a></td>
+          </tr>
+          <tr>
+            <td><b>credence.report</b></td>
+            <td>Public Audit Viewer &amp; Permalinks</td>
+            <td><a href="https://credence.report">https://credence.report</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Credence &bull; Open-Source Epistemic Trust Network &bull; MIT Licensed</p>
+      <p style="margin-top: 0.5rem;"><a href="https://github.com/arthur-davis/credence">GitHub Repository</a> &bull; <a href="https://taxonomies.credence.foundation">Taxonomy Catalogs</a> &bull; <a href="https://seeds.credence.nexus/peers.json">Bootstrap Seeds</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>

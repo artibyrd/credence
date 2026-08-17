@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credence Nexus — P2P Mesh Network & Bootstrap Seed Directory</title>
+  <meta name="description" content="Decentralized P2P mesh network, live bootstrap seed directory, and 5-factor node quality rankings for Credence.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Decentralized Trust Network</span>
+      <h1>Credence Nexus</h1>
+      <p class="lead">Peer-to-peer gossip network topology, live bootstrap seed directory (<code>peers.json</code>), and 5-factor node quality rankings ($Q_i$).</p>
+    </header>
+
+    <div class="card">
+      <h2>Bootstrap Seed Manifest</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        New and recovering mesh nodes bootstrap routing tables from the cryptographically signed seed manifest:
+      </p>
+      <pre><code># Fetch verified seeds
+curl -fsSL https://seeds.credence.nexus/peers.json
+
+# Join the local mesh with seed discovery
+credence mesh --port 8765 --seeds "https://seeds.credence.nexus/peers.json"</code></pre>
+    </div>
+
+    <div class="card">
+      <h2>5-Factor Node Quality Leaderboard ($Q_i$)</h2>
+      <p style="color: var(--text-muted);">
+        Nodes qualify as bootstrap seed candidates based on:
+        <br/><code>Q_i = 0.25*Uptime + 0.30*ConsensusConcordance + 0.25*QuoteGrounding + 0.10*TaxonomyCurrency + 0.10*KeyLongevity</code>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Node Alias</th>
+            <th>Region</th>
+            <th>Q_i Score</th>
+            <th>Uptime</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>#1</b></td>
+            <td><code>anchor-us-central1</code></td>
+            <td>us-central1</td>
+            <td>0.985</td>
+            <td>99.98%</td>
+            <td><span class="status-seed">ROOT SEED</span></td>
+          </tr>
+          <tr>
+            <td><b>#2</b></td>
+            <td><code>anchor-europe-west1</code></td>
+            <td>europe-west1</td>
+            <td>0.972</td>
+            <td>99.95%</td>
+            <td><span class="status-seed">SEED</span></td>
+          </tr>
+          <tr>
+            <td><b>#3</b></td>
+            <td><code>bridge-asia-east1</code></td>
+            <td>asia-east1</td>
+            <td>0.958</td>
+            <td>99.80%</td>
+            <td><span class="status-seed">SEED</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://taxonomies.credence.foundation">Taxonomy Governance</a> &bull; <a href="https://credence.report">Audit Reports</a></p>
+    </footer>
+  </div>
+</body>
+</html>

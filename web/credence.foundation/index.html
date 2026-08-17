@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credence Foundation — Taxonomy Governance & Root Key Custody</title>
+  <meta name="description" content="Official taxonomy registries and root cryptographic public keys for the Credence Trust Network.">
+  <style>
+    :root {
+      --bg: #07090e; --card-bg: #12192b; --text: #f8fafc; --muted: #94a3b8;
+      --accent: #38bdf8; --border: #1e293b; --code-bg: #030712; --green: #4ade80;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem 1rem; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 3rem; }
+    h1 { font-size: 2.5rem; color: #fff; margin-bottom: 0.5rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9999px; font-size: 0.85rem; color: var(--accent); margin-bottom: 1rem; }
+    p.lead { font-size: 1.15rem; color: var(--muted); max-width: 650px; margin: 0 auto; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent); }
+    ul.catalogs { list-style: none; }
+    ul.catalogs li { padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; border: 1px solid var(--border); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer { text-align: center; margin-top: 4rem; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Governance &amp; Cryptographic Custody</span>
+      <h1>Credence Foundation</h1>
+      <p class="lead">Immutable taxonomy registries, standardized ethical rule definitions, and network root Ed25519 public keys.</p>
+    </header>
+
+    <div class="card">
+      <h2>Registered Taxonomy Catalogs (v1)</h2>
+      <ul class="catalogs">
+        <li>
+          <div>
+            <b>Society of Professional Journalists (SPJ) Code of Ethics</b>
+            <div style="color: var(--muted); font-size: 0.85rem;">Domain: JOURNALISTIC_ETHICS &bull; 13 Rules</div>
+          </div>
+          <a href="/v1/journalistic-ethics.json">View JSON</a>
+        </li>
+        <li>
+          <div>
+            <b>Internet Encyclopedia of Philosophy (IEP) Fallacies</b>
+            <div style="color: var(--muted); font-size: 0.85rem;">Domain: LOGICAL_FALLACY &bull; 15 Rules</div>
+          </div>
+          <a href="/v1/logical-fallacy.json">View JSON</a>
+        </li>
+        <li>
+          <div>
+            <b>Deceptive Patterns Catalog</b>
+            <div style="color: var(--muted); font-size: 0.85rem;">Domain: DECEPTIVE_PATTERN &bull; 8 Rules</div>
+          </div>
+          <a href="/v1/deceptive-pattern.json">View JSON</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Network Root Authority</h2>
+      <p style="color: var(--muted); margin-bottom: 0.5rem;">The official network root Ed25519 public key used to sign seed manifests and taxonomy releases:</p>
+      <pre><code>curl -fsSL https://keys.credence.foundation/root.pub</code></pre>
+    </div>
+
+    <footer>
+      <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://credence.nexus">credence.nexus</a> &bull; <a href="https://credence.report">credence.report</a></p>
+    </footer>
+  </div>
+</body>
+</html>

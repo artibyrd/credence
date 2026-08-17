@@ -81,4 +81,5 @@ testpaths = ["tests"]
 markers = [
     "unit: marks tests as unit tests",
     "integration: marks tests as integration tests",
+    "e2e: marks tests as live end-to-end integration tests",
 ]

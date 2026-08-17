@@ -608,12 +608,40 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
     if cmd == "serve":
         cli_serve(transport=args.transport, host=args.host, port=args.port, profile=args.profile)
         return True
-    elif cmd == "mesh":
+    elif cmd == "benchmark":
+        asyncio.run(cli_benchmark())
+        return True
+    return False
+
+
+def _dispatch_mesh_commands(args: argparse.Namespace) -> bool:
+    """Dispatch P2P mesh and federation subcommands."""
+    cmd = args.command
+    if cmd == "mesh":
         seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
         asyncio.run(cli_mesh(port=args.port, seeds=seeds_list))
         return True
-    elif cmd == "benchmark":
-        asyncio.run(cli_benchmark())
+    elif cmd == "seeds":
+        asyncio.run(
+            cli_seeds(
+                action=args.action,
+                url_or_path=args.url or args.path,
+                output_path=args.output,
+                valid_hours=getattr(args, "valid_hours", 24),
+            )
+        )
+        return True
+    elif cmd == "rank":
+        asyncio.run(cli_rank())
+        return True
+    elif cmd == "init-org":
+        cli_init_org(
+            name=args.name,
+            domain=args.domain,
+            output_dir=args.output,
+            email=args.email,
+            brand_title=getattr(args, "brand_title", None),
+        )
         return True
     return False
 
@@ -847,17 +875,47 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
     elif cmd == "db-clean":
         asyncio.run(cli_db_clean(retention_days=args.retention_days))
-    elif cmd == "seeds":
-        asyncio.run(
-            cli_seeds(
-                action=args.action,
-                url_or_path=args.url or args.path,
-                output_path=args.output,
-                valid_hours=getattr(args, "valid_hours", 24),
-            )
+
+
+def cli_init_org(
+    name: str,
+    domain: str,
+    output_dir: str = "./my-mesh-org",
+    email: Optional[str] = None,
+    brand_title: Optional[str] = None,
+) -> None:
+    """Scaffold sovereign white-label mesh organization workspace."""
+    from pathlib import Path
+
+    from credence.mesh.org import generate_mesh_org
+
+    config, identity = generate_mesh_org(
+        org_name=name,
+        base_domain=domain,
+        output_dir=output_dir,
+        contact_email=email,
+        brand_title=brand_title,
+    )
+
+    console.print(
+        Panel(
+            f"[bold green]Sovereign Mesh Organization Generated![/bold green]\n\n"
+            f"- [bold]Organization Name:[/bold]  {config.org_name}\n"
+            f"- [bold]Base Domain:[/bold]        {domain}\n"
+            f"- [bold]Target Directory:[/bold]   {Path(output_dir).absolute()}\n"
+            f"- [bold]Root Public Key:[/bold]    [cyan]{config.root_public_key}[/cyan]\n"
+            f"- [bold]Contact Email:[/bold]      {config.contact_email}\n\n"
+            f"[bold]Endpoints Configured:[/bold]\n"
+            f"  • Run / Landing:   https://{config.domain_run}\n"
+            f"  • FastMCP SSE:     https://mcp.{config.domain_run}/sse\n"
+            f"  • P2P Seeds:       https://seeds.{config.domain_nexus}/peers.json\n"
+            f"  • Taxonomies:      https://taxonomies.{config.domain_foundation}\n"
+            f"  • Public Reports:  https://{config.domain_report}\n\n"
+            f"[dim]Next steps: Inspect {output_dir}/terraform.tfvars and {output_dir}/web/[/dim]",
+            title="[bold]Credence Mesh Federation Generator[/bold]",
+            border_style="green",
         )
-    elif cmd == "rank":
-        asyncio.run(cli_rank())
+    )
 
 
 def _dispatch_command(args: argparse.Namespace) -> None:
@@ -874,7 +932,7 @@ def _dispatch_command(args: argparse.Namespace) -> None:
         asyncio.run(cli_audit(args.url, force=args.force, profile_override=prof_cfg))
     elif cmd == "lookup":
         asyncio.run(cli_lookup(args.identifier))
-    elif not _dispatch_service_commands(args):
+    elif not _dispatch_service_commands(args) and not _dispatch_mesh_commands(args):
         _dispatch_utility_commands(args)
 
 
@@ -1017,6 +1075,18 @@ def main() -> None:
         "rank",
         help="Display Rich terminal leaderboard of mesh nodes ranked by the 5-factor quality score ($Q_i$).",
     )
+
+    # init-org command
+    org_parser = subparsers.add_parser(
+        "init-org", help="Scaffold a new sovereign white-label Credence mesh organization."
+    )
+    org_parser.add_argument("--name", "-n", required=True, help="Organization name (e.g. 'FactCheck Consortium').")
+    org_parser.add_argument("--domain", "-d", required=True, help="Base domain (e.g. 'factcheck.nexus').")
+    org_parser.add_argument(
+        "--output", "-o", default="./my-mesh-org", help="Output directory for generated org workspace."
+    )
+    org_parser.add_argument("--email", "-e", default=None, help="Contact email for security and alerts.")
+    org_parser.add_argument("--brand-title", default=None, help="Custom brand title header.")
 
     if len(sys.argv) == 1:
         # Default to launching TUI if no args provided in interactive terminal

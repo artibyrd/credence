@@ -129,3 +129,57 @@ Every audit is cryptographically verifiable:
 - **Robust Median Centering**: Measures outlier deviations strictly from the median score ($|S_i - S_{\text{median}}| > 25.0$), completely preventing arithmetic mean-drag attacks.
 - **The "Golden 12" Epistemic Benchmark Suite**: Automated 12-scenario evaluation matrix testing adversarial edge cases across all 3 cost profiles (`just benchmark`).
 - **Host Resource Safety Governor**: Hardware pre-flight memory check auto-scales clusters to protect low-RAM systems (e.g. Raspberry Pis $<2\text{GB}$) alongside hard 128MB container cgroups limits.
+
+---
+
+## 9. Canonical 4-Domain Multi-Cloud Architecture & Edge CDN
+
+Credence deploys across 4 dedicated canonical domains using a hybrid **Cloudflare Anycast + GCP Cloud Run** architecture:
+
+```mermaid
+graph TD
+    User["User / Agent / Browser / Mesh Node"] --> CFEdge["Cloudflare Global Anycast Edge (300+ PoPs)<br/>- Strict SSL/TLS & Zero-Egress R2 Caching<br/>- WAF Rate Limiting (Anti-Denial-of-Wallet)"]
+
+    subgraph CFDomains ["Canonical 4-Domain Surfaces"]
+        CFRun["<b>credence.run</b><br/>Pages: Landing Hub & install.sh"]
+        CFMCP["<b>mcp.credence.run</b><br/>Proxy: FastMCP SSE Server (/sse)"]
+        CFNexus["<b>seeds.credence.nexus</b><br/>R2: peers.json + DNS SRV"]
+        CFFoundation["<b>taxonomies.credence.foundation</b><br/>R2: Static JSON Catalogs & root.pub"]
+        CFReport["<b>credence.report</b><br/>Edge Cache: /a/{sha256} Viewer"]
+    end
+
+    CFEdge --> CFDomains
+
+    subgraph GCPCore ["GCP Sovereign Core (Scale-to-Zero, $15/mo Budget Cap)"]
+        CloudRun["Cloud Run v2 (credence-server)<br/>- FastMCP SSE Server<br/>- scale-to-zero (min=0, max=2)"]
+        SecretManager["Secret Manager<br/>- CREDENCE_GEMINI_API_KEY<br/>- MESH_ROOT_ED25519_KEY<br/>- CLOUDFLARE_API_TOKEN"]
+        CloudScheduler["Cloud Scheduler Job (0 */12 * * *)<br/>- Recalculates Node Quality ($Q_i$)<br/>- Signs & Uploads peers.json"]
+        BudgetGuard["Cloud Billing Budget Guard ($15.00/mo)"]
+    end
+
+    CFMCP --> |"Origin Proxy"| CloudRun
+    CFReport --> |"Cache Miss Fetch"| CloudRun
+    CloudScheduler --> |"Read Root Key"| SecretManager
+    CloudScheduler --> |"Upload peers.json"| CFNexus
+    CloudRun --> |"Mount Secrets"| SecretManager
+```
+
+---
+
+## 10. Zero-Build Web Frontends & Web Crypto Verification
+
+In accordance with **Invariant 20**:
+- All public web frontends across the ecosystem are built strictly using **vanilla modern web standards** (Semantic HTML5, CSS Custom Properties, native ES Modules) with **zero Node.js/npm dependencies**.
+- Client-side cryptographic verification of signed audit reports and bootstrap seed files executes natively via the W3C **Web Cryptography API** (`window.crypto.subtle`) in $<2\text{ms}$ without loading third-party JavaScript crypto libraries.
+- Shared permalinks on `credence.report/a/{sha256}` support OpenGraph and Twitter card bot unfurling via serverless metadata injection with long-lived edge caching (`s-maxage=2592000`).
+
+---
+
+## 11. Sovereign White-Label Federation
+
+In accordance with **Invariant 21**:
+- Any organization (newsroom, university journalism department, enterprise compliance team, or DAO) can generate and deploy their own independent, sovereign Credence-compatible mesh trust network with 1 command:
+  ```bash
+  credence init-org --name "Truth Consortium" --domain "truthconsortium.org"
+  ```
+- Scaffolds independent root Ed25519 keypairs, parameterized Terraform variables, static taxonomy mirrors, and branded landing pages without requiring JavaScript build tools.

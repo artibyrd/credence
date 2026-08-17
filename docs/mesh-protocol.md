@@ -147,3 +147,17 @@ $$Q_i = 0.25 U_i + 0.30 C_i + 0.25 G_i + 0.10 T_i + 0.10 K_i$$
 
 See full protocol documentation in 📘 **[Bootstrap Seeds & Node Quality ($Q_i$)](docs/bootstrap-seeds.md)**.
 
+---
+
+## 9. Sovereign White-Label Federation & Inter-Mesh Bridging
+
+Credence is designed from first principles to support **sovereign white-label federation**:
+- Any organization (newsroom, university journalism department, enterprise compliance team, or DAO) can generate and deploy their own independent, sovereign mesh network using:
+  ```bash
+  credence init-org --name "Truth Consortium" --domain "truthconsortium.org"
+  ```
+- **Autonomous Root Keypair**: Each sovereign federation maintains its own independent root Ed25519 keypair (`root.key` & `root.pub`).
+- **Interoperable Attestation Gossip**: Because all nodes evaluate standard namespaced rule URIs (`domain:cluster/rule_id@version`) and canonical RFC 8785 JSON bytes, nodes across different sovereign federations can establish bilateral gossip links and participate in mutual consensus without vendor lock-in.
+
+See 📘 **[White-Label Mesh Federation Guide](federation-whitelabel.md)** for complete operator instructions.
+

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credence Report — Public Epistemic Audit Viewer</title>
+  <meta name="description" content="Search, inspect, and verify cryptographically signed epistemic audit reports.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Public Attestation Explorer</span>
+      <h1>Credence Epistemic Reports</h1>
+      <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem;">
+        Lookup any audited web page or content SHA-256 hash to inspect itemized ethical violations, grounded citations, and Ed25519 cryptographic signatures.
+      </p>
+
+      <form class="search-box" onsubmit="event.preventDefault(); window.location.href='/viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
+        <input type="text" id="query" class="search-input" placeholder="Enter URL or content SHA-256 (e.g. sha256:abc123...)" required>
+        <button type="submit" class="search-btn">Inspect Audit</button>
+      </form>
+    </header>
+
+    <div class="report-card">
+      <h2 style="font-size: 1.25rem; color: #fff; margin-bottom: 1rem;">Recent Epistemic Benchmark Attestations</h2>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <a href="viewer.html?scenario=clean" style="display: block; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between;">
+            <b style="color: #fff;">Ground Truth Journalistic News</b>
+            <span class="clean">0.0 CLEAN</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); margin-top: 0.25rem;">sha256:0000000000000000000000000000000000000000000000000000000000000000</div>
+        </a>
+
+        <a href="viewer.html?scenario=deceptive" style="display: block; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between;">
+            <b style="color: #fff;">Deceptive E-Commerce Checkout / Forced Continuity</b>
+            <span class="deceptive">71.7 DECEPTIVE</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); margin-top: 0.25rem;">sha256:4444444444444444444444444444444444444444444444444444444444444444</div>
+        </a>
+
+        <a href="viewer.html?scenario=fallacy" style="display: block; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between;">
+            <b style="color: #fff;">Fallacious Political Editorial (Ad Hominem &amp; False Dilemma)</b>
+            <span class="suspicious">61.3 SUSPICIOUS</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); margin-top: 0.25rem;">sha256:5555555555555555555555555555555555555555555555555555555555555555</div>
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://credence.nexus">credence.nexus</a> &bull; <a href="https://taxonomies.credence.foundation">taxonomies.credence.foundation</a></p>
+    </footer>
+  </div>
+</body>
+</html>

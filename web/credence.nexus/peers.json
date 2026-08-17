@@ -1,0 +1,28 @@
+{
+  "protocol": "credence-mesh/1.0",
+  "canonical_domain": "https://seeds.credence.nexus/peers.json",
+  "generated_at": "2026-08-17T19:44:38.571271Z",
+  "expires_at": "2026-08-18T19:44:38.571271Z",
+  "seed_nodes": [
+    {
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_alias": "anchor-us-central1",
+      "ws_url": "wss://relay.credence.nexus:8765",
+      "quality_score": 0.998,
+      "uptime_pct": 99.24,
+      "region": "us-central1",
+      "supported_catalogs": {}
+    },
+    {
+      "node_pubkey": "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1",
+      "node_alias": "anchor-europe-west1",
+      "ws_url": "wss://relay-eu.credence.nexus:8765",
+      "quality_score": 0.9878,
+      "uptime_pct": 98.7,
+      "region": "us-central1",
+      "supported_catalogs": {}
+    }
+  ],
+  "root_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+  "root_signature": "0e0b91c8bac65648d09fa292bae4c880d1fbabb56d2e36425a046f607d6b4a3a99d734547726eda1a13997a8dac7827edb5b46c966078c81a0b5ced7a2901308"
+}

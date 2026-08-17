@@ -115,4 +115,19 @@ This document outlines mandatory rules and design invariants for human contribut
 
 ## 19. Gossip Envelope Signature Preservation & Invariant Normalization
 - When relaying or re-broadcasting gossip envelopes, intermediate mesh relay nodes must NEVER re-sign an envelope with their local private key if `envelope.signature` is already present from the originating node. Overwriting original signatures causes downstream signature verification failures (`Received message with INVALID envelope signature`) across multi-hop small-world lattices.
-- When packing payloads into `MeshMessageEnvelope`, always normalize inner Pydantic models using `model_dump(mode="json")` and provide a fallback datetime serializer in `get_canonical_bytes()` to guarantee bitwise deterministic Ed25519 signing across heterogeneous serialization boundaries.
+- When packing payloads into `MeshMessageEnvelope`, always normalize inner Pydantic models using `model_dump(mode="json")`, and envelope canonical byte generators (`get_canonical_bytes()`) must provide a fallback datetime ISO serializer to prevent runtime `TypeError` during serialization.
+
+---
+
+## 20. Web Frontend Zero-Build & Web Crypto Verification Invariant
+- All public web frontends across the Credence ecosystem must be built strictly using **vanilla modern web standards** (Semantic HTML5, CSS Custom Properties, and native ES Modules) with **zero Node.js/npm build dependencies** and zero JavaScript runtime frameworks.
+- Client-side cryptographic verification of signed audit reports and seed files must strictly use the native W3C **Web Cryptography API** (`window.crypto.subtle`) rather than external JavaScript crypto libraries.
+- Dynamic social previews (OpenGraph / Twitter cards) must be pre-rendered or injected by edge cache rules / Cloud Run serverless endpoints with long-lived edge caching (`s-maxage=2592000`) rather than requiring client-side single-page app hydration.
+- See 📘 **[Web Frontend Architecture](frontend-architecture.md)** for full evaluation and rationale.
+
+---
+
+## 21. Turnkey White-Label Federation & Dry-Run Governor Invariant
+- All deployment scripts, publishing utilities, and infrastructure templates must provide non-destructive `--dry-run` inspection modes and local preview servers (`just serve-web`) for human review ("Mk1 Eyeball") prior to cloud mutation.
+- Scaffolding tools (`credence init-org`) must generate completely sovereign, parameterized multi-cloud configurations and cryptographic root keypairs to allow independent organizations to run compatible federated mesh networks without code modifications.
+- See 📘 **[White-Label Mesh Federation Guide](federation-whitelabel.md)** and 📘 **[Multi-Cloud Deployment](deployment-multi-domain.md)** for full operator guides.

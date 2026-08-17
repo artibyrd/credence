@@ -12,11 +12,19 @@ setup:
 
 # Run all unit tests
 test:
-    poetry run pytest tests/ -m "not integration" --durations=10
+    poetry run pytest tests/ -m "not integration and not e2e" --durations=10
 
 # Run all tests including integration
 test-all:
     poetry run pytest tests/ --durations=10
+
+# Run live end-to-end integration tests against online production domains
+test-e2e:
+    poetry run pytest tests/e2e/test_live_domains.py -v -m e2e
+
+# Run hermetic offline mock end-to-end integration test
+test-e2e-mock:
+    poetry run pytest tests/e2e/test_mock_e2e.py -v
 
 # Run code linters and type checkers
 lint:
@@ -66,4 +74,14 @@ mesh-cluster-logs:
 # Run fastmcp dev server
 dev:
     poetry run credence serve --transport sse --port 8000
+
+# Launch local preview server for Mk1 Eyeball visual review of web artifacts
+serve-web:
+    poetry run python -m http.server 8080 --directory web/credence.run
+
+# Validate Terraform configuration for GCP and Cloudflare
+tf-validate:
+    terraform -chdir=terraform init -backend=false
+    terraform -chdir=terraform validate
+    terraform -chdir=terraform fmt -check
 
