@@ -267,6 +267,7 @@ PRESET_FEED_CATALOGS = {
         ("Reuters: World News", "https://www.reutersagency.com/feed/?best-topics=world", 1),
         ("NPR News: Headlines", "https://feeds.npr.org/1001/rss.xml", 2),
         ("BBC News: World", "https://feeds.bbci.co.uk/news/world/rss.xml", 2),
+        ("The Guardian: World News", "https://www.theguardian.com/world/rss", 2),
     ],
     "investigative-tech": [
         ("ProPublica: Main Feeds", "https://www.propublica.org/feeds/propublica/main", 1),
@@ -274,21 +275,29 @@ PRESET_FEED_CATALOGS = {
         ("Ars Technica: Technology Lab", "https://feeds.arstechnica.com/arstechnica/technology-lab", 2),
         ("Krebs on Security", "https://krebsonsecurity.com/feed/", 2),
         ("404 Media", "https://www.404media.co/rss/", 2),
+        ("EFF Deeplinks", "https://www.eff.org/rss/updates.xml", 2),
     ],
     "science-preprints": [
         ("Nature: Latest Research", "https://www.nature.com/nature.rss", 1),
         ("arXiv: Artificial Intelligence", "https://rss.arxiv.org/rss/cs.AI", 2),
         ("ScienceDaily: Top Science", "https://www.sciencedaily.com/rss/top/science.xml", 2),
+        ("Retraction Watch", "https://retractionwatch.com/feed/", 2),
+        ("NIH News Releases", "https://www.nih.gov/news-events/news-releases/feed.xml", 2),
     ],
     "regional-civic": [
         ("CalMatters: California Policy", "https://calmatters.org/feed/", 2),
         ("The Texas Tribune", "https://www.texastribune.org/feeds/main/", 2),
+        ("Spotlight PA", "https://www.spotlightpa.org/feeds/rss.xml", 2),
+        ("Voice of San Diego", "https://voiceofsandiego.org/feed/", 2),
     ],
     "financial-corporate": [
         ("MarketWatch: Top Stories", "https://feeds.content.dowjones.io/public/rss/mw_topstories", 2),
+        ("SEC Press Releases", "https://www.sec.gov/news/pressreleases.rss", 2),
+        ("FTC Press Releases", "https://www.ftc.gov/news-events/news/press-releases/feed", 2),
     ],
     "satire-commentary": [
         ("The Onion: American Finest News", "https://www.theonion.com/rss", 3),
+        ("The Babylon Bee", "https://babylonbee.com/feed", 3),
     ],
 }
 
@@ -314,17 +323,20 @@ async def bootstrap_preset_feeds(
 
     for cat in categories:
         for title, url, priority in PRESET_FEED_CATALOGS[cat]:
-            stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == url)
-            existing = (await session.exec(stmt)).first()
-            if not existing:
-                sub = FeedSubscriptionRecord(
-                    feed_url=url,
-                    title=title,
-                    priority_tier=priority,
-                    is_active=True,
-                )
-                session.add(sub)
-                added_count += 1
+            try:
+                stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == url)
+                existing = (await session.exec(stmt)).first()
+                if not existing:
+                    sub = FeedSubscriptionRecord(
+                        feed_url=url,
+                        title=title,
+                        priority_tier=priority,
+                        is_active=True,
+                    )
+                    session.add(sub)
+                    await session.commit()
+                    added_count += 1
+            except Exception:
+                await session.rollback()
 
-    await session.commit()
     return added_count

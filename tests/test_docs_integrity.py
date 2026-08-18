@@ -18,7 +18,10 @@ import yaml
 @pytest.fixture
 def docs_root() -> Path:
     """Return path to credence-docs directory."""
-    return Path(__file__).resolve().parent.parent.parent / "credence-docs"
+    path = Path(__file__).resolve().parent.parent.parent / "credence-docs"
+    if not path.exists():
+        pytest.skip("credence-docs directory not present in standalone repository checkout")
+    return path
 
 
 @pytest.mark.unit

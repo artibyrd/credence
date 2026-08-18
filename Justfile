@@ -115,9 +115,44 @@ tf-plan:
 tf-apply:
     terraform -chdir=terraform apply
 
+# Germinate fresh node identity, preset feeds, mesh peer attestations, and initial sifting burst
+germinate burst="3":
+    poetry run credence germinate --burst {{burst}}
+
 # Build and submit Cloud Run container image via Google Cloud Build
 gcp-build project_id="credence-prod-505902":
     gcloud builds submit --project={{project_id}} --tag gcr.io/{{project_id}}/credence-server:latest
+
+# Authenticate local Wrangler with Cloudflare
+edge-login:
+    cd web && npx wrangler login
+
+# Check Cloudflare Edge router & Pages deployment status
+edge-status:
+    @echo "=== Cloudflare Edge Plane Status ==="
+    @cd web && npx wrangler whoami || true
+    @echo ""
+    @echo "=== Edge Router Deployments (credence.run) ==="
+    @cd web && npx wrangler deployments list || true
+    @echo ""
+    @echo "=== Docs Pages Deployments (docs.credence.run) ==="
+    @cd ../credence-docs && npx wrangler pages deployment list --project-name=credence-docs || true
+
+# Stream live real-time request logs from Cloudflare Edge router
+edge-logs:
+    cd web && npx wrangler tail
+
+# Deploy Cloudflare Edge router and web assets
+deploy-edge:
+    cd web && npx wrangler deploy
+
+# Build and deploy backend Cloud Run container
+deploy-backend project_id="credence-prod-505902":
+    gcloud builds submit --project={{project_id}} --tag gcr.io/{{project_id}}/credence-server:latest
+    gcloud run deploy credence-server --image gcr.io/{{project_id}}/credence-server:latest --region us-central1 --project {{project_id}}
+
+# Atomic full-stack deployment across Edge and Cloud Run
+deploy-all: deploy-edge deploy-backend
 
 # Sync signed genesis seeds and taxonomy catalogs to GCS origin buckets
 seed-sync project_id="credence-prod-505902":
@@ -176,5 +211,14 @@ release version message:
     @just push-all
     @echo "🚀 Full ecosystem release v{{version}} completed successfully."
 
+# Monitor and verify live GitHub Actions workflow runs across the ecosystem
+pipeline-status:
+    @echo "=== Credence CI/CD Pipeline Runs ==="
+    @gh run list -R artibyrd/credence --limit 5
+    @echo ""
+    @echo "=== Credence Docs Deployment Runs ==="
+    @gh run list -R artibyrd/credence-docs --limit 5
 
-
+# Watch recent workflow run on credence until completion
+pipeline-watch:
+    @gh run watch -R artibyrd/credence

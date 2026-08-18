@@ -225,3 +225,18 @@ async def test_cli_export_catalog(tmp_path: Any, db_session: Any) -> None:
     assert json_file.exists()
     content = json.loads(json_file.read_text(encoding="utf-8"))
     assert isinstance(content, list)
+
+
+@pytest.mark.asyncio
+async def test_cli_germinate(db_session: Any) -> None:
+    """Verify cli_germinate runs botanical lifecycle without exceptions."""
+    from unittest.mock import AsyncMock, patch
+
+    from credence.cli.main import cli_germinate
+    from credence.feeds.parser import ParsedFeed
+
+    mock_feed = ParsedFeed(title="Mock Stream", is_modified=True, entries=[])
+
+    with patch("credence.feeds.worker.fetch_and_parse_feed", new_callable=AsyncMock, return_value=mock_feed):
+        await cli_germinate(burst=0, no_mesh=False, profile="free")
+        await cli_germinate(burst=0, no_mesh=True, profile="free")

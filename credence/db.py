@@ -7,6 +7,7 @@ and schema initialization using SQLModel and aiosqlite.
 from __future__ import annotations
 
 import asyncio
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -71,6 +72,20 @@ async def init_db(engine: AsyncEngine | None = None) -> None:
                 await conn.exec_driver_sql(
                     "ALTER TABLE auditrecord ADD COLUMN evaluation_method VARCHAR DEFAULT 'llm_multi_agent';"
                 )
+
+
+@asynccontextmanager
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    """Provide an async session context manager for standalone operations."""
+    engine = get_engine()
+    session_factory = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autoflush=False,
+    )
+    async with session_factory() as session:
+        yield session
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

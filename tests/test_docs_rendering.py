@@ -36,6 +36,8 @@ class ReusableTCPServer(socketserver.TCPServer):
 @pytest.fixture(scope="session")
 def docs_server() -> Generator[str, None, None]:
     """Start local zero-build HTTP server on ephemeral port for Playwright tests."""
+    if not DOCS_DIR.exists():
+        pytest.skip("credence-docs directory not present in standalone repository checkout")
     server = ReusableTCPServer(("127.0.0.1", 0), QuietDocsHandler)
     port = server.server_address[1]
     server_thread = threading.Thread(target=server.serve_forever, daemon=True)

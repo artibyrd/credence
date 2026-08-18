@@ -737,6 +737,81 @@ async def cli_export_catalog(output_dir: Optional[str] = None) -> None:
         console.print(f"[bold green]Successfully exported {len(catalog_items)} reports to:[/] {json_file}")
 
 
+async def cli_germinate(burst: int = 3, no_mesh: bool = False, profile: Optional[str] = None) -> None:
+    """Execute rapid node germination and Miracle-Gro ignition lifecycle."""
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.tree import Tree
+
+    from credence.db import get_async_session, init_db
+    from credence.germinate import germinate_node
+
+    await init_db()
+
+    console.print(
+        Panel(
+            "[bold green]🌱 Credence Node Germination & Miracle-Gro Ignition[/bold green]\n"
+            "[dim]Bootstrapping cryptographic identity, mesh attestations, feed soil, and novel audits[/dim]",
+            border_style="green",
+        )
+    )
+
+    tree = Tree("🌱 [bold cyan]Germination Lifecycle[/bold cyan]")
+
+    with console.status("[bold green]Germinating node...", spinner="dots"):
+        async with get_async_session() as session:
+            summary = await germinate_node(
+                session=session,
+                burst_items=burst,
+                sync_mesh=not no_mesh,
+                profile_override=profile,
+                verbose=False,
+            )
+
+    tree.add(
+        f"🔑 [bold white]Epistemic Genesis:[/] [green]Identity Active[/] [dim]({summary.identity_pubkey[:16]}...)[/]"
+    )
+    if not no_mesh:
+        tree.add(
+            f"💧 [bold white]Peer Mesh Inoculation:[/] [green]{summary.peer_attestations_adopted} Attestations Adopted[/] [dim]({summary.tokens_saved_mesh:,} tokens saved / $0.00 spent)[/]"
+        )
+    else:
+        tree.add("💧 [bold white]Peer Mesh Inoculation:[/] [yellow]Skipped (Offline / No-Mesh mode)[/]")
+    tree.add(
+        f"🌱 [bold white]Epistemic Soil Sowed:[/] [green]{summary.feeds_sowed} Categorized Preset Feeds[/] [dim](4 tiers)[/]"
+    )
+    tree.add(f"⚡ [bold white]Miracle-Gro Burst:[/] [green]{summary.novel_items_audited} Novel Articles Audited[/]")
+    tree.add("📦 [bold white]Web Catalog Export:[/] [green]reports.json Synced[/]")
+    tree.add(
+        f"🌳 [bold green]Node Fully Germinated:[/] [bold cyan]{summary.total_reports_ready} Total Reports Ready[/] [dim]({summary.duration_seconds}s)[/]"
+    )
+
+    console.print(tree)
+    console.print()
+
+    table = Table(title="🌱 Epistemic Node Germination Telemetry", show_header=True, header_style="bold green")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="bold white")
+    table.add_column("Status", style="dim")
+
+    table.add_row("Node Ed25519 Pubkey", f"{summary.identity_pubkey[:24]}...", "Verified")
+    table.add_row(
+        "Mesh Attestations Adopted",
+        str(summary.peer_attestations_adopted),
+        f"{summary.tokens_saved_mesh:,} tokens saved",
+    )
+    table.add_row("Feed Subscriptions Initialized", str(summary.feeds_sowed), "4 Tiers Sowed")
+    table.add_row("Initial Burst Novel Audits", str(summary.novel_items_audited), "Evaluated & Signed")
+    table.add_row("Total Reports Ready in DB", str(summary.total_reports_ready), "Searchable & Browsable")
+    table.add_row("Lifecycle Duration", f"{summary.duration_seconds}s", "Fast Ignition")
+
+    console.print(table)
+    console.print()
+    console.print(
+        "[bold green]✅ Node is hot and ready.[/] Run [bold cyan]credence serve --sifter[/] or [bold cyan]just serve-web[/] to begin browsing."
+    )
+
+
 async def cli_mesh(port: int, seeds: list[str]) -> None:
     """Launch the P2P Mesh Relay node."""
     from credence.mesh.relay import MeshGossipRelay
@@ -1001,6 +1076,15 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
         return True
     elif cmd == "export-catalog":
         asyncio.run(cli_export_catalog(output_dir=getattr(args, "output", None)))
+        return True
+    elif cmd == "germinate":
+        asyncio.run(
+            cli_germinate(
+                burst=getattr(args, "burst", 3),
+                no_mesh=getattr(args, "no_mesh", False),
+                profile=getattr(args, "profile", None),
+            )
+        )
         return True
     elif cmd == "benchmark":
         asyncio.run(cli_benchmark())
@@ -1762,6 +1846,29 @@ def main() -> None:
     profile_parser = subparsers.add_parser("profile", help="List and inspect operational cost profiles.")
     profile_parser.add_argument("action", choices=["list", "show"], default="list", nargs="?")
     profile_parser.add_argument("profile_name", nargs="?", default=None, help="Profile name (free, balanced, ultra)")
+
+    # germinate command
+    germ_parser = subparsers.add_parser(
+        "germinate",
+        help="Rapidly bootstrap node identity, preset feeds, mesh peer attestations, and initial sifting burst.",
+    )
+    germ_parser.add_argument(
+        "--burst",
+        type=int,
+        default=3,
+        help="Number of novel feed articles to evaluate in initial burst (default: 3).",
+    )
+    germ_parser.add_argument(
+        "--no-mesh",
+        action="store_true",
+        help="Skip Genesis seed mesh inoculation (100% offline air-gap mode).",
+    )
+    germ_parser.add_argument(
+        "--profile",
+        choices=["free", "balanced", "ultra"],
+        default=None,
+        help="Cost profile override for initial novel audits.",
+    )
 
     # serve command
     serve_parser = subparsers.add_parser("serve", help="Launch FastMCP server and REST API gateway.")

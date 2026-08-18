@@ -711,3 +711,120 @@ async def test_13_node_feed_preingestion_work_sharing_and_zero_token_adoption(
     finally:
         for r in relays:
             await r.stop()
+
+
+@pytest.mark.asyncio
+async def test_13_node_concurrent_swarm_germination_and_mesh_cross_adoption(
+    db_session: AsyncSession, tmp_path: Path
+) -> None:
+    """Verify concurrent 13-node swarm germination: Rendezvous feed partitioning and gossip cross-adoption."""
+    from typing import Any
+
+    from credence.feeds.parser import FeedEntry, ParsedFeed
+    from credence.germinate import germinate_node
+
+    identities = [load_or_create_node_identity(tmp_path / f"swarm_node_{i}.key") for i in range(13)]
+
+    # Small-world peer connectivity map (Watts-Strogatz d=4, N=13)
+    peer_map = {
+        1: [2, 3, 12, 13],
+        2: [1, 3, 4, 13],
+        3: [1, 2, 4, 5],
+        4: [2, 3, 5, 6],
+        5: [3, 4, 6, 7],
+        6: [4, 5, 7, 8],
+        7: [5, 6, 8, 9],
+        8: [6, 7, 9, 10],
+        9: [7, 8, 10, 11],
+        10: [8, 9, 11, 12],
+        11: [9, 10, 12, 13],
+        12: [1, 10, 11, 13],
+        13: [1, 2, 11, 12],
+    }
+
+    relays = []
+    for i in range(1, 14):
+        port = 9500 + i
+        seeds = [f"ws://127.0.0.1:{9500 + p}" for p in peer_map[i] if p > i]
+        r = MeshGossipRelay(port=port, node_identity=identities[i - 1], peer_seeds=seeds)
+        relays.append(r)
+
+    try:
+        for r in relays:
+            await r.start()
+
+        await asyncio.sleep(0.8)
+
+        # Mock feed parser to return unique entries based on the feed URL
+        async def mock_fetch_feed(feed_url: str, **kwargs: Any) -> ParsedFeed:
+            domain_slug = feed_url.replace("https://", "").replace("/", "_").replace(".", "_")
+            return ParsedFeed(
+                title=f"Feed {domain_slug}",
+                is_modified=True,
+                entries=[
+                    FeedEntry(
+                        title=f"Article on {domain_slug}",
+                        url=f"{feed_url}/article-1",
+                        summary="Forensic analysis entry",
+                        published_at=None,
+                    )
+                ],
+            )
+
+        # Mock audit_url to return a valid signed report
+        async def mock_audit_url(url: str, **kwargs: Any) -> AuditReport:
+            return AuditReport(
+                url=url,
+                content_sha256=f"sha256:{url}",
+                simhash_64="0x12345678",
+                suspicion_score=12.0,
+                suspicion_density=0.5,
+                confidence_score=0.95,
+                classification="FACTUAL_REPORTING",
+                is_satire=False,
+            )
+
+        with (
+            patch("credence.feeds.worker.fetch_and_parse_feed", side_effect=mock_fetch_feed),
+            patch("credence.germinate.audit_url", side_effect=mock_audit_url),
+        ):
+            # Concurrently germinate Node 1 and Node 7 (Anchor nodes with distinct affinities)
+            from sqlalchemy.ext.asyncio import async_sessionmaker
+
+            bind_engine = db_session.bind
+            session_factory = async_sessionmaker(bind=bind_engine, class_=AsyncSession, expire_on_commit=False)
+
+            async with session_factory() as session1, session_factory() as session2:
+                tasks = [
+                    germinate_node(
+                        session=session1,
+                        burst_items=2,
+                        sync_mesh=True,
+                        verbose=False,
+                        relay=relays[0],
+                    ),
+                    germinate_node(
+                        session=session2,
+                        burst_items=2,
+                        sync_mesh=True,
+                        verbose=False,
+                        relay=relays[6],
+                    ),
+                ]
+                summaries = await asyncio.gather(*tasks)
+
+        # Allow multi-hop gossip diffusion
+        await asyncio.sleep(1.0)
+
+        # Verify both anchor nodes successfully germinated
+        assert len(summaries) == 2
+        assert summaries[0].status == "germinated"
+        assert summaries[1].status == "germinated"
+
+        # Verify relays propagated attestations across the mesh
+        seen_counts = sum(1 for r in relays if len(r.deduplicator._seen) > 0)
+        assert seen_counts >= 2
+
+    finally:
+        for r in relays:
+            await r.stop()

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import time
 from typing import Any, List, Optional
 
@@ -38,6 +39,8 @@ from credence.pipeline.evaluator import audit_url, evaluate_snapshot
 from credence.pipeline.governor import get_token_headroom_status
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 from credence.taxonomy_loader import registry
+
+logger = logging.getLogger("credence.server")
 
 
 class ServerRateLimiter:
@@ -1293,6 +1296,36 @@ async def api_feeds_stream(request: Any) -> Any:
     return JSONResponse({"items": [], "count": 0})
 
 
+async def api_germinate(request: Any) -> Any:
+    """REST API: Trigger rapid node germination and Miracle-Gro burst."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_async_session, init_db
+    from credence.germinate import germinate_node
+
+    body = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+    burst = int(body.get("burst", request.query_params.get("burst", 3)))
+    sync_mesh = bool(body.get("sync_mesh", request.query_params.get("sync_mesh", True)))
+    profile = body.get("profile", request.query_params.get("profile", None))
+
+    await init_db()
+    async with get_async_session() as session:
+        summary = await germinate_node(
+            session=session,
+            burst_items=burst,
+            sync_mesh=sync_mesh,
+            profile_override=profile,
+            verbose=True,
+        )
+        return JSONResponse(summary.model_dump(mode="json"))
+
+
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
@@ -1347,6 +1380,7 @@ def create_server_app(
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
         Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
         Route("/api/audit", endpoint=api_audit_url, methods=["POST", "GET", "OPTIONS"]),
+        Route("/api/germinate", endpoint=api_germinate, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/sifter/status", endpoint=api_sifter_status, methods=["GET", "OPTIONS"]),
         Route("/api/sifter/cycle", endpoint=api_sifter_cycle, methods=["POST", "OPTIONS"]),
         Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
@@ -1363,25 +1397,48 @@ def create_server_app(
         allow_credentials=True,
     )
 
-    # Lifespan task for Sifter Daemon
+    # Lifespan task for Sifter Daemon & Auto-Germination
     should_sift = enable_sifter or os.environ.get("CREDENCE_SIFTER_ENABLED", "").lower() in ("1", "true")
-    if should_sift:
-        original_lifespan = app.router.lifespan_context
+    original_lifespan = app.router.lifespan_context
 
-        @asynccontextmanager
-        async def combined_lifespan(app_instance: Starlette):
-            from credence.feeds.sifter import SifterDaemon
+    @asynccontextmanager
+    async def combined_lifespan(app_instance: Starlette):
+        from sqlmodel import col, func, select
 
-            await init_db()
+        from credence.db import get_async_session, init_db
+        from credence.feeds.sifter import SifterDaemon
+        from credence.germinate import germinate_node
+        from credence.models import AuditRecord, FeedSubscriptionRecord
+
+        await init_db()
+
+        # Check for zero-touch auto-germination on blank databases
+        try:
+            async with get_async_session() as session:
+                stmt_a = select(func.count(col(AuditRecord.id)))
+                total_a = (await session.exec(stmt_a)).first() or 0
+                stmt_f = select(func.count(col(FeedSubscriptionRecord.id)))
+                total_f = (await session.exec(stmt_f)).first() or 0
+
+                if total_a == 0 and total_f == 0:
+                    logger.info("🌱 Blank node detected — auto-germinating identity, mesh attestations, and feeds...")
+                    await germinate_node(session=session, burst_items=3, sync_mesh=True, verbose=True)
+        except Exception as e:
+            logger.warning("Auto-germination background check encountered error: %s", e)
+
+        sifter_daemon = None
+        sifter_task = None
+        if should_sift:
             sifter_daemon = SifterDaemon(poll_interval_seconds=300, auto_audit=True)
             sifter_task = asyncio.create_task(sifter_daemon.start())
 
-            if original_lifespan:
-                async with original_lifespan(app_instance) as state:
-                    yield state
-            else:
-                yield {}
+        if original_lifespan:
+            async with original_lifespan(app_instance) as state:
+                yield state
+        else:
+            yield {}
 
+        if sifter_daemon and sifter_task:
             sifter_daemon.stop()
             sifter_task.cancel()
             try:
@@ -1389,6 +1446,5 @@ def create_server_app(
             except asyncio.CancelledError:
                 pass
 
-        app.router.lifespan_context = combined_lifespan
-
+    app.router.lifespan_context = combined_lifespan
     return app

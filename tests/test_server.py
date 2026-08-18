@@ -263,3 +263,9 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
         assert res_stream.status_code == 200
         stream_data = res_stream.json()
         assert "items" in stream_data
+
+        # 5. Germinate endpoint
+        res_germ = await client.post("/api/germinate", json={"burst": 0, "sync_mesh": False})
+        assert res_germ.status_code == 200
+        germ_data = res_germ.json()
+        assert germ_data["status"] == "germinated"

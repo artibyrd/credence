@@ -23,6 +23,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Checkout Credence Docs (for docs integrity verification)
+        uses: actions/checkout@v4
+        with:
+          repository: artibyrd/credence-docs
+          path: ../credence-docs
+        continue-on-error: true
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
