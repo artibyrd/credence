@@ -7,6 +7,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 ## 1. Core Engineering & Runtime Safety
 - **Isolated Workspace**: Credence is completely decoupled from other repositories.
 - **Python & SQLModel Async**: Python `>=3.12,<3.13`. Always use `sqlmodel.ext.asyncio.session.AsyncSession` and `async_sessionmaker`. Avoid `from __future__ import annotations` in `models.py`.
+- **Continuous Changelog & Semantic Version Governance**: Diligently maintain `docs/changelog.md` and manage Semantic Version bumps across the ecosystem whenever notable features, architectural blueprints, infrastructure configurations, or bug fixes are completed. Never leave completed milestones, deployed infrastructure updates, or newly published capabilities unrecorded in the release history.
 - **Hermetic Testing & Docs Integrity**: Default test suite (`tests/`) must be 100% network-free using `sqlite+aiosqlite:///:memory:`, offline HTML fixtures, and automated validation of documentation frontmatter, widget DOM contracts, and tutorial YAML blocks (`test_docs_integrity.py`).
 - **Scoped Verification for Docs-Only Changes**: When modifying purely Markdown documentation, tutorials, blog essays, or static zero-build assets (`docs/`, `blog/`, `credence-docs`), bypass the full Python regression test suite (`just test`). Verify using local static inspection or web preview (`just serve-web`). Reserve full `just test`, `just test-e2e`, and `just benchmark` for changes to Python source code (`credence/`), test suites (`tests/`), or data models.
 - **Human Review Before Commits ("Mk1 Eyeball")**: Never execute `git commit` automatically. Always present changes and live verification results for human approval first.
@@ -19,12 +20,14 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Cloudflare Workers Zero-Build Static Assets Invariant**: All Cloudflare Worker deployments utilizing custom `_worker.js` routing with static assets must define `binding = "ASSETS"` in `wrangler.toml` and maintain a `.assetsignore` file excluding `_worker.js` and `wrangler.toml` to prevent asset leakage and build failures.
 - **Edge Routing Origin Header Translation**: Cloudflare Worker edge routers must rewrite `Host` headers to native Cloud Run target URLs (`<service>.run.app`) to bypass Google Search Console domain verification requirements while preserving live Server-Sent Events (SSE) streaming and global CORS headers.
 - **Empirical Thinking Budget Sweet Spot (4k Invariant)**: In accordance with Golden 12 cross-model benchmarks, `gemini-3.7-flash` with a 4,096 thinking token budget represents the optimal Pareto frontier ($0.34–$0.68/1k audits, 2.4s–5.1s latency) achieving 100% verbatim grounding and Poe's Law satire neutralization without the 30x cost overhead and over-analysis penalties of flagship Pro models.
+- **FastMCP Nested Datetime Serialization**: All data models and digest payloads exposed via FastMCP tools or resources must serialize nested `datetime` instances to ISO-8601 strings (`.isoformat()`) within `.to_dict()` prior to JSON encoding.
 - **Content Decoupling & Hermetic CI**: Keep application repos lean by separating marketing HTML from core code. Maintain technical tutorials in `docs/tutorials/` in clean Markdown. CI workflows (`ci.yml`) must run 100% hermetically without cloud secrets.
 - **Context Governance & Progressive Disclosure**: Keep `AGENTS.md` lean (<1,000 tokens) in thematic categories. Place multi-step runbooks in `.agents/skills/` and complete specifications in `docs/`.
 
 ---
 
 ## 2. Epistemic Ingestion & Scoring Engine
+- **Topic Entropy Astroturfing Defense (Pizza Hut Problem)**: Topic diversity calculators must incorporate Top-Token Concentration penalties ($C_{\text{top3}}$) alongside Shannon entropy to ensure single-topic promotional pivots trigger autonomous quarantine ($H < 0.30$).
 - **Poe's Law & Satire Safeguards**: Treat structural Schema.org and masthead badges as candidate cues. Neutralize legitimate satire ($0.00$), but invoke `SPJ-1.6` cloaking overrides (disabling satire protection) on factual defamatory/health allegations.
 - **Namespaced Fixed Taxonomies**: Never hardcode rule names in scoring math; use namespaced URIs (`domain:cluster/rule_id@version`) pinned by catalog SHA-256 hashes.
 - **Whitespace-Insensitive Grounding**: Quote validators must collapse whitespace sequences (`\s+` -> ` `) in both citations and source DOM text before substring matching ($G=1.0$).
