@@ -39,11 +39,17 @@ DOMAIN_REPORT = os.environ.get("CREDENCE_TEST_DOMAIN_REPORT", "https://credence.
 
 @pytest.mark.asyncio
 async def test_live_mcp_sse_handshake() -> None:
-    """Verify live FastMCP SSE endpoint connects and opens stream."""
+    """Verify live FastMCP SSE endpoint connects and streams endpoint session event."""
     async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-        response = await client.get(f"{DOMAIN_MCP}/sse")
-        assert response.status_code == 200
-        assert "text/event-stream" in response.headers.get("content-type", "")
+        async with client.stream("GET", f"{DOMAIN_MCP}/sse") as response:
+            assert response.status_code == 200
+            assert "text/event-stream" in response.headers.get("content-type", "")
+            first_chunk = ""
+            async for chunk in response.aiter_text():
+                first_chunk += chunk
+                if "session_id" in first_chunk or "endpoint" in first_chunk:
+                    break
+            assert "session_id" in first_chunk or "endpoint" in first_chunk
 
 
 @pytest.mark.asyncio
