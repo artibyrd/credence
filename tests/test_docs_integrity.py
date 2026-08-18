@@ -80,7 +80,7 @@ def test_all_markdown_files_valid_frontmatter(docs_root: Path) -> None:
 
 @pytest.mark.unit
 def test_interactive_playground_contract(docs_root: Path) -> None:
-    """Verify playground.md and app.js have consistent DOM element IDs for all 7 widgets."""
+    """Verify playground.md and app.js have consistent DOM element IDs for all 8 widgets."""
     playground_file = docs_root / "docs" / "playground.md"
     assert playground_file.exists(), "playground.md must exist"
     p_content = playground_file.read_text(encoding="utf-8")
@@ -88,7 +88,7 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
     app_js = docs_root / "app.js"
     js_content = app_js.read_text(encoding="utf-8")
 
-    # Widget containers in markdown
+    # Widget containers in markdown (all 8 widgets)
     container_ids = [
         "mesh-simulator-widget",
         "simhash-calculator-widget",
@@ -97,6 +97,7 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
         "webcrypto-verifier-widget",
         "taxonomy-explorer-widget",
         "model-comparator-widget",
+        "feed-simulator-widget",
     ]
     for cid in container_ids:
         assert cid in p_content, f"Widget container '{cid}' missing in playground.md"
@@ -130,11 +131,57 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
         "comp-articles-slider",
         "comp-length-slider",
         "model-cards-container",
+        "feed-suspicion-slider",
+        "feed-grounding-slider",
+        "feed-entropy-slider",
+        "feed-freshness-slider",
+        "feed-suspicion-val",
+        "feed-grounding-val",
+        "feed-entropy-val",
+        "feed-freshness-val",
+        "feed-result-score",
+        "feed-result-badge",
+        "feed-astroturf-status",
     ]
 
     for elem_id in interactive_ids:
         assert elem_id in p_content, f"Element ID '{elem_id}' missing in playground.md"
         assert elem_id in js_content, f"Element ID '{elem_id}' missing in app.js event handlers"
+
+
+@pytest.mark.unit
+def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
+    """Verify all fenced mermaid code blocks in documentation have valid diagram headers."""
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    valid_diagram_types = (
+        "graph",
+        "flowchart",
+        "sequencediagram",
+        "classdiagram",
+        "statediagram",
+        "erdiagram",
+        "journey",
+        "gantt",
+        "pie",
+        "gitgraph",
+        "mindmap",
+        "timeline",
+    )
+
+    mermaid_count = 0
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        blocks = re.findall(r"```mermaid\n([\s\S]*?)```", text)
+        for idx, block in enumerate(blocks):
+            mermaid_count += 1
+            lines = [line.strip() for line in block.strip().splitlines() if line.strip() and not line.strip().startswith("%%")]
+            assert len(lines) > 0, f"Empty Mermaid diagram block #{idx + 1} in {md_file.name}"
+            first_token = lines[0].split()[0].lower()
+            assert any(first_token.startswith(t) for t in valid_diagram_types), (
+                f"Invalid Mermaid diagram type '{first_token}' in {md_file.name} block #{idx + 1}"
+            )
+
+    assert mermaid_count >= 24, f"Expected at least 24 Mermaid diagrams, found {mermaid_count}"
 
 
 @pytest.mark.unit
