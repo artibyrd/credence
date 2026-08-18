@@ -1,22 +1,28 @@
 {
-  "canonical_domain": "seeds.credence.nexus",
-  "network_id": "credence-mainnet-1",
-  "generated_at": "2026-08-18T01:23:25.364499+00:00",
-  "generated_at_utc": "2026-08-18T01:23:25.364514+00:00",
-  "root_pubkey": "ed25519:8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
+  "protocol": "credence-mesh/1.0",
+  "canonical_domain": "https://seeds.credence.nexus/peers.json",
+  "generated_at": "2026-08-18T04:41:23.900694Z",
+  "expires_at": "2027-08-18T04:41:23.900694Z",
   "seed_nodes": [
     {
-      "node_id": "seed-01.credence.nexus",
-      "public_key": "ed25519:e4d9b2a1f0c8e7d6b5a4938271605f4e3d2c1b0a9f8e7d6c5b4a3928170f",
-      "endpoint": "wss://seed-01.credence.nexus:8765",
-      "region": "us-central1"
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_alias": "seed-us-central1",
+      "ws_url": "wss://relay.credence.nexus:8765",
+      "quality_score": 0.995,
+      "uptime_pct": 99.8,
+      "region": "us-central1",
+      "supported_catalogs": {}
     },
     {
-      "node_id": "seed-02.credence.nexus",
-      "public_key": "ed25519:f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
-      "endpoint": "wss://seed-02.credence.nexus:8765",
-      "region": "europe-west1"
+      "node_pubkey": "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1",
+      "node_alias": "seed-europe-west1",
+      "ws_url": "wss://relay-eu.credence.nexus:8765",
+      "quality_score": 0.988,
+      "uptime_pct": 99.2,
+      "region": "europe-west1",
+      "supported_catalogs": {}
     }
   ],
-  "root_signature_ed25519": "6c9ea6d4d76e4ed7a2bd9e29ff52789fec6e7c5a13fe4e7016ba9e74e2b4c1fbba7c5665db12e918adb1f6b1ce5a27ccb93620c1e70200f673ee7cf68e716b08"
+  "root_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
+  "root_signature": "8a4299deb23f5b6c4bfd662c52fdaff2015dcab34d6437749c02cf73ba8f8fe29db21bbbebd012fe308c5447ce746e5a406b6d14ffcfa8e6921d6996090f4709"
 }
