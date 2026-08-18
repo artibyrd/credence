@@ -8,6 +8,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Isolated Workspace**: Credence is completely decoupled from other repositories.
 - **Python & SQLModel Async**: Python `>=3.12,<3.13`. Always use `sqlmodel.ext.asyncio.session.AsyncSession` and `async_sessionmaker`. Avoid `from __future__ import annotations` in `models.py`.
 - **Hermetic Testing**: Default unit test suite (`tests/`) must be 100% network-free. Use `sqlite+aiosqlite:///:memory:` and offline HTML fixtures.
+- **Scoped Verification for Docs-Only Changes**: When modifying purely Markdown documentation, tutorials, blog essays, or static zero-build assets (`docs/`, `blog/`, `credence-docs`), bypass the full Python regression test suite (`just test`). Verify using local static inspection or web preview (`just serve-web`). Reserve full `just test`, `just test-e2e`, and `just benchmark` for changes to Python source code (`credence/`), test suites (`tests/`), or data models.
 - **Human Review Before Commits ("Mk1 Eyeball")**: Never execute `git commit` automatically. Always present changes and live verification results for human approval first.
 - **Token Budget & Coexistence**: Prioritize `CREDENCE_GEMINI_API_KEY`. Enforce token budgets and automatic offline circuit-breaker fallbacks (`QUOTA_PRESERVED`) at 30% headroom to protect interactive dev sessions.
 - **Network Ingestion SSRF Guard**: Reject cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback (`127.0.0.1`, `localhost`), and RFC 1918 private subnets unless running hermetic local fixtures (`allow_local=True`).
@@ -43,6 +44,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 ---
 
 ## 5. Standard Task Commands (`Justfile`)
+- `just agent-check`: Verify declarative Antigravity skills and workspace configuration.
 - `just test`: Run fast hermetic unit test suite (<65s).
 - `just test-e2e-mock`: Run offline mock end-to-end integration test.
 - `just test-e2e`: Run online end-to-end integration tests (requires `CREDENCE_LIVE_TESTS=1`).
