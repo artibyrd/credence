@@ -130,6 +130,14 @@ commit-all message:
     @cd /home/pendragon/Projects/credence-ecosystem/credence-agent && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "{{message}}"))
     @echo "✅ All ecosystem changes committed."
 
+# Tag release across all ecosystem repositories
+tag-all version message:
+    @echo "=== Tagging v{{version}} across credence ecosystem ==="
+    @cd /home/pendragon/Projects/credence-ecosystem/credence && git tag -f -a v{{version}} -m "{{message}}"
+    @cd /home/pendragon/Projects/credence-ecosystem/credence-docs && git tag -f -a v{{version}} -m "{{message}}"
+    @cd /home/pendragon/Projects/credence-ecosystem/credence-agent && git tag -f -a v{{version}} -m "{{message}}"
+    @echo "✅ Tagged v{{version}} across all ecosystem repositories."
+
 # Push changes and tags across all ecosystem repositories to GitHub
 push-all:
     @echo "=== Pushing changes across credence ecosystem ==="
@@ -137,5 +145,14 @@ push-all:
     @cd /home/pendragon/Projects/credence-ecosystem/credence-docs && git push origin main --follow-tags
     @cd /home/pendragon/Projects/credence-ecosystem/credence-agent && git push origin main --follow-tags
     @echo "✅ All ecosystem branches and tags pushed to GitHub."
+
+# Complete atomic ecosystem release
+release version message:
+    @just bump-version {{version}}
+    @just commit-all "feat(ecosystem): release v{{version}} - {{message}}"
+    @just tag-all {{version}} "Release v{{version}}: {{message}}"
+    @just push-all
+    @echo "🚀 Full ecosystem release v{{version}} completed successfully."
+
 
 
