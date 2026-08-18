@@ -16,7 +16,7 @@
         Lookup any audited web page or content SHA-256 hash to inspect itemized ethical violations, grounded citations, and Ed25519 cryptographic signatures.
       </p>
 
-      <form class="search-box" onsubmit="event.preventDefault(); window.location.href='/viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
+      <form class="search-box" onsubmit="event.preventDefault(); window.location.href='viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
         <input type="text" id="query" class="search-input" placeholder="Enter URL or content SHA-256 (e.g. sha256:abc123...)" required>
         <button type="submit" class="search-btn">Inspect Audit</button>
       </form>

@@ -46,38 +46,61 @@ export default {
         });
       }
 
-      // 2. Normalize and Map Hostname to Static Asset Path
-      let path = url.pathname;
-      if (path === '/' || path === '') {
-        path = '/index.html';
-      }
-
-      let prefix = '/credence.run';
-      if (host.includes('nexus')) {
-        prefix = '/credence.nexus';
-      } else if (host.includes('foundation')) {
-        if (host.startsWith('keys')) {
-          prefix = '/credence.foundation/keys';
-          if (path === '/index.html') path = '/root.pub';
-        } else {
-          prefix = '/credence.foundation';
+      // 2. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
+      const dirPrefixes = ['/credence.run', '/credence.nexus', '/credence.foundation', '/credence.report'];
+      for (const dp of dirPrefixes) {
+        if (url.pathname === dp || url.pathname.startsWith(dp + '/')) {
+          const cleanPath = url.pathname.slice(dp.length) || '/';
+          return Response.redirect(new URL(cleanPath + url.search, request.url), 301);
         }
-      } else if (host.includes('report')) {
-        prefix = '/credence.report';
       }
 
-      const assetUrl = new URL(prefix + path, request.url);
+      // 3. Resolve Domain-Specific Asset Prefix
+      let prefix = 'credence.run';
+      if (host.includes('nexus')) {
+        prefix = 'credence.nexus';
+      } else if (host.includes('foundation')) {
+        prefix = host.startsWith('keys') ? 'credence.foundation/keys' : 'credence.foundation';
+      } else if (host.includes('report')) {
+        prefix = 'credence.report';
+      }
+
+      let reqPath = url.pathname;
+      if (reqPath === '' || reqPath === '/') {
+        reqPath = '/';
+      }
+
+      // If keys.credence.foundation root requested, serve root.pub
+      if (host.startsWith('keys') && (reqPath === '/' || reqPath === '/index.html')) {
+        reqPath = '/root.pub';
+      }
+
+      // Build target asset path
+      let finalPath;
+      if (reqPath === '/') {
+        finalPath = `/${prefix}/`;
+      } else {
+        finalPath = `/${prefix}${reqPath}`;
+      }
+
+      const assetUrl = new URL(finalPath, request.url);
       let response;
 
       if (env && env.ASSETS) {
         response = await env.ASSETS.fetch(new Request(assetUrl, request));
+        // If Cloudflare returns a redirect for internal folder, follow it internally to hide redirect from browser
+        if (response.status >= 300 && response.status < 400 && response.headers.has('Location')) {
+          const loc = response.headers.get('Location');
+          const targetUrl = new URL(loc, request.url);
+          response = await env.ASSETS.fetch(new Request(targetUrl, request));
+        }
       } else {
         response = await fetch(new Request(assetUrl, request));
       }
 
       // If exact file found, return with appropriate CORS
       const resHeaders = new Headers(response.headers);
-      if (path.endsWith('.json') || path.endsWith('.pub') || path.endsWith('.yaml') || path.endsWith('.sh') || path.endsWith('.html') || path.endsWith('.css')) {
+      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css')) {
         resHeaders.set('Access-Control-Allow-Origin', '*');
         resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
       }
