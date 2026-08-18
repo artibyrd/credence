@@ -22,6 +22,14 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Empirical Thinking Budget Sweet Spot (4k Invariant)**: In accordance with Golden 12 cross-model benchmarks, `gemini-3.7-flash` with a 4,096 thinking token budget represents the optimal Pareto frontier ($0.34–$0.68/1k audits, 2.4s–5.1s latency) achieving 100% verbatim grounding and Poe's Law satire neutralization without the 30x cost overhead and over-analysis penalties of flagship Pro models.
 - **FastMCP Nested Datetime Serialization**: All data models and digest payloads exposed via FastMCP tools or resources must serialize nested `datetime` instances to ISO-8601 strings (`.isoformat()`) within `.to_dict()` prior to JSON encoding.
 - **Content Decoupling & Hermetic CI**: Keep application repos lean by separating marketing HTML from core code. Maintain technical tutorials in `docs/tutorials/` in clean Markdown. CI workflows (`ci.yml`) must run 100% hermetically without cloud secrets.
+- **Formalized Milestone Completion & Multi-Repo Push Protocol**: Every completed milestone or major feature must strictly execute the 5-stage release lifecycle:
+  1. **Present Walkthrough**: Update `walkthrough.md` with Playwright screenshots, test logs, and visual evidence.
+  2. **"Mk1 Eyeball" Human Review Gate**: Explicitly request human review and approval. Never execute `git commit` or `git push` automatically.
+  3. **Changelog & Version Sync**: Update `docs/changelog.md` and run `just bump-version <new_version>` to ensure 100% version parity across all 7 manifests.
+  4. **Multi-Repo Commit & Tag**: Run `just commit-all "<message>"` and tag release across all modified repositories (`credence`, `credence-docs`, `credence-agent`).
+  5. **Synchronized Push (`just push-all`)**: Push all branches and tags (`--follow-tags`) with network access (`BypassSandbox: true`), verifying all 3 repositories report `Your branch is up to date with 'origin/main'`.
+  6. **Continuous Learning (`/learn`)**: Conduct a post-milestone retrospective to compact new edge cases and workflow optimizations into `AGENTS.md`.
+- **Workspace-Local Execution & Zero-Prompt Scratchpads**: Avoid creating or executing scratch scripts outside the active workspace directory. Always prioritize native editing tools (`replace_file_content`, `write_to_file`) and standard Justfile recipes to minimize unnecessary sandbox permission prompts.
 - **Context Governance & Progressive Disclosure**: Keep `AGENTS.md` lean (<1,000 tokens) in thematic categories. Place multi-step runbooks in `.agents/skills/` and complete specifications in `docs/`.
 
 ---

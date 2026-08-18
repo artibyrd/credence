@@ -254,3 +254,33 @@ def test_tutorial_yaml_code_blocks_syntax(docs_root: Path) -> None:
                 assert parsed is not None or len(block.strip()) == 0
             except Exception as e:
                 pytest.fail(f"Invalid YAML block #{idx + 1} in {tut_file.name}: {e}")
+
+
+@pytest.mark.unit
+def test_all_invariant_link_anchors_exist(docs_root: Path) -> None:
+    """Verify all markdown links pointing to invariant anchors resolve to valid IDs in docs/invariants.md."""
+    invariants_file = docs_root / "docs" / "invariants.md"
+    assert invariants_file.exists(), "docs/invariants.md must exist"
+    inv_text = invariants_file.read_text(encoding="utf-8")
+
+    # Extract all declared invariant anchor IDs in docs/invariants.md
+    declared_ids = set(re.findall(r'id=["\']([^"\']+)["\']', inv_text))
+    assert len(declared_ids) >= 32, f"Expected at least 32 declared invariant anchors, found {len(declared_ids)}"
+
+    # Scan all markdown files for links to invariants
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    total_inv_links = 0
+
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        # Match [Text](...invariants.md#anchor) or [Text](...invariants#anchor)
+        links = re.findall(r'\[([^\]]+)\]\(([^)]*invariants(?:\.md)?#([^)]+))\)', text)
+        for link_text, full_url, anchor in links:
+            total_inv_links += 1
+            assert anchor in declared_ids, (
+                f"Broken invariant anchor '#{anchor}' referenced in {md_file.relative_to(docs_root)} "
+                f"via [{link_text}]({full_url}). Valid anchors are: {sorted(list(declared_ids))[:5]}..."
+            )
+
+    assert total_inv_links >= 15, f"Expected at least 15 invariant links across catalog, found {total_inv_links}"
+

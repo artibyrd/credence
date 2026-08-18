@@ -249,3 +249,29 @@ def test_tabbed_interface_switching_and_persistence(page: Page, docs_server: str
     assert active_btn is not None
     assert "fastmcp" in active_btn.inner_text().lower()
 
+
+@pytest.mark.e2e
+def test_invariant_deep_linking_and_scrolling(page: Page, docs_server: str) -> None:
+    """Verify clicking an invariant link routes to #docs/invariants#invariant-N and scrolls viewport."""
+    page.goto(f"{docs_server}/#docs/walkthroughs/03-p2p-mesh-consensus", wait_until="networkidle")
+    page.wait_for_timeout(600)
+
+    # Click on the Invariant 27 link in the table or prose
+    inv_link = page.query_selector("a[href*='invariant-27'], a[href*='invariants#invariant-27']")
+    assert inv_link is not None, "Could not find Invariant 27 link on Walkthrough 03"
+    inv_link.click()
+    page.wait_for_timeout(1200)
+
+    # Verify URL hash changed to invariant 27
+    current_hash = page.evaluate("() => window.location.hash")
+    assert "invariants" in current_hash
+    assert "invariant-27" in current_hash
+
+    # Verify target invariant element exists and is in viewport
+    target_card = page.query_selector("#invariant-27")
+    assert target_card is not None, "Target anchor #invariant-27 not found in DOM"
+    box = target_card.bounding_box()
+    assert box is not None
+    assert box["y"] < 900, f"Invariant card was not scrolled into view: y={box['y']}"
+
+

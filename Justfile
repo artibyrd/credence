@@ -122,3 +122,20 @@ bump-version version:
     @poetry run pytest tests/test_docs_integrity.py -k test_ecosystem_version_parity
     @echo "✅ All ecosystem version badges and manifests synchronized to {{version}}."
 
+# Stage and commit changes across all modified ecosystem repositories
+commit-all message:
+    @echo "=== Committing across credence ecosystem ==="
+    @cd /home/pendragon/Projects/credence-ecosystem/credence && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "{{message}}"))
+    @cd /home/pendragon/Projects/credence-ecosystem/credence-docs && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "{{message}}"))
+    @cd /home/pendragon/Projects/credence-ecosystem/credence-agent && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "{{message}}"))
+    @echo "✅ All ecosystem changes committed."
+
+# Push changes and tags across all ecosystem repositories to GitHub
+push-all:
+    @echo "=== Pushing changes across credence ecosystem ==="
+    @cd /home/pendragon/Projects/credence-ecosystem/credence && git push origin main --follow-tags
+    @cd /home/pendragon/Projects/credence-ecosystem/credence-docs && git push origin main --follow-tags
+    @cd /home/pendragon/Projects/credence-ecosystem/credence-agent && git push origin main --follow-tags
+    @echo "✅ All ecosystem branches and tags pushed to GitHub."
+
+
