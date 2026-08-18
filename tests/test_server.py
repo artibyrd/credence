@@ -44,6 +44,7 @@ async def test_fastmcp_server_initialization() -> None:
     prompts = await server.list_prompts()
     prompt_names = [p.name for p in prompts]
     assert "audit_article_prompt" in prompt_names
+    assert "explain_audit_report_prompt" in prompt_names
     assert "fallacy_review_prompt" in prompt_names
     assert "dark_pattern_review_prompt" in prompt_names
 
@@ -137,3 +138,38 @@ async def test_fastmcp_quota_and_resources() -> None:
     id_res: Any = await server.read_resource("credence://node/identity")
     id_data = json.loads(id_res[0].content)
     assert "public_key_hex" in id_data
+
+
+@pytest.mark.unit
+async def test_fastmcp_human_report_resource_and_prompt(db_session: Any) -> None:
+    """Verify human report resource formatting and explain prompt template."""
+    server = create_mcp_server()
+
+    # 1. Test explain prompt template
+    prompt_res = await server.get_prompt("explain_audit_report_prompt", {"identifier": "https://example.com/news"})
+    assert prompt_res is not None
+    assert "https://example.com/news" in prompt_res.messages[0].content.text
+    assert "credence_get_audit" in prompt_res.messages[0].content.text
+
+    # 2. Test direct evaluate and get_audit with markdown / human format
+    eval_res: Any = await server.call_tool(
+        "credence_evaluate_text",
+        {"text": "Either you support this completely or you are an enemy!", "title": "Fallacy Test"},
+    )
+    eval_data = json.loads(eval_res.content[0].text)
+    content_hash = eval_data["content_sha256"]
+
+    # Retrieve formatted as human
+    human_res: Any = await server.call_tool(
+        "credence_get_audit",
+        {"identifier": content_hash, "format": "human"},
+    )
+    human_text = human_res.content[0].text
+    assert "🧠 Human Epistemic Briefing" in human_text
+    assert "Credence Epistemic Audit Report" in human_text
+
+    # Retrieve via resource
+    res_list: Any = await server.read_resource(f"credence://reports/{content_hash}/human")
+    assert res_list is not None and len(res_list) > 0
+    res_text = res_list[0].content if hasattr(res_list[0], "content") else str(res_list[0])
+    assert "Human Epistemic Briefing" in res_text

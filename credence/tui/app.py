@@ -11,6 +11,9 @@ Provides:
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+import webbrowser
 from typing import List, Optional
 
 from rich.text import Text
@@ -99,8 +102,8 @@ class AuditInputDialog(ModalScreen[Optional[str]]):
 class CredenceApp(App):
     """Main Credence TUI Application."""
 
-    TITLE = "Credence | Epistemic Trust Engine"
-    SUB_TITLE = "Autonomous Multi-Agent Evaluation & Trust Network"
+    TITLE = "Credence Epistemic Workstation"
+    SUB_TITLE = f"Decentralized Trust Network [{settings.CREDENCE_PROFILE.value.upper()}]"
 
     CSS = """
     Screen {
@@ -108,7 +111,7 @@ class CredenceApp(App):
     }
 
     #sidebar {
-        width: 34;
+        width: 32;
         border-right: heavy $accent;
         padding: 0 1;
     }
@@ -135,18 +138,45 @@ class CredenceApp(App):
         background: $surface;
     }
 
-    .metric_title {
-        text-style: bold;
+    #exec_summary_panel {
+        height: auto;
+        border: solid $accent;
+        padding: 1;
+        margin-bottom: 1;
+        background: $surface;
     }
 
-    #violations_table {
-        height: 12;
-        border: solid $secondary;
+    #inspector_split {
+        height: 1fr;
+    }
+
+    #inspector_left {
+        width: 48%;
+        height: 1fr;
+        margin-right: 1;
+    }
+
+    #inspector_right {
+        width: 52%;
+        height: 1fr;
+    }
+
+    .metric_title {
+        text-style: bold;
         margin-bottom: 1;
     }
 
-    #detail_panel {
+    #filter_input {
+        margin-bottom: 1;
+    }
+
+    #violations_table {
         height: 1fr;
+        border: solid $secondary;
+    }
+
+    #detail_panel {
+        height: auto;
         border: solid $accent;
         padding: 1;
         background: $surface;
@@ -167,9 +197,6 @@ class CredenceApp(App):
     }
     """
 
-    TITLE = "Credence Epistemic Workstation"
-    SUB_TITLE = f"Decentralized Trust Network [{settings.CREDENCE_PROFILE.value.upper()}]"
-
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("slash", "open_audit_dialog", "Audit URL"),
@@ -180,6 +207,9 @@ class CredenceApp(App):
         ("4", "switch_to_feeds", "Feeds"),
         ("5", "switch_to_quota", "Quota"),
         ("6", "switch_to_identity", "Identity"),
+        ("o", "open_in_browser", "Open in Web"),
+        ("e", "export_report_action", "Export Report"),
+        ("f", "focus_filter", "Filter Findings"),
         ("s", "sync_feeds_action", "Sync Feeds"),
     ]
 
@@ -187,6 +217,7 @@ class CredenceApp(App):
         super().__init__()
         self.current_report: Optional[AuditReport] = None
         self.recent_audits: List[AuditRecord] = []
+        self._filter_query: str = ""
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -200,12 +231,18 @@ class CredenceApp(App):
             with Container(id="main_container"):
                 with TabbedContent(id="tabs"):
                     with TabPane("🛡️ Inspector", id="tab_inspector"):
-                        with VerticalScroll():
+                        with Vertical():
                             yield Static("No audit selected. Press [bold]/[/bold] to audit a URL.", id="score_banner")
-                            yield Label("🚨 Grounded Violations", classes="metric_title")
-                            yield DataTable(id="violations_table")
-                            yield Label("🔎 Grounded Citation & Evidence Detail", classes="metric_title")
-                            yield Static("Select a violation to view details.", id="detail_panel")
+                            yield Static("Analyzing epistemic signals...", id="exec_summary_panel")
+                            with Horizontal(id="inspector_split"):
+                                with Vertical(id="inspector_left"):
+                                    yield Label("🚨 Grounded Violations", classes="metric_title")
+                                    yield Input(placeholder="🔍 Filter findings (e.g. SPJ, fallacy, critical)...", id="filter_input")
+                                    yield DataTable(id="violations_table")
+                                with Vertical(id="inspector_right"):
+                                    yield Label("🔎 In-Context Evidence & Citation Detail", classes="metric_title")
+                                    with VerticalScroll():
+                                        yield Static("Select a violation to view details.", id="detail_panel")
 
                     with TabPane("📚 Taxonomies", id="tab_taxonomies"):
                         yield Tree("Registered Taxonomy Catalogs", id="taxonomy_tree")
@@ -450,8 +487,42 @@ class CredenceApp(App):
             self._update_inspector_views(report)
             break
 
+    def _generate_exec_summary(self, report: AuditReport) -> str:
+        """Generate human-readable plain-English takeaway for TUI."""
+        if report.is_satire:
+            return (
+                "[bold cyan]🧠 Human Takeaway:[/bold cyan] "
+                "This publication was classified as [bold]Legitimate Satire / Parody[/bold]. "
+                "Under Poe's Law neutrality rules, legitimate humor and exaggeration are neutralized to a 0.0 suspicion score."
+            )
+        if report.suspicion_score <= 15.0:
+            return (
+                "[bold green]🧠 Human Takeaway:[/bold green] "
+                "This article exhibits [bold]high epistemic integrity[/bold] with verifiable factual citations, "
+                "transparent author sourcing, and zero deceptive interface patterns."
+            )
+
+        fallacy_count = sum(1 for v in report.violations if v.domain == "LOGICAL_FALLACY")
+        ethics_count = sum(1 for v in report.violations if v.domain == "JOURNALISTIC_ETHICS")
+        deceptive_count = sum(1 for v in report.violations if v.domain == "DECEPTIVE_PATTERN")
+
+        concerns = []
+        if deceptive_count:
+            concerns.append(f"[bold red]{deceptive_count} deceptive pattern(s)[/bold red]")
+        if fallacy_count:
+            concerns.append(f"[bold yellow]{fallacy_count} logical fallacy(ies)[/bold yellow]")
+        if ethics_count:
+            concerns.append(f"[bold yellow]{ethics_count} journalistic sourcing violation(s)[/bold yellow]")
+
+        concern_str = ", ".join(concerns) if concerns else "minor structural anomalies"
+        return (
+            f"[bold dark_orange]🧠 Human Takeaway:[/bold dark_orange] "
+            f"Multi-agent specialists flagged {concern_str}. "
+            f"Readers are advised to verify primary sources before sharing."
+        )
+
     def _update_inspector_views(self, report: AuditReport) -> None:
-        # Update Banner
+        # 1. Update Score Banner
         banner = self.query_one("#score_banner", Static)
         if report.is_satire:
             status_badge = "[bold cyan]🎭 SATIRE / PARODY (Poe's Law Neutralized)[/bold cyan]"
@@ -478,15 +549,41 @@ class CredenceApp(App):
 
         banner.update(banner_text)
 
-        # Update Violations Table
+        # 2. Update Executive Summary Panel
+        exec_panel = self.query_one("#exec_summary_panel", Static)
+        exec_panel.update(self._generate_exec_summary(report))
+
+        # 3. Update Violations Table with filtering
+        self._populate_filtered_violations()
+
+    def _populate_filtered_violations(self) -> None:
+        if not self.current_report:
+            return
+
         v_table = self.query_one("#violations_table", DataTable)
         v_table.clear()
-        for idx, v in enumerate(report.violations):
+
+        query = self._filter_query.lower().strip()
+        filtered_violations = []
+
+        for idx, v in enumerate(self.current_report.violations):
+            if query:
+                match = (
+                    query in v.rule_id.lower()
+                    or query in v.domain.lower()
+                    or query in v.reasoning.lower()
+                    or query in v.quote_or_element.lower()
+                )
+                if not match:
+                    continue
+            filtered_violations.append((idx, v))
+
+        for idx, v in filtered_violations:
             sev_style = "red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
             excerpt = v.quote_or_element[:32] + "..." if len(v.quote_or_element) > 32 else v.quote_or_element
             v_table.add_row(
                 v.rule_id,
-                f"[{sev_style}]{v.severity}[/{sev_style}]",
+                f"[{sev_style}]{v.severity}/5[/{sev_style}]",
                 v.domain[:14],
                 excerpt,
                 key=str(idx),
@@ -494,19 +591,31 @@ class CredenceApp(App):
 
         # Reset detail panel
         detail = self.query_one("#detail_panel", Static)
-        if report.violations:
-            first_v = report.violations[0]
-            self._show_violation_detail(first_v)
+        if filtered_violations:
+            self._show_violation_detail(filtered_violations[0][1])
+        elif self.current_report.violations:
+            detail.update("[yellow]No violations match the active filter query.[/yellow]")
         else:
             detail.update("[green]✓ No violations discovered on this webpage snapshot.[/green]")
 
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Handle live filter query changes."""
+        if event.input.id == "filter_input":
+            self._filter_query = event.value
+            self._populate_filtered_violations()
+
     def _show_violation_detail(self, v: SpecialistViolationFinding) -> None:
         detail = self.query_one("#detail_panel", Static)
+        sev_color = "red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
         detail_text = (
-            f"[bold cyan]{v.rule_id}[/bold cyan] ({v.domain}) - Severity [bold red]{v.severity}/5[/bold red]\n\n"
-            f'[bold]Grounded Quote / Element:[/bold]\n[italic]"{v.quote_or_element}"[/italic]\n\n'
-            f"[bold]Auditor Reasoning:[/bold]\n{v.reasoning}\n\n"
-            f"[dim]Namespaced URI: {v.rule_uri}[/dim]"
+            f"[bold cyan]{v.rule_id}[/bold cyan] ([dim]{v.domain}[/dim])\n"
+            f"[bold]Severity Rating:[/bold] [{sev_color}]{v.severity} / 5[/{sev_color}]  |  "
+            f"[bold]Confidence:[/bold] {v.confidence * 100:.0f}%\n\n"
+            f"[bold]Grounded Citation / DOM Excerpt:[/bold]\n"
+            f'[italic cyan]"{v.quote_or_element}"[/italic cyan]\n\n'
+            f"[bold]Specialist Reasoning & Evidence:[/bold]\n"
+            f"{v.reasoning}\n\n"
+            f"[dim]Canonical URI: {v.rule_uri}[/dim]"
         )
         detail.update(detail_text)
 
@@ -525,6 +634,37 @@ class CredenceApp(App):
                     self._show_violation_detail(self.current_report.violations[idx])
             except ValueError:
                 pass
+
+    def action_focus_filter(self) -> None:
+        """Focus the violation filter input bar."""
+        inp = self.query_one("#filter_input", Input)
+        inp.focus()
+
+    def action_open_in_browser(self) -> None:
+        """Open the active audit in the public web report viewer."""
+        if not self.current_report:
+            self.notify("No active report to open.", severity="warning")
+            return
+
+        target_url = f"https://credence.report/viewer.html?q={self.current_report.content_sha256}"
+        try:
+            webbrowser.open(target_url)
+            self.notify(f"Opening report viewer: {target_url}")
+        except Exception as e:
+            self.notify(f"Failed to open browser: {e}", severity="error")
+
+    def action_export_report_action(self) -> None:
+        """Export the current audit report to Markdown on disk."""
+        if not self.current_report:
+            self.notify("No active report to export.", severity="warning")
+            return
+
+        from credence.cli.main import report_to_markdown
+
+        md_content = report_to_markdown(self.current_report)
+        out_path = Path("credence_audit_export.md")
+        out_path.write_text(md_content, encoding="utf-8")
+        self.notify(f"Report exported to {out_path.absolute()}", severity="information")
 
     def action_open_audit_dialog(self) -> None:
         """Open modal to audit a new URL."""

@@ -3,52 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence Report — Public Epistemic Audit Viewer</title>
+  <title>Credence Report — Epistemic Audit Explorer</title>
   <meta name="description" content="Search, inspect, and verify cryptographically signed epistemic audit reports.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <span class="badge">Public Attestation Explorer</span>
-      <h1>Credence Epistemic Reports</h1>
-      <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem;">
-        Lookup any audited web page or content SHA-256 hash to inspect itemized ethical violations, grounded citations, and Ed25519 cryptographic signatures.
+  <div class="container" style="max-width: 850px;">
+    <header style="text-align: center; margin-top: 1.5rem; margin-bottom: 2.5rem;">
+      <span class="badge">🛡️ Public Epistemic Explorer</span>
+      <h1 style="font-size: 2.5rem; font-weight: 800; color: #fff; margin: 0.5rem 0;">Credence Epistemic Reports</h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 620px; margin: 0 auto 2rem; line-height: 1.6;">
+        Inspect itemized journalistic ethics violations, logical fallacies, deceptive UI patterns, and Ed25519 cryptographic attestations.
       </p>
 
-      <form class="search-box" onsubmit="event.preventDefault(); window.location.href='viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
-        <input type="text" id="query" class="search-input" placeholder="Enter URL or content SHA-256 (e.g. sha256:abc123...)" required>
-        <button type="submit" class="search-btn">Inspect Audit</button>
+      <form class="top-audit-bar" style="max-width: 680px; margin: 0 auto 1rem; padding: 0.6rem;" onsubmit="event.preventDefault(); window.location.href='viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
+        <input type="text" id="query" placeholder="Enter webpage URL or content SHA-256 (e.g. https://...)" required style="font-size: 1rem;">
+        <button type="submit" class="btn-primary" style="padding: 0.6rem 1.5rem; font-size: 1rem;">Inspect Report</button>
       </form>
     </header>
 
-    <div class="report-card">
-      <h2 style="font-size: 1.25rem; color: #fff; margin-bottom: 1rem;">Recent Epistemic Benchmark Attestations</h2>
+    <div class="report-hero" style="padding: 1.75rem;">
+      <h2 style="font-size: 1.2rem; color: #fff; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <span>🎯 Curated Audit Scenarios</span>
+        <span style="font-size: 0.8rem; color: var(--text-dim); font-weight: normal;">Click any scenario to explore the interactive report</span>
+      </h2>
       
-      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-        <a href="viewer.html?scenario=clean" style="display: block; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">
-          <div style="display: flex; justify-content: space-between;">
-            <b style="color: #fff;">Ground Truth Journalistic News</b>
-            <span class="clean">0.0 CLEAN</span>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <a href="viewer.html?scenario=clean" style="display: block; background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius); border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <b style="color: #fff; font-size: 1.05rem;">🛡️ Ground Truth Journalistic News</b>
+            <span class="sig-pill sig-valid" style="font-size: 0.75rem;">0.0 CLEAN</span>
           </div>
-          <div style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); margin-top: 0.25rem;">sha256:0000000000000000000000000000000000000000000000000000000000000000</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            Certified factual renewable energy report with peer-reviewed quotes, transparent byline, and zero logical fallacies.
+          </p>
+          <div style="color: var(--text-dim); font-size: 0.8rem; font-family: var(--font-mono);">sha256:0000000000000000000000000000000000000000000000000000000000000000</div>
         </a>
 
-        <a href="viewer.html?scenario=deceptive" style="display: block; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">
-          <div style="display: flex; justify-content: space-between;">
-            <b style="color: #fff;">Deceptive E-Commerce Checkout / Forced Continuity</b>
-            <span class="deceptive">71.7 DECEPTIVE</span>
+        <a href="viewer.html?scenario=suspicious" style="display: block; background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius); border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <b style="color: #fff; font-size: 1.05rem;">⚠️ Sensationalist Editorial with Fallacies</b>
+            <span class="severity-pill sev-med" style="font-size: 0.75rem;">61.3 SUSPICIOUS</span>
           </div>
-          <div style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); margin-top: 0.25rem;">sha256:4444444444444444444444444444444444444444444444444444444444444444</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            Municipal dispute piece exhibiting false dilemma ("Either on our side or enemy"), unverified hearsay, and ad hominem insults.
+          </p>
+          <div style="color: var(--text-dim); font-size: 0.8rem; font-family: var(--font-mono);">sha256:1111111111111111111111111111111111111111111111111111111111111111</div>
         </a>
 
-        <a href="viewer.html?scenario=fallacy" style="display: block; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid var(--border);">
-          <div style="display: flex; justify-content: space-between;">
-            <b style="color: #fff;">Fallacious Political Editorial (Ad Hominem &amp; False Dilemma)</b>
-            <span class="suspicious">61.3 SUSPICIOUS</span>
+        <a href="viewer.html?scenario=deceptive" style="display: block; background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius); border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <b style="color: #fff; font-size: 1.05rem;">🛑 Deceptive Checkout &amp; Disguised Ad</b>
+            <span class="severity-pill sev-high" style="font-size: 0.75rem;">92.5 DECEPTIVE</span>
           </div>
-          <div style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); margin-top: 0.25rem;">sha256:5555555555555555555555555555555555555555555555555555555555555555</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            Fake system warning dialog combined with hidden recurring subscription billing ($99/wk) and confirmshaming opt-outs.
+          </p>
+          <div style="color: var(--text-dim); font-size: 0.8rem; font-family: var(--font-mono);">sha256:4444444444444444444444444444444444444444444444444444444444444444</div>
         </a>
+
+        <a href="viewer.html?scenario=satire" style="display: block; background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius); border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <b style="color: #fff; font-size: 1.05rem;">🎭 Comedic Satire &amp; Parody</b>
+            <span class="sig-pill" style="background: rgba(192, 132, 252, 0.12); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.3); font-size: 0.75rem;">0.0 SATIRE PROTECTED</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            Humorous story protected under Poe's Law neutrality with 0.0 suspicion score.
+          </p>
+          <div style="color: var(--text-dim); font-size: 0.8rem; font-family: var(--font-mono);">sha256:2222222222222222222222222222222222222222222222222222222222222222</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- How it works card -->
+    <div class="panel-card" style="margin-top: 1.5rem;">
+      <div class="panel-title">
+        <span>💡 How Credence Epistemic Reports Work</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; font-size: 0.9rem; color: var(--text-muted);">
+        <div>
+          <b style="color: #fff; display: block; margin-bottom: 0.35rem;">1. Verbatim Grounding</b>
+          Every flagged violation must be verbatim grounded against the snapshot text ($G=1.0$) to eliminate hallucinated findings.
+        </div>
+        <div>
+          <b style="color: #fff; display: block; margin-bottom: 0.35rem;">2. Pinned Taxonomies</b>
+          Findings map to canonical SHA-256 pinned catalogs (SPJ Journalistic Ethics, IEP Fallacies, Deceptive Patterns).
+        </div>
+        <div>
+          <b style="color: #fff; display: block; margin-bottom: 0.35rem;">3. WebCrypto Signatures</b>
+          Reports are signed with Ed25519 and verified in-browser using the standard W3C Web Cryptography API.
+        </div>
       </div>
     </div>
 

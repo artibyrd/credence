@@ -38,7 +38,7 @@ def test_web_run_landing_hub(web_dir: Path) -> None:
 
 @pytest.mark.unit
 def test_web_report_viewer_web_crypto(web_dir: Path) -> None:
-    """Verify credence.report viewer implements zero-build attestation rendering."""
+    """Verify credence.report viewer implements zero-build attestation rendering and human-friendly features."""
     viewer_file = web_dir / "credence.report" / "viewer.html"
     assert viewer_file.exists(), "credence.report/viewer.html must exist"
 
@@ -48,6 +48,21 @@ def test_web_report_viewer_web_crypto(web_dir: Path) -> None:
     assert "RFC 8785" in content
     assert "violations-container" in content
     assert "score-big" in content
+
+    # Human-First Features
+    assert "exec-summary-card" in content, "Executive summary card must be present"
+    assert "trust-signals" in content, "Trust signals container must be present"
+    assert "tab-reader" in content, "In-context reading mode tab must be present"
+    assert "reader-article-body" in content, "Article body container must be present"
+    assert "tab-findings" in content, "Itemized findings tab must be present"
+    assert "filter-chip" in content, "Interactive filter chips must be present"
+    assert "tab-export" in content, "Export tab must be present"
+    assert "copyMarkdownSummary" in content, "1-click Markdown export must be present"
+    assert "dim-ethics-score" in content, "Trust dimensions breakdown must be present"
+
+    # Zero-Build Invariant 20: 0 npm packages
+    assert "node_modules" not in content
+    assert "npm" not in content
 
 
 @pytest.mark.unit

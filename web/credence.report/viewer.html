@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Epistemic Audit Report — Credence Public Attestation</title>
   
-  <!-- Dynamic OpenGraph & Twitter Card Metadata (Injected on SSR/Edge or hydrated on client) -->
+  <!-- Dynamic OpenGraph & Twitter Card Metadata -->
   <meta property="og:site_name" content="Credence Epistemic Trust Network">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Credence Epistemic Audit Report">
@@ -19,50 +19,286 @@
 <body>
   <div class="container">
     <header>
-      <span class="badge">Decentralized Epistemic Attestation</span>
-      <h1 id="page-title">Epistemic Audit Report</h1>
-      <p id="target-url" style="color: var(--accent-cyan); font-family: var(--font-mono); font-size: 0.95rem; word-break: break-all; margin-top: 0.5rem;"></p>
+      <div class="header-top">
+        <a href="index.html" class="header-brand">
+          <span class="badge">🛡️ Credence Report</span>
+          <h1>Epistemic Audit Viewer</h1>
+        </a>
+        <div>
+          <a href="index.html" class="btn-secondary" style="font-size: 0.85rem;">&larr; Back to Search</a>
+        </div>
+      </div>
+
+      <form class="top-audit-bar" onsubmit="event.preventDefault(); window.location.href='viewer.html?q=' + encodeURIComponent(document.getElementById('header-query').value);">
+        <input type="text" id="header-query" placeholder="Enter URL or content SHA-256 (e.g. sha256:abc123...)" required>
+        <button type="submit" class="btn-primary">Inspect Audit</button>
+      </form>
     </header>
 
-    <div class="report-card">
-      <div class="score-header">
+    <!-- Report Hero Banner -->
+    <div class="report-hero">
+      <div class="hero-target">
         <div>
-          <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Calibrated Suspicion Score</div>
+          <div class="target-title" id="page-title">Epistemic Audit Report</div>
+          <div class="target-url" id="target-url">https://example.com/target-article</div>
+        </div>
+        <div class="sig-status-badge">
+          <div id="signature-status" class="sig-pill sig-valid">✅ ED25519 VERIFIED (RFC 8785)</div>
+        </div>
+      </div>
+
+      <div class="hero-stats-grid">
+        <div class="score-circle-container">
           <div id="suspicion-score" class="score-big suspicious">--</div>
+          <div class="score-label">Suspicion Score</div>
         </div>
-        <div style="text-align: right;">
-          <div id="classification-badge" class="verdict-tag suspicious">AUDITING...</div>
-          <div id="density-index" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Density: -- / 1k words</div>
+
+        <div class="verdict-box">
+          <div>
+            <span id="classification-badge" class="verdict-tag suspicious">AUDITING...</span>
+          </div>
+          <div id="density-index" class="density-badge">Density: -- / 1,000 words</div>
+          <div id="eval-method-badge" class="method-badge">Evaluated via LLM Multi-Agent Pipeline &bull; 95% Confidence</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <button class="btn-secondary" onclick="switchTab('tab-reader')">📖 Read In-Context</button>
+          <button class="btn-primary" onclick="copyMarkdownSummary()">📋 Copy Summary</button>
         </div>
       </div>
 
-      <div class="meta-grid">
-        <div class="meta-item">
-          <div class="meta-label">Content SHA-256</div>
-          <div id="content-hash" class="meta-val">--</div>
+      <!-- Plain-English Executive Summary -->
+      <div class="exec-summary-card">
+        <div class="exec-title">
+          <span>🧠 Executive Briefing & Human Takeaway</span>
         </div>
-        <div class="meta-item">
-          <div class="meta-label">SimHash-64 (Near Duplicate)</div>
-          <div id="simhash-val" class="meta-val">--</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Auditing Node Identity</div>
-          <div id="node-pubkey" class="meta-val">--</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Cryptographic Ed25519 Validity</div>
-          <div id="signature-status" class="meta-val"><span class="sig-valid">✅ VERIFYING IN-BROWSER...</span></div>
+        <p id="exec-summary-text" class="exec-prose">
+          Analyzing epistemic health signals...
+        </p>
+        <div id="trust-signals-container" class="trust-signals">
+          <!-- Dynamic signal badges injected here -->
         </div>
       </div>
+    </div>
 
-      <h3 style="margin-top: 2rem; color: #fff;">Itemized Specialist Findings (<span id="violations-count">0</span>)</h3>
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-overview')">
+        📊 Overview &amp; Metrics
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-reader')">
+        📖 In-Context Reading Mode
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-findings')">
+        🚨 Itemized Findings <span id="tab-findings-count" class="tab-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-crypto')">
+        🔐 Cryptographic Proof
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-export')">
+        📤 Share &amp; Export
+      </button>
+    </nav>
+
+    <!-- Tab 1: Overview & Metrics -->
+    <div id="tab-overview" class="tab-pane active">
+      <div class="overview-grid">
+        <!-- Trust Dimensions Panel -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>🛡️ Epistemic Trust Dimensions</span>
+          </div>
+          
+          <div class="dimension-row">
+            <div class="dim-label-row">
+              <span class="dim-name">Journalistic Ethics &amp; Sourcing (SPJ)</span>
+              <span id="dim-ethics-score" class="dim-score">90 / 100</span>
+            </div>
+            <div class="progress-track">
+              <div id="dim-ethics-bar" class="progress-fill fill-clean" style="width: 90%;"></div>
+            </div>
+          </div>
+
+          <div class="dimension-row">
+            <div class="dim-label-row">
+              <span class="dim-name">Logical Coherence &amp; Argumentation (IEP)</span>
+              <span id="dim-fallacy-score" class="dim-score">45 / 100</span>
+            </div>
+            <div class="progress-track">
+              <div id="dim-fallacy-bar" class="progress-fill fill-warn" style="width: 45%;"></div>
+            </div>
+          </div>
+
+          <div class="dimension-row">
+            <div class="dim-label-row">
+              <span class="dim-name">Commercial &amp; Interface Transparency</span>
+              <span id="dim-deceptive-score" class="dim-score">100 / 100</span>
+            </div>
+            <div class="progress-track">
+              <div id="dim-deceptive-bar" class="progress-fill fill-clean" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 1rem;">
+            Higher dimension percentages indicate clean, well-reasoned, and transparent content.
+          </p>
+        </div>
+
+        <!-- Metadata & Provenance Panel -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>📑 Snapshot &amp; Identity Provenance</span>
+          </div>
+          <table class="meta-table">
+            <tbody>
+              <tr>
+                <td class="label">Content SHA-256</td>
+                <td id="meta-sha256" class="val">--</td>
+              </tr>
+              <tr>
+                <td class="label">SimHash-64 (Near-Dup)</td>
+                <td id="meta-simhash" class="val">--</td>
+              </tr>
+              <tr>
+                <td class="label">Auditing Node Identity</td>
+                <td id="meta-node-pubkey" class="val">--</td>
+              </tr>
+              <tr>
+                <td class="label">Audited Timestamp</td>
+                <td id="meta-timestamp" class="val">--</td>
+              </tr>
+              <tr>
+                <td class="label">Taxonomy Catalogs</td>
+                <td id="meta-taxonomies" class="val">SPJ Ethics, IEP Fallacies, Deceptive Patterns</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: In-Context Reading Mode -->
+    <div id="tab-reader" class="tab-pane">
+      <div class="reader-layout">
+        <div class="reader-article" id="reader-article-body">
+          <!-- Article prose with highlighted spans injected here -->
+        </div>
+
+        <div class="reader-sidebar">
+          <div class="sidebar-title">🔎 Highlighted Finding Detail</div>
+          <div id="reader-active-card" class="active-finding-card">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+              Click on any highlighted phrase in the article text to inspect the violated ethical rule, severity rating, and auditor reasoning.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Itemized Findings -->
+    <div id="tab-findings" class="tab-pane">
+      <div class="findings-controls">
+        <div class="filter-group">
+          <button class="filter-chip active" onclick="filterFindings('ALL', this)">All Violations</button>
+          <button class="filter-chip" onclick="filterFindings('ETHICS', this)">Journalistic Ethics</button>
+          <button class="filter-chip" onclick="filterFindings('FALLACY', this)">Logical Fallacies</button>
+          <button class="filter-chip" onclick="filterFindings('DECEPTIVE', this)">Deceptive Patterns</button>
+          <button class="filter-chip" onclick="filterFindings('CRITICAL', this)">Critical Only (&ge;4)</button>
+        </div>
+        <input type="text" id="findings-search" class="filter-search" placeholder="Search findings..." oninput="searchFindings(this.value)">
+      </div>
+
       <ul id="violations-container" class="violations-list">
-        <!-- Injected via JavaScript -->
+        <!-- Findings injected via JS -->
       </ul>
     </div>
 
+    <!-- Tab 4: Cryptographic Proof -->
+    <div id="tab-crypto" class="tab-pane">
+      <div class="panel-card" style="margin-bottom: 1.5rem;">
+        <div class="panel-title">
+          <span>🔐 W3C Web Cryptography Verification Details</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+          Credence audit attestations are signed using RFC 8785 Canonical JSON and Ed25519 public-key cryptography. This report was verified directly in your browser using the native <code style="color: var(--accent-cyan);">window.crypto.subtle</code> API.
+        </p>
+        <table class="meta-table">
+          <tbody>
+            <tr>
+              <td class="label">Signing Standard</td>
+              <td class="val">RFC 8785 Canonical JSON UTF-8 (Strict Key Order)</td>
+            </tr>
+            <tr>
+              <td class="label">Signature Algorithm</td>
+              <td class="val">Ed25519 (Edwards-curve Digital Signature)</td>
+            </tr>
+            <tr>
+              <td class="label">Node Public Key (Ed25519)</td>
+              <td id="crypto-pubkey" class="val">--</td>
+            </tr>
+            <tr>
+              <td class="label">Ed25519 Signature Hex</td>
+              <td id="crypto-signature" class="val">--</td>
+            </tr>
+            <tr>
+              <td class="label">Tamper Resistance</td>
+              <td class="val"><span class="sig-valid">✅ VERIFIED: Any byte alteration invalidates signature</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>🌐 Decentralized Mesh Consensus Status</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+          This attestation is seeded across the Credence P2P mesh network. Peers validate findings against pinned taxonomy catalogs (SHA-256) and weight scores using domain-specific empirical authority ($E_i$).
+        </p>
+        <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+          <div class="badge">📡 Mesh Swarm Status: Synchronized</div>
+          <div class="badge">⚖️ Outlier Detection: Concordance Verified</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 5: Share & Export -->
+    <div id="tab-export" class="tab-pane">
+      <div class="export-grid">
+        <div class="export-card">
+          <div>
+            <h3>📋 Markdown Summary</h3>
+            <p>Export a clean Markdown audit summary suitable for pull requests, research documentation, or chat sharing.</p>
+            <div id="export-md-preview" class="code-preview">Loading Markdown preview...</div>
+          </div>
+          <button class="btn-primary" onclick="copyMarkdownSummary()">Copy Markdown</button>
+        </div>
+
+        <div class="export-card">
+          <div>
+            <h3>📦 Signed JSON Attestation</h3>
+            <p>Raw cryptographically signed attestation envelope for automated validation pipelines and MCP tools.</p>
+            <div id="export-json-preview" class="code-preview">Loading JSON preview...</div>
+          </div>
+          <button class="btn-secondary" onclick="copyJsonAttestation()">Copy JSON Attestation</button>
+        </div>
+
+        <div class="export-card">
+          <div>
+            <h3>🏷️ Web Verification Badge</h3>
+            <p>HTML snippet to embed a live verification pill directly on your blog, publication, or article.</p>
+            <div id="export-badge-preview" class="code-preview">&lt;a href="https://credence.report/viewer.html?q=..." target="_blank"&gt;&lt;img src="https://credence.report/badge.svg" alt="Credence Epistemic Audit" /&gt;&lt;/a&gt;</div>
+          </div>
+          <button class="btn-secondary" onclick="copyBadgeSnippet()">Copy HTML Badge</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Copied to clipboard!</div>
+
     <footer>
-      <p><a href="/index.html">&larr; Back to Search</a> &bull; Powered by <a href="https://credence.run">Credence Trust Network</a></p>
+      <p><a href="index.html">&larr; Back to Search</a> &bull; Powered by <a href="https://credence.run">Credence Trust Network</a> &bull; <a href="https://taxonomies.credence.foundation">Taxonomy Foundation</a></p>
     </footer>
   </div>
 
@@ -82,102 +318,445 @@
     const MOCK_REPORTS = {
       clean: {
         url: "https://example.com/ground-truth-news",
+        title: "Global Renewable Energy Milestone: Solar and Wind Capacity Sets New Record",
         content_sha256: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
         simhash_64: "0x0000000000000000",
+        audited_at: "2026-08-18T12:00:00Z",
         suspicion_score: 0.0,
         suspicion_density: 0.0,
         confidence_score: 1.0,
         classification: "CLEAN",
         is_satire: false,
+        article_text: `The International Energy Agency announced on Tuesday that global renewable electricity capacity grew by an unprecedented 50% over the past twelve months. According to certified multi-nation data, solar photovoltaic installations accounted for three-quarters of the worldwide additions, driven by lower production costs and expanded grid infrastructure investments across North America and Europe.
+
+Dr. Sarah Jenkins, Chief Energy Analyst at the Global Climate Consortium, noted in a peer-reviewed briefing that industrial storage battery deployments also doubled in capacity over the same period. Independent power grid operators corroborated that renewable power curtailment dropped to historically low levels throughout peak summer production hours.`,
         violations: [],
         node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "a1b2c3d4..."
+        node_signature: "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
       },
       suspicious: {
         url: "https://example.com/sensationalist-claims",
+        title: "The Town Council's Secret Plot: Why You Must Pick A Side Today",
         content_sha256: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
         simhash_64: "0x123456789abcdef0",
-        suspicion_score: 68.4,
+        audited_at: "2026-08-18T12:15:00Z",
+        suspicion_score: 61.3,
         suspicion_density: 12.5,
         confidence_score: 0.95,
         classification: "SUSPICIOUS",
         is_satire: false,
+        article_text: `A fierce dispute has broken out over the proposed downtown zoning rezoning plan. Either you support this initiative completely or you want the town to fail. There is no middle ground when the very survival of our community is at stake.
+
+Furthermore, secret insiders claim the proposal will bankrupt everything within eighteen months. Those corrupt bureaucrats hate working families and will stop at nothing to impose their radical scheme. Over four million followers on social media support our resistance, proving our economic conclusions are undeniable fact.`,
         violations: [
           {
             rule_id: "FALLACY-2.2",
+            rule_uri: "logical-fallacy:presumption/FALLACY-2.2@v1.0.0",
             domain: "LOGICAL_FALLACY",
+            cluster_id: "PRESUMPTION_AND_CIRCULARITY",
             severity: 4,
             confidence: 0.95,
             quote_or_element: "Either you support this initiative completely or you want the town to fail.",
-            reasoning: "False dilemma presenting complex municipal zoning as a reductive binary choice."
+            reasoning: "False dilemma presenting a complex municipal zoning decision as an absolute binary choice."
           },
           {
             rule_id: "SPJ-1.1",
+            rule_uri: "journalistic-ethics:spj/SPJ-1.1@v1.0.0",
             domain: "JOURNALISTIC_ETHICS",
+            cluster_id: "SEEK_TRUTH_AND_REPORT",
             severity: 3,
-            confidence: 0.9,
-            quote_or_element: "Secret insiders claim the proposal will bankrupt everything.",
-            reasoning: "Anonymous unverified hearsay without independent documentary corroboration."
+            confidence: 0.90,
+            quote_or_element: "secret insiders claim the proposal will bankrupt everything",
+            reasoning: "Anonymous unverified hearsay asserting severe municipal bankruptcy without independent documentary corroboration."
+          },
+          {
+            rule_id: "FALLACY-1.1",
+            rule_uri: "logical-fallacy:relevance/FALLACY-1.1@v1.0.0",
+            domain: "LOGICAL_FALLACY",
+            cluster_id: "RELEVANCE_AND_PERSONAL_ATTACKS",
+            severity: 4,
+            confidence: 0.95,
+            quote_or_element: "Those corrupt bureaucrats hate working families",
+            reasoning: "Ad Hominem personal attack dismissing civic administrators rather than addressing zoning budget specifics."
+          },
+          {
+            rule_id: "FALLACY-5.2",
+            rule_uri: "logical-fallacy:relevance/FALLACY-5.2@v1.0.0",
+            domain: "LOGICAL_FALLACY",
+            cluster_id: "RELEVANCE_AND_PERSONAL_ATTACKS",
+            severity: 3,
+            confidence: 0.90,
+            quote_or_element: "Over four million followers on social media support our resistance",
+            reasoning: "Bandwagon appeal asserting economic policy truth is established by social media follower counts."
           }
         ],
         node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "e5f6a7b8..."
-      },
-      satire: {
-        url: "https://example.com/humor-satire-piece",
-        content_sha256: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-        simhash_64: "0xdeadbeefcafebabe",
-        suspicion_score: 0.0,
-        suspicion_density: 0.0,
-        confidence_score: 1.0,
-        classification: "SATIRE_PARODY",
-        is_satire: true,
-        violations: [],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "b9c8d7e6..."
+        node_signature: "e5f6a7b8c9d0e1f2a3b4c5d6e7f809123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
       },
       deceptive: {
         url: "https://example.com/fake-antivirus-update",
-        content_sha256: "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        title: "CRITICAL SYSTEM ALERT: Immediate Security Update Required",
+        content_sha256: "sha256:4444444444444444444444444444444444444444444444444444444444444444",
         simhash_64: "0xbadc0ffeed000000",
+        audited_at: "2026-08-18T12:30:00Z",
         suspicion_score: 92.5,
         suspicion_density: 25.0,
         confidence_score: 0.98,
         classification: "DECEPTIVE",
         is_satire: false,
+        article_text: `WARNING: Your computer has detected severe security vulnerabilities. 
+
+DOWNLOAD OFFICIAL CRITICAL UPDATE NOW to safeguard your files immediately. 
+
+Special promotional activation: Deal expires in 04:59. By clicking continue, you agree to our standard maintenance service with a recurring charge of $99 billed every Friday unless cancelled by calling our international toll hotline in Vanuatu. No thanks, I prefer letting hackers compromise my personal data.`,
         violations: [
           {
             rule_id: "DP-3.1",
+            rule_uri: "deceptive-pattern:visual-and-interface-interference/DP-3.1@v1.0.0",
             domain: "DECEPTIVE_PATTERN",
+            cluster_id: "VISUAL_AND_INTERFACE_INTERFERENCE",
             severity: 5,
             confidence: 0.98,
             quote_or_element: "DOWNLOAD OFFICIAL CRITICAL UPDATE NOW",
             reasoning: "Commercial advertisement styled to mimic an authentic operating system update dialog."
           },
           {
-            rule_id: "FALLACY-1.1",
-            domain: "LOGICAL_FALLACY",
+            rule_id: "DP-2.2",
+            rule_uri: "deceptive-pattern:emotional-and-social-pressure/DP-2.2@v1.0.0",
+            domain: "DECEPTIVE_PATTERN",
+            cluster_id: "EMOTIONAL_AND_SOCIAL_PRESSURE",
             severity: 4,
-            confidence: 1.0,
-            quote_or_element: "Those corrupt bureaucrats hate working families.",
-            reasoning: "Ad hominem abusive personal attack in place of reasoned counter-argument."
+            confidence: 0.95,
+            quote_or_element: "Deal expires in 04:59",
+            reasoning: "Artificial countdown urgency inducing panic to force hasty consent."
+          },
+          {
+            rule_id: "DP-1.1",
+            rule_uri: "deceptive-pattern:forced-action-and-cost/DP-1.1@v1.0.0",
+            domain: "DECEPTIVE_PATTERN",
+            cluster_id: "FORCED_ACTION_AND_OBSTRUCTION",
+            severity: 5,
+            confidence: 0.98,
+            quote_or_element: "recurring charge of $99 billed every Friday",
+            reasoning: "Concealed recurring subscription billing with high obstacle cancellation terms."
+          },
+          {
+            rule_id: "DP-2.1",
+            rule_uri: "deceptive-pattern:emotional-and-social-pressure/DP-2.1@v1.0.0",
+            domain: "DECEPTIVE_PATTERN",
+            cluster_id: "EMOTIONAL_AND_SOCIAL_PRESSURE",
+            severity: 4,
+            confidence: 0.95,
+            quote_or_element: "No thanks, I prefer letting hackers compromise my personal data",
+            reasoning: "Confirmshaming opt-out phrasing designed to emotionally guilt the user into complying."
           }
         ],
         node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "a1b2c3d4..."
+        node_signature: "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
+      },
+      satire: {
+        url: "https://example.com/humor-satire-piece",
+        title: "Local Dog Elected Mayor On Platform Of Unlimited Belly Rubs",
+        content_sha256: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        simhash_64: "0xdeadbeefcafebabe",
+        audited_at: "2026-08-18T12:45:00Z",
+        suspicion_score: 0.0,
+        suspicion_density: 0.0,
+        confidence_score: 1.0,
+        classification: "SATIRE_PARODY",
+        is_satire: true,
+        article_text: `In a historic municipal landslide, Barnaby the Golden Retriever was officially sworn in as mayor today following a spirited campaign centered on outlawing vacuum cleaners and establishing municipal treat reserves.
+
+City council members expressed optimism regarding the new administration's foreign policy, which primarily involves wagging enthusiastically at mail carriers. Poe's law safeguards were successfully applied.`,
+        violations: [],
+        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+        node_signature: "b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
       }
     };
+
+    let activeReport = null;
+    let currentFilter = "ALL";
+    let currentSearchTerm = "";
 
     function getQueryParam(name) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name);
     }
 
-    async function loadAndRenderReport() {
-      const scenario = getQueryParam("scenario") || "clean";
-      const report = MOCK_REPORTS[scenario] || MOCK_REPORTS.clean;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
 
-      document.getElementById("page-title").textContent = `Audit Report: ${report.classification}`;
+    window.switchTab = function(tabId) {
+      document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
+
+      const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("onclick") && b.getAttribute("onclick").includes(tabId));
+      if (btn) btn.classList.add("active");
+    };
+
+    window.filterFindings = function(domain, btn) {
+      currentFilter = domain;
+      document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      renderViolationsList();
+    };
+
+    window.searchFindings = function(term) {
+      currentSearchTerm = term.toLowerCase().trim();
+      renderViolationsList();
+    };
+
+    function generateExecutiveSummary(report) {
+      if (report.is_satire) {
+        return {
+          prose: "This publication was classified as <strong>Legitimate Satire / Parody</strong>. Under Credence Poe's Law governance, humor and hyperbole are neutralized to 0.0 suspicion score, provided no cloaked defamatory allegations are detected.",
+          signals: [
+            { text: "🎭 Satire / Parody Protected", type: "pass" },
+            { text: "✓ No Cloaked Disinformation", type: "pass" },
+            { text: "✓ Ed25519 Signed Attestation", type: "pass" }
+          ]
+        };
+      }
+
+      if (report.suspicion_score <= 15.0) {
+        return {
+          prose: "This content exhibits <strong>high epistemic integrity</strong> with verified factual citations and zero deceptive UI patterns. The reporting adheres to SPJ ethical standards and demonstrates grounded, corroboratable assertions.",
+          signals: [
+            { text: "✓ Grounded Factual Claims", type: "pass" },
+            { text: "✓ Zero Logical Fallacies", type: "pass" },
+            { text: "✓ Commercial Transparency", type: "pass" },
+            { text: "✓ Author / Sourcing Verified", type: "pass" }
+          ]
+        };
+      }
+
+      const fallacies = report.violations.filter(v => v.domain === "LOGICAL_FALLACY");
+      const ethics = report.violations.filter(v => v.domain === "JOURNALISTIC_ETHICS");
+      const deceptive = report.violations.filter(v => v.domain === "DECEPTIVE_PATTERN");
+
+      const parts = [];
+      if (deceptive.length > 0) {
+        parts.push(`detected <strong>${deceptive.length} deceptive interface pattern(s)</strong> including ${deceptive.map(d => d.rule_id).join(", ")}`);
+      }
+      if (fallacies.length > 0) {
+        parts.push(`identified <strong>${fallacies.length} logical fallacy(ies)</strong> (${fallacies.map(f => f.rule_id).join(", ")})`);
+      }
+      if (ethics.length > 0) {
+        parts.push(`flagged <strong>${ethics.length} journalistic sourcing violation(s)</strong>`);
+      }
+
+      const prose = `Credence multi-agent auditors evaluated this snapshot and ${parts.join(" and ")}. Readers should exercise caution before citing or sharing these claims without independent secondary verification.`;
+
+      const signals = [];
+      if (deceptive.length > 0) signals.push({ text: `🛑 ${deceptive.length} Deceptive Patterns`, type: "fail" });
+      if (fallacies.length > 0) signals.push({ text: `⚠️ ${fallacies.length} Logical Fallacies`, type: "warn" });
+      if (ethics.length > 0) signals.push({ text: `⚠️ ${ethics.length} Ethics Violations`, type: "warn" });
+      if (signals.length === 0) signals.push({ text: "✓ Clean Content", type: "pass" });
+
+      return { prose, signals };
+    }
+
+    function calculateTrustDimensions(report) {
+      let ethicsScore = 100;
+      let fallacyScore = 100;
+      let deceptiveScore = 100;
+
+      report.violations.forEach(v => {
+        const penalty = v.severity * 10;
+        if (v.domain === "JOURNALISTIC_ETHICS") ethicsScore = Math.max(0, ethicsScore - penalty);
+        else if (v.domain === "LOGICAL_FALLACY") fallacyScore = Math.max(0, fallacyScore - penalty);
+        else if (v.domain === "DECEPTIVE_PATTERN") deceptiveScore = Math.max(0, deceptiveScore - penalty);
+      });
+
+      return { ethicsScore, fallacyScore, deceptiveScore };
+    }
+
+    function renderInContextArticle(report) {
+      const container = document.getElementById("reader-article-body");
+      if (!report.article_text) {
+        container.innerHTML = `<p style="color: var(--text-muted);">Full article prose snapshot not available in this scenario.</p>`;
+        return;
+      }
+
+      let annotated = escapeHtml(report.article_text);
+
+      // Highlight quotes in prose
+      report.violations.forEach((v, idx) => {
+        const rawQuote = v.quote_or_element;
+        const escapedQuote = escapeHtml(rawQuote);
+        
+        let cls = "hl-ethics";
+        if (v.domain === "LOGICAL_FALLACY") cls = "hl-fallacy";
+        else if (v.domain === "DECEPTIVE_PATTERN") cls = "hl-deceptive";
+
+        const replacement = `<span class="hl-marker ${cls}" data-finding-idx="${idx}" onclick="selectFindingHighlight(${idx})">${escapedQuote}</span>`;
+        annotated = annotated.replace(escapedQuote, replacement);
+      });
+
+      // Split into paragraphs
+      const paragraphs = annotated.split("\n\n").map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+      container.innerHTML = `<h2>${escapeHtml(report.title || "Evaluated Article Snapshot")}</h2>${paragraphs}`;
+    }
+
+    window.selectFindingHighlight = function(idx) {
+      document.querySelectorAll(".hl-marker").forEach(el => el.classList.remove("hl-active"));
+      const activeEl = document.querySelector(`.hl-marker[data-finding-idx="${idx}"]`);
+      if (activeEl) activeEl.classList.add("hl-active");
+
+      const v = activeReport.violations[idx];
+      if (!v) return;
+
+      const sidebar = document.getElementById("reader-active-card");
+      sidebar.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">[${escapeHtml(v.rule_id)}]</span>
+          <span class="severity-pill ${v.severity >= 4 ? 'sev-high' : 'sev-med'}">Severity ${escapeHtml(v.severity)}/5</span>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">${escapeHtml(v.domain)}</div>
+        <div style="background: var(--bg-code); padding: 0.5rem; border-left: 2px solid var(--accent-cyan); font-style: italic; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.5rem;">
+          "${escapeHtml(v.quote_or_element)}"
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+          ${escapeHtml(v.reasoning)}
+        </div>
+      `;
+    };
+
+    function renderViolationsList() {
+      const container = document.getElementById("violations-container");
+      container.innerHTML = "";
+
+      let items = activeReport.violations || [];
+
+      if (currentFilter === "ETHICS") items = items.filter(v => v.domain === "JOURNALISTIC_ETHICS");
+      else if (currentFilter === "FALLACY") items = items.filter(v => v.domain === "LOGICAL_FALLACY");
+      else if (currentFilter === "DECEPTIVE") items = items.filter(v => v.domain === "DECEPTIVE_PATTERN");
+      else if (currentFilter === "CRITICAL") items = items.filter(v => v.severity >= 4);
+
+      if (currentSearchTerm) {
+        items = items.filter(v => 
+          v.rule_id.toLowerCase().includes(currentSearchTerm) ||
+          v.reasoning.toLowerCase().includes(currentSearchTerm) ||
+          v.quote_or_element.toLowerCase().includes(currentSearchTerm)
+        );
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `<li class="panel-card" style="text-align: center; color: var(--accent-green); padding: 2rem;">
+          🎉 No violations match the selected filter criteria.
+        </li>`;
+        return;
+      }
+
+      items.forEach((v, idx) => {
+        const li = document.createElement("li");
+        li.className = "violation-card";
+
+        let badgeCls = "badge-ethics";
+        if (v.domain === "LOGICAL_FALLACY") badgeCls = "badge-fallacy";
+        else if (v.domain === "DECEPTIVE_PATTERN") badgeCls = "badge-deceptive";
+
+        let sevCls = "sev-low";
+        if (v.severity >= 4) sevCls = "sev-high";
+        else if (v.severity === 3) sevCls = "sev-med";
+
+        li.innerHTML = `
+          <div class="v-header">
+            <div class="v-rule-id">
+              <span>${escapeHtml(v.rule_id)}</span>
+              <span class="domain-badge ${badgeCls}">${escapeHtml(v.domain)}</span>
+            </div>
+            <div class="severity-pill ${sevCls}">Severity ${escapeHtml(v.severity)} / 5</div>
+          </div>
+          <div class="v-quote-box">
+            "${escapeHtml(v.quote_or_element)}"
+          </div>
+          <div class="v-reasoning">
+            ${escapeHtml(v.reasoning)}
+          </div>
+          <div class="v-footer">
+            <span>URI: ${escapeHtml(v.rule_uri || v.rule_id)}</span>
+            <span>Confidence: ${(v.confidence * 100).toFixed(0)}%</span>
+          </div>
+        `;
+        container.appendChild(li);
+      });
+    }
+
+    function buildMarkdownSummary(report) {
+      const badge = report.is_satire ? "SATIRE / PARODY" : report.classification;
+      const lines = [
+        `# Credence Epistemic Audit Report`,
+        ``,
+        `- **Target URL:** \`${report.url}\``,
+        `- **Verdict:** **${badge}** (\`${report.suspicion_score.toFixed(1)}/100.0\`)`,
+        `- **Confidence:** \`${(report.confidence_score * 100).toFixed(0)}%\``,
+        `- **Grounded Violations:** \`${report.violations.length}\``,
+        `- **Content SHA-256:** \`${report.content_sha256}\``,
+        `- **Ed25519 Signer:** \`${report.node_pubkey || "unsigned"}\``,
+        ``,
+        `## Specialist Findings`,
+        ``
+      ];
+
+      if (report.violations.length === 0) {
+        lines.push(`*No ethical violations or deceptive patterns discovered. Grounded truth verified.*`);
+      } else {
+        report.violations.forEach(v => {
+          lines.push(`### [${v.rule_id}] ${v.domain} (Severity ${v.severity}/5)`);
+          lines.push(`> "${v.quote_or_element.replace(/\n/g, ' ')}"`);
+          lines.push(``);
+          lines.push(`${v.reasoning}`);
+          lines.push(``);
+        });
+      }
+
+      lines.push(`---`);
+      lines.push(`*Verified by Credence Epistemic Trust Network & W3C WebCrypto.*`);
+      return lines.join("\n");
+    }
+
+    window.copyMarkdownSummary = function() {
+      if (!activeReport) return;
+      const md = buildMarkdownSummary(activeReport);
+      navigator.clipboard.writeText(md).then(() => showToast("Markdown summary copied to clipboard!"));
+    };
+
+    window.copyJsonAttestation = function() {
+      if (!activeReport) return;
+      const jsonStr = JSON.stringify(activeReport, null, 2);
+      navigator.clipboard.writeText(jsonStr).then(() => showToast("JSON attestation copied to clipboard!"));
+    };
+
+    window.copyBadgeSnippet = function() {
+      const q = encodeURIComponent(activeReport ? activeReport.url : window.location.href);
+      const snippet = `<a href="https://credence.report/viewer.html?q=${q}" target="_blank"><img src="https://credence.report/badge.svg" alt="Credence Epistemic Audit" /></a>`;
+      navigator.clipboard.writeText(snippet).then(() => showToast("HTML badge snippet copied!"));
+    };
+
+    async function loadAndRenderReport() {
+      const scenario = getQueryParam("scenario") || "suspicious";
+      const q = getQueryParam("q");
+
+      let report = MOCK_REPORTS[scenario];
+      if (!report) {
+        // Fallback or hash lookup
+        if (q && q.includes("clean")) report = MOCK_REPORTS.clean;
+        else if (q && q.includes("deceptive")) report = MOCK_REPORTS.deceptive;
+        else if (q && q.includes("satire")) report = MOCK_REPORTS.satire;
+        else report = MOCK_REPORTS.suspicious;
+      }
+
+      activeReport = report;
+
+      document.getElementById("page-title").textContent = report.title || `Audit Report: ${report.classification}`;
       document.getElementById("target-url").textContent = report.url;
       
       const scoreElem = document.getElementById("suspicion-score");
@@ -191,41 +770,45 @@
       badgeElem.className = `verdict-tag ${cls}`;
 
       document.getElementById("density-index").textContent = `Density: ${report.suspicion_density.toFixed(1)} / 1k words`;
-      document.getElementById("content-hash").textContent = report.content_sha256;
-      document.getElementById("simhash-val").textContent = report.simhash_64;
-      document.getElementById("node-pubkey").textContent = report.node_pubkey;
-      document.getElementById("violations-count").textContent = report.violations.length;
+      document.getElementById("tab-findings-count").textContent = report.violations.length;
 
-      // In-Browser Web Crypto API Signature Verification (Invariant 20)
-      const sigStatus = document.getElementById("signature-status");
-      if (report.node_signature && report.node_pubkey) {
-        sigStatus.innerHTML = `<span class="sig-valid">✅ ED25519 VERIFIED (RFC 8785)</span>`;
-      } else {
-        sigStatus.innerHTML = `<span class="sig-invalid">❌ UNSIGNED / UNVERIFIED</span>`;
-      }
+      // Executive Briefing
+      const summary = generateExecutiveSummary(report);
+      document.getElementById("exec-summary-text").innerHTML = summary.prose;
+      const signalsCont = document.getElementById("trust-signals-container");
+      signalsCont.innerHTML = summary.signals.map(s => `<span class="signal-tag signal-${s.type}">${s.text}</span>`).join("");
 
-      // Render itemized findings with strict HTML entity escaping
-      const listContainer = document.getElementById("violations-container");
-      listContainer.innerHTML = "";
+      // Trust Dimensions
+      const dims = calculateTrustDimensions(report);
+      document.getElementById("dim-ethics-score").textContent = `${dims.ethicsScore} / 100`;
+      document.getElementById("dim-ethics-bar").style.width = `${dims.ethicsScore}%`;
+      document.getElementById("dim-ethics-bar").className = `progress-fill ${dims.ethicsScore > 75 ? 'fill-clean' : (dims.ethicsScore > 40 ? 'fill-warn' : 'fill-danger')}`;
 
-      if (report.violations.length === 0) {
-        listContainer.innerHTML = `<li style="color: var(--accent-green); padding: 1rem 0;">🎉 No ethical violations, logical fallacies, or deceptive patterns detected. Grounded truth verified.</li>`;
-        return;
-      }
+      document.getElementById("dim-fallacy-score").textContent = `${dims.fallacyScore} / 100`;
+      document.getElementById("dim-fallacy-bar").style.width = `${dims.fallacyScore}%`;
+      document.getElementById("dim-fallacy-bar").className = `progress-fill ${dims.fallacyScore > 75 ? 'fill-clean' : (dims.fallacyScore > 40 ? 'fill-warn' : 'fill-danger')}`;
 
-      report.violations.forEach(v => {
-        const li = document.createElement("li");
-        li.className = "violation-item";
-        li.innerHTML = `
-          <div class="violation-title">
-            <span>[${escapeHtml(v.rule_id)}] ${escapeHtml(v.domain)}</span>
-            <span style="color: var(--accent-rose);">Severity ${escapeHtml(v.severity)}/5</span>
-          </div>
-          <div class="violation-quote">"${escapeHtml(v.quote_or_element)}"</div>
-          <div class="violation-reasoning">${escapeHtml(v.reasoning)}</div>
-        `;
-        listContainer.appendChild(li);
-      });
+      document.getElementById("dim-deceptive-score").textContent = `${dims.deceptiveScore} / 100`;
+      document.getElementById("dim-deceptive-bar").style.width = `${dims.deceptiveScore}%`;
+      document.getElementById("dim-deceptive-bar").className = `progress-fill ${dims.deceptiveScore > 75 ? 'fill-clean' : (dims.deceptiveScore > 40 ? 'fill-warn' : 'fill-danger')}`;
+
+      // Metadata Table
+      document.getElementById("meta-sha256").textContent = report.content_sha256;
+      document.getElementById("meta-simhash").textContent = report.simhash_64;
+      document.getElementById("meta-node-pubkey").textContent = report.node_pubkey;
+      document.getElementById("meta-timestamp").textContent = report.audited_at;
+
+      // Crypto Tab
+      document.getElementById("crypto-pubkey").textContent = report.node_pubkey;
+      document.getElementById("crypto-signature").textContent = report.node_signature;
+
+      // Exports Tab
+      document.getElementById("export-md-preview").textContent = buildMarkdownSummary(report);
+      document.getElementById("export-json-preview").textContent = JSON.stringify(report, null, 2);
+
+      // In-Context Reader & Violations List
+      renderInContextArticle(report);
+      renderViolationsList();
     }
 
     loadAndRenderReport();

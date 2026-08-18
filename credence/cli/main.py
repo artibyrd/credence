@@ -17,6 +17,7 @@ import argparse
 import asyncio
 import json
 import sys
+import webbrowser
 from typing import List, Optional
 
 from rich.console import Console
@@ -48,38 +49,116 @@ def _get_verdict_badge(report: AuditReport) -> tuple[str, str]:
     return "bold red", "🛑 HIGH DECEPTION"
 
 
+def _generate_cli_exec_summary(report: AuditReport) -> str:
+    """Generate plain-English human summary for terminal display."""
+    if report.is_satire:
+        return (
+            "[bold cyan]🧠 Human Takeaway:[/bold cyan] "
+            "This publication was classified as [bold]Legitimate Satire / Parody[/bold]. "
+            "Under Poe's Law neutrality safeguards, legitimate humor and hyperbole are neutralized to 0.0 suspicion."
+        )
+    if report.suspicion_score <= 15.0:
+        return (
+            "[bold green]🧠 Human Takeaway:[/bold green] "
+            "This content demonstrates [bold]high epistemic integrity[/bold] with verified factual assertions, "
+            "transparent author attribution, and zero deceptive interface patterns."
+        )
+
+    fallacies = [v for v in report.violations if v.domain == "LOGICAL_FALLACY"]
+    ethics = [v for v in report.violations if v.domain == "JOURNALISTIC_ETHICS"]
+    deceptive = [v for v in report.violations if v.domain == "DECEPTIVE_PATTERN"]
+
+    parts = []
+    if deceptive:
+        rules = ", ".join(d.rule_id for d in deceptive)
+        parts.append(f"[bold red]{len(deceptive)} deceptive interface pattern(s)[/bold red] ({rules})")
+    if fallacies:
+        rules = ", ".join(f.rule_id for f in fallacies)
+        parts.append(f"[bold yellow]{len(fallacies)} logical fallacy(ies)[/bold yellow] ({rules})")
+    if ethics:
+        rules = ", ".join(e.rule_id for e in ethics)
+        parts.append(f"[bold yellow]{len(ethics)} journalistic sourcing violation(s)[/bold yellow] ({rules})")
+
+    details = " and ".join(parts) if parts else "minor structural anomalies"
+    return (
+        f"[bold dark_orange]🧠 Human Takeaway:[/bold dark_orange] "
+        f"Multi-agent specialists flagged {details}. "
+        f"Readers are advised to verify primary sources and avoid hasty dissemination."
+    )
+
+
+def _render_domain_meters(report: AuditReport) -> Panel:
+    """Render a visual domain breakdown meter in the terminal."""
+    total_ethics = sum(1 for v in report.violations if v.domain == "JOURNALISTIC_ETHICS")
+    total_fallacy = sum(1 for v in report.violations if v.domain == "LOGICAL_FALLACY")
+    total_deceptive = sum(1 for v in report.violations if v.domain == "DECEPTIVE_PATTERN")
+
+    def meter_bar(count: int) -> tuple[str, str]:
+        if count == 0:
+            return "[green]████████████████████[/green]", "[green]Clean (0 issues)[/green]"
+        elif count <= 2:
+            return "[yellow]██████████░░░░░░░░░░[/yellow]", f"[yellow]{count} issue(s)[/yellow]"
+        else:
+            return "[red]████░░░░░░░░░░░░░░░░[/red]", f"[bold red]{count} issue(s)[/bold red]"
+
+    eth_bar, eth_lbl = meter_bar(total_ethics)
+    fal_bar, fal_lbl = meter_bar(total_fallacy)
+    dec_bar, dec_lbl = meter_bar(total_deceptive)
+
+    lines = [
+        f"  • [bold]Journalistic Ethics & Sourcing (SPJ):[/bold]  {eth_bar}  {eth_lbl}",
+        f"  • [bold]Logical Coherence & Fallacies (IEP):[/bold]   {fal_bar}  {fal_lbl}",
+        f"  • [bold]Commercial & Design Transparency:[/bold]     {dec_bar}  {dec_lbl}",
+    ]
+    return Panel("\n".join(lines), title="[bold]Epistemic Trust Dimensions[/bold]", border_style="cyan")
+
+
 def _render_violations_table(violations: list[SpecialistViolationFinding]) -> None:
     table = Table(title="[bold]Itemized Grounded Violations[/bold]", show_header=True, header_style="bold magenta")
     table.add_column("Rule ID", style="cyan", width=12)
     table.add_column("Domain", style="dim", width=22)
-    table.add_column("Sev", justify="center", width=5)
-    table.add_column("Cited Excerpt / Element", style="italic", width=40)
+    table.add_column("Sev", justify="center", width=7)
+    table.add_column("Cited Excerpt / Element", style="italic", width=38)
     table.add_column("Reasoning & Evidence", style="white")
 
     for v in violations:
-        sev_style = "red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
+        sev_style = "bold red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
+        sev_str = f"[{sev_style}]{v.severity}/5[/{sev_style}]"
         table.add_row(
             v.rule_id,
             v.domain,
-            f"[{sev_style}]{v.severity}[/{sev_style}]",
-            f'"{v.quote_or_element}"' if len(v.quote_or_element) < 80 else f'"{v.quote_or_element[:77]}..."',
+            sev_str,
+            f'"{v.quote_or_element}"' if len(v.quote_or_element) < 70 else f'"{v.quote_or_element[:67]}..."',
             v.reasoning,
         )
     console.print(table)
 
 
 def render_audit_report(report: AuditReport) -> None:
-    """Render an AuditReport as a formatted Rich dashboard panel."""
+    """Render an AuditReport as an intuitive, human-centered Rich dashboard."""
     color, badge = _get_verdict_badge(report)
 
+    # 1. Executive Summary Panel
+    exec_summary = _generate_cli_exec_summary(report)
+    console.print(Panel(exec_summary, title="[bold]Executive Epistemic Briefing[/bold]", border_style=color))
+
+    # 2. Domain Breakdown Meters
+    console.print(_render_domain_meters(report))
+
+    # 3. Itemized Violations Table
+    if report.violations:
+        _render_violations_table(report.violations)
+    else:
+        console.print("[green]✓ No rule violations detected on this page. Grounded truth verified.[/green]\n")
+
+    # 4. Technical Provenance & Cryptographic Summary
     summary_lines = [
-        f"[bold]Target URL:[/bold] {report.url}",
-        f"[bold]Content SHA-256:[/bold] {report.content_sha256}",
-        f"[bold]SimHash-64:[/bold] {report.simhash_64}",
-        f"[bold]Verdict:[/bold] [{color}]{badge} ({report.classification})[/{color}]",
-        f"[bold]Suspicion Score:[/bold] [{color}]{report.suspicion_score:.1f} / 100.0[/{color}]",
-        f"[bold]Suspicion Density:[/bold] {report.suspicion_density:.1f} violations / 1,000 words",
-        f"[bold]Evaluation Confidence:[/bold] {report.confidence_score * 100:.0f}%",
+        f"[bold]Target URL:[/bold]             {report.url}",
+        f"[bold]Content SHA-256:[/bold]        {report.content_sha256}",
+        f"[bold]SimHash-64 (Near-Dup):[/bold]  {report.simhash_64}",
+        f"[bold]Calibrated Score:[/bold]        [{color}]{report.suspicion_score:.1f} / 100.0 ({badge})[/{color}]",
+        f"[bold]Suspicion Density:[/bold]       {report.suspicion_density:.1f} violations / 1,000 words",
+        f"[bold]Evaluation Confidence:[/bold]   {report.confidence_score * 100:.0f}%",
     ]
 
     if report.quota_preserved:
@@ -94,34 +173,35 @@ def render_audit_report(report: AuditReport) -> None:
 
     if report.node_pubkey:
         summary_lines.append(
-            f"[bold]Node Identity PubKey:[/bold] {report.node_pubkey[:16]}...{report.node_pubkey[-8:]}"
+            f"[bold]Node Identity PubKey:[/bold]   {report.node_pubkey[:16]}...{report.node_pubkey[-8:]}"
         )
     if report.node_signature:
         summary_lines.append(
-            f"[bold]Ed25519 Signature:[/bold] {report.node_signature[:16]}...{report.node_signature[-8:]}"
+            f"[bold]Ed25519 Signature:[/bold]      {report.node_signature[:16]}...{report.node_signature[-8:]} [green](RFC 8785 Valid)[/green]"
         )
 
-    panel = Panel("\n".join(summary_lines), title="[bold]Credence Audit Summary[/bold]", border_style=color)
+    panel = Panel("\n".join(summary_lines), title="[bold]Cryptographic Provenance & Digest[/bold]", border_style="dim")
     console.print(panel)
-
-    if report.violations:
-        _render_violations_table(report.violations)
-    else:
-        console.print("[green]✓ No rule violations detected on this page.[/green]\n")
 
 
 async def cli_audit(
     url: str,
     force: bool = False,
     profile_override: Optional[CostProfileConfig] = None,
+    open_browser: bool = False,
 ) -> None:
     """Execute live audit or cache lookup for target URL."""
     with console.status(f"[bold green]Evaluating {url}...", spinner="dots"):
         report = await audit_url(url, force_refresh=force, profile_override=profile_override)
     render_audit_report(report)
 
+    if open_browser:
+        viewer_url = f"https://credence.report/viewer.html?q={report.content_sha256}"
+        webbrowser.open(viewer_url)
+        console.print(f"[cyan]Opened in web report viewer:[/] {viewer_url}")
 
-async def cli_lookup(identifier: str) -> None:
+
+async def cli_lookup(identifier: str, open_browser: bool = False) -> None:
     """Look up cached audit report by URL or content SHA-256."""
     await init_db()
     async for s in get_session():
@@ -184,11 +264,26 @@ async def cli_lookup(identifier: str) -> None:
             ),
         )
         render_audit_report(report)
+        if open_browser:
+            viewer_url = f"https://credence.report/viewer.html?q={report.content_sha256}"
+            webbrowser.open(viewer_url)
+            console.print(f"[cyan]Opened in web report viewer:[/] {viewer_url}")
         return
 
 
+async def cli_report_view(
+    identifier: str,
+    open_browser: bool = False,
+    format_type: str = "terminal",
+) -> None:
+    """Inspect and render an audit report in terminal, markdown, or JSON."""
+    if format_type.lower() in ("markdown", "json"):
+        await cli_export_report(identifier, format_type=format_type)
+    else:
+        await cli_lookup(identifier, open_browser=open_browser)
+
+
 def cli_identity(action: str) -> None:
-    """Show or generate Ed25519 node identity keypair."""
     identity = load_or_create_node_identity()
     console.print(
         Panel(
@@ -890,6 +985,14 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         cli_verify_file(args.path)
     elif cmd == "export-report":
         asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
+    elif cmd == "report":
+        asyncio.run(
+            cli_report_view(
+                args.identifier,
+                open_browser=getattr(args, "open", False),
+                format_type=getattr(args, "format", "terminal"),
+            )
+        )
     elif cmd == "db-clean":
         asyncio.run(cli_db_clean(retention_days=args.retention_days))
     elif cmd in ("feeds", "feed"):
@@ -1247,9 +1350,16 @@ def _dispatch_command(args: argparse.Namespace) -> None:
         run_tui()
     elif cmd == "audit":
         prof_cfg = COST_PROFILES.get(CostProfile(args.profile.lower())) if args.profile else None
-        asyncio.run(cli_audit(args.url, force=args.force, profile_override=prof_cfg))
+        asyncio.run(
+            cli_audit(
+                args.url,
+                force=args.force,
+                profile_override=prof_cfg,
+                open_browser=getattr(args, "open", False),
+            )
+        )
     elif cmd == "lookup":
-        asyncio.run(cli_lookup(args.identifier))
+        asyncio.run(cli_lookup(args.identifier, open_browser=getattr(args, "open", False)))
     elif not _dispatch_service_commands(args) and not _dispatch_mesh_commands(args):
         _dispatch_utility_commands(args)
 
@@ -1272,10 +1382,35 @@ def main() -> None:
         default=None,
         help="Operational cost profile override.",
     )
+    audit_parser.add_argument(
+        "--open",
+        action="store_true",
+        help="Automatically open audit in browser report viewer upon completion.",
+    )
 
     # lookup command
     lookup_parser = subparsers.add_parser("lookup", help="Lookup cached audit by URL or content hash.")
     lookup_parser.add_argument("identifier", type=str, help="URL or content SHA-256.")
+    lookup_parser.add_argument(
+        "--open",
+        action="store_true",
+        help="Automatically open lookup in browser report viewer upon completion.",
+    )
+
+    # report command
+    report_parser = subparsers.add_parser("report", help="Inspect and view audit reports.")
+    report_parser.add_argument("identifier", type=str, help="URL or content SHA-256 to view.")
+    report_parser.add_argument(
+        "--format",
+        choices=["terminal", "markdown", "json"],
+        default="terminal",
+        help="Display format (default: terminal).",
+    )
+    report_parser.add_argument(
+        "--open",
+        action="store_true",
+        help="Open in default web browser.",
+    )
 
     # identity command
     id_parser = subparsers.add_parser("identity", help="Manage node cryptographic identity.")

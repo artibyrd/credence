@@ -128,6 +128,59 @@ def _register_eval_tools(server: MCPServer) -> None:
 
         async for s in get_session():
             report = await evaluate_snapshot(snapshot, session=s, sign_result=True, profile_override=prof_cfg)
+            
+            # Persist to database for cache & resource lookups
+            snap_record = SnapshotRecord(
+                url="text://inline",
+                content_sha256=snapshot.content_sha256,
+                simhash_64=snapshot.simhash_64,
+                clean_text_length=snapshot.extracted.char_count,
+                word_count=snapshot.extracted.word_count,
+                title=snapshot.extracted.title,
+                byline=snapshot.extracted.byline,
+                is_satire_cue=snapshot.extracted.is_satire_cue,
+            )
+            s.add(snap_record)
+            await s.commit()
+            await s.refresh(snap_record)
+
+            audit_record = AuditRecord(
+                snapshot_id=snap_record.id,
+                audited_at=report.audited_at,
+                content_sha256=report.content_sha256,
+                suspicion_score=report.suspicion_score,
+                suspicion_density=report.suspicion_density,
+                confidence_score=report.confidence_score,
+                classification=report.classification,
+                is_satire=report.is_satire,
+                content_type=report.content_type,
+                satire_notes=report.satire_notes,
+                node_pubkey=report.node_pubkey,
+                node_signature=report.node_signature,
+                taxonomies_used_json=json.dumps(report.taxonomies_used),
+                quota_preserved=report.quota_preserved,
+                evaluation_method=report.evaluation_method,
+            )
+            s.add(audit_record)
+            await s.commit()
+            await s.refresh(audit_record)
+
+            for v in report.violations:
+                vr = ViolationRecord(
+                    audit_id=audit_record.id,
+                    rule_id=v.rule_id,
+                    rule_uri=v.rule_uri,
+                    domain=v.domain,
+                    cluster_id=v.cluster_id,
+                    severity=v.severity,
+                    confidence=v.confidence,
+                    quote_or_element=v.quote_or_element,
+                    reasoning=v.reasoning,
+                    line_or_selector=v.line_or_selector,
+                )
+                s.add(vr)
+            await s.commit()
+
             return json.dumps(report.model_dump(mode="json"), indent=2)
 
         return "{}"
@@ -138,9 +191,11 @@ def _register_query_tools(server: MCPServer) -> None:
 
     @server.tool(
         name="credence_get_audit",
-        description="Lookup a cached audit report by URL or content SHA-256.",
+        description="Lookup a cached audit report by URL or content SHA-256 with optional markdown or human-readable format.",
     )
-    async def get_audit(identifier: str) -> str:
+    async def get_audit(identifier: str, format: str = "json") -> str:
+        from credence.cli.main import report_to_markdown
+
         await init_db()
         async for s in get_session():
             if identifier.startswith("sha256:") or len(identifier) == 64:
@@ -199,7 +254,16 @@ def _register_query_tools(server: MCPServer) -> None:
                 node_signature=audit.node_signature,
                 quota_preserved=audit.quota_preserved,
             )
-            return json.dumps(report.model_dump(mode="json"), indent=2)
+
+            if format.lower() == "markdown":
+                return report_to_markdown(report)
+            elif format.lower() in ("human", "summary"):
+                md = report_to_markdown(report)
+                badge = "SATIRE / PARODY" if report.is_satire else report.classification
+                prefix = f"### 🧠 Human Epistemic Briefing: {badge} ({report.suspicion_score:.1f}/100.0)\n\n"
+                return prefix + md
+            else:
+                return json.dumps(report.model_dump(mode="json"), indent=2)
 
         return "{}"
 
@@ -657,8 +721,6 @@ def _register_subject_resources(server: MCPServer) -> None:
                 },
                 indent=2,
             )
-        return "{}"
-
     @server.resource("credence://digest/morning")
     async def get_morning_digest_resource() -> str:
         from credence.db import get_session, init_db
@@ -669,6 +731,84 @@ def _register_subject_resources(server: MCPServer) -> None:
             digest = await generate_morning_digest(session, timeframe_hours=24)
             return json.dumps(digest.to_dict(), indent=2)
         return "{}"
+
+    @server.resource("credence://reports/{identifier}")
+    async def get_report_resource(identifier: str) -> str:
+        await init_db()
+        async for s in get_session():
+            if identifier.startswith("sha256:") or len(identifier) == 64:
+                clean_hash = identifier if identifier.startswith("sha256:") else f"sha256:{identifier}"
+                stmt = select(AuditRecord).where(AuditRecord.content_sha256 == clean_hash)
+            else:
+                snap_stmt = select(SnapshotRecord).where(SnapshotRecord.url == identifier)
+                snap = (await s.exec(snap_stmt)).first()
+                if not snap:
+                    return json.dumps({"error": f"No cached snapshot found for URL: {identifier}"})
+                stmt = select(AuditRecord).where(AuditRecord.content_sha256 == snap.content_sha256)
+
+            audit = (await s.exec(stmt)).first()
+            if not audit:
+                return json.dumps({"error": f"No cached audit report found for: {identifier}"})
+
+            v_stmt = select(ViolationRecord).where(ViolationRecord.audit_id == audit.id)
+            violations = (await s.exec(v_stmt)).all()
+            v_schemas = [
+                SpecialistViolationFinding(
+                    rule_id=v.rule_id,
+                    rule_uri=v.rule_uri,
+                    domain=v.domain,
+                    cluster_id=v.cluster_id,
+                    severity=v.severity,
+                    confidence=v.confidence,
+                    quote_or_element=v.quote_or_element,
+                    reasoning=v.reasoning,
+                    line_or_selector=v.line_or_selector,
+                    is_grounded=True,
+                )
+                for v in violations
+            ]
+
+            try:
+                tax_map = json.loads(audit.taxonomies_used_json)
+            except Exception:
+                tax_map = {}
+
+            report = AuditReport(
+                url=identifier,
+                content_sha256=audit.content_sha256,
+                simhash_64="0x0000000000000000",
+                audited_at=audit.audited_at,
+                suspicion_score=audit.suspicion_score,
+                suspicion_density=audit.suspicion_density,
+                confidence_score=audit.confidence_score,
+                classification=audit.classification,
+                is_satire=audit.is_satire,
+                content_type=audit.content_type,
+                satire_notes=audit.satire_notes,
+                violations=v_schemas,
+                taxonomies_used=tax_map,
+                node_pubkey=audit.node_pubkey,
+                node_signature=audit.node_signature,
+                quota_preserved=audit.quota_preserved,
+            )
+            return json.dumps(report.model_dump(mode="json"), indent=2)
+        return "{}"
+
+    @server.resource("credence://reports/{identifier}/human")
+    async def get_human_report_resource(identifier: str) -> str:
+        from credence.cli.main import report_to_markdown
+
+        raw_json = await get_report_resource(identifier)
+        try:
+            data = json.loads(raw_json)
+            if "error" in data:
+                return f"# Error\n\n{data['error']}"
+            report = AuditReport.model_validate(data)
+            badge = "SATIRE / PARODY" if report.is_satire else report.classification
+            prefix = f"### 🧠 Human Epistemic Briefing: {badge} ({report.suspicion_score:.1f}/100.0)\n\n"
+            return prefix + report_to_markdown(report)
+        except Exception as e:
+            return f"# Error formatting report: {e}"
 
 
 def _register_prompts(server: MCPServer) -> None:
@@ -681,6 +821,19 @@ def _register_prompts(server: MCPServer) -> None:
             f"Target URL: {url}\n\n"
             f"Use the `credence_check_url` tool to capture and evaluate the content against "
             f"SPJ journalistic ethics, logical fallacies, and deceptive patterns."
+        )
+
+    @server.prompt(
+        name="explain_audit_report_prompt",
+        description="Interactive prompt template instructing an AI agent to explain an epistemic audit report to a human reader in empathetic, plain language.",
+    )
+    def explain_audit_report_prompt(identifier: str) -> str:
+        return (
+            f"Please inspect and explain the Credence epistemic audit report for identifier: {identifier}\n\n"
+            f"1. Fetch the report using `credence_get_audit(identifier='{identifier}', format='human')`.\n"
+            f"2. Summarize the verdict, suspicion score, and confidence level in simple, empathetic terms.\n"
+            f"3. Explain each detected violation (if any) with its quoted excerpt and why it was flagged.\n"
+            f"4. Provide constructive guidance on how the reader can independently verify the assertions."
         )
 
     @server.prompt(
