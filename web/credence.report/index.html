@@ -16,10 +16,20 @@
         Inspect itemized journalistic ethics violations, logical fallacies, deceptive UI patterns, and Ed25519 cryptographic attestations.
       </p>
 
-      <form class="top-audit-bar" style="max-width: 680px; margin: 0 auto 1rem; padding: 0.6rem;" onsubmit="event.preventDefault(); window.location.href='viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
+      <form class="top-audit-bar" style="max-width: 680px; margin: 0 auto 0.75rem; padding: 0.6rem;" onsubmit="event.preventDefault(); window.location.href='viewer.html?q=' + encodeURIComponent(document.getElementById('query').value);">
         <input type="text" id="query" placeholder="Enter webpage URL or content SHA-256 (e.g. https://...)" required style="font-size: 1rem;">
         <button type="submit" class="btn-primary" style="padding: 0.6rem 1.5rem; font-size: 1rem;">Inspect Report</button>
       </form>
+
+      <!-- Quick Discovery Bar -->
+      <div style="display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem;">
+        <span style="font-size: 0.8rem; color: var(--text-dim); align-self: center; font-weight: 600; text-transform: uppercase;">Explore:</span>
+        <a href="viewer.html?view=human" class="discover-pill pill-recent">⏱️ Recent Stream</a>
+        <a href="viewer.html?q=clean-energy" class="discover-pill pill-best">🛡️ Top Clean (0–15)</a>
+        <a href="viewer.html?q=deceptive-antivirus" class="discover-pill pill-worst">🛑 Flagged Deception (70+)</a>
+        <a href="viewer.html?q=satire-dog-mayor" class="discover-pill pill-satire">🎭 Satire Showcase</a>
+        <a href="viewer.html?scenario=random" class="discover-pill pill-random" onclick="event.preventDefault(); window.location.href='viewer.html?q=' + ['clean-energy','clean-science','suspicious-zoning','deceptive-antivirus','satire-dog-mayor'][Math.floor(Math.random()*5)];">🎲 Surprise Me</a>
+      </div>
     </header>
 
     <div class="report-hero" style="padding: 1.75rem;">

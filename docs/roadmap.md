@@ -14,12 +14,13 @@ This document serves as the **sovereign, in-repository source of truth** for tra
 
 ```mermaid
 flowchart TD
-    subgraph CoreEngine ["Current Stable Foundation (v1.5.0)"]
+    subgraph CoreEngine ["Current Stable Foundation (v1.5.1)"]
         S1["6-Tier Verification Architecture"]
         S2["Reusable Live Rotating E2E Suite"]
-        S3["BitTorrent Work-Sharing (92.3% Compute Savings)"]
+        S3["BitTorrent Work-Sharing (92.3% Savings)"]
         S4["Universal 4-Way Interface Parity"]
-        S5["Human-Centered Epistemic Report Viewer"]
+        S5["Human-Centered Epistemic Viewer"]
+        S6["Multi-Display Modes & Discovery Stream"]
     end
 
     subgraph Backlog ["Future Architectural Exploration Backlog"]

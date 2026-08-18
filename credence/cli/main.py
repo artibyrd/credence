@@ -20,6 +20,7 @@ import sys
 import webbrowser
 from typing import List, Optional
 
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -134,10 +135,40 @@ def _render_violations_table(violations: list[SpecialistViolationFinding]) -> No
     console.print(table)
 
 
-def render_audit_report(report: AuditReport) -> None:
-    """Render an AuditReport as an intuitive, human-centered Rich dashboard."""
+def render_audit_report(report: AuditReport, format_type: str = "human") -> None:
+    """Render an AuditReport across human, compact, JSON, NDJSON, or TSV formats."""
+    fmt = format_type.lower()
     color, badge = _get_verdict_badge(report)
 
+    if fmt in ("json",):
+        print(report.model_dump_json(indent=2))
+        return
+    elif fmt in ("ndjson",):
+        print(report.model_dump_json())
+        return
+    elif fmt in ("tsv",):
+        print(
+            f"{report.content_sha256}\t{report.suspicion_score:.1f}\t{report.classification}\t{report.confidence_score:.2f}\t{len(report.violations)}\t{report.url}"
+        )
+        return
+    elif fmt in ("compact",):
+        # Dense single-line summary with score, confidence, density, and compact findings
+        console.print(
+            f"[bold cyan]{report.url}[/bold cyan] | [{color}]{badge} ({report.suspicion_score:.1f}/100.0)[/{color}] | "
+            f"Density: {report.suspicion_density:.1f}/1k | Conf: {report.confidence_score * 100:.0f}% | "
+            f"SHA: {report.content_sha256[:16]}... | Sig: [green]Valid Ed25519[/green]"
+        )
+        if report.violations:
+            for v in report.violations:
+                sev_style = "bold red" if v.severity >= 4 else ("yellow" if v.severity == 3 else "green")
+                console.print(
+                    f'  • [{v.rule_id}] [{sev_style}]Sev {v.severity}/5[/{sev_style}] {v.domain}: "{v.quote_or_element[:60]}" - {v.reasoning}'
+                )
+        else:
+            console.print("  • [green]✓ High epistemic integrity. No grounded violations detected.[/green]")
+        return
+
+    # Default: Rich Human-Centered Dashboard ("human" or "terminal")
     # 1. Executive Summary Panel
     exec_summary = _generate_cli_exec_summary(report)
     console.print(Panel(exec_summary, title="[bold]Executive Epistemic Briefing[/bold]", border_style=color))
@@ -184,16 +215,144 @@ def render_audit_report(report: AuditReport) -> None:
     console.print(panel)
 
 
+async def cli_browse_audits(
+    category: str = "recent",
+    limit: int = 10,
+    format_type: str = "human",
+    open_browser: bool = False,
+) -> None:
+    """Browse stored audit records by category (recent, best, worst, satire, random)."""
+    import secrets
+
+    await init_db()
+    async for s in get_session():
+        cat = category.lower()
+        if cat in ("best", "clean"):
+            stmt = (
+                select(AuditRecord)
+                .where(AuditRecord.suspicion_score <= 15.0)
+                .order_by(col(AuditRecord.suspicion_score).asc(), col(AuditRecord.audited_at).desc())
+                .limit(limit)
+            )
+        elif cat in ("worst", "flagged", "deceptive"):
+            stmt = (
+                select(AuditRecord)
+                .where(AuditRecord.suspicion_score >= 60.0)
+                .order_by(col(AuditRecord.suspicion_score).desc(), col(AuditRecord.audited_at).desc())
+                .limit(limit)
+            )
+        elif cat == "satire":
+            stmt = (
+                select(AuditRecord)
+                .where(AuditRecord.is_satire)
+                .order_by(col(AuditRecord.audited_at).desc())
+                .limit(limit)
+            )
+        elif cat == "random":
+            stmt = select(AuditRecord).limit(limit * 3)
+        else:  # "recent" or default
+            stmt = select(AuditRecord).order_by(col(AuditRecord.audited_at).desc()).limit(limit)
+
+        audits = list((await s.exec(stmt)).all())
+        if cat == "random" and audits:
+            secrets.SystemRandom().shuffle(audits)
+            audits = audits[:limit]
+
+        if not audits:
+            console.print(
+                f"[yellow]No audit records found for category '{category}'. Run an audit first with `credence audit <url>`.[/yellow]"
+            )
+            return
+
+        fmt = format_type.lower()
+        if fmt == "json":
+            records = [a.to_dict() if hasattr(a, "to_dict") else a.model_dump() for a in audits]
+            print(json.dumps(records, indent=2, default=str))
+            return
+        elif fmt == "ndjson":
+            for a in audits:
+                d = a.to_dict() if hasattr(a, "to_dict") else a.model_dump()
+                print(json.dumps(d, default=str))
+            return
+        elif fmt == "tsv":
+            for a in audits:
+                print(
+                    f"{a.content_sha256}\t{a.suspicion_score:.1f}\t{a.classification}\t{a.confidence_score:.2f}\t{a.audited_at}"
+                )
+            return
+        elif fmt == "compact":
+            for a in audits:
+                color = "green" if a.suspicion_score <= 15 else ("yellow" if a.suspicion_score <= 40 else "red")
+                console.print(
+                    f"[{color}]{a.suspicion_score:4.1f}[/{color}] {a.classification:12} | SHA: {a.content_sha256[:20]}... | {a.audited_at}"
+                )
+            return
+
+        # Default: Rich Human Table
+        cat_titles = {
+            "recent": "⏱️ Recently Audited Streams",
+            "best": "🛡️ Top Clean Integrity Stream (Score ≤ 15.0)",
+            "worst": "🛑 Highly Flagged / Suspicious Stream (Score ≥ 60.0)",
+            "satire": "🎭 Verified Satire & Parody Showcase",
+            "random": "🎲 Random Discovery Stream",
+        }
+        title = cat_titles.get(cat, f"Epistemic Audits: {category.title()}")
+        table = Table(title=f"[bold cyan]{title}[/bold cyan]", box=box.ROUNDED)
+        table.add_column("#", justify="right", style="dim", width=4)
+        table.add_column("Score", justify="center", width=12)
+        table.add_column("Classification", width=18)
+        table.add_column("Density", justify="right", width=10)
+        table.add_column("SHA-256 Hash", style="cyan", width=22)
+        table.add_column("Audited At", style="dim", width=20)
+
+        for idx, a in enumerate(audits, 1):
+            if a.is_satire:
+                badge = "[bold cyan]SATIRE[/bold cyan]"
+                score_str = "[bold cyan]0.0[/bold cyan]"
+            elif a.suspicion_score <= 15.0:
+                badge = "[bold green]CLEAN[/bold green]"
+                score_str = f"[bold green]{a.suspicion_score:4.1f}[/bold green]"
+            elif a.suspicion_score <= 40.0:
+                badge = "[bold yellow]LOW_SUSP[/bold yellow]"
+                score_str = f"[bold yellow]{a.suspicion_score:4.1f}[/bold yellow]"
+            elif a.suspicion_score <= 70.0:
+                badge = "[bold dark_orange]SUSPICIOUS[/bold dark_orange]"
+                score_str = f"[bold dark_orange]{a.suspicion_score:4.1f}[/bold dark_orange]"
+            else:
+                badge = "[bold red]DECEPTIVE[/bold red]"
+                score_str = f"[bold red]{a.suspicion_score:4.1f}[/bold red]"
+
+            density_str = f"{a.suspicion_density:.1f}/1k"
+            hash_display = f"{a.content_sha256[:18]}..."
+            time_display = (
+                a.audited_at.strftime("%Y-%m-%d %H:%M") if hasattr(a.audited_at, "strftime") else str(a.audited_at)[:16]
+            )
+
+            table.add_row(str(idx), score_str, badge, density_str, hash_display, time_display)
+
+        console.print(table)
+        console.print(
+            "[dim]Tip: View any audit in full detail with `credence lookup <sha256>` or `credence report view <sha256> --open`.[/dim]"
+        )
+
+        if open_browser and audits:
+            viewer_url = f"https://credence.report/viewer.html?q={audits[0].content_sha256}"
+            webbrowser.open(viewer_url)
+            console.print(f"[cyan]Opened in web report viewer:[/] {viewer_url}")
+        return
+
+
 async def cli_audit(
     url: str,
     force: bool = False,
     profile_override: Optional[CostProfileConfig] = None,
     open_browser: bool = False,
+    format_type: str = "human",
 ) -> None:
     """Execute live audit or cache lookup for target URL."""
     with console.status(f"[bold green]Evaluating {url}...", spinner="dots"):
         report = await audit_url(url, force_refresh=force, profile_override=profile_override)
-    render_audit_report(report)
+    render_audit_report(report, format_type=format_type)
 
     if open_browser:
         viewer_url = f"https://credence.report/viewer.html?q={report.content_sha256}"
@@ -201,8 +360,29 @@ async def cli_audit(
         console.print(f"[cyan]Opened in web report viewer:[/] {viewer_url}")
 
 
-async def cli_lookup(identifier: str, open_browser: bool = False) -> None:
-    """Look up cached audit report by URL or content SHA-256."""
+async def cli_lookup(
+    identifier: Optional[str] = None,
+    open_browser: bool = False,
+    format_type: str = "human",
+    category: Optional[str] = None,
+    random_pick: bool = False,
+) -> None:
+    """Look up cached audit report by URL, hash, category, or random selection."""
+    if random_pick:
+        category = "random"
+
+    if category:
+        await cli_browse_audits(
+            category=category, limit=1 if random_pick else 10, format_type=format_type, open_browser=open_browser
+        )
+        return
+
+    if not identifier:
+        console.print(
+            "[red]Error: Please specify a URL, content SHA-256, or category flag (--random, --best, --worst, --satire).[/red]"
+        )
+        return
+
     await init_db()
     async for s in get_session():
         if identifier.startswith("sha256:") or len(identifier) == 64:
@@ -263,7 +443,7 @@ async def cli_lookup(identifier: str, open_browser: bool = False) -> None:
                 "offline_structural_heuristic" if audit.quota_preserved else "llm_multi_agent",
             ),
         )
-        render_audit_report(report)
+        render_audit_report(report, format_type=format_type)
         if open_browser:
             viewer_url = f"https://credence.report/viewer.html?q={report.content_sha256}"
             webbrowser.open(viewer_url)
@@ -272,15 +452,25 @@ async def cli_lookup(identifier: str, open_browser: bool = False) -> None:
 
 
 async def cli_report_view(
-    identifier: str,
+    identifier: Optional[str] = None,
     open_browser: bool = False,
-    format_type: str = "terminal",
+    format_type: str = "human",
+    category: Optional[str] = None,
 ) -> None:
-    """Inspect and render an audit report in terminal, markdown, or JSON."""
-    if format_type.lower() in ("markdown", "json"):
-        await cli_export_report(identifier, format_type=format_type)
+    """Inspect and render an audit report in human, compact, markdown, or JSON."""
+    if identifier in ("browse", "explore") or category:
+        cat = category or "recent"
+        await cli_browse_audits(category=cat, format_type=format_type, open_browser=open_browser)
+        return
+
+    if not identifier:
+        await cli_browse_audits(category="recent", format_type=format_type, open_browser=open_browser)
+        return
+
+    if format_type.lower() in ("markdown",):
+        await cli_export_report(identifier, format_type="markdown")
     else:
-        await cli_lookup(identifier, open_browser=open_browser)
+        await cli_lookup(identifier, open_browser=open_browser, format_type=format_type)
 
 
 def cli_identity(action: str) -> None:
@@ -990,7 +1180,8 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
             cli_report_view(
                 args.identifier,
                 open_browser=getattr(args, "open", False),
-                format_type=getattr(args, "format", "terminal"),
+                format_type=getattr(args, "format", "human"),
+                category=getattr(args, "category", None),
             )
         )
     elif cmd == "db-clean":
@@ -1356,10 +1547,28 @@ def _dispatch_command(args: argparse.Namespace) -> None:
                 force=args.force,
                 profile_override=prof_cfg,
                 open_browser=getattr(args, "open", False),
+                format_type=getattr(args, "format", "human"),
             )
         )
     elif cmd == "lookup":
-        asyncio.run(cli_lookup(args.identifier, open_browser=getattr(args, "open", False)))
+        cat = getattr(args, "category", None)
+        if getattr(args, "best", False):
+            cat = "best"
+        elif getattr(args, "worst", False):
+            cat = "worst"
+        elif getattr(args, "satire", False):
+            cat = "satire"
+        elif getattr(args, "random", False):
+            cat = "random"
+        asyncio.run(
+            cli_lookup(
+                args.identifier,
+                open_browser=getattr(args, "open", False),
+                format_type=getattr(args, "format", "human"),
+                category=cat,
+                random_pick=getattr(args, "random", False),
+            )
+        )
     elif not _dispatch_service_commands(args) and not _dispatch_mesh_commands(args):
         _dispatch_utility_commands(args)
 
@@ -1383,14 +1592,38 @@ def main() -> None:
         help="Operational cost profile override.",
     )
     audit_parser.add_argument(
+        "--format",
+        choices=["human", "compact", "json", "ndjson", "tsv"],
+        default="human",
+        help="Output presentation format.",
+    )
+    audit_parser.add_argument(
         "--open",
         action="store_true",
         help="Automatically open audit in browser report viewer upon completion.",
     )
 
     # lookup command
-    lookup_parser = subparsers.add_parser("lookup", help="Lookup cached audit by URL or content hash.")
-    lookup_parser.add_argument("identifier", type=str, help="URL or content SHA-256.")
+    lookup_parser = subparsers.add_parser("lookup", help="Lookup cached audit by URL, hash, or explore categories.")
+    lookup_parser.add_argument("identifier", nargs="?", default=None, type=str, help="URL or content SHA-256.")
+    lookup_parser.add_argument(
+        "--category",
+        choices=["recent", "best", "worst", "satire", "random"],
+        default=None,
+        help="Browse audits by specific category.",
+    )
+    lookup_parser.add_argument("--random", action="store_true", help="Select and view a random audit report.")
+    lookup_parser.add_argument("--best", action="store_true", help="View highest integrity clean audits (0–15 score).")
+    lookup_parser.add_argument(
+        "--worst", action="store_true", help="View highly flagged suspicious/deceptive audits (60+ score)."
+    )
+    lookup_parser.add_argument("--satire", action="store_true", help="View legitimate satire/parody audits.")
+    lookup_parser.add_argument(
+        "--format",
+        choices=["human", "compact", "json", "ndjson", "tsv"],
+        default="human",
+        help="Output format (default: human).",
+    )
     lookup_parser.add_argument(
         "--open",
         action="store_true",
@@ -1398,13 +1631,27 @@ def main() -> None:
     )
 
     # report command
-    report_parser = subparsers.add_parser("report", help="Inspect and view audit reports.")
-    report_parser.add_argument("identifier", type=str, help="URL or content SHA-256 to view.")
+    report_parser = subparsers.add_parser("report", help="Inspect and view audit reports or browse streams.")
+    report_parser.add_argument(
+        "identifier", nargs="?", default=None, type=str, help="URL or content SHA-256 to view (or 'browse')."
+    )
+    report_parser.add_argument(
+        "--category",
+        choices=["recent", "best", "worst", "satire", "random"],
+        default=None,
+        help="Category to browse if browsing.",
+    )
+    report_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Max results when browsing (default: 10).",
+    )
     report_parser.add_argument(
         "--format",
-        choices=["terminal", "markdown", "json"],
-        default="terminal",
-        help="Display format (default: terminal).",
+        choices=["human", "compact", "json", "ndjson", "tsv", "markdown", "terminal"],
+        default="human",
+        help="Display format (default: human).",
     )
     report_parser.add_argument(
         "--open",

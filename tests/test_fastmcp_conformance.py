@@ -23,6 +23,7 @@ async def test_fastmcp_tool_and_resource_registry_conformance() -> None:
         "credence_check_url",
         "credence_evaluate_text",
         "credence_get_audit",
+        "credence_browse_audits",
         "credence_verify_attestation",
         "credence_get_quota_status",
         "credence_get_consensus",

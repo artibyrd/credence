@@ -49,7 +49,7 @@ def test_web_report_viewer_web_crypto(web_dir: Path) -> None:
     assert "violations-container" in content
     assert "score-big" in content
 
-    # Human-First Features
+    # Human-First & Discovery Features
     assert "exec-summary-card" in content, "Executive summary card must be present"
     assert "trust-signals" in content, "Trust signals container must be present"
     assert "tab-reader" in content, "In-context reading mode tab must be present"
@@ -59,6 +59,19 @@ def test_web_report_viewer_web_crypto(web_dir: Path) -> None:
     assert "tab-export" in content, "Export tab must be present"
     assert "copyMarkdownSummary" in content, "1-click Markdown export must be present"
     assert "dim-ethics-score" in content, "Trust dimensions breakdown must be present"
+
+    # Enhanced v1.5.1 Layout & Ingestion Features
+    assert "mode-switcher" in content, "View mode switcher must be present"
+    assert "btn-mode-human" in content, "Human view button must be present"
+    assert "btn-mode-compact" in content, "Compact view button must be present"
+    assert "btn-mode-raw" in content, "Machine view button must be present"
+    assert "discover-toolbar" in content, "Quick discovery toolbar must be present"
+    assert "pill-random" in content, "Random surprise pill must be present"
+    assert "discovery-drawer" in content, "Interactive discovery drawer must be present"
+    assert "export-stack" in content, "Stacked export layout must replace squished grid"
+    assert "view-compact" in content, "Compact dense view container must be present"
+    assert "view-raw" in content, "Machine raw view container must be present"
+    assert "schema-claim-review" in content, "Schema.org ClaimReview LD+JSON must be present"
 
     # Zero-Build Invariant 20: 0 npm packages
     assert "node_modules" not in content

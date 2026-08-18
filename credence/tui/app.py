@@ -11,9 +11,8 @@ Provides:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 import webbrowser
+from pathlib import Path
 from typing import List, Optional
 
 from rich.text import Text
@@ -200,7 +199,8 @@ class CredenceApp(App):
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("slash", "open_audit_dialog", "Audit URL"),
-        ("r", "refresh_data", "Refresh"),
+        ("r", "random_audit", "Random Audit"),
+        ("v", "cycle_view_mode", "View Mode (Rich/Compact/JSON)"),
         ("1", "switch_to_inspector", "Inspector"),
         ("2", "switch_to_taxonomies", "Taxonomies"),
         ("3", "switch_to_subjects", "Subjects"),
@@ -218,6 +218,7 @@ class CredenceApp(App):
         self.current_report: Optional[AuditReport] = None
         self.recent_audits: List[AuditRecord] = []
         self._filter_query: str = ""
+        self._view_mode: str = "rich"
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -237,7 +238,10 @@ class CredenceApp(App):
                             with Horizontal(id="inspector_split"):
                                 with Vertical(id="inspector_left"):
                                     yield Label("🚨 Grounded Violations", classes="metric_title")
-                                    yield Input(placeholder="🔍 Filter findings (e.g. SPJ, fallacy, critical)...", id="filter_input")
+                                    yield Input(
+                                        placeholder="🔍 Filter findings (e.g. SPJ, fallacy, critical)...",
+                                        id="filter_input",
+                                    )
                                     yield DataTable(id="violations_table")
                                 with Vertical(id="inspector_right"):
                                     yield Label("🔎 In-Context Evidence & Citation Detail", classes="metric_title")
@@ -535,8 +539,9 @@ class CredenceApp(App):
         else:
             status_badge = "[bold red]🛑 HIGHLY DECEPTIVE[/bold red]"
 
+        mode_badge = f"[magenta][{self._view_mode.upper()} VIEW][/magenta]"
         banner_text = (
-            f"{status_badge}  |  Verdict: [bold]{report.classification}[/bold]\n"
+            f"{status_badge}  |  Verdict: [bold]{report.classification}[/bold]  {mode_badge}\n"
             f"[bold]Target URL:[/bold] {report.url}\n"
             f"[bold]Suspicion Score:[/bold] {report.suspicion_score:.1f}/100.0  |  "
             f"[bold]Density:[/bold] {report.suspicion_density:.1f} / 1k words  |  "
@@ -551,9 +556,23 @@ class CredenceApp(App):
 
         # 2. Update Executive Summary Panel
         exec_panel = self.query_one("#exec_summary_panel", Static)
-        exec_panel.update(self._generate_exec_summary(report))
+        if self._view_mode == "raw":
+            exec_panel.update(
+                "[bold cyan]Raw JSON Attestation Record (RFC 8785 Schema):[/bold cyan] (Press 'v' to switch mode)"
+            )
+        elif self._view_mode == "compact":
+            exec_panel.update(
+                f"[bold yellow]Compact Streamlined Summary:[/bold yellow] {report.classification} ({report.suspicion_score:.1f}/100.0) • Density: {report.suspicion_density:.1f}/1k • {len(report.violations)} finding(s)"
+            )
+        else:
+            exec_panel.update(self._generate_exec_summary(report))
 
-        # 3. Update Violations Table with filtering
+        # 3. Update Detail Panel if in Raw mode
+        detail = self.query_one("#detail_panel", Static)
+        if self._view_mode == "raw":
+            detail.update(f"```json\n{report.model_dump_json(indent=2)}\n```")
+
+        # 4. Update Violations Table with filtering
         self._populate_filtered_violations()
 
     def _populate_filtered_violations(self) -> None:
@@ -691,6 +710,26 @@ class CredenceApp(App):
         except Exception as e:
             banner.update(f"[bold red]❌ Audit failed: {e}[/bold red]")
             self.notify(f"Audit failed: {e}", severity="error")
+
+    async def action_random_audit(self) -> None:
+        """Select and load a random audit from history."""
+        if self.recent_audits:
+            import secrets
+
+            chosen = secrets.SystemRandom().choice(self.recent_audits)
+            await self.display_audit_record(chosen)
+            self.notify(f"Loaded random audit: {chosen.classification} ({chosen.suspicion_score:.1f})")
+        else:
+            await self.action_refresh_data()
+
+    def action_cycle_view_mode(self) -> None:
+        """Cycle through Rich, Compact, and Raw JSON view modes."""
+        modes = ["rich", "compact", "raw"]
+        current_idx = modes.index(self._view_mode)
+        self._view_mode = modes[(current_idx + 1) % len(modes)]
+        self.notify(f"Switched view mode to: {self._view_mode.upper()}")
+        if self.current_report:
+            self._update_inspector_views(self.current_report)
 
     async def action_refresh_data(self) -> None:
         """Refresh recent audits and quota status from DB."""

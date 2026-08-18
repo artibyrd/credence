@@ -54,6 +54,22 @@ async def test_credence_tui_app_lifecycle() -> None:
         await pilot.press("6")
         await pilot.pause()
 
+        # Test view mode cycling (v)
+        assert app._view_mode == "rich"
+        await pilot.press("v")
+        await pilot.pause()
+        assert app._view_mode == "compact"
+        await pilot.press("v")
+        await pilot.pause()
+        assert app._view_mode == "raw"
+        await pilot.press("v")
+        await pilot.pause()
+        assert app._view_mode == "rich"
+
+        # Test random audit action / keybinding (r)
+        await pilot.press("r")
+        await pilot.pause()
+
         # Test refresh data action
         await app.action_refresh_data()
         await pilot.pause()

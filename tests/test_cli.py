@@ -176,3 +176,38 @@ async def test_cli_feeds_and_subjects() -> None:
     # Test subjects list and show
     cli_subjects(action="list")
     cli_subjects(action="show", subject_id="apiculture.equipment")
+
+
+@pytest.mark.unit
+async def test_cli_browse_and_formats(fixtures_dir: Path) -> None:
+    """Verify CLI multi-format output (compact, json, ndjson, tsv) and discovery browsing."""
+    from credence.cli.main import cli_audit, cli_browse_audits, cli_lookup, cli_report_view
+
+    file_url = f"file://{fixtures_dir / 'clean_article.html'}"
+    await cli_audit(file_url, force=True, format_type="compact")
+    await cli_audit(file_url, force=False, format_type="json")
+    await cli_audit(file_url, force=False, format_type="ndjson")
+    await cli_audit(file_url, force=False, format_type="tsv")
+
+    # Test lookup with various formats
+    await cli_lookup(file_url, format_type="compact")
+    await cli_lookup(file_url, format_type="json")
+    await cli_lookup(file_url, format_type="ndjson")
+    await cli_lookup(file_url, format_type="tsv")
+
+    # Test lookup with category flags
+    await cli_lookup(category="best", format_type="compact")
+    await cli_lookup(category="recent", format_type="human")
+    await cli_lookup(random_pick=True, format_type="json")
+
+    # Test browse audits across categories and formats
+    await cli_browse_audits(category="recent", limit=5, format_type="human")
+    await cli_browse_audits(category="best", limit=5, format_type="compact")
+    await cli_browse_audits(category="worst", limit=5, format_type="json")
+    await cli_browse_audits(category="satire", limit=5, format_type="ndjson")
+    await cli_browse_audits(category="random", limit=5, format_type="tsv")
+
+    # Test report view routing
+    await cli_report_view(identifier="browse", category="best", format_type="compact")
+    await cli_report_view(identifier=file_url, format_type="human")
+    await cli_report_view(identifier=file_url, format_type="compact")

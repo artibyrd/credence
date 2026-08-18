@@ -21,6 +21,7 @@ async def test_fastmcp_server_initialization() -> None:
     assert "credence_check_url" in tool_names
     assert "credence_evaluate_text" in tool_names
     assert "credence_get_audit" in tool_names
+    assert "credence_browse_audits" in tool_names
     assert "credence_verify_attestation" in tool_names
     assert "credence_get_quota_status" in tool_names
     assert "credence_get_consensus" in tool_names
@@ -146,7 +147,7 @@ async def test_fastmcp_human_report_resource_and_prompt(db_session: Any) -> None
     server = create_mcp_server()
 
     # 1. Test explain prompt template
-    prompt_res = await server.get_prompt("explain_audit_report_prompt", {"identifier": "https://example.com/news"})
+    prompt_res: Any = await server.get_prompt("explain_audit_report_prompt", {"identifier": "https://example.com/news"})
     assert prompt_res is not None
     assert "https://example.com/news" in prompt_res.messages[0].content.text
     assert "credence_get_audit" in prompt_res.messages[0].content.text
@@ -168,8 +169,55 @@ async def test_fastmcp_human_report_resource_and_prompt(db_session: Any) -> None
     assert "🧠 Human Epistemic Briefing" in human_text
     assert "Credence Epistemic Audit Report" in human_text
 
-    # Retrieve via resource
+    # Retrieve formatted as compact, ndjson, and tsv
+    compact_res: Any = await server.call_tool(
+        "credence_get_audit",
+        {"identifier": content_hash, "format": "compact"},
+    )
+    assert "Score:" in compact_res.content[0].text
+    assert "Findings:" in compact_res.content[0].text
+
+    ndjson_res: Any = await server.call_tool(
+        "credence_get_audit",
+        {"identifier": content_hash, "format": "ndjson"},
+    )
+    assert content_hash in ndjson_res.content[0].text
+
+    tsv_res: Any = await server.call_tool(
+        "credence_get_audit",
+        {"identifier": content_hash, "format": "tsv"},
+    )
+    assert content_hash in tsv_res.content[0].text
+
+    # Test browse audits tool
+    browse_res: Any = await server.call_tool(
+        "credence_browse_audits",
+        {"category": "recent", "limit": 5, "format": "human"},
+    )
+    assert "Credence Epistemic Audits Stream" in browse_res.content[0].text
+
+    browse_json_res: Any = await server.call_tool(
+        "credence_browse_audits",
+        {"category": "best", "limit": 5, "format": "json"},
+    )
+    assert browse_json_res is not None
+
+    # Retrieve via human resource
     res_list: Any = await server.read_resource(f"credence://reports/{content_hash}/human")
     assert res_list is not None and len(res_list) > 0
     res_text = res_list[0].content if hasattr(res_list[0], "content") else str(res_list[0])
     assert "Human Epistemic Briefing" in res_text
+
+    # Retrieve via compact resource
+    res_compact: Any = await server.read_resource(f"credence://reports/{content_hash}/compact")
+    assert res_compact is not None and len(res_compact) > 0
+    compact_text = res_compact[0].content if hasattr(res_compact[0], "content") else str(res_compact[0])
+    assert "Score:" in compact_text
+
+    # Retrieve via raw resource
+    res_raw: Any = await server.read_resource(f"credence://reports/{content_hash}/raw")
+    assert res_raw is not None and len(res_raw) > 0
+
+    # Retrieve via explore resource
+    res_explore: Any = await server.read_resource("credence://reports/explore/recent")
+    assert res_explore is not None and len(res_explore) > 0

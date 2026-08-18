@@ -23,8 +23,9 @@ import time
 from typing import List, Optional
 
 from mcp.server.mcpserver import MCPServer
-from sqlmodel import select
+from sqlmodel import col, select
 
+from credence.config import COST_PROFILES, CostProfile
 from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity, verify_audit_report
 from credence.ingestion.extractor import ExtractedContent
@@ -65,70 +66,47 @@ _global_rate_limiter = ServerRateLimiter()
 
 def _register_eval_tools(server: MCPServer) -> None:
     """Register evaluation tools."""
-    from credence.config import COST_PROFILES, CostProfile
 
     @server.tool(
         name="credence_check_url",
-        description="Audit a webpage for journalistic ethics, logical fallacies, and deceptive patterns.",
+        description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies.",
     )
-    async def check_url(
-        url: str,
-        force_refresh: bool = False,
-        profile: Optional[str] = None,
-    ) -> str:
-        if not _global_rate_limiter.check_and_record(len(url)):
-            raise ValueError("FastMCP tool rate limit exceeded (maximum 60 requests/minute). Please retry shortly.")
-        await init_db()
-        prof_cfg = None
-        if profile:
-            try:
-                prof_cfg = COST_PROFILES.get(CostProfile(profile.lower()))
-            except ValueError:
-                pass
-        report = await audit_url(url, force_refresh=force_refresh, profile_override=prof_cfg)
+    async def check_url(url: str, force: bool = False, profile: Optional[str] = None) -> str:
+        prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
+        report = await audit_url(url, force_refresh=force, profile_override=prof_cfg)
         return json.dumps(report.model_dump(mode="json"), indent=2)
 
     @server.tool(
         name="credence_evaluate_text",
-        description="Directly evaluate raw prose text without web scraping.",
+        description="Evaluate arbitrary plain text for logical fallacies, deceptive patterns, and bias without network requests.",
     )
     async def evaluate_text(
         text: str,
-        title: str = "Pasted Text Snippet",
-        byline: Optional[str] = None,
+        title: str = "Pasted Text Analysis",
+        byline: str = "Direct MCP Input",
         profile: Optional[str] = None,
     ) -> str:
-        if not _global_rate_limiter.check_and_record(len(text)):
-            raise ValueError("FastMCP tool rate limit exceeded (maximum 60 requests/minute). Please retry shortly.")
-        await init_db()
-        content_hash = compute_content_sha256(text)
-        simhash_hex = compute_simhash(text)
-
-        prof_cfg = None
-        if profile:
-            try:
-                prof_cfg = COST_PROFILES.get(CostProfile(profile.lower()))
-            except ValueError:
-                pass
-
+        prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
         extracted = ExtractedContent(
             title=title,
-            clean_text=text,
             byline=byline,
+            clean_text=text,
             word_count=len(text.split()),
             char_count=len(text),
+            is_satire_cue=False,
         )
         snapshot = DualCaptureResult(
             url="text://inline",
-            content_sha256=content_hash,
-            simhash_64=simhash_hex,
+            content_sha256=compute_content_sha256(text),
+            simhash_64=compute_simhash(text),
             raw_html=f"<html><body><h1>{title}</h1><p>{text}</p></body></html>",
+            screenshot_bytes=b"",
             extracted=extracted,
         )
-
+        await init_db()
         async for s in get_session():
             report = await evaluate_snapshot(snapshot, session=s, sign_result=True, profile_override=prof_cfg)
-            
+
             # Persist to database for cache & resource lookups
             snap_record = SnapshotRecord(
                 url="text://inline",
@@ -186,8 +164,93 @@ def _register_eval_tools(server: MCPServer) -> None:
         return "{}"
 
 
+async def _execute_browse_audits(category: str = "recent", limit: int = 10, format: str = "human") -> str:
+    """Helper to browse stored audit records for FastMCP tools and resources."""
+    import secrets
+
+    await init_db()
+    async for s in get_session():
+        cat = category.lower()
+        if cat in ("best", "clean"):
+            stmt = (
+                select(AuditRecord)
+                .where(AuditRecord.suspicion_score <= 15.0)
+                .order_by(col(AuditRecord.suspicion_score).asc(), col(AuditRecord.audited_at).desc())
+                .limit(limit)
+            )
+        elif cat in ("worst", "flagged", "deceptive"):
+            stmt = (
+                select(AuditRecord)
+                .where(AuditRecord.suspicion_score >= 60.0)
+                .order_by(col(AuditRecord.suspicion_score).desc(), col(AuditRecord.audited_at).desc())
+                .limit(limit)
+            )
+        elif cat == "satire":
+            stmt = (
+                select(AuditRecord)
+                .where(AuditRecord.is_satire)
+                .order_by(col(AuditRecord.audited_at).desc())
+                .limit(limit)
+            )
+        elif cat == "random":
+            stmt = select(AuditRecord).limit(limit * 3)
+        else:  # "recent"
+            stmt = select(AuditRecord).order_by(col(AuditRecord.audited_at).desc()).limit(limit)
+
+        audits = list((await s.exec(stmt)).all())
+        if cat == "random" and audits:
+            secrets.SystemRandom().shuffle(audits)
+            audits = audits[:limit]
+
+        if not audits:
+            return json.dumps({"message": f"No audit records found for category '{category}'."})
+
+        fmt = format.lower()
+        if fmt == "ndjson":
+            lines = []
+            for a in audits:
+                d = a.to_dict() if hasattr(a, "to_dict") else a.model_dump()
+                lines.append(json.dumps(d, default=str))
+            return "\n".join(lines)
+        elif fmt == "tsv":
+            lines = ["content_sha256\tsuspicion_score\tclassification\tconfidence_score\taudited_at"]
+            for a in audits:
+                lines.append(
+                    f"{a.content_sha256}\t{a.suspicion_score:.1f}\t{a.classification}\t{a.confidence_score:.2f}\t{a.audited_at}"
+                )
+            return "\n".join(lines)
+        elif fmt == "compact":
+            lines = []
+            for a in audits:
+                badge = "SATIRE" if a.is_satire else a.classification
+                lines.append(
+                    f"[{a.suspicion_score:4.1f}] {badge:12} | SHA: {a.content_sha256[:20]}... | {a.audited_at}"
+                )
+            return "\n".join(lines)
+        elif fmt in ("human", "markdown", "summary"):
+            lines = [f"### 🛡️ Credence Epistemic Audits Stream: {category.upper()}", ""]
+            for idx, a in enumerate(audits, 1):
+                badge = "🎭 SATIRE" if a.is_satire else a.classification
+                lines.append(
+                    f"{idx}. **{badge}** (Score: `{a.suspicion_score:.1f}/100.0`, Density: `{a.suspicion_density:.1f}/1k`) — SHA: `{a.content_sha256[:16]}...` ({a.audited_at})"
+                )
+            return "\n".join(lines)
+        else:
+            records = [a.to_dict() if hasattr(a, "to_dict") else a.model_dump() for a in audits]
+            return json.dumps(records, indent=2, default=str)
+
+    return "{}"
+
+
 def _register_query_tools(server: MCPServer) -> None:
     """Register cache lookup and quota tools."""
+
+    @server.tool(
+        name="credence_browse_audits",
+        description="Browse stored epistemic audit records by category ('recent', 'best', 'worst', 'satire', 'random') with customizable limit and output format ('human', 'compact', 'json', 'ndjson', 'tsv').",
+    )
+    async def browse_audits(category: str = "recent", limit: int = 10, format: str = "human") -> str:
+        return await _execute_browse_audits(category=category, limit=limit, format=format)
 
     @server.tool(
         name="credence_get_audit",
@@ -262,6 +325,25 @@ def _register_query_tools(server: MCPServer) -> None:
                 badge = "SATIRE / PARODY" if report.is_satire else report.classification
                 prefix = f"### 🧠 Human Epistemic Briefing: {badge} ({report.suspicion_score:.1f}/100.0)\n\n"
                 return prefix + md
+            elif format.lower() == "compact":
+                badge = "SATIRE" if report.is_satire else report.classification
+                lines = [
+                    f"URL: {report.url} | Score: {report.suspicion_score:.1f}/100.0 ({badge}) | Density: {report.suspicion_density:.1f}/1k | Confidence: {report.confidence_score * 100:.0f}%",
+                    f"SHA-256: {report.content_sha256} | Signer: {report.node_pubkey or 'unsigned'}",
+                ]
+                if report.violations:
+                    lines.append("Findings:")
+                    for v in report.violations:
+                        lines.append(
+                            f'  • [{v.rule_id}] {v.domain} (Sev {v.severity}/5): "{v.quote_or_element[:60]}" - {v.reasoning}'
+                        )
+                else:
+                    lines.append("Findings: High epistemic integrity. No grounded violations.")
+                return "\n".join(lines)
+            elif format.lower() == "ndjson":
+                return report.model_dump_json()
+            elif format.lower() == "tsv":
+                return f"{report.content_sha256}\t{report.suspicion_score:.1f}\t{report.classification}\t{report.confidence_score:.2f}\t{len(report.violations)}\t{report.url}"
             else:
                 return json.dumps(report.model_dump(mode="json"), indent=2)
 
@@ -721,6 +803,8 @@ def _register_subject_resources(server: MCPServer) -> None:
                 },
                 indent=2,
             )
+        return "{}"
+
     @server.resource("credence://digest/morning")
     async def get_morning_digest_resource() -> str:
         from credence.db import get_session, init_db
@@ -809,6 +893,39 @@ def _register_subject_resources(server: MCPServer) -> None:
             return prefix + report_to_markdown(report)
         except Exception as e:
             return f"# Error formatting report: {e}"
+
+    @server.resource("credence://reports/{identifier}/compact")
+    async def get_compact_report_resource(identifier: str) -> str:
+        raw_json = await get_report_resource(identifier)
+        try:
+            data = json.loads(raw_json)
+            if "error" in data:
+                return f"Error: {data['error']}"
+            report = AuditReport.model_validate(data)
+            badge = "SATIRE" if report.is_satire else report.classification
+            lines = [
+                f"URL: {report.url} | Score: {report.suspicion_score:.1f}/100.0 ({badge}) | Density: {report.suspicion_density:.1f}/1k | Confidence: {report.confidence_score * 100:.0f}%",
+                f"SHA-256: {report.content_sha256} | Signer: {report.node_pubkey or 'unsigned'}",
+            ]
+            if report.violations:
+                lines.append("Findings:")
+                for v in report.violations:
+                    lines.append(
+                        f'  • [{v.rule_id}] {v.domain} (Sev {v.severity}/5): "{v.quote_or_element[:60]}" - {v.reasoning}'
+                    )
+            else:
+                lines.append("Findings: High epistemic integrity. No grounded violations.")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"Error formatting compact report: {e}"
+
+    @server.resource("credence://reports/{identifier}/raw")
+    async def get_raw_report_resource(identifier: str) -> str:
+        return await get_report_resource(identifier)
+
+    @server.resource("credence://reports/explore/{category}")
+    async def get_explore_category_resource(category: str) -> str:
+        return await _execute_browse_audits(category=category, limit=20, format="json")
 
 
 def _register_prompts(server: MCPServer) -> None:
