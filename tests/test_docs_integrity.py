@@ -37,6 +37,61 @@ def test_zero_npm_invariant(docs_root: Path) -> None:
 
 
 @pytest.mark.unit
+def test_ecosystem_version_parity(docs_root: Path) -> None:
+    """Verify universal semantic version parity across all ecosystem repositories and web surfaces."""
+    import json
+    import tomllib
+
+    ecosystem_root = docs_root.parent
+    credence_root = ecosystem_root / "credence"
+    agent_root = ecosystem_root / "credence-agent"
+
+    # 1. Canonical version from pyproject.toml
+    pyproject_path = credence_root / "pyproject.toml"
+    assert pyproject_path.exists()
+    with open(pyproject_path, "rb") as f:
+        pyproject_data = tomllib.load(f)
+    canonical_version = pyproject_data["tool"]["poetry"]["version"]
+
+    # 2. Python __version__ in credence/__init__.py
+    init_path = credence_root / "credence" / "__init__.py"
+    assert init_path.exists()
+    init_content = init_path.read_text(encoding="utf-8")
+    assert f'__version__ = "{canonical_version}"' in init_content, f"credence/__init__.py version does not match {canonical_version}"
+
+    # 3. credence-docs/index.html navbar badge
+    docs_index_path = docs_root / "index.html"
+    assert docs_index_path.exists()
+    docs_index_content = docs_index_path.read_text(encoding="utf-8")
+    assert f"v{canonical_version}" in docs_index_content, f"credence-docs/index.html missing badge v{canonical_version}"
+
+    # 4. credence-docs/app.js brandBadge fallback
+    docs_app_path = docs_root / "app.js"
+    assert docs_app_path.exists()
+    docs_app_content = docs_app_path.read_text(encoding="utf-8")
+    assert f"'v{canonical_version}'" in docs_app_content or f'"v{canonical_version}"' in docs_app_content, f"credence-docs/app.js brandBadge does not match v{canonical_version}"
+
+    # 5. credence-docs/docs/changelog.md latest release header
+    changelog_path = docs_root / "docs" / "changelog.md"
+    assert changelog_path.exists()
+    changelog_content = changelog_path.read_text(encoding="utf-8")
+    assert f"## [{canonical_version}]" in changelog_content, f"docs/changelog.md missing release section ## [{canonical_version}]"
+
+    # 6. credence.run index.html brand & hero badge-pill
+    web_run_index = credence_root / "web" / "credence.run" / "index.html"
+    if web_run_index.exists():
+        web_content = web_run_index.read_text(encoding="utf-8")
+        assert f"v{canonical_version}" in web_content, f"web/credence.run/index.html missing badge v{canonical_version}"
+        assert f"v{canonical_version} Stable" in web_content, f"web/credence.run/index.html missing hero pill v{canonical_version} Stable"
+
+    # 7. credence-agent/plugin.json
+    plugin_path = agent_root / "plugin.json"
+    if plugin_path.exists():
+        plugin_data = json.loads(plugin_path.read_text(encoding="utf-8"))
+        assert plugin_data["version"] == canonical_version, f"credence-agent/plugin.json version does not match {canonical_version}"
+
+
+@pytest.mark.unit
 def test_docs_registry_parity(docs_root: Path) -> None:
     """Verify all paths in app.js DOCS_REGISTRY exist on disk and are non-empty."""
     app_js = docs_root / "app.js"

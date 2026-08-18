@@ -109,3 +109,16 @@ agent-check:
     @test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
     @test -d ../credence-agent/.agents/skills && echo "✅ Native skills repository verified." || (echo "❌ Missing credence-agent skills"; exit 1)
     @echo "=== All Declarative Antigravity Configs Verified ==="
+
+# Bump and synchronize semantic version across all ecosystem repositories and web surfaces
+bump-version version:
+    @echo "Syncing ecosystem version to {{version}}..."
+    @poetry version {{version}}
+    @sed -i -E 's/__version__ = "[^"]+"/__version__ = "{{version}}"/' credence/__init__.py
+    @sed -i -E 's/Credence <span class="badge">v[^<]+<\/span>/Credence <span class="badge">v{{version}}<\/span>/' ../credence-docs/index.html web/credence.run/index.html
+    @sed -i -E 's/v[0-9]+\.[0-9]+\.[0-9]+ Stable/v{{version}} Stable/' web/credence.run/index.html
+    @sed -i -E "s/brandBadge\.textContent = isBlog \? 'Editorial' : 'v[^']+'/brandBadge.textContent = isBlog ? 'Editorial' : 'v{{version}}'/" ../credence-docs/app.js
+    @sed -i -E 's/"version": "[^"]+"/"version": "{{version}}"/' ../credence-agent/plugin.json
+    @poetry run pytest tests/test_docs_integrity.py -k test_ecosystem_version_parity
+    @echo "✅ All ecosystem version badges and manifests synchronized to {{version}}."
+
