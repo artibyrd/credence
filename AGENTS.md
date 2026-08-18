@@ -37,7 +37,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 
 ## 4. Universal Presentation Layer & Zero-Build Web
 - **Universal Feature Parity**: Maintain synchronous feature parity across all 4 interfaces: **CLI** (`credence`), **FastMCP 2.0** (`credence_` tools & `credence://` resources), **Textual TUI** (`credence tui`), and **Zero-Build Web UI** (`web/`).
-- **Zero-Build Web Standards**: Public frontends strictly use vanilla HTML5, CSS Custom Properties, native ES Modules, W3C Web Cryptography API (`window.crypto.subtle`), context-aware `escapeHtml()` sanitization, and strict CSP with zero npm dependencies.
+- **Universal Zero-Build Standards (Zero-npm Invariant)**: All public web surfaces, documentation portals (`credence-docs`), and sovereign blogs strictly use vanilla HTML5, CSS Custom Properties (`credence-ui.css`), and native ES Modules with **zero npm dependencies, zero package.json, and zero build toolchains**. Never introduce Node.js frameworks (Astro, Next.js, Vite) for any web property.
 - **Pure Logic Decoupling**: Business logic must execute and test decoupled from presentation layers (`tests/test_interfaces_isolation.py`).
 
 ---

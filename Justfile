@@ -85,3 +85,11 @@ tf-validate:
     terraform -chdir=terraform validate
     terraform -chdir=terraform fmt -check
 
+# Verify Antigravity declarative workspace configuration and skills registration
+agent-check:
+    @echo "=== Credence Antigravity Declarative Health Check ==="
+    @test -f ../AGENTS.md && echo "✅ Universal root AGENTS.md verified." || (echo "❌ Missing root AGENTS.md"; exit 1)
+    @test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
+    @test -d ../credence-agent/.agents/skills && echo "✅ Native skills repository verified." || (echo "❌ Missing credence-agent skills"; exit 1)
+    @echo "=== All Declarative Antigravity Configs Verified ==="
+
