@@ -105,6 +105,16 @@ def _parse_flexible_date(date_str: Optional[str]) -> Optional[datetime]:
         except ValueError:
             continue
 
+    # 4. Try Epoch timestamp (seconds or milliseconds)
+    if clean_str.isdigit():
+        try:
+            epoch_val = float(clean_str)
+            if epoch_val > 10_000_000_000:
+                epoch_val /= 1000.0
+            return datetime.fromtimestamp(epoch_val, tz=timezone.utc)
+        except (ValueError, OSError):
+            pass
+
     return None
 
 
