@@ -132,8 +132,14 @@ class MeshGossipRelay:
     async def stop(self) -> None:
         """Gracefully stop server and close all peer connections."""
         self._running = False
+        if self._server:
+            self._server.close()
+            await self._server.wait_closed()
+
         for task in self._background_tasks:
             task.cancel()
+        if self._background_tasks:
+            await asyncio.gather(*self._background_tasks, return_exceptions=True)
 
         for _peer_id, peer in list(self.peers.items()):
             try:
@@ -141,10 +147,6 @@ class MeshGossipRelay:
             except Exception as e:
                 logger.debug(f"Error closing peer socket: {e}")
         self.peers.clear()
-
-        if self._server:
-            self._server.close()
-            await self._server.wait_closed()
         logger.info("Credence Mesh Relay stopped.")
 
     def _sign_envelope(self, envelope: MeshMessageEnvelope) -> MeshMessageEnvelope:
@@ -201,7 +203,7 @@ class MeshGossipRelay:
                     logger.warning(f"Peer {peer_id} exceeded rate limit. Dropping message.")
                     continue
                 await self._process_raw_message(peer, message)
-        except websockets.ConnectionClosed:
+        except (websockets.exceptions.ConnectionClosed, asyncio.CancelledError, GeneratorExit):
             pass
         except Exception as e:
             logger.debug(f"Error handling peer {peer_id}: {e}")

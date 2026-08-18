@@ -57,7 +57,9 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
     init_path = credence_root / "credence" / "__init__.py"
     assert init_path.exists()
     init_content = init_path.read_text(encoding="utf-8")
-    assert f'__version__ = "{canonical_version}"' in init_content, f"credence/__init__.py version does not match {canonical_version}"
+    assert f'__version__ = "{canonical_version}"' in init_content, (
+        f"credence/__init__.py version does not match {canonical_version}"
+    )
 
     # 3. credence-docs/index.html navbar badge
     docs_index_path = docs_root / "index.html"
@@ -69,26 +71,34 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
     docs_app_path = docs_root / "app.js"
     assert docs_app_path.exists()
     docs_app_content = docs_app_path.read_text(encoding="utf-8")
-    assert f"'v{canonical_version}'" in docs_app_content or f'"v{canonical_version}"' in docs_app_content, f"credence-docs/app.js brandBadge does not match v{canonical_version}"
+    assert f"'v{canonical_version}'" in docs_app_content or f'"v{canonical_version}"' in docs_app_content, (
+        f"credence-docs/app.js brandBadge does not match v{canonical_version}"
+    )
 
     # 5. credence-docs/docs/changelog.md latest release header
     changelog_path = docs_root / "docs" / "changelog.md"
     assert changelog_path.exists()
     changelog_content = changelog_path.read_text(encoding="utf-8")
-    assert f"## [{canonical_version}]" in changelog_content, f"docs/changelog.md missing release section ## [{canonical_version}]"
+    assert f"## [{canonical_version}]" in changelog_content, (
+        f"docs/changelog.md missing release section ## [{canonical_version}]"
+    )
 
     # 6. credence.run index.html brand & hero badge-pill
     web_run_index = credence_root / "web" / "credence.run" / "index.html"
     if web_run_index.exists():
         web_content = web_run_index.read_text(encoding="utf-8")
         assert f"v{canonical_version}" in web_content, f"web/credence.run/index.html missing badge v{canonical_version}"
-        assert f"v{canonical_version} Stable" in web_content, f"web/credence.run/index.html missing hero pill v{canonical_version} Stable"
+        assert f"v{canonical_version} Stable" in web_content, (
+            f"web/credence.run/index.html missing hero pill v{canonical_version} Stable"
+        )
 
     # 7. credence-agent/plugin.json
     plugin_path = agent_root / "plugin.json"
     if plugin_path.exists():
         plugin_data = json.loads(plugin_path.read_text(encoding="utf-8"))
-        assert plugin_data["version"] == canonical_version, f"credence-agent/plugin.json version does not match {canonical_version}"
+        assert plugin_data["version"] == canonical_version, (
+            f"credence-agent/plugin.json version does not match {canonical_version}"
+        )
 
 
 @pytest.mark.unit
@@ -229,7 +239,11 @@ def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
         blocks = re.findall(r"```mermaid\n([\s\S]*?)```", text)
         for idx, block in enumerate(blocks):
             mermaid_count += 1
-            lines = [line.strip() for line in block.strip().splitlines() if line.strip() and not line.strip().startswith("%%")]
+            lines = [
+                line.strip()
+                for line in block.strip().splitlines()
+                if line.strip() and not line.strip().startswith("%%")
+            ]
             assert len(lines) > 0, f"Empty Mermaid diagram block #{idx + 1} in {md_file.name}"
             first_token = lines[0].split()[0].lower()
             assert any(first_token.startswith(t) for t in valid_diagram_types), (
@@ -274,13 +288,12 @@ def test_all_invariant_link_anchors_exist(docs_root: Path) -> None:
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
         # Match [Text](...invariants.md#anchor) or [Text](...invariants#anchor)
-        links = re.findall(r'\[([^\]]+)\]\(([^)]*invariants(?:\.md)?#([^)]+))\)', text)
+        links = re.findall(r"\[([^\]]+)\]\(([^)]*invariants(?:\.md)?#([^)]+))\)", text)
         for link_text, full_url, anchor in links:
             total_inv_links += 1
             assert anchor in declared_ids, (
                 f"Broken invariant anchor '#{anchor}' referenced in {md_file.relative_to(docs_root)} "
-                f"via [{link_text}]({full_url}). Valid anchors are: {sorted(list(declared_ids))[:5]}..."
+                f"via [{link_text}]({full_url}). Valid anchors are: {sorted(declared_ids)[:5]}..."
             )
 
     assert total_inv_links >= 15, f"Expected at least 15 invariant links across catalog, found {total_inv_links}"
-

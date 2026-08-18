@@ -270,7 +270,7 @@ async def run_preflight_feed_audit(
             extracted=extracted,
             content_sha256="sha256:preflight_sample",
             simhash_64="0x12345",
-            screenshot_path=None,
+            screenshot_file_path=None,
         )
 
         report = await evaluate_snapshot(snapshot, session=session, sign_result=False)

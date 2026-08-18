@@ -507,6 +507,7 @@ async def audit_url(
                     node_pubkey=cached_audit.node_pubkey,
                     node_signature=cached_audit.node_signature,
                     quota_preserved=cached_audit.quota_preserved,
+                    evaluation_method=cached_audit.evaluation_method,
                 )
 
         # Step 3: Run fresh evaluation
@@ -545,6 +546,7 @@ async def audit_url(
             node_signature=report.node_signature,
             taxonomies_used_json=json.dumps(report.taxonomies_used),
             quota_preserved=report.quota_preserved,
+            evaluation_method=report.evaluation_method,
         )
         s.add(audit_record)
         await s.commit()

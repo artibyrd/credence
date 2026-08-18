@@ -281,7 +281,7 @@ def safe_parse_xml(content: str, max_bytes: int = 10 * 1024 * 1024) -> ET.Elemen
         raise ValueError(f"XML payload exceeds maximum allowed size of {max_bytes} bytes.")
 
     content_upper = content.upper()
-    if "<!DOCTYPE" in content_upper or "<!ENTITY" in content_upper or "SYSTEM" in content_upper:
+    if "<!DOCTYPE" in content_upper or "<!ENTITY" in content_upper:
         raise ValueError(
             "XML contains prohibited DTD entity or DOCTYPE declaration (rejected for entity expansion safety)."
         )

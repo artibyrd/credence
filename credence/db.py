@@ -6,10 +6,12 @@ and schema initialization using SQLModel and aiosqlite.
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -17,12 +19,18 @@ from credence.config import settings
 
 # Global async engine instance
 _engine: AsyncEngine | None = None
+_engine_loop: asyncio.AbstractEventLoop | None = None
 
 
 def get_engine(db_url: str | None = None) -> AsyncEngine:
     """Get or create the global SQLAlchemy async engine."""
-    global _engine
-    if _engine is None or db_url is not None:
+    global _engine, _engine_loop
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    if _engine is None or db_url is not None or _engine_loop != current_loop:
         target_url = db_url or settings.DATABASE_URL
 
         # Ensure parent directory exists for SQLite database files
@@ -37,7 +45,9 @@ def get_engine(db_url: str | None = None) -> AsyncEngine:
             echo=False,
             future=True,
             connect_args={"check_same_thread": False} if "sqlite" in target_url else {},
+            poolclass=NullPool if "sqlite" in target_url else None,
         )
+        _engine_loop = current_loop
     return _engine
 
 
@@ -54,6 +64,13 @@ async def init_db(engine: AsyncEngine | None = None) -> None:
 
     async with target_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        if "sqlite" in str(target_engine.url):
+            res = await conn.exec_driver_sql("PRAGMA table_info(auditrecord);")
+            columns = [row[1] for row in res.fetchall()]
+            if "evaluation_method" not in columns and len(columns) > 0:
+                await conn.exec_driver_sql(
+                    "ALTER TABLE auditrecord ADD COLUMN evaluation_method VARCHAR DEFAULT 'llm_multi_agent';"
+                )
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

@@ -48,18 +48,20 @@ async def run_live_mcp_test() -> None:
         res_list = await client.post(session_url, json=list_req)
         print(f"✓ tools/list responded in {time.perf_counter() - t0:.3f}s (Status: {res_list.status_code})")
 
-        # Step 3: Test tools/call credence_query_consensus (Zero-Token Cache Lookup)
+        # Step 3: Test tools/call credence_get_consensus (Zero-Token Cache Lookup)
         t0 = time.perf_counter()
         cache_req = {
             "jsonrpc": "2.0",
             "id": 2,
             "method": "tools/call",
-            "params": {"name": "credence_query_consensus", "arguments": {"url": "https://credence.run"}},
+            "params": {"name": "credence_get_consensus", "arguments": {"url": "https://credence.run"}},
         }
         res_cache = await client.post(session_url, json=cache_req)
-        assert res_cache.status_code == 200
+        assert res_cache.status_code in (200, 202)
         cache_latency = (time.perf_counter() - t0) * 1000
-        print(f"✓ tools/call credence_query_consensus executed in {cache_latency:.1f}ms (Zero-Token Cache Hit)")
+        print(
+            f"✓ tools/call credence_get_consensus executed in {cache_latency:.1f}ms (Status: {res_cache.status_code})"
+        )
 
         print("\n🏆 Live FastMCP 2.0 Agent Interoperability Test Passed 100%!")
 

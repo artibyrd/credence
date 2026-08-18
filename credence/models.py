@@ -77,6 +77,10 @@ class AuditRecord(SQLModel, table=True):
     quota_preserved: bool = Field(
         default=False, description="True if audit fell back to offline heuristics to preserve token quota"
     )
+    evaluation_method: str = Field(
+        default="llm_multi_agent",
+        description="Method used for evaluation (llm_multi_agent or offline_structural_heuristic)",
+    )
 
     # Relationships
     snapshot: Optional[SnapshotRecord] = Relationship(back_populates="audits")

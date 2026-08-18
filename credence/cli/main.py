@@ -160,10 +160,11 @@ async def cli_lookup(identifier: str) -> None:
             for v in violations
         ]
 
+        simhash = snap.simhash_64 if "snap" in locals() and snap else "0x0000000000000000"
         report = AuditReport(
             url=identifier,
             content_sha256=audit.content_sha256,
-            simhash_64="0x0000000000000000",
+            simhash_64=simhash,
             audited_at=audit.audited_at,
             suspicion_score=audit.suspicion_score,
             suspicion_density=audit.suspicion_density,
@@ -176,6 +177,11 @@ async def cli_lookup(identifier: str) -> None:
             node_pubkey=audit.node_pubkey,
             node_signature=audit.node_signature,
             quota_preserved=audit.quota_preserved,
+            evaluation_method=getattr(
+                audit,
+                "evaluation_method",
+                "offline_structural_heuristic" if audit.quota_preserved else "llm_multi_agent",
+            ),
         )
         render_audit_report(report)
         return
@@ -562,6 +568,11 @@ async def cli_export_report(
                 node_pubkey=record.node_pubkey,
                 node_signature=record.node_signature,
                 quota_preserved=record.quota_preserved,
+                evaluation_method=getattr(
+                    record,
+                    "evaluation_method",
+                    "offline_structural_heuristic" if record.quota_preserved else "llm_multi_agent",
+                ),
                 audited_at=audited_at,
             )
 

@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
@@ -124,7 +124,7 @@ async def generate_morning_digest(
     # Fetch recent audit records with their snapshot
     stmt = (
         select(AuditRecord, SnapshotRecord)
-        .join(SnapshotRecord, AuditRecord.snapshot_id == SnapshotRecord.id)
+        .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
         .where(AuditRecord.audited_at >= cutoff)
     )
     results = (await session.exec(stmt)).all()

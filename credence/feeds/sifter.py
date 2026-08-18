@@ -14,14 +14,14 @@ from typing import Optional
 
 from rich.console import Console
 from rich.table import Table
-from sqlmodel import select
+from sqlmodel import col, select
 
 from credence.config import COST_PROFILES, CostProfile
 from credence.db import get_session
 from credence.feeds.health import calculate_feed_quality_score
 from credence.feeds.worker import FeedSyncSummary, sync_subscribed_feeds
 from credence.mesh.relay import MeshGossipRelay
-from credence.models import AuditRecord, FeedSubscriptionRecord
+from credence.models import AuditRecord, FeedSubscriptionRecord, SnapshotRecord
 
 console = Console()
 
@@ -83,7 +83,7 @@ class SifterDaemon:
             f"\n[cyan]⏱️ Sifting cycle initiated at {datetime.now(timezone.utc).strftime('%H:%M:%S UTC')}...[/]"
         )
 
-        async with get_session() as session:
+        async for session in get_session():
             # Step 1: Run feed polling and item ingestion
             summary = await sync_subscribed_feeds(
                 session=session,
@@ -96,12 +96,15 @@ class SifterDaemon:
             subscriptions = (await session.exec(stmt)).all()
 
             for sub in subscriptions:
+                domain_pattern = sub.feed_url.split("/")[2] if len(sub.feed_url.split("/")) > 2 else sub.feed_url
                 stmt_audits = (
-                    select(AuditRecord).where(AuditRecord.url.like(f"%{sub.feed_url.split('/')[2]}%")).limit(10)
+                    select(AuditRecord)
+                    .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
+                    .where(col(SnapshotRecord.url).like(f"%{domain_pattern}%"))
+                    .limit(10)
                 )
                 recent_audits = (await session.exec(stmt_audits)).all()
                 if recent_audits:
-                    # Convert to audit report schemas
                     # Calculate F_j metric
                     metrics = calculate_feed_quality_score([], None)
                     if metrics.composite_score_fj < 0.40 and sub.is_active:
@@ -116,6 +119,7 @@ class SifterDaemon:
             # Render cycle summary table
             self._render_cycle_summary(summary)
             return summary
+        return FeedSyncSummary()
 
     def _render_cycle_summary(self, summary: FeedSyncSummary) -> None:
         table = Table(title="Sifter Ingestion Summary", show_header=True, header_style="bold cyan")

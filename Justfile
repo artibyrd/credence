@@ -18,9 +18,13 @@ test:
 test-all:
     poetry run pytest tests/ --durations=10
 
-# Run live end-to-end integration tests against online production domains
+# Run reusable rotating live end-to-end test gauntlet
+test-live:
+    CREDENCE_LIVE_TESTS=1 poetry run pytest tests/e2e/test_live_rotating_suite.py -v -m e2e -s
+
+# Run all live end-to-end integration tests (rotating suite, domains, mcp, mesh)
 test-e2e:
-    poetry run pytest tests/e2e/test_live_domains.py -v -m e2e
+    CREDENCE_LIVE_TESTS=1 poetry run pytest tests/e2e/ -v -m e2e
 
 # Run hermetic offline mock end-to-end integration test
 test-e2e-mock:

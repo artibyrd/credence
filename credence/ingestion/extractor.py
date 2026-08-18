@@ -41,8 +41,13 @@ class ExtractedContent(BaseModel):
 # Regex patterns for detecting explicit satire cues in HTML, mastheads, or metadata
 _SATIRE_META_PATTERNS = [
     re.compile(r'itemtype=["\']https?://schema\.org/(SatiricalArticle|Humor)["\']', re.IGNORECASE),
+    re.compile(r'["\'](@type|genre)["\']\s*:\s*["\'](SatiricalArticle|Humor|Satire|Parody)["\']', re.IGNORECASE),
     re.compile(
-        r'<meta[^>]*(name|property)=["\'][^"\']*(keywords|category|description)["\'][^>]*content=["\'][^"\']*\b(satire|parody|humor|satirical)\b[^"\']*["\']',
+        r"<meta\s+[^>]*\b(satire|parody|satirical|humor\s+site|fake\s+news)\b[^>]*>",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"<title>[^<]*\b(satire|parody|satirical|fake\s+news\s+you\s+can\s+trust)\b[^<]*</title>",
         re.IGNORECASE,
     ),
     re.compile(
