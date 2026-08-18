@@ -1,3 +1,3 @@
-"""Credence: Epistemic evaluation engine, FastMCP server, and decentralized trust network."""
+"""Credence: Epistemic evaluation and consensus engine."""
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"

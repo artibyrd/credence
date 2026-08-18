@@ -50,6 +50,9 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Zero-Build Math & Currency Invariant**: All zero-build Markdown parsers must render mathematical expressions using native Unicode entities and styled containers (`.math-block`, `.math-inline`) while preserving currency strings (`$0.00`, `$15.00`) without escaping artifacts.
 - **Edge Subdirectory Canonicalization**: Multi-domain edge routers (`_worker.js`) must intercept internal `env.ASSETS` folder redirects and enforce 301 canonical redirects to prevent folder names (e.g. `/credence.run/`) from appearing in public browser address bars.
 - **Pure Logic Decoupling**: Business logic must execute and test decoupled from presentation layers (`tests/test_interfaces_isolation.py`).
+- **Universal Mermaid & Visual Syntax Guardrail**: All Mermaid diagrams across markdown documentation and planning artifacts must strictly use standard flow/graph/sequence syntax (`graph TD`, `flowchart TD`, `sequenceDiagram`) with all special characters (`>=`, `<=`, `()`, `/`, `&`) enclosed in double quotes (e.g. `id["Label (Details)"]`), avoiding unquoted `< >` brackets or unsupported diagram types to prevent rendering failures across IDE viewers and static engines.
+- **Visual Density & Anti-Wall-of-Text Invariant**: All documentation guides, tutorials, and editorial blog posts must maintain a visual density of $\ge 2.0$ visual elements per 500 words (using Mermaid architecture diagrams, comparison matrices, and styled alert callout boxes) to eliminate unformatted prose fatigue.
+- **Automated Live Rendering Regression Verification**: All UI and documentation rendering updates must be verified via automated Playwright live rendering test suites (`tests/test_docs_rendering.py`) ensuring non-zero SVG diagram dimensions, zero raw HTML tag leaks in rendered prose, and interactive widget state contracts.
 
 ---
 

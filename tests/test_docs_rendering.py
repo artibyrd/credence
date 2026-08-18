@@ -204,3 +204,48 @@ def test_zero_console_errors(page: Page, docs_server: str) -> None:
         page.wait_for_timeout(300)
 
     assert len(console_errors) == 0, f"Captured console errors during navigation: {console_errors}"
+
+
+@pytest.mark.e2e
+def test_tabbed_interface_switching_and_persistence(page: Page, docs_server: str) -> None:
+    """Verify GCP-style tabbed containers switch active panels and persist preferences to localStorage."""
+    walkthrough_url = f"{docs_server}/#docs/walkthroughs/01-auditing-webpages-and-text"
+    page.goto(walkthrough_url, wait_until="networkidle")
+    page.wait_for_timeout(600)
+
+    tab_groups = page.query_selector_all(".tab-group")
+    assert len(tab_groups) >= 3, f"Expected at least 3 tab groups, found {len(tab_groups)}"
+
+    # Check first tab group buttons
+    first_group = tab_groups[0]
+    buttons = first_group.query_selector_all(".tab-header .tab-btn")
+    assert len(buttons) >= 3
+
+    # Initially the first button is active
+    assert "active" in (buttons[0].get_attribute("class") or "")
+    active_panel = first_group.query_selector(".tab-panel.active")
+    assert active_panel is not None
+
+    # Click the second tab (FastMCP)
+    buttons[1].click()
+    page.wait_for_timeout(300)
+
+    # Verify second tab is now active
+    assert "active" in (buttons[1].get_attribute("class") or "")
+    assert "active" not in (buttons[0].get_attribute("class") or "")
+
+    # Verify localStorage saved the preference
+    saved_pref = page.evaluate("() => localStorage.getItem('credence_preferred_interface')")
+    assert saved_pref is not None
+    assert "fastmcp" in saved_pref.lower()
+
+    # Navigate to Walkthrough 02 and verify preference automatically persists across pages
+    page.goto(f"{docs_server}/#docs/walkthroughs/02-zero-trust-feed-sifting", wait_until="networkidle")
+    page.wait_for_timeout(600)
+
+    new_group = page.query_selector(".tab-group")
+    assert new_group is not None
+    active_btn = new_group.query_selector(".tab-btn.active")
+    assert active_btn is not None
+    assert "fastmcp" in active_btn.inner_text().lower()
+
