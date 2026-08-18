@@ -46,24 +46,27 @@ export default {
         });
       }
 
-      // 2. Map Hostname to Static Web Directory
-      let assetPath = url.pathname;
-      if (host.includes('nexus')) {
-        assetPath = `/credence.nexus${url.pathname === '/' ? '/index.html' : url.pathname}`;
-      } else if (host.includes('foundation')) {
-        if (host.startsWith('keys')) {
-          assetPath = `/credence.foundation/keys${url.pathname === '/' ? '/root.pub' : url.pathname}`;
-        } else {
-          assetPath = `/credence.foundation${url.pathname === '/' ? '/index.html' : url.pathname}`;
-        }
-      } else if (host.includes('report')) {
-        assetPath = `/credence.report${url.pathname === '/' ? '/index.html' : url.pathname}`;
-      } else {
-        // credence.run
-        assetPath = `/credence.run${url.pathname === '/' ? '/index.html' : url.pathname}`;
+      // 2. Normalize and Map Hostname to Static Asset Path
+      let path = url.pathname;
+      if (path === '/' || path === '') {
+        path = '/index.html';
       }
 
-      const assetUrl = new URL(assetPath, request.url);
+      let prefix = '/credence.run';
+      if (host.includes('nexus')) {
+        prefix = '/credence.nexus';
+      } else if (host.includes('foundation')) {
+        if (host.startsWith('keys')) {
+          prefix = '/credence.foundation/keys';
+          if (path === '/index.html') path = '/root.pub';
+        } else {
+          prefix = '/credence.foundation';
+        }
+      } else if (host.includes('report')) {
+        prefix = '/credence.report';
+      }
+
+      const assetUrl = new URL(prefix + path, request.url);
       let response;
 
       if (env && env.ASSETS) {
@@ -72,19 +75,18 @@ export default {
         response = await fetch(new Request(assetUrl, request));
       }
 
-      // Attach CORS headers for JSON seed files, taxonomy definitions, and public keys
-      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh')) {
-        const corsHeaders = new Headers(response.headers);
-        corsHeaders.set('Access-Control-Allow-Origin', '*');
-        corsHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-        return new Response(response.body, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: corsHeaders,
-        });
+      // If exact file found, return with appropriate CORS
+      const resHeaders = new Headers(response.headers);
+      if (path.endsWith('.json') || path.endsWith('.pub') || path.endsWith('.yaml') || path.endsWith('.sh') || path.endsWith('.html') || path.endsWith('.css')) {
+        resHeaders.set('Access-Control-Allow-Origin', '*');
+        resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
       }
 
-      return response;
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: resHeaders,
+      });
     } catch (err) {
       return new Response(`Credence Edge Error: ${err.message}\n${err.stack}`, {
         status: 500,
