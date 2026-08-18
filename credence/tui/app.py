@@ -216,6 +216,10 @@ class CredenceApp(App):
                     with TabPane("📡 Feeds & Dedup", id="tab_feeds"):
                         yield DataTable(id="feeds_table")
 
+                    with TabPane("🌅 Morning Digest", id="tab_digest"):
+                        with VerticalScroll():
+                            yield Static("Loading Morning Digest...", id="digest_panel")
+
                     with TabPane("⚡ Token Quota", id="tab_quota"):
                         yield Static("Loading Token Headroom & Safety Status...", id="quota_panel")
 
@@ -242,12 +246,13 @@ class CredenceApp(App):
         # Set up feeds table
         feeds_table = self.query_one("#feeds_table", DataTable)
         feeds_table.cursor_type = "row"
-        feeds_table.add_columns("Tier", "Title", "Feed URL", "Subject", "Status")
+        feeds_table.add_columns("Tier", "Title", "Quality (F_j)", "Feed URL", "Subject", "Status")
 
         # Populate Views
         self._populate_taxonomy_tree()
         self._populate_subjects_tree()
         await self._populate_feeds_table()
+        await self._populate_digest_panel()
         self._populate_identity_panel()
         await self._populate_quota_panel()
 
@@ -279,6 +284,7 @@ class CredenceApp(App):
     async def _populate_feeds_table(self) -> None:
         from sqlmodel import col
 
+        from credence.feeds.health import calculate_feed_quality_score
         from credence.models import FeedSubscriptionRecord
 
         table = self.query_one("#feeds_table", DataTable)
@@ -287,8 +293,47 @@ class CredenceApp(App):
             stmt = select(FeedSubscriptionRecord).order_by(col(FeedSubscriptionRecord.priority_tier).asc())
             subs = (await session.exec(stmt)).all()
             for s in subs:
+                metrics = calculate_feed_quality_score([], None)
                 status = "[green]ACTIVE[/green]" if s.is_active else "[dim]PAUSED[/dim]"
-                table.add_row(f"T{s.priority_tier}", s.title or "(feed)", s.feed_url, s.subject_tag, status)
+                table.add_row(
+                    f"T{s.priority_tier}",
+                    s.title or "(feed)",
+                    f"[cyan]{metrics.composite_score_fj:.2f}[/cyan]",
+                    s.feed_url,
+                    s.subject_tag,
+                    status,
+                )
+
+    async def _populate_digest_panel(self) -> None:
+        from credence.feeds.digest import generate_morning_digest
+
+        panel = self.query_one("#digest_panel", Static)
+        async for session in get_session():
+            dig = await generate_morning_digest(session, timeframe_hours=24)
+            lines = [
+                "[bold cyan]🌅 Morning Epistemic Briefing (Past 24h)[/bold cyan]\n",
+                f"- [bold]Total Articles Evaluated:[/bold] `{dig.total_articles_evaluated}`",
+                f"- [bold]Clean & Verified Coverage:[/bold]  `{dig.clean_articles_count}`",
+                f"- [bold]Flagged Deceptions/Fallacies:[/bold] `{dig.flagged_articles_count}`",
+                f"- [bold]Verified Satire/Parody:[/bold]     `{dig.satire_articles_count}`",
+                f"- [bold]Mesh Compute Savings:[/bold]       [green]{dig.estimated_tokens_saved:,} tokens (${dig.estimated_usd_saved:.2f})[/green] via `{dig.mesh_adoptions_count}` zero-token adoptions.\n",
+            ]
+
+            if dig.deceptive_items or dig.warning_items:
+                lines.append("[bold yellow]⚠️ Recent Flagged Deceptions & Fallacies:[/bold yellow]")
+                for item in (dig.deceptive_items + dig.warning_items)[:5]:
+                    lines.append(
+                        f"  • [bold red]{item.top_violation_rule or 'Flag'}[/bold red] ({item.suspicion_score:.1f}) - {item.title}"
+                    )
+                lines.append("")
+
+            if dig.clean_items:
+                lines.append("[bold green]🛡️ Top Clean Articles:[/bold green]")
+                for item in dig.clean_items[:5]:
+                    lines.append(f"  • [green]{item.suspicion_score:.1f}[/green] - {item.title}")
+
+            panel.update("\n".join(lines))
+            break
 
     def _populate_identity_panel(self) -> None:
         panel = self.query_one("#identity_panel", Static)

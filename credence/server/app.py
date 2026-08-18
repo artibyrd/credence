@@ -459,6 +459,48 @@ def _register_feed_management_tools(server: MCPServer) -> None:
         return "[]"
 
     @server.tool(
+        name="credence_discover_feeds",
+        description="Autonomously discover RSS/Atom/JSON feed candidate endpoints from any target webpage.",
+    )
+    async def discover_feeds_tool(target_url: str) -> str:
+        from dataclasses import asdict
+
+        from credence.feeds.discovery import discover_feed_endpoints
+
+        candidates = await discover_feed_endpoints(target_url)
+        return json.dumps([asdict(c) for c in candidates], indent=2)
+
+    @server.tool(
+        name="credence_inspect_feed_health",
+        description="Run pre-flight forensic audit on a candidate feed to calculate Topic Entropy (H_topic), ethics, and F_j quality score.",
+    )
+    async def inspect_feed_health_tool(feed_url: str) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.feeds.health import run_preflight_feed_audit
+
+        await init_db()
+        async for session in get_session():
+            result = await run_preflight_feed_audit(feed_url, session=session)
+            return json.dumps(asdict(result), indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_generate_digest",
+        description="Generate a structured Morning Epistemic Briefing from recent evaluated feed items.",
+    )
+    async def generate_digest_tool(hours: int = 24) -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.digest import generate_morning_digest
+
+        await init_db()
+        async for session in get_session():
+            digest = await generate_morning_digest(session, timeframe_hours=hours)
+            return json.dumps(digest.to_dict(), indent=2)
+        return "{}"
+
+    @server.tool(
         name="credence_remove_feed_subscription",
         description="Unsubscribe and remove a syndicated feed by URL.",
     )
@@ -615,6 +657,17 @@ def _register_subject_resources(server: MCPServer) -> None:
                 },
                 indent=2,
             )
+        return "{}"
+
+    @server.resource("credence://digest/morning")
+    async def get_morning_digest_resource() -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.digest import generate_morning_digest
+
+        await init_db()
+        async for session in get_session():
+            digest = await generate_morning_digest(session, timeframe_hours=24)
+            return json.dumps(digest.to_dict(), indent=2)
         return "{}"
 
 

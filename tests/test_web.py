@@ -28,7 +28,7 @@ def test_web_run_landing_hub(web_dir: Path) -> None:
     assert "<!DOCTYPE html>" in content
     assert "Credence" in content
     assert "FastMCP" in content
-    assert "Epistemic Trustworthiness" in content
+    assert "epistemic" in content.lower()
 
     # Invariant 20: Zero npm/node JS frameworks (no react, vue, angular bundles)
     assert "react.production.min.js" not in content

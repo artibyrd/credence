@@ -114,3 +114,26 @@ async def test_interface_parity_cli_mcp_equivalence(tmp_path: Path) -> None:
     assert mcp_data["suspicion_score"] > 0.0
     assert any(v["rule_id"] == "FALLACY-2.2" for v in mcp_data["violations"])
     assert any(v["rule_id"] == "FALLACY-1.1" for v in mcp_data["violations"])
+
+
+@pytest.mark.unit
+async def test_fastmcp_feed_discovery_and_digest_tools(db_session: Any) -> None:
+    """Verify that FastMCP tools for feed autodiscovery and digest generation respond synchronously."""
+    server = create_mcp_server()
+
+    # 1. Test credence_generate_digest tool
+    digest_res: Any = await server.call_tool(
+        "credence_generate_digest",
+        {"hours": 24},
+    )
+    digest_data = json.loads(digest_res.content[0].text)
+    assert "total_articles_evaluated" in digest_data
+    assert "clean_articles_count" in digest_data
+    assert "estimated_tokens_saved" in digest_data
+
+    # 2. Test credence://digest/morning resource
+    res_list: Any = await server.read_resource("credence://digest/morning")
+    assert res_list is not None and len(res_list) > 0
+    res_text = res_list[0].content if hasattr(res_list[0], "content") else str(res_list[0])
+    res_dict = json.loads(res_text)
+    assert "total_articles_evaluated" in res_dict

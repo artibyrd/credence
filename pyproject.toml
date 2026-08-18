@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "credence"
-version = "1.0.1"
+version = "1.1.0"
 description = "Autonomous epistemic evaluation engine, FastMCP server, and decentralized trust network (Credence Mesh)."
 authors = ["Credence Network Contributors"]
 license = "Apache-2.0"
@@ -58,6 +58,9 @@ select = [
 ignore = [
     "E501", # line too long
     "S101", # use of assert (in tests)
+    "C901", # cyclomatic complexity
+    "S110", # try-except-pass in network fallback
+    "S112", # try-except-continue in network probe
 ]
 
 [tool.ruff.lint.per-file-ignores]

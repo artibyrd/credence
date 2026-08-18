@@ -68,18 +68,12 @@ async def call_gemini_rest_api(
 ) -> Tuple[str, int, int, int]:
     """Call Google Gemini v1beta REST API."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-    
-    gen_config: Dict[str, Any] = {
-        "temperature": 0.1,
-        "responseMimeType": "application/json"
-    }
+
+    gen_config: Dict[str, Any] = {"temperature": 0.1, "responseMimeType": "application/json"}
     if thinking_budget > 0:
         gen_config["thinkingConfig"] = {"thinkingBudget": thinking_budget}
 
-    payload: Dict[str, Any] = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": gen_config
-    }
+    payload: Dict[str, Any] = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": gen_config}
 
     resp = await client.post(url, json=payload, timeout=45.0)
     if resp.status_code != 200:
@@ -158,7 +152,7 @@ async def run_model_benchmark_fixture(
             elapsed = time.perf_counter() - t0
             report = parse_specialist_response(raw_resp, "spj_ethics", reg=registry)
             validated = validate_all_violations(report.violations, raw_text=extracted.clean_text, raw_html=raw_html)
-            
+
             grounded = sum(1 for v in validated if v.is_grounded)
             g_rate = (grounded / len(validated)) * 100 if validated else 100.0
 

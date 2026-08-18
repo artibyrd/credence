@@ -11,8 +11,6 @@ Hermetically proves the 92.3% compute savings invariant:
 from __future__ import annotations
 
 import asyncio
-import os
-import time
 from pathlib import Path
 from typing import List
 
@@ -25,10 +23,11 @@ from credence.mesh.relay import MeshGossipRelay
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 
 
+@pytest.mark.e2e
 @pytest.mark.asyncio
 async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -> None:
     print("\n[1/4] Spawning 13-Node Watts-Strogatz Small-World Mesh (k=4, p=0.15)...")
-    
+
     nodes: List[MeshGossipRelay] = []
     base_port = 9100
 
@@ -38,12 +37,8 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
         # Watts-Strogatz regular ring neighbors
         left_neighbor = f"ws://127.0.0.1:{base_port + ((i - 1) % 13)}"
         right_neighbor = f"ws://127.0.0.1:{base_port + ((i + 1) % 13)}"
-        
-        relay = MeshGossipRelay(
-            port=base_port + i,
-            node_identity=node_id,
-            peer_seeds=[left_neighbor, right_neighbor]
-        )
+
+        relay = MeshGossipRelay(port=base_port + i, node_identity=node_id, peer_seeds=[left_neighbor, right_neighbor])
         nodes.append(relay)
 
     for r in nodes:
@@ -55,7 +50,6 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
 
     # 2. Node 0 creates a signed audit report
     print("\n[2/4] Node 0 evaluates breaking news with Gemini 3.7 Flash...")
-    t0 = time.perf_counter()
     report = AuditReport(
         url="https://apnews.com/article/breaking-news-2026",
         content_sha256="sha256:9b84078127cf20fd5d8bb723b928b64cd7312a6c532b7c8d76dcf16c04afd055",
@@ -76,7 +70,7 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
                 confidence=0.90,
                 quote_or_element="Associated Press News: Breaking News",
                 reasoning="Bylines required on primary coverage.",
-                is_grounded=True
+                is_grounded=True,
             )
         ],
         taxonomies_used={"spj_ethics": "sha256:b4da196a564f788201647094a819b90c44886b2c272a1ff31c163b2406906989"},
@@ -89,7 +83,7 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
     env = MeshMessageEnvelope(
         type=MeshMessageType.AUDIT_ATTESTATION,
         payload=signed_report.model_dump(mode="json"),
-        source_pubkey=nodes[0].node_identity.public_key_hex
+        source_pubkey=nodes[0].node_identity.public_key_hex,
     )
     await nodes[0].broadcast(env)
 
@@ -115,7 +109,7 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
         url="https://apnews.com/article/breaking-news-2026",
         content_sha256="sha256:9b84078127cf20fd5d8bb723b928b64cd7312a6c532b7c8d76dcf16c04afd055",
         simhash_64="0x2fedbdcf42215e73",
-        suspicion_score=95.0, # Fabricated maximum smear
+        suspicion_score=95.0,  # Fabricated maximum smear
         confidence_score=1.0,
         classification="DECEPTIVE",
         violations=[
@@ -128,16 +122,16 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
                 confidence=1.0,
                 quote_or_element="FABRICATED HALLUCINATED TEXT NOT IN ARTICLE",
                 reasoning="Malicious smear injection.",
-                is_grounded=False
+                is_grounded=False,
             )
-        ]
+        ],
     )
     signed_fake = sign_audit_report(fake_report, rogue_id)
-    
+
     # Verify aggregator detects ungrounded quote and excludes from consensus
     aggregator = BayesianConsensusAggregator()
     aggregator.add_attestation(signed_report, node_quality=0.98, domain_expertise=0.95)
-    aggregator.add_attestation(signed_fake, node_quality=0.50, domain_expertise=0.10) # Rogue submission
+    aggregator.add_attestation(signed_fake, node_quality=0.50, domain_expertise=0.10)  # Rogue submission
 
     consensus = aggregator.compute_consensus()
     print(f"✓ Bayesian Consensus Score: {consensus.consensus_score:.1f} (Verdict: {consensus.verdict})")

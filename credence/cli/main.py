@@ -881,8 +881,46 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
     elif cmd == "db-clean":
         asyncio.run(cli_db_clean(retention_days=args.retention_days))
-    elif cmd == "feeds":
+    elif cmd in ("feeds", "feed"):
         asyncio.run(_dispatch_feeds_cli(args))
+    elif cmd == "sifter":
+        from credence.config import CostProfile
+        from credence.feeds.sifter import SifterDaemon
+
+        daemon = SifterDaemon(
+            poll_interval_seconds=args.interval,
+            cost_profile=CostProfile(args.profile.lower()),
+            auto_audit=not args.no_auto_audit,
+        )
+        asyncio.run(daemon.start())
+    elif cmd == "digest":
+        from credence.db import get_session, init_db
+        from credence.feeds.digest import generate_morning_digest, render_digest_terminal
+
+        async def _run_digest():
+            await init_db()
+            async for session in get_session():
+                dig = await generate_morning_digest(session, timeframe_hours=args.hours)
+                if args.format == "terminal":
+                    render_digest_terminal(dig)
+                elif args.format == "markdown":
+                    md_text = dig.to_markdown()
+                    if args.output:
+                        with open(args.output, "w", encoding="utf-8") as f:
+                            f.write(md_text)
+                        console.print(f"[bold green]Digest written to:[/] {args.output}")
+                    else:
+                        print(md_text)
+                elif args.format == "json":
+                    js_text = json.dumps(dig.to_dict(), indent=2)
+                    if args.output:
+                        with open(args.output, "w", encoding="utf-8") as f:
+                            f.write(js_text)
+                        console.print(f"[bold green]Digest JSON written to:[/] {args.output}")
+                    else:
+                        print(js_text)
+
+        asyncio.run(_run_digest())
     elif cmd == "subjects":
         _dispatch_subjects_cli(args)
 
@@ -919,15 +957,110 @@ def cli_subjects(action: str = "list", subject_id: Optional[str] = None) -> None
 
 async def _dispatch_feeds_cli(args: argparse.Namespace) -> None:
     """Dispatch feed subcommands."""
+
     from credence.db import get_session, init_db
-    from credence.feeds.worker import sync_all_feeds
+    from credence.feeds.discovery import discover_feed_endpoints
+    from credence.feeds.health import calculate_feed_quality_score, run_preflight_feed_audit
+    from credence.feeds.worker import bootstrap_preset_feeds, sync_all_feeds
     from credence.models import FeedItemRecord, FeedSubscriptionRecord
 
     await init_db()
     action = args.action or "list"
 
     async for session in get_session():
-        if action == "list":
+        if action == "discover":
+            if not args.url:
+                console.print(
+                    "[bold red]Error:[/] Target URL is required for discovery. e.g. `credence feed discover https://apnews.com`"
+                )
+                return
+
+            console.print(f"[bold cyan]🔍 Scanning webpage for RSS/Atom/JSON feeds:[/] {args.url} ...")
+            candidates = await discover_feed_endpoints(args.url)
+            if not candidates:
+                console.print(f"[yellow]No feed endpoints autodiscovered on:[/] {args.url}")
+                return
+
+            table = Table(title=f"Discovered Feed Endpoints for {args.url}", show_header=True, header_style="bold cyan")
+            table.add_column("Feed Title", style="bold white")
+            table.add_column("Format", justify="center", style="yellow", width=8)
+            table.add_column("Feed URL", style="cyan")
+            table.add_column("Verified", justify="center", width=10)
+
+            for c in candidates:
+                ver_badge = "[green]YES[/green]" if c.is_verified else "[dim]CANDIDATE[/dim]"
+                table.add_row(c.title, c.feed_type.upper(), c.feed_url, ver_badge)
+
+            console.print(table)
+            console.print("[dim]Tip: Use `credence feed inspect <feed_url>` to run a pre-flight forensic audit.[/dim]")
+
+        elif action == "inspect":
+            if not args.url:
+                console.print(
+                    "[bold red]Error:[/] Feed URL is required for inspection. e.g. `credence feed inspect https://example.com/rss`"
+                )
+                return
+
+            console.print(f"[bold cyan]🔬 Executing pre-flight forensic audit on:[/] {args.url} ...")
+            result = await run_preflight_feed_audit(args.url, session=session)
+            m = result.metrics
+
+            status_style = "green" if m.status == "ACTIVE" else ("yellow" if m.status == "PROBATION" else "bold red")
+            summary_panel = (
+                f"- [bold]Feed Title:[/bold]            {result.feed_title}\n"
+                f"- [bold]Feed URL:[/bold]              {result.feed_url}\n"
+                f"- [bold]Composite Score (F_j):[/bold]  [{status_style}]{m.composite_score_fj:.2f} ({m.status})[/{status_style}]\n"
+                f"- [bold]Average Suspicion Score:[/bold] {m.avg_suspicion_score:.1f} / 100.0\n"
+                f"- [bold]Grounding Precision (G):[/bold] {m.grounding_ratio * 100:.1f}%\n"
+                f"- [bold]Topic Entropy (H_topic):[/bold] {m.topic_entropy:.3f} (Diversity vs Astroturfing)\n"
+                f"- [bold]Freshness Index:[/bold]        {m.freshness_index:.2f}\n"
+                f"- [bold]Recommendation:[/bold]         {'[green]APPROVED FOR ACTIVE INGESTION[/green]' if result.is_recommended else '[red]QUARANTINE / PROBATION[/red]'}\n"
+            )
+            if result.quarantine_reasons:
+                summary_panel += "\n[bold red]Quarantine Warnings:[/bold red]\n" + "\n".join(
+                    f"  • {r}" for r in result.quarantine_reasons
+                )
+
+            console.print(
+                Panel(summary_panel, title="[bold]Epistemic Pre-Flight Audit Report[/bold]", border_style=status_style)
+            )
+
+        elif action == "health":
+            stmt = select(FeedSubscriptionRecord)
+            subs = (await session.exec(stmt)).all()
+            table = Table(
+                title="[bold]Dynamic Feed Health & Epistemic Quality Rankings[/bold]",
+                show_header=True,
+                header_style="bold magenta",
+            )
+            table.add_column("ID", width=4)
+            table.add_column("Feed Title / Channel", style="bold white", width=26)
+            table.add_column("Quality (F_j)", justify="center", width=12)
+            table.add_column("Avg Suspicion", justify="right", width=14)
+            table.add_column("Grounding", justify="right", width=10)
+            table.add_column("Entropy (H)", justify="right", width=12)
+            table.add_column("Status", justify="center", width=12)
+
+            for s in subs:
+                metrics = calculate_feed_quality_score([], None)
+                status_pill = "[green]ACTIVE[/green]" if s.is_active else "[bold red]QUARANTINE[/bold red]"
+                table.add_row(
+                    str(s.id),
+                    s.title or s.feed_url.split("/")[2],
+                    f"[cyan]{metrics.composite_score_fj:.2f}[/cyan]",
+                    f"{metrics.avg_suspicion_score:.1f}",
+                    f"{metrics.grounding_ratio * 100:.0f}%",
+                    f"{metrics.topic_entropy:.2f}",
+                    status_pill,
+                )
+            console.print(table)
+
+        elif action == "bootstrap-presets":
+            cat = getattr(args, "category", None)
+            added = await bootstrap_preset_feeds(session, category=cat)
+            console.print(f"[bold green]✓ Successfully bootstrapped {added} diverse feed subscriptions![/bold green]")
+
+        elif action == "list":
             stmt = select(FeedSubscriptionRecord).order_by(col(FeedSubscriptionRecord.priority_tier).asc())
             subs = (await session.exec(stmt)).all()
             table = Table(
@@ -938,7 +1071,6 @@ async def _dispatch_feeds_cli(args: argparse.Namespace) -> None:
             table.add_column("Feed URL", style="green")
             table.add_column("Tier", justify="center", width=6)
             table.add_column("Subject Tag", style="yellow", width=22)
-            table.add_column("ETag / 304", style="dim", width=16)
             table.add_column("Status", justify="center", width=8)
 
             for s in subs:
@@ -949,7 +1081,6 @@ async def _dispatch_feeds_cli(args: argparse.Namespace) -> None:
                     s.feed_url,
                     f"Tier {s.priority_tier}",
                     s.subject_tag,
-                    s.etag or "None",
                     status,
                 )
             console.print(table)
@@ -1264,23 +1395,53 @@ def main() -> None:
     org_parser.add_argument("--email", "-e", default=None, help="Contact email for security and alerts.")
     org_parser.add_argument("--brand-title", default=None, help="Custom brand title header.")
 
-    # feeds command
-    feeds_parser = subparsers.add_parser(
-        "feeds", help="Manage syndicated RSS/Atom/JSON feed pre-ingestion and mesh effort avoidance."
+    # feeds command (and feed alias)
+    for feed_cmd_name in ["feeds", "feed"]:
+        feeds_parser = subparsers.add_parser(
+            feed_cmd_name, help="Manage syndicated RSS/Atom/JSON feed discovery, health, and mesh effort avoidance."
+        )
+        feeds_parser.add_argument(
+            "action",
+            choices=["list", "add", "remove", "sync", "stats", "discover", "inspect", "health", "bootstrap-presets"],
+            default="list",
+            nargs="?",
+            help="Action: list, add, remove, sync, stats, discover, inspect, health, bootstrap-presets",
+        )
+        feeds_parser.add_argument(
+            "url", nargs="?", default=None, help="Feed URL or target website for discover/inspect/add/remove."
+        )
+        feeds_parser.add_argument("--title", "-t", default="", help="Custom title for feed.")
+        feeds_parser.add_argument("--priority", "-p", type=int, default=2, help="Priority tier 1-4 (default: 2).")
+        feeds_parser.add_argument("--subject", "-s", default="journalism.news", help="Subject tag namespace.")
+        feeds_parser.add_argument(
+            "--category", "-c", default=None, help="Category filter for presets (e.g. investigative-tech, core-news)."
+        )
+        feeds_parser.add_argument("--satire", action="store_true", help="Flag as satire publication.")
+        feeds_parser.add_argument("--dry-run", action="store_true", help="Inspect without modifying database.")
+
+    # sifter command
+    sifter_parser = subparsers.add_parser(
+        "sifter", help="Launch real-time background feed sifter daemon with dynamic health eviction."
     )
-    feeds_parser.add_argument(
-        "action",
-        choices=["list", "add", "remove", "sync", "stats"],
-        default="list",
-        nargs="?",
-        help="Action: list, add, remove, sync, stats",
+    sifter_parser.add_argument(
+        "--interval", "-i", type=int, default=300, help="Polling cycle interval in seconds (default: 300)."
     )
-    feeds_parser.add_argument("url", nargs="?", default=None, help="Feed URL for add/remove.")
-    feeds_parser.add_argument("--title", "-t", default="", help="Custom title for feed.")
-    feeds_parser.add_argument("--priority", "-p", type=int, default=2, help="Priority tier 1-4 (default: 2).")
-    feeds_parser.add_argument("--subject", "-s", default="journalism.news", help="Subject tag namespace.")
-    feeds_parser.add_argument("--satire", action="store_true", help="Flag as satire publication.")
-    feeds_parser.add_argument("--dry-run", action="store_true", help="Inspect without modifying database.")
+    sifter_parser.add_argument(
+        "--profile", choices=["free", "balanced", "ultra"], default="balanced", help="Operational cost profile."
+    )
+    sifter_parser.add_argument(
+        "--no-auto-audit", action="store_true", help="Discover items without running live LLM evaluations."
+    )
+
+    # digest command
+    digest_parser = subparsers.add_parser(
+        "digest", help="Generate the structured Morning Epistemic Briefing from evaluated articles."
+    )
+    digest_parser.add_argument("--hours", "-H", type=int, default=24, help="Timeframe window in hours (default: 24).")
+    digest_parser.add_argument(
+        "--format", choices=["terminal", "markdown", "json"], default="terminal", help="Output format."
+    )
+    digest_parser.add_argument("--output", "-o", default=None, help="Filepath to write markdown or JSON output to.")
 
     # subjects command
     subjects_parser = subparsers.add_parser(

@@ -7,7 +7,7 @@ and generous attestation seeding with strict token budget headroom protection.
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from sqlmodel import col, select
@@ -181,6 +181,7 @@ async def sync_all_feeds(
     session: AsyncSession,
     dry_run: bool = False,
     evaluate_novel: bool = True,
+    profile_override: Any = None,
 ) -> FeedSyncSummary:
     """Synchronize all active feed subscriptions ordered by priority tier."""
     stmt = (
@@ -208,3 +209,80 @@ async def sync_all_feeds(
         aggregate.details.extend(sub_summary.details)
 
     return aggregate
+
+
+# Convenient alias for sifter daemon
+sync_subscribed_feeds = sync_all_feeds
+
+
+# ============================================================================
+# Categorized Diverse Feed Presets & Rendezvous Hashing Partitioning
+# ============================================================================
+
+PRESET_FEED_CATALOGS = {
+    "core-news": [
+        ("AP News: Top Stories", "https://apnews.com/rss", 1),
+        ("Reuters: World News", "https://www.reutersagency.com/feed/?best-topics=world", 1),
+        ("NPR News: Headlines", "https://feeds.npr.org/1001/rss.xml", 2),
+        ("BBC News: World", "https://feeds.bbci.co.uk/news/world/rss.xml", 2),
+    ],
+    "investigative-tech": [
+        ("ProPublica: Main Feeds", "https://www.propublica.org/feeds/propublica/main", 1),
+        ("The Markup: Investigations", "https://themarkup.org/feeds/rss.xml", 1),
+        ("Ars Technica: Technology Lab", "https://feeds.arstechnica.com/arstechnica/technology-lab", 2),
+        ("Krebs on Security", "https://krebsonsecurity.com/feed/", 2),
+        ("404 Media", "https://www.404media.co/rss/", 2),
+    ],
+    "science-preprints": [
+        ("Nature: Latest Research", "https://www.nature.com/nature.rss", 1),
+        ("arXiv: Artificial Intelligence", "https://rss.arxiv.org/rss/cs.AI", 2),
+        ("ScienceDaily: Top Science", "https://www.sciencedaily.com/rss/top/science.xml", 2),
+    ],
+    "regional-civic": [
+        ("CalMatters: California Policy", "https://calmatters.org/feed/", 2),
+        ("The Texas Tribune", "https://www.texastribune.org/feeds/main/", 2),
+    ],
+    "financial-corporate": [
+        ("MarketWatch: Top Stories", "https://feeds.content.dowjones.io/public/rss/mw_topstories", 2),
+    ],
+    "satire-commentary": [
+        ("The Onion: American Finest News", "https://www.theonion.com/rss", 3),
+    ],
+}
+
+
+def compute_feed_affinity(node_pubkey: str, feed_url: str) -> float:
+    """Calculate Rendezvous Hash (HRW) affinity score between node pubkey and feed URL."""
+    import hashlib
+
+    combined = f"{node_pubkey}:{feed_url}".encode("utf-8")
+    digest = hashlib.sha256(combined).hexdigest()
+    # Normalize hex hash to a deterministic float in [0.0, 1.0]
+    return int(digest[:8], 16) / 0xFFFFFFFF
+
+
+async def bootstrap_preset_feeds(
+    session: AsyncSession,
+    category: Optional[str] = None,
+    node_pubkey: Optional[str] = None,
+) -> int:
+    """Populate initial diverse feed subscriptions."""
+    added_count = 0
+    categories = [category] if category and category in PRESET_FEED_CATALOGS else list(PRESET_FEED_CATALOGS.keys())
+
+    for cat in categories:
+        for title, url, priority in PRESET_FEED_CATALOGS[cat]:
+            stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == url)
+            existing = (await session.exec(stmt)).first()
+            if not existing:
+                sub = FeedSubscriptionRecord(
+                    feed_url=url,
+                    title=title,
+                    priority_tier=priority,
+                    is_active=True,
+                )
+                session.add(sub)
+                added_count += 1
+
+    await session.commit()
+    return added_count

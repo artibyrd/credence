@@ -73,6 +73,33 @@ just tui
 poetry run credence tui
 ```
 
+---
+
+## Real-Time Feed Sifter & Morning Epistemic Digest
+
+Credence includes an autonomous, zero-trust **RSS/Atom Feed Sifter & Morning Digest Generator** that protects users from corporate takeovers / commercial astroturfing (The "Pizza Hut Problem"):
+
+```bash
+# 1. Autodiscover feed endpoints from any target website
+poetry run credence feed discover "https://arstechnica.com"
+
+# 2. Run pre-flight forensic audit (evaluates topic entropy H_topic & SPJ ethics)
+poetry run credence feed inspect "https://arstechnica.com/feed"
+
+# 3. Bootstrap diverse categorized presets (investigative tech, science preprints, regional)
+poetry run credence feed bootstrap-presets --category investigative-tech
+
+# 4. View dynamic feed health rankings (F_j score, topic entropy, suspicion)
+poetry run credence feed health
+
+# 5. Launch real-time background sifter daemon
+poetry run credence sifter --interval 300 --profile balanced
+
+# 6. Generate the morning epistemic intelligence briefing
+poetry run credence digest --format terminal
+poetry run credence digest --format markdown --output morning_brief.md
+```
+
 ### Keybindings in TUI
 - **`/`** or **`Ctrl+N`**: Open Audit URL dialog
 - **`j` / `k`** or **`↑` / `↓`**: Navigate recent audits and violations table

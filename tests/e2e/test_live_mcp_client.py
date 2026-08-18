@@ -11,9 +11,7 @@ production endpoint https://mcp.credence.run/sse:
 from __future__ import annotations
 
 import asyncio
-import json
 import time
-from typing import Any, Dict
 
 import httpx
 
@@ -22,7 +20,7 @@ DOMAIN_MCP = "https://mcp.credence.run"
 
 async def run_live_mcp_test() -> None:
     print(f"Connecting to live FastMCP SSE endpoint: {DOMAIN_MCP}/sse ...")
-    
+
     async with httpx.AsyncClient(timeout=60.0) as client:
         # Step 1: Open SSE Stream & Capture Endpoint Session URI
         t0 = time.perf_counter()
@@ -30,7 +28,9 @@ async def run_live_mcp_test() -> None:
 
         async with client.stream("GET", f"{DOMAIN_MCP}/sse", headers={"Accept": "text/event-stream"}) as response:
             assert response.status_code == 200, f"SSE handshake failed with {response.status_code}"
-            print(f"✓ SSE Stream Opened ({response.status_code} {response.headers.get('content-type')}) in {time.perf_counter() - t0:.3f}s")
+            print(
+                f"✓ SSE Stream Opened ({response.status_code} {response.headers.get('content-type')}) in {time.perf_counter() - t0:.3f}s"
+            )
 
             async for line in response.aiter_lines():
                 if line.startswith("data:"):
@@ -44,12 +44,7 @@ async def run_live_mcp_test() -> None:
 
         # Step 2: Test JSON-RPC tools/list
         t0 = time.perf_counter()
-        list_req = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "tools/list",
-            "params": {}
-        }
+        list_req = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
         res_list = await client.post(session_url, json=list_req)
         print(f"✓ tools/list responded in {time.perf_counter() - t0:.3f}s (Status: {res_list.status_code})")
 
@@ -59,14 +54,10 @@ async def run_live_mcp_test() -> None:
             "jsonrpc": "2.0",
             "id": 2,
             "method": "tools/call",
-            "params": {
-                "name": "credence_query_consensus",
-                "arguments": {
-                    "url": "https://credence.run"
-                }
-            }
+            "params": {"name": "credence_query_consensus", "arguments": {"url": "https://credence.run"}},
         }
         res_cache = await client.post(session_url, json=cache_req)
+        assert res_cache.status_code == 200
         cache_latency = (time.perf_counter() - t0) * 1000
         print(f"✓ tools/call credence_query_consensus executed in {cache_latency:.1f}ms (Zero-Token Cache Hit)")
 
