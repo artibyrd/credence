@@ -29,7 +29,7 @@ data "cloudflare_zone" "zone_report" {
   name       = var.domain_credence_report
 }
 
-# 2. SSL/TLS Strict Mode Configuration across all zones
+# 2. SSL/TLS Strict Mode & Performance Configuration across all zones
 resource "cloudflare_zone_settings_override" "ssl_run" {
   count   = local.has_cloudflare ? 1 : 0
   zone_id = data.cloudflare_zone.zone_run[0].id
@@ -40,6 +40,8 @@ resource "cloudflare_zone_settings_override" "ssl_run" {
     min_tls_version          = "1.2"
     brotli                   = "on"
     http3                    = "on"
+    early_hints              = "on"
+    zero_rtt                 = "on"
     automatic_https_rewrites = "on"
   }
 }
@@ -54,6 +56,8 @@ resource "cloudflare_zone_settings_override" "ssl_nexus" {
     min_tls_version          = "1.2"
     brotli                   = "on"
     http3                    = "on"
+    early_hints              = "on"
+    zero_rtt                 = "on"
     automatic_https_rewrites = "on"
   }
 }
@@ -68,6 +72,8 @@ resource "cloudflare_zone_settings_override" "ssl_foundation" {
     min_tls_version          = "1.2"
     brotli                   = "on"
     http3                    = "on"
+    early_hints              = "on"
+    zero_rtt                 = "on"
     automatic_https_rewrites = "on"
   }
 }
@@ -82,39 +88,19 @@ resource "cloudflare_zone_settings_override" "ssl_report" {
     min_tls_version          = "1.2"
     brotli                   = "on"
     http3                    = "on"
+    early_hints              = "on"
+    zero_rtt                 = "on"
     automatic_https_rewrites = "on"
   }
 }
 
-# 3. DNS Records for credence.run (Website + FastMCP SSE Origin)
-resource "cloudflare_record" "mcp_cname" {
-  count   = local.has_cloudflare ? 1 : 0
-  zone_id = data.cloudflare_zone.zone_run[0].id
-  name    = "mcp"
-  content = replace(replace(google_cloud_run_v2_service.credence.uri, "https://", ""), "/", "")
-  type    = "CNAME"
-  proxied = true
-  ttl     = 1 # Auto when proxied
-  comment = "FastMCP Cloud Run SSE service"
-}
-
-# 4. DNS Records for seeds.credence.nexus & SRV Record
-resource "cloudflare_record" "seeds_cname" {
-  count   = local.has_cloudflare ? 1 : 0
-  zone_id = data.cloudflare_zone.zone_nexus[0].id
-  name    = "seeds"
-  content = "c.storage.googleapis.com"
-  type    = "CNAME"
-  proxied = true
-  ttl     = 1
-  comment = "Bootstrap seed directory (peers.json via GCS)"
-}
-
+# 3. DNS Records for P2P Mesh Discovery (SRV Record)
 resource "cloudflare_record" "mesh_srv" {
-  count   = local.has_cloudflare ? 1 : 0
-  zone_id = data.cloudflare_zone.zone_nexus[0].id
-  name    = "_credence-seed._tcp"
-  type    = "SRV"
+  count           = local.has_cloudflare ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_nexus[0].id
+  name            = "_credence-seed._tcp"
+  type            = "SRV"
+  allow_overwrite = true
 
   data {
     service  = "_credence-seed"
@@ -126,27 +112,4 @@ resource "cloudflare_record" "mesh_srv" {
     target   = "relay.${var.domain_credence_nexus}"
   }
   comment = "DNS SRV record for mesh seed node discovery"
-}
-
-# 5. DNS Records for taxonomies.credence.foundation
-resource "cloudflare_record" "taxonomies_cname" {
-  count   = local.has_cloudflare ? 1 : 0
-  zone_id = data.cloudflare_zone.zone_foundation[0].id
-  name    = "taxonomies"
-  content = "c.storage.googleapis.com"
-  type    = "CNAME"
-  proxied = true
-  ttl     = 1
-  comment = "Static JSON taxonomy catalogs via GCS"
-}
-
-resource "cloudflare_record" "keys_cname" {
-  count   = local.has_cloudflare ? 1 : 0
-  zone_id = data.cloudflare_zone.zone_foundation[0].id
-  name    = "keys"
-  content = "c.storage.googleapis.com"
-  type    = "CNAME"
-  proxied = true
-  ttl     = 1
-  comment = "Network root Ed25519 public key (root.pub via GCS)"
 }
