@@ -33,7 +33,7 @@ Credence is governed by **31 Formal Project Invariants** documented in [📘 `do
 ### Setup Commands
 ```bash
 # Clone the repository
-git clone https://github.com/credence-network/credence.git
+git clone https://github.com/artibyrd/credence.git
 cd credence
 
 # Install dependencies and Playwright headless Chromium
