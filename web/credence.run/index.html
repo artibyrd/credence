@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence — The Decentralized Truth & Verification Layer for AI</title>
+  <title>Credence — Cryptographic Truth & Verification for AI and the Web</title>
   <meta name="description" content="Autonomous epistemic evaluation engine, FastMCP 2.0 server, and decentralized P2P trust network.">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -25,9 +25,9 @@
   <header class="hero">
     <div class="container">
       <span class="badge-pill">🛡️ v1.1.0 Stable &bull; Ed25519 Signed &bull; FastMCP 2.0</span>
-      <h1 class="hero-title">The Automated Truth &amp; Deception Engine for AI Agents and the Web</h1>
+      <h1 class="hero-title">Cryptographic Truth &amp; Verification for AI &amp; the Web</h1>
       <p class="hero-subtitle">
-        Credence audits web pages, news articles, and research for <strong>clickbait, logical fallacies, journalistic ethics violations, and manipulative dark patterns</strong> — producing cryptographically signed, zero-hallucination truth attestations that AI agents and humans can verify in real time.
+        Auditing news, research, and web articles for <strong>clickbait, logical fallacies, and deceptive claims</strong> &mdash; producing Ed25519-signed, zero-hallucination truth attestations that AI agents and humans can verify in real time.
       </p>
 
       <div class="terminal-card">
@@ -47,6 +47,10 @@
             <button class="copy-btn" onclick="navigator.clipboard.writeText('credence audit https://example.com/breaking-news')">Copy</button>
           </div>
           <div class="command-line">
+            <code>credence digest --format terminal # 24-hour morning epistemic brief</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('credence digest --format terminal')">Copy</button>
+          </div>
+          <div class="command-line">
             <code>credence serve --mcp # Connect live to Claude, Cursor &amp; Antigravity</code>
             <button class="copy-btn" onclick="navigator.clipboard.writeText('credence serve --mcp')">Copy</button>
           </div>
@@ -56,47 +60,97 @@
   </header>
 
   <main class="container">
-    <section>
-      <h2 style="font-size: 1.8rem; text-align: center; margin-bottom: 2rem;">How Credence Works</h2>
-      
+    <!-- 4 Interfaces Showcase -->
+    <section style="margin-bottom: 4.5rem;">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Universal Parity</span>
+        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">One Engine. 4 Seamless Interfaces.</h2>
+        <p style="color: var(--text-muted); max-width: 650px; margin: 0.5rem auto 0;">Interact with the Credence epistemic pipeline wherever you work — from terminal shell scripts to AI coding assistants and browser tabs.</p>
+      </div>
+
       <div class="grid-2">
-        <div class="card">
-          <h3>1. 4-Specialist Multi-Agent Audit</h3>
-          <p>Automated specialist agents capture rendered DOM trees, cleaned prose, and full-page screenshots to audit content against formal, namespaced taxonomies (SPJ Journalistic Ethics, IEP Logical Fallacies, and Deceptive UI Patterns).</p>
+        <div class="card" style="border-left: 3px solid var(--accent-cyan);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🖥️ CLI Command Line</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Human-Friendly &amp; Scriptable</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Rich terminal tables with ANSI color scoring, structured JSON streams for shell pipelines (<code>jq</code>, <code>xargs</code>), and CI/CD PR review gates.</p>
+          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-cyan);">credence audit &lt;url&gt; --json | jq .suspicion_score</code>
         </div>
 
-        <div class="card">
-          <h3>2. Zero-Hallucination Grounded Citations</h3>
-          <p>Every identified violation strictly requires an exact verbatim character-matched quote from the source DOM. Fabricated or hallucinated citations instantly slash the evaluator's reputation score by 50%.</p>
+        <div class="card" style="border-left: 3px solid var(--accent-blue);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚡ FastMCP 2.0 (AI Agents)</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Standard I/O &amp; SSE Streaming</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Equip Claude Desktop, Cursor, and autonomous agent swarms with tools to evaluate URLs, inspect citations, and query consensus trust scores.</p>
+          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-blue);">tools/call: credence_check_url</code>
         </div>
 
-        <div class="card">
-          <h3>3. Native FastMCP 2.0 for AI Agents</h3>
-          <p>Give Claude, Cursor, and autonomous agent swarms the real-time ability to evaluate URLs, inspect citations, and query consensus trust scores over standard I/O and Server-Sent Events (SSE) before citing sources.</p>
+        <div class="card" style="border-left: 3px solid var(--accent-green);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📟 Textual TUI Workstation</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Full-Screen Terminal IDE</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Keyboard-driven terminal workstation with live audit history, interactive verbatim citation viewer, taxonomy catalog explorer, and feed status.</p>
+          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-green);">credence tui</code>
         </div>
 
-        <div class="card">
-          <h3>4. Decentralized Cryptographic Mesh</h3>
-          <p>Audits are signed with Ed25519 keys into deterministic RFC 8785 envelopes and gossiped across a 13-node Watts-Strogatz small-world lattice with Byzantine cartel resistance (N &ge; 3f + 1).</p>
-        </div>
-
-        <div class="card">
-          <h3>5. The Galileo Rule (Anti-Censorship)</h3>
-          <p>Absence of evidence is not evidence of absence. Grounded domain authorities submitting 100% verifiable citations cannot be censored or out-voted by dishonest consensus swarms.</p>
-        </div>
-
-        <div class="card">
-          <h3>6. Work-Sharing &amp; Zero-Token Adoptions</h3>
-          <p>BitTorrent-inspired syndicated feed distribution: when one node audits a breaking article, all mesh peers verify and adopt the signed attestation at $0.00 compute cost.</p>
+        <div class="card" style="border-left: 3px solid var(--accent-amber);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🌐 Zero-Build Web &amp; Extension</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Vanilla HTML5 &bull; 0 npm Bundles</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">High-contrast Web Crypto report viewer (<code>credence.report</code>), Manifest V3 browser extension, and interactive in-browser simulator with zero node dependencies.</p>
+          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-amber);">https://credence.report/viewer.html</code>
         </div>
       </div>
     </section>
 
-    <section style="margin-top: 4rem;">
-      <h2 style="font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem;">FastMCP 2.0 Integration</h2>
-      <p style="text-align: center; color: var(--text-muted); max-width: 650px; margin: 0 auto 2rem;">
-        Add Credence directly to your <code>claude_desktop_config.json</code> or Antigravity MCP settings:
-      </p>
+    <!-- How Credence Works (Visual 4-Step Flow) -->
+    <section style="margin-bottom: 4.5rem;">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Architecture</span>
+        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">How Credence Works</h2>
+        <p style="color: var(--text-muted); max-width: 650px; margin: 0.5rem auto 0;">From raw webpage capture to cryptographically signed truth attestations in 4 clear steps.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">1</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">Capture &amp; Verbatim Grounding</h3>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Headless Chromium captures rendered DOM, cleaned prose, and screenshots. Every finding strictly requires an exact verbatim character match from the source text ($G = 1.0$) — eliminating AI hallucinations entirely.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">2</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">Multi-Taxonomy Specialist Audit</h3>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Specialist agents evaluate content against pinned taxonomy catalogs: <strong>SPJ Journalistic Ethics</strong> (unnamed sources, unverified allegations), <strong>Logical Fallacies</strong> (Ad Hominem, Straw Man), and <strong>Deceptive UI Patterns</strong>.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">3</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">Ed25519 Cryptographic Envelope</h3>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">The node canonicalizes the audit into RFC 8785 JSON, signs it with its Ed25519 private key, and gossips the attestation across the P2P mesh network for instant zero-token adoption ($0.00 compute cost) by peer nodes.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">4</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">The Galileo Rule &amp; Swarm Defense</h3>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Absence of evidence is not evidence of absence. Verified domain authorities submitting 100% grounded citations cannot be silenced by dishonest swarms, and rogue nodes are autonomously slashed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FastMCP 2.0 Integration -->
+    <section style="margin-top: 2rem; margin-bottom: 4rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">AI Tooling</span>
+        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">Plug Into Claude &amp; Cursor in Seconds</h2>
+        <p style="text-align: center; color: var(--text-muted); max-width: 650px; margin: 0.5rem auto 0;">
+          Add Credence directly to your <code>claude_desktop_config.json</code> or Antigravity MCP settings:
+        </p>
+      </div>
 
       <div class="terminal-card">
         <div class="terminal-header">
