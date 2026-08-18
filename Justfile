@@ -85,6 +85,23 @@ tf-validate:
     terraform -chdir=terraform validate
     terraform -chdir=terraform fmt -check
 
+# Execute Terraform plan across GCP and Cloudflare
+tf-plan:
+    terraform -chdir=terraform plan
+
+# Apply Terraform infrastructure across GCP and Cloudflare
+tf-apply:
+    terraform -chdir=terraform apply
+
+# Build and submit Cloud Run container image via Google Cloud Build
+gcp-build project_id="credence-prod-505902":
+    gcloud builds submit --project={{project_id}} --tag gcr.io/{{project_id}}/credence-server:latest
+
+# Sync signed genesis seeds and taxonomy catalogs to GCS origin buckets
+seed-sync project_id="credence-prod-505902":
+    gcloud storage rsync -r web/credence.nexus/ gs://{{project_id}}-seeds-nexus/
+    gcloud storage rsync -r web/credence.foundation/ gs://{{project_id}}-taxonomies-foundation/
+
 # Verify Antigravity declarative workspace configuration and skills registration
 agent-check:
     @echo "=== Credence Antigravity Declarative Health Check ==="
@@ -92,4 +109,3 @@ agent-check:
     @test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
     @test -d ../credence-agent/.agents/skills && echo "✅ Native skills repository verified." || (echo "❌ Missing credence-agent skills"; exit 1)
     @echo "=== All Declarative Antigravity Configs Verified ==="
-

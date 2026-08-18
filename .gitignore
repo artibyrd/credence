@@ -68,3 +68,7 @@ crash.log
 *.tfvars
 !*.tfvars.example
 
+# Cryptographic Keys & Private Certs
+*.pem
+*.key
+root_private.pem

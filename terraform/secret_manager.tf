@@ -1,5 +1,21 @@
+# Secret Manager Resources & IAM Access Policies
+
 resource "google_secret_manager_secret" "gemini_api_key" {
   secret_id = "credence-gemini-api-key"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "gemini_api_key_version" {
+  count       = var.gemini_api_key != "" ? 1 : 0
+  secret      = google_secret_manager_secret.gemini_api_key.id
+  secret_data = var.gemini_api_key
+}
+
+resource "google_secret_manager_secret" "root_ed25519_key" {
+  secret_id = "MESH_ROOT_ED25519_KEY"
 
   replication {
     auto {}

@@ -53,11 +53,3 @@ resource "google_storage_bucket_iam_member" "taxonomies_public_read" {
   role   = "roles/storage.objectViewer"
   member = "allUsers"
 }
-
-# 3. Cloudflare R2 Bucket for Zero-Egress Bootstrap Seed Distribution
-resource "cloudflare_r2_bucket" "seeds_r2" {
-  count      = local.has_cloudflare ? 1 : 0
-  account_id = var.cloudflare_account_id
-  name       = "seeds-${replace(var.domain_credence_nexus, ".", "-")}"
-  location   = "WNAM"
-}

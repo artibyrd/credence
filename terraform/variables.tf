@@ -98,3 +98,10 @@ variable "domain_credence_report" {
   description = "Domain for public audit permalinks and report viewer."
   default     = "credence.report"
 }
+
+variable "gemini_api_key" {
+  type        = string
+  description = "Google Gemini API key for Cloud Run reasoning engine."
+  sensitive   = true
+  default     = ""
+}

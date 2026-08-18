@@ -350,11 +350,17 @@ def cli_serve(
         asyncio.run(mcp_server.run_stdio_async())
     elif transport == "sse":
         import uvicorn
+        from mcp.server.transport_security import TransportSecuritySettings
 
         console.print(
             f"[bold green]Starting Credence FastMCP Server (SSE) on http://{host}:{port}/sse (Profile: {settings.CREDENCE_PROFILE.value.upper()})[/bold green]"
         )
-        uvicorn.run(mcp_server.sse_app(), host=host, port=port)
+        sec = TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+            allowed_hosts=["*"],
+            allowed_origins=["*"],
+        )
+        uvicorn.run(mcp_server.sse_app(transport_security=sec), host=host, port=port)
 
 
 async def cli_mesh(port: int, seeds: list[str]) -> None:

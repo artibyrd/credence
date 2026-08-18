@@ -14,7 +14,7 @@ resource "google_storage_bucket_iam_member" "publisher_gcs_admin" {
 
 # Grant Secret Manager Secret Accessor to read MESH_ROOT_ED25519_KEY
 resource "google_secret_manager_secret_iam_member" "publisher_root_key_reader" {
-  secret_id = "MESH_ROOT_ED25519_KEY"
+  secret_id = google_secret_manager_secret.root_ed25519_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.seed_publisher_sa.email}"
 }

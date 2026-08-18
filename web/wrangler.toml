@@ -1,0 +1,7 @@
+name = "credence-web"
+account_id = "f1e95c67a1e06db65efa5aaf7a92b38e"
+compatibility_date = "2026-08-17"
+main = "_worker.js"
+
+[assets]
+directory = "."

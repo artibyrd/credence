@@ -4,39 +4,35 @@ locals {
   has_cloudflare = var.cloudflare_api_token != ""
 }
 
-# 1. Cloudflare DNS Zones (Conditional on Cloudflare Token being set)
-resource "cloudflare_zone" "zone_run" {
+# 1. Cloudflare DNS Zones (Data source lookup for active zones)
+data "cloudflare_zone" "zone_run" {
   count      = local.has_cloudflare ? 1 : 0
   account_id = var.cloudflare_account_id
-  zone       = var.domain_credence_run
-  plan       = "free"
+  name       = var.domain_credence_run
 }
 
-resource "cloudflare_zone" "zone_nexus" {
+data "cloudflare_zone" "zone_nexus" {
   count      = local.has_cloudflare ? 1 : 0
   account_id = var.cloudflare_account_id
-  zone       = var.domain_credence_nexus
-  plan       = "free"
+  name       = var.domain_credence_nexus
 }
 
-resource "cloudflare_zone" "zone_foundation" {
+data "cloudflare_zone" "zone_foundation" {
   count      = local.has_cloudflare ? 1 : 0
   account_id = var.cloudflare_account_id
-  zone       = var.domain_credence_foundation
-  plan       = "free"
+  name       = var.domain_credence_foundation
 }
 
-resource "cloudflare_zone" "zone_report" {
+data "cloudflare_zone" "zone_report" {
   count      = local.has_cloudflare ? 1 : 0
   account_id = var.cloudflare_account_id
-  zone       = var.domain_credence_report
-  plan       = "free"
+  name       = var.domain_credence_report
 }
 
 # 2. SSL/TLS Strict Mode Configuration across all zones
 resource "cloudflare_zone_settings_override" "ssl_run" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_run[0].id
+  zone_id = data.cloudflare_zone.zone_run[0].id
 
   settings {
     ssl                      = "strict"
@@ -50,7 +46,7 @@ resource "cloudflare_zone_settings_override" "ssl_run" {
 
 resource "cloudflare_zone_settings_override" "ssl_nexus" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_nexus[0].id
+  zone_id = data.cloudflare_zone.zone_nexus[0].id
 
   settings {
     ssl                      = "strict"
@@ -64,7 +60,7 @@ resource "cloudflare_zone_settings_override" "ssl_nexus" {
 
 resource "cloudflare_zone_settings_override" "ssl_foundation" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_foundation[0].id
+  zone_id = data.cloudflare_zone.zone_foundation[0].id
 
   settings {
     ssl                      = "strict"
@@ -78,7 +74,7 @@ resource "cloudflare_zone_settings_override" "ssl_foundation" {
 
 resource "cloudflare_zone_settings_override" "ssl_report" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_report[0].id
+  zone_id = data.cloudflare_zone.zone_report[0].id
 
   settings {
     ssl                      = "strict"
@@ -93,7 +89,7 @@ resource "cloudflare_zone_settings_override" "ssl_report" {
 # 3. DNS Records for credence.run (Website + FastMCP SSE Origin)
 resource "cloudflare_record" "mcp_cname" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_run[0].id
+  zone_id = data.cloudflare_zone.zone_run[0].id
   name    = "mcp"
   content = replace(replace(google_cloud_run_v2_service.credence.uri, "https://", ""), "/", "")
   type    = "CNAME"
@@ -105,18 +101,18 @@ resource "cloudflare_record" "mcp_cname" {
 # 4. DNS Records for seeds.credence.nexus & SRV Record
 resource "cloudflare_record" "seeds_cname" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_nexus[0].id
+  zone_id = data.cloudflare_zone.zone_nexus[0].id
   name    = "seeds"
-  content = "cname.r2.cloudflarestorage.com"
+  content = "c.storage.googleapis.com"
   type    = "CNAME"
   proxied = true
   ttl     = 1
-  comment = "Bootstrap seed directory (peers.json)"
+  comment = "Bootstrap seed directory (peers.json via GCS)"
 }
 
 resource "cloudflare_record" "mesh_srv" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_nexus[0].id
+  zone_id = data.cloudflare_zone.zone_nexus[0].id
   name    = "_credence-seed._tcp"
   type    = "SRV"
 
@@ -135,47 +131,22 @@ resource "cloudflare_record" "mesh_srv" {
 # 5. DNS Records for taxonomies.credence.foundation
 resource "cloudflare_record" "taxonomies_cname" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_foundation[0].id
+  zone_id = data.cloudflare_zone.zone_foundation[0].id
   name    = "taxonomies"
-  content = "cname.r2.cloudflarestorage.com"
+  content = "c.storage.googleapis.com"
   type    = "CNAME"
   proxied = true
   ttl     = 1
-  comment = "Static JSON taxonomy catalogs"
+  comment = "Static JSON taxonomy catalogs via GCS"
 }
 
 resource "cloudflare_record" "keys_cname" {
   count   = local.has_cloudflare ? 1 : 0
-  zone_id = cloudflare_zone.zone_foundation[0].id
+  zone_id = data.cloudflare_zone.zone_foundation[0].id
   name    = "keys"
-  content = "cname.r2.cloudflarestorage.com"
+  content = "c.storage.googleapis.com"
   type    = "CNAME"
   proxied = true
   ttl     = 1
-  comment = "Network root Ed25519 public key (root.pub)"
-}
-
-# 6. Page Rules & Cache Rules (Disable SSE Buffering, Enable Seed Caching)
-resource "cloudflare_page_rule" "sse_bypass" {
-  count    = local.has_cloudflare ? 1 : 0
-  zone_id  = cloudflare_zone.zone_run[0].id
-  target   = "mcp.${var.domain_credence_run}/sse*"
-  priority = 1
-
-  actions {
-    cache_level         = "bypass"
-    disable_performance = true # Disables response buffering for real-time SSE streaming
-  }
-}
-
-resource "cloudflare_page_rule" "seeds_cache" {
-  count    = local.has_cloudflare ? 1 : 0
-  zone_id  = cloudflare_zone.zone_nexus[0].id
-  target   = "seeds.${var.domain_credence_nexus}/peers.json"
-  priority = 1
-
-  actions {
-    cache_level    = "cache_everything"
-    edge_cache_ttl = 300
-  }
+  comment = "Network root Ed25519 public key (root.pub via GCS)"
 }
