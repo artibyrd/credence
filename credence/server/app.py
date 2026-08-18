@@ -18,9 +18,10 @@ Exposes:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import time
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from mcp.server.mcpserver import MCPServer
 from sqlmodel import col, select
@@ -978,6 +979,320 @@ def _register_prompts(server: MCPServer) -> None:
         )
 
 
+async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
+    """Reconstitute full audit report JSON from SQLite."""
+    from credence.db import get_session, init_db
+
+    await init_db()
+    async for session in get_session():
+        # 1. Match by content_sha256
+        stmt = (
+            select(AuditRecord)
+            .where(AuditRecord.content_sha256 == identifier)
+            .order_by(col(AuditRecord.audited_at).desc())
+        )
+        audit = (await session.exec(stmt)).first()
+
+        # 2. Match by URL
+        if not audit:
+            stmt_url = (
+                select(AuditRecord)
+                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
+                .where(col(SnapshotRecord.url) == identifier)
+                .order_by(col(AuditRecord.audited_at).desc())
+            )
+            audit = (await session.exec(stmt_url)).first()
+
+        if not audit:
+            return None
+
+        # Load snapshot
+        snap = None
+        if audit.snapshot_id:
+            stmt_snap = select(SnapshotRecord).where(SnapshotRecord.id == audit.snapshot_id)
+            snap = (await session.exec(stmt_snap)).first()
+
+        # Load violations
+        stmt_v = select(ViolationRecord).where(ViolationRecord.audit_id == audit.id)
+        violations = list((await session.exec(stmt_v)).all())
+
+        findings = [
+            {
+                "rule_id": v.rule_id,
+                "rule_uri": v.rule_uri,
+                "domain": v.domain,
+                "cluster_id": v.cluster_id,
+                "severity": v.severity,
+                "confidence": v.confidence,
+                "quote_or_element": v.quote_or_element,
+                "reasoning": v.reasoning,
+                "line_or_selector": v.line_or_selector,
+            }
+            for v in violations
+        ]
+
+        tax_map = {}
+        try:
+            tax_map = json.loads(audit.taxonomies_used_json)
+        except Exception:
+            pass
+
+        return {
+            "id": snap.url if snap and snap.url else audit.content_sha256,
+            "url": snap.url if snap else "",
+            "title": snap.title if snap else "",
+            "byline": snap.byline if snap else "",
+            "content_sha256": audit.content_sha256,
+            "simhash_64": snap.simhash_64 if snap else "",
+            "audited_at": audit.audited_at.isoformat() if audit.audited_at else "",
+            "suspicion_score": audit.suspicion_score,
+            "suspicion_density": audit.suspicion_density,
+            "confidence_score": audit.confidence_score,
+            "classification": audit.classification,
+            "is_satire": audit.is_satire,
+            "content_type": audit.content_type,
+            "satire_notes": audit.satire_notes,
+            "violations": findings,
+            "taxonomies_used": tax_map,
+            "quota_preserved": audit.quota_preserved,
+            "evaluation_method": audit.evaluation_method,
+            "node_pubkey": audit.node_pubkey,
+            "node_signature": audit.node_signature,
+        }
+    return None
+
+
+async def api_health(request: Any) -> Any:
+    """REST API: Health check endpoint."""
+    from starlette.responses import JSONResponse
+
+    from credence import __version__
+
+    return JSONResponse(
+        {
+            "status": "healthy",
+            "service": "credence",
+            "version": __version__,
+        }
+    )
+
+
+async def api_reports(request: Any) -> Any:
+    """REST API: Query paginated and categorized audit reports."""
+    import secrets
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+
+    cat = request.query_params.get("category", "recent").lower()
+    try:
+        limit = min(int(request.query_params.get("limit", 20)), 100)
+    except ValueError:
+        limit = 20
+    try:
+        offset = max(int(request.query_params.get("offset", 0)), 0)
+    except ValueError:
+        offset = 0
+
+    await init_db()
+    async for s in get_session():
+        if cat in ("best", "clean"):
+            stmt = (
+                select(AuditRecord, SnapshotRecord)
+                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
+                .where(AuditRecord.suspicion_score <= 15.0)
+                .order_by(col(AuditRecord.suspicion_score).asc(), col(AuditRecord.audited_at).desc())
+            )
+        elif cat in ("worst", "flagged", "deceptive"):
+            stmt = (
+                select(AuditRecord, SnapshotRecord)
+                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
+                .where(AuditRecord.suspicion_score >= 60.0)
+                .order_by(col(AuditRecord.suspicion_score).desc(), col(AuditRecord.audited_at).desc())
+            )
+        elif cat == "satire":
+            stmt = (
+                select(AuditRecord, SnapshotRecord)
+                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
+                .where(AuditRecord.is_satire)
+                .order_by(col(AuditRecord.audited_at).desc())
+            )
+        elif cat == "random":
+            stmt = (
+                select(AuditRecord, SnapshotRecord)
+                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
+                .limit(limit * 3)
+            )
+        else:  # "recent"
+            stmt = (
+                select(AuditRecord, SnapshotRecord)
+                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
+                .order_by(col(AuditRecord.audited_at).desc())
+            )
+
+        results = list((await s.exec(stmt.offset(offset).limit(limit))).all())
+        if cat == "random" and results:
+            secrets.SystemRandom().shuffle(results)
+            results = results[:limit]
+
+        reports = []
+        for row in results:
+            audit = row[0]
+            snap = row[1]
+            reports.append(
+                {
+                    "id": snap.url if snap and snap.url else audit.content_sha256,
+                    "content_sha256": audit.content_sha256,
+                    "url": snap.url if snap else "",
+                    "title": snap.title if snap and snap.title else (audit.content_sha256[:20] + "..."),
+                    "byline": snap.byline if snap else "",
+                    "audited_at": audit.audited_at.isoformat() if audit.audited_at else "",
+                    "suspicion_score": audit.suspicion_score,
+                    "suspicion_density": audit.suspicion_density,
+                    "confidence_score": audit.confidence_score,
+                    "classification": audit.classification,
+                    "is_satire": audit.is_satire,
+                    "node_pubkey": audit.node_pubkey,
+                    "node_signature": audit.node_signature,
+                }
+            )
+
+        return JSONResponse(
+            {
+                "category": cat,
+                "total": len(reports),
+                "limit": limit,
+                "offset": offset,
+                "reports": reports,
+            }
+        )
+    return JSONResponse({"reports": []})
+
+
+async def api_get_report(request: Any) -> Any:
+    """REST API: Get complete audit report by SHA-256 or URL identifier."""
+    from starlette.responses import JSONResponse
+
+    identifier = request.path_params.get("identifier", "")
+    if not identifier:
+        identifier = request.query_params.get("q", "")
+
+    report_dict = await _reconstitute_report_from_db(identifier)
+    if not report_dict:
+        return JSONResponse({"error": f"Report not found for identifier: '{identifier}'"}, status_code=404)
+    return JSONResponse(report_dict)
+
+
+async def api_audit_url(request: Any) -> Any:
+    """REST API: Trigger live on-demand audit of target webpage."""
+    from starlette.responses import JSONResponse
+
+    from credence.config import COST_PROFILES, CostProfile
+    from credence.pipeline.evaluator import audit_url
+
+    target_url = request.query_params.get("url")
+    force = request.query_params.get("force", "").lower() in ("true", "1")
+    profile = request.query_params.get("profile")
+
+    if not target_url and request.method == "POST":
+        try:
+            body = await request.json()
+            target_url = body.get("url")
+            force = body.get("force", force)
+            profile = body.get("profile", profile)
+        except Exception:
+            pass
+
+    if not target_url:
+        return JSONResponse(
+            {"error": "Target URL is required. e.g. /api/audit?url=https://example.com"}, status_code=400
+        )
+
+    prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
+    try:
+        report = await audit_url(target_url, force_refresh=force, profile_override=prof_cfg)
+        return JSONResponse(report.model_dump(mode="json"))
+    except Exception as e:
+        return JSONResponse({"error": f"Evaluation failed: {str(e)}"}, status_code=500)
+
+
+async def api_sifter_status(request: Any) -> Any:
+    """REST API: Get current sifter daemon status and telemetry."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.sifter import get_sifter_status
+
+    await init_db()
+    async for session in get_session():
+        status = await get_sifter_status(session)
+        return JSONResponse(status)
+    return JSONResponse({"status": "unavailable"}, status_code=500)
+
+
+async def api_sifter_cycle(request: Any) -> Any:
+    """REST API: Trigger an immediate sifting cycle."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.sifter import run_sifting_cycle
+
+    await init_db()
+    async for session in get_session():
+        summary = await run_sifting_cycle(session)
+        return JSONResponse(
+            {
+                "status": "completed",
+                "summary": {
+                    "total_feeds_polled": summary.total_feeds_polled,
+                    "feeds_unmodified_304": summary.feeds_unmodified_304,
+                    "new_items_discovered": summary.new_items_discovered,
+                    "items_adopted_from_mesh": summary.items_adopted_from_mesh,
+                    "items_evaluated_locally": summary.items_evaluated_locally,
+                    "tokens_saved_total": summary.tokens_saved_total,
+                },
+            }
+        )
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_feeds_stream(request: Any) -> Any:
+    """REST API: Stream recent feed items."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.models import FeedItemRecord, FeedSubscriptionRecord
+
+    limit = min(int(request.query_params.get("limit", 30)), 100)
+    await init_db()
+    async for session in get_session():
+        stmt = (
+            select(FeedItemRecord, FeedSubscriptionRecord)
+            .join(FeedSubscriptionRecord, col(FeedItemRecord.feed_id) == col(FeedSubscriptionRecord.id), isouter=True)
+            .order_by(col(FeedItemRecord.discovered_at).desc())
+            .limit(limit)
+        )
+        results = (await session.exec(stmt)).all()
+        items = []
+        for item, sub in results:
+            items.append(
+                {
+                    "id": item.id,
+                    "url": item.item_url,
+                    "title": item.title,
+                    "feed_title": sub.title if sub else "",
+                    "feed_url": sub.feed_url if sub else "",
+                    "subject": item.subject_id,
+                    "processing_status": item.processing_status,
+                    "published_at": item.published_at.isoformat() if item.published_at else None,
+                    "discovered_at": item.discovered_at.isoformat() if item.discovered_at else None,
+                }
+            )
+        return JSONResponse({"items": items, "count": len(items)})
+    return JSONResponse({"items": [], "count": 0})
+
+
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
@@ -998,3 +1313,82 @@ def create_mcp_server() -> MCPServer:
 
 
 mcp_server = create_mcp_server()
+
+
+def create_server_app(
+    transport_security: Optional[Any] = None,
+    enable_sifter: bool = False,
+) -> Any:
+    """Create a unified Starlette application hosting FastMCP SSE, REST API, and Sifter."""
+    import os
+    from contextlib import asynccontextmanager
+
+    from starlette.applications import Starlette
+    from starlette.middleware.cors import CORSMiddleware
+    from starlette.routing import Route
+
+    server = create_mcp_server()
+    if transport_security is None:
+        from mcp.server.transport_security import TransportSecuritySettings
+
+        transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+            allowed_hosts=["*"],
+            allowed_origins=["*"],
+        )
+
+    # Base Starlette app from FastMCP SSE
+    app = server.sse_app(transport_security=transport_security)
+
+    # Register REST API routes directly on the Starlette app
+    rest_routes = [
+        Route("/health", endpoint=api_health, methods=["GET"]),
+        Route("/api/health", endpoint=api_health, methods=["GET"]),
+        Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
+        Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
+        Route("/api/audit", endpoint=api_audit_url, methods=["POST", "GET", "OPTIONS"]),
+        Route("/api/sifter/status", endpoint=api_sifter_status, methods=["GET", "OPTIONS"]),
+        Route("/api/sifter/cycle", endpoint=api_sifter_cycle, methods=["POST", "OPTIONS"]),
+        Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
+    ]
+    for r in rest_routes:
+        app.router.routes.insert(0, r)
+
+    # Add global CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+        allow_credentials=True,
+    )
+
+    # Lifespan task for Sifter Daemon
+    should_sift = enable_sifter or os.environ.get("CREDENCE_SIFTER_ENABLED", "").lower() in ("1", "true")
+    if should_sift:
+        original_lifespan = app.router.lifespan_context
+
+        @asynccontextmanager
+        async def combined_lifespan(app_instance: Starlette):
+            from credence.feeds.sifter import SifterDaemon
+
+            await init_db()
+            sifter_daemon = SifterDaemon(poll_interval_seconds=300, auto_audit=True)
+            sifter_task = asyncio.create_task(sifter_daemon.start())
+
+            if original_lifespan:
+                async with original_lifespan(app_instance) as state:
+                    yield state
+            else:
+                yield {}
+
+            sifter_daemon.stop()
+            sifter_task.cancel()
+            try:
+                await sifter_task
+            except asyncio.CancelledError:
+                pass
+
+        app.router.lifespan_context = combined_lifespan
+
+    return app

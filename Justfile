@@ -60,6 +60,24 @@ serve-stdio:
 serve-sse:
     poetry run credence serve --transport sse --port 8000
 
+# Run server with background feed sifter enabled
+serve-sifter:
+    poetry run credence serve --transport sse --port 8000 --sifter
+
+# Run single sifter cycle
+sifter-once:
+    poetry run credence sifter --once
+
+# Export stored SQLite audits to static web reports.json catalog
+export-catalog:
+    poetry run credence export-catalog
+
+# Seed initial reports into local SQLite and export static reports.json
+seed-reports:
+    poetry run credence feeds bootstrap-presets
+    poetry run credence sifter --once
+    poetry run credence export-catalog
+
 # Run the Golden 12 epistemic cross-profile benchmark
 benchmark:
     poetry run credence benchmark

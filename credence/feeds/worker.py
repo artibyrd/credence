@@ -53,8 +53,10 @@ async def _process_single_entry(
     summary: FeedSyncSummary,
     dry_run: bool,
     now: datetime,
+    evaluate_novel: bool = True,
+    profile_override: Any = None,
 ) -> None:
-    """Process an individual feed entry with effort avoidance and headroom checks."""
+    """Process an individual feed entry with effort avoidance, headroom checks, and live audit."""
     stmt_item = select(FeedItemRecord).where(FeedItemRecord.item_url == entry.url)
     existing = (await session.exec(stmt_item)).first()
     if existing:
@@ -116,13 +118,44 @@ async def _process_single_entry(
         )
         return
 
-    summary.details.append(
-        {
-            "url": entry.url,
-            "status": "pending_local_audit",
-            "subject": classified_subject,
-        }
-    )
+    if evaluate_novel:
+        try:
+            from credence.pipeline.evaluator import audit_url
+
+            report = await audit_url(
+                entry.url,
+                force_refresh=False,
+                profile_override=profile_override,
+            )
+            item_record.processing_status = "audited"
+            await session.commit()
+            summary.items_evaluated_locally += 1
+            summary.details.append(
+                {
+                    "url": entry.url,
+                    "status": "audited_locally",
+                    "score": f"{report.suspicion_score:.1f}",
+                    "classification": report.classification,
+                }
+            )
+        except Exception as e:
+            item_record.processing_status = "error"
+            await session.commit()
+            summary.details.append(
+                {
+                    "url": entry.url,
+                    "status": "audit_error",
+                    "error": str(e),
+                }
+            )
+    else:
+        summary.details.append(
+            {
+                "url": entry.url,
+                "status": "pending_local_audit",
+                "subject": classified_subject,
+            }
+        )
 
 
 async def sync_single_feed(
@@ -130,6 +163,7 @@ async def sync_single_feed(
     subscription: FeedSubscriptionRecord,
     dry_run: bool = False,
     evaluate_novel: bool = True,
+    profile_override: Any = None,
 ) -> FeedSyncSummary:
     """Synchronize a single syndicated feed subscription."""
     summary = FeedSyncSummary(total_feeds_polled=1)
@@ -172,6 +206,8 @@ async def sync_single_feed(
             summary=summary,
             dry_run=dry_run,
             now=now,
+            evaluate_novel=evaluate_novel,
+            profile_override=profile_override,
         )
 
     return summary
@@ -191,6 +227,11 @@ async def sync_all_feeds(
     )
     subscriptions = (await session.exec(stmt)).all()
 
+    # Auto-bootstrap presets if subscription catalog is empty
+    if not subscriptions and not dry_run:
+        await bootstrap_preset_feeds(session)
+        subscriptions = (await session.exec(stmt)).all()
+
     aggregate = FeedSyncSummary()
     for sub in subscriptions:
         sub_summary = await sync_single_feed(
@@ -198,6 +239,7 @@ async def sync_all_feeds(
             subscription=sub,
             dry_run=dry_run,
             evaluate_novel=evaluate_novel,
+            profile_override=profile_override,
         )
         aggregate.total_feeds_polled += sub_summary.total_feeds_polled
         aggregate.feeds_unmodified_304 += sub_summary.feeds_unmodified_304

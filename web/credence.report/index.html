@@ -85,6 +85,15 @@
       </div>
     </div>
 
+    <!-- Live Ingested Feed Audits Stream Container (Populated when online) -->
+    <div id="live-stream-card" class="report-hero" style="padding: 1.75rem; margin-top: 1.5rem; display: none;">
+      <h2 style="font-size: 1.2rem; color: #fff; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <span>📡 Live Feed Audits &amp; Sifter Stream</span>
+        <span id="live-stream-count" style="font-size: 0.8rem; color: var(--accent-blue); font-weight: 600;"></span>
+      </h2>
+      <div id="live-stream-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+    </div>
+
     <!-- How it works card -->
     <div class="panel-card" style="margin-top: 1.5rem;">
       <div class="panel-title">
@@ -110,5 +119,66 @@
       <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://credence.nexus">credence.nexus</a> &bull; <a href="https://taxonomies.credence.foundation">taxonomies.credence.foundation</a></p>
     </footer>
   </div>
+
+  <script>
+    function getApiBaseUrl() {
+      const host = window.location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:8000';
+      return '';
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      const apiBase = getApiBaseUrl();
+      let reports = [];
+      try {
+        const res = await fetch(`${apiBase}/api/reports?limit=6`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.reports && data.reports.length > 0) {
+            reports = data.reports;
+          }
+        }
+      } catch (e) {}
+
+      if (reports.length === 0) {
+        try {
+          const res = await fetch('./reports.json');
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              reports = data.slice(0, 6);
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (reports.length > 0) {
+        const card = document.getElementById("live-stream-card");
+        const list = document.getElementById("live-stream-list");
+        const count = document.getElementById("live-stream-count");
+        card.style.display = "block";
+        count.textContent = `${reports.length} Latest Audits`;
+
+        list.innerHTML = reports.map(r => {
+          const score = typeof r.suspicion_score === "number" ? r.suspicion_score : 0.0;
+          const scoreClass = r.is_satire ? "satire" : (score <= 15 ? "clean" : (score <= 40 ? "low_suspicion" : (score <= 70 ? "suspicious" : "deceptive")));
+          const badgeLabel = r.is_satire ? "SATIRE" : (score <= 15 ? "CLEAN" : (r.classification || "AUDITED"));
+          const sha = r.content_sha256 || r.id || "";
+          return `
+            <a href="viewer.html?q=${encodeURIComponent(sha)}" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 0.9rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s;">
+              <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 1rem;">
+                <b style="color: #fff; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis;">${r.title || sha}</b>
+                <span style="color: var(--text-dim); font-size: 0.8rem;">${r.url || sha.slice(0, 32)}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                <span class="badge ${scoreClass}" style="font-size: 0.75rem;">${badgeLabel}</span>
+                <span class="drawer-score ${scoreClass}" style="font-size: 0.95rem;">${score.toFixed(1)}</span>
+              </div>
+            </a>
+          `;
+        }).join("");
+      }
+    });
+  </script>
 </body>
 </html>

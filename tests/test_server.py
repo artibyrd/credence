@@ -221,3 +221,45 @@ async def test_fastmcp_human_report_resource_and_prompt(db_session: Any) -> None
     # Retrieve via explore resource
     res_explore: Any = await server.read_resource("credence://reports/explore/recent")
     assert res_explore is not None and len(res_explore) > 0
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_starlette_rest_endpoints(db_session: Any) -> None:
+    """Verify Starlette REST API endpoints (/health, /api/reports, /api/sifter/status, /api/feeds/stream)."""
+    import httpx
+    from httpx import ASGITransport
+
+    from credence.server.app import create_server_app
+
+    app = create_server_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Health check
+        res_health = await client.get("/health")
+        assert res_health.status_code == 200
+        assert res_health.json()["status"] == "healthy"
+
+        res_api_health = await client.get("/api/health")
+        assert res_api_health.status_code == 200
+        assert res_api_health.json()["status"] == "healthy"
+
+        # 2. Reports endpoint
+        res_reports = await client.get("/api/reports?category=recent&limit=10")
+        assert res_reports.status_code == 200
+        data = res_reports.json()
+        assert "reports" in data
+        assert "total" in data
+
+        # 3. Sifter status endpoint
+        res_status = await client.get("/api/sifter/status")
+        assert res_status.status_code == 200
+        status_data = res_status.json()
+        assert status_data["status"] == "online"
+        assert "active_feed_subscriptions" in status_data
+
+        # 4. Feeds stream endpoint
+        res_stream = await client.get("/api/feeds/stream?limit=10")
+        assert res_stream.status_code == 200
+        stream_data = res_stream.json()
+        assert "items" in stream_data

@@ -46,7 +46,32 @@ export default {
         });
       }
 
-      // 2. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
+      // 2. REST API Gateway & Health Check Proxy -> Google Cloud Run
+      if (url.pathname.startsWith('/api/') || url.pathname === '/health') {
+        const backendUrl = new URL(url.pathname + url.search, 'https://credence-server-663899237633.us-central1.run.app');
+        const newHeaders = new Headers(request.headers);
+        newHeaders.set('Host', 'credence-server-663899237633.us-central1.run.app');
+
+        const res = await fetch(backendUrl, {
+          method: request.method,
+          headers: newHeaders,
+          body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
+          redirect: 'follow',
+        });
+
+        const resHeaders = new Headers(res.headers);
+        resHeaders.set('Access-Control-Allow-Origin', '*');
+        resHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        resHeaders.set('Access-Control-Allow-Headers', '*');
+
+        return new Response(res.body, {
+          status: res.status,
+          statusText: res.statusText,
+          headers: resHeaders,
+        });
+      }
+
+      // 3. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
       const dirPrefixes = ['/credence.run', '/credence.nexus', '/credence.foundation', '/credence.report'];
       for (const dp of dirPrefixes) {
         if (url.pathname === dp || url.pathname.startsWith(dp + '/')) {

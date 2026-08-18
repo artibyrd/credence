@@ -77,6 +77,22 @@ def test_web_report_viewer_web_crypto(web_dir: Path) -> None:
     assert "node_modules" not in content
     assert "npm" not in content
 
+    # Dynamic API Auto-Discovery & Live Sifter Bridge
+    assert "getApiBaseUrl" in content, "Dynamic API base URL detection must be present"
+    assert "fetchDynamicCorpus" in content, "Dynamic corpus fetcher must be present"
+    assert "checkUrlHashData" in content, "Direct URL hash payload loader must be present"
+
+
+@pytest.mark.unit
+def test_web_edge_router_api_proxy(web_dir: Path) -> None:
+    """Verify Cloudflare Worker edge router proxies /api/* requests to backend."""
+    worker_file = web_dir / "_worker.js"
+    assert worker_file.exists(), "_worker.js must exist"
+
+    content = worker_file.read_text(encoding="utf-8")
+    assert "url.pathname.startsWith('/api/')" in content, "_worker.js must proxy /api/ routes"
+    assert "credence-server" in content, "Cloud Run backend origin must be configured"
+
 
 @pytest.mark.unit
 def test_web_nexus_peers_manifest(web_dir: Path) -> None:

@@ -621,10 +621,11 @@ def cli_serve(
     host: str = "0.0.0.0",  # noqa: S104
     port: int = 8000,
     profile: Optional[str] = None,
+    enable_sifter: bool = False,
 ) -> None:
-    """Launch the FastMCP server in Stdio or SSE mode."""
+    """Launch the FastMCP and REST server in Stdio or SSE mode."""
     from credence.config import CostProfile
-    from credence.server.app import mcp_server
+    from credence.server.app import create_server_app, mcp_server
 
     if profile:
         try:
@@ -644,14 +645,96 @@ def cli_serve(
         from mcp.server.transport_security import TransportSecuritySettings
 
         console.print(
-            f"[bold green]Starting Credence FastMCP Server (SSE) on http://{host}:{port}/sse (Profile: {settings.CREDENCE_PROFILE.value.upper()})[/bold green]"
+            f"[bold green]Starting Credence Server (FastMCP SSE + REST Gateway) on http://{host}:{port} (Profile: {settings.CREDENCE_PROFILE.value.upper()}, Sifter: {enable_sifter})[/bold green]"
         )
         sec = TransportSecuritySettings(
             enable_dns_rebinding_protection=False,
             allowed_hosts=["*"],
             allowed_origins=["*"],
         )
-        uvicorn.run(mcp_server.sse_app(transport_security=sec), host=host, port=port)
+        app = create_server_app(transport_security=sec, enable_sifter=enable_sifter)
+        uvicorn.run(app, host=host, port=port)
+
+
+async def cli_export_catalog(output_dir: Optional[str] = None) -> None:
+    """Export all stored audits in SQLite to a static reports.json catalog."""
+    from pathlib import Path
+
+    from sqlmodel import col, select
+
+    from credence.db import get_session, init_db
+    from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
+
+    out_path = (
+        Path(output_dir) if output_dir else Path(__file__).resolve().parent.parent.parent / "web" / "credence.report"
+    )
+    out_path.mkdir(parents=True, exist_ok=True)
+    json_file = out_path / "reports.json"
+
+    await init_db()
+    async for s in get_session():
+        stmt = (
+            select(AuditRecord, SnapshotRecord)
+            .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
+            .order_by(col(AuditRecord.audited_at).desc())
+        )
+        results = (await s.exec(stmt)).all()
+
+        catalog_items = []
+        for row in results:
+            audit = row[0]
+            snap = row[1]
+
+            # Fetch violations
+            stmt_v = select(ViolationRecord).where(ViolationRecord.audit_id == audit.id)
+            violations = list((await s.exec(stmt_v)).all())
+
+            cat = (
+                "satire"
+                if audit.is_satire
+                else (
+                    "best"
+                    if audit.suspicion_score <= 15.0
+                    else ("worst" if audit.suspicion_score >= 60.0 else "recent")
+                )
+            )
+
+            catalog_items.append(
+                {
+                    "id": snap.url if snap and snap.url else audit.content_sha256,
+                    "category": cat,
+                    "url": snap.url if snap else "",
+                    "title": snap.title if snap and snap.title else (audit.content_sha256[:24] + "..."),
+                    "byline": snap.byline if snap else "",
+                    "content_sha256": audit.content_sha256,
+                    "simhash_64": snap.simhash_64 if snap else "",
+                    "audited_at": audit.audited_at.isoformat() if audit.audited_at else "",
+                    "suspicion_score": audit.suspicion_score,
+                    "suspicion_density": audit.suspicion_density,
+                    "confidence_score": audit.confidence_score,
+                    "classification": audit.classification,
+                    "is_satire": audit.is_satire,
+                    "violations": [
+                        {
+                            "rule_id": v.rule_id,
+                            "rule_uri": v.rule_uri,
+                            "domain": v.domain,
+                            "cluster_id": v.cluster_id,
+                            "severity": v.severity,
+                            "confidence": v.confidence,
+                            "quote_or_element": v.quote_or_element,
+                            "reasoning": v.reasoning,
+                            "line_or_selector": v.line_or_selector,
+                        }
+                        for v in violations
+                    ],
+                    "node_pubkey": audit.node_pubkey,
+                    "node_signature": audit.node_signature,
+                }
+            )
+
+        json_file.write_text(json.dumps(catalog_items, indent=2), encoding="utf-8")
+        console.print(f"[bold green]Successfully exported {len(catalog_items)} reports to:[/] {json_file}")
 
 
 async def cli_mesh(port: int, seeds: list[str]) -> None:
@@ -908,7 +991,16 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
     """Dispatch daemon and server subcommands."""
     cmd = args.command
     if cmd == "serve":
-        cli_serve(transport=args.transport, host=args.host, port=args.port, profile=args.profile)
+        cli_serve(
+            transport=args.transport,
+            host=args.host,
+            port=args.port,
+            profile=args.profile,
+            enable_sifter=getattr(args, "sifter", False),
+        )
+        return True
+    elif cmd == "export-catalog":
+        asyncio.run(cli_export_catalog(output_dir=getattr(args, "output", None)))
         return True
     elif cmd == "benchmark":
         asyncio.run(cli_benchmark())
@@ -1197,7 +1289,7 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
             cost_profile=CostProfile(args.profile.lower()),
             auto_audit=not args.no_auto_audit,
         )
-        asyncio.run(daemon.start())
+        asyncio.run(daemon.start(once=getattr(args, "once", False)))
     elif cmd == "digest":
         from credence.db import get_session, init_db
         from credence.feeds.digest import generate_morning_digest, render_digest_terminal
@@ -1672,7 +1764,7 @@ def main() -> None:
     profile_parser.add_argument("profile_name", nargs="?", default=None, help="Profile name (free, balanced, ultra)")
 
     # serve command
-    serve_parser = subparsers.add_parser("serve", help="Launch FastMCP server.")
+    serve_parser = subparsers.add_parser("serve", help="Launch FastMCP server and REST API gateway.")
     serve_parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio", help="MCP transport protocol.")
     serve_parser.add_argument("--host", default=settings.MCP_HOST, help="Bind host for SSE transport.")
     serve_parser.add_argument("--port", type=int, default=settings.MCP_PORT, help="Port for SSE transport.")
@@ -1681,6 +1773,11 @@ def main() -> None:
         choices=["free", "balanced", "ultra"],
         default=None,
         help="Active cost profile.",
+    )
+    serve_parser.add_argument(
+        "--sifter",
+        action="store_true",
+        help="Launch background feed sifter daemon alongside server.",
     )
 
     # mesh command
@@ -1824,6 +1921,15 @@ def main() -> None:
     )
     sifter_parser.add_argument(
         "--no-auto-audit", action="store_true", help="Discover items without running live LLM evaluations."
+    )
+    sifter_parser.add_argument("--once", action="store_true", help="Execute a single sifting pass and exit.")
+
+    # export-catalog command
+    export_cat_parser = subparsers.add_parser(
+        "export-catalog", help="Export stored SQLite audits to static reports.json catalog."
+    )
+    export_cat_parser.add_argument(
+        "--output", "-o", default=None, help="Output directory for reports.json (default: web/credence.report/)."
     )
 
     # digest command

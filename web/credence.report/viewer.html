@@ -628,6 +628,7 @@ City council members expressed optimism regarding the new administration's forei
       }
     ];
 
+    let dynamicCorpus = [...MOCK_CORPUS];
     let activeReport = null;
     let currentFilter = "ALL";
     let currentSearchTerm = "";
@@ -638,11 +639,47 @@ City council members expressed optimism regarding the new administration's forei
       return urlParams.get(name);
     }
 
+    function getApiBaseUrl() {
+      const host = window.location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:8000';
+      }
+      return '';
+    }
+
     function showToast(msg) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
       toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 2200);
+      setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    async function fetchDynamicCorpus() {
+      const apiBase = getApiBaseUrl();
+      try {
+        const res = await fetch(`${apiBase}/api/reports?limit=50`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.reports && data.reports.length > 0) {
+            dynamicCorpus = data.reports;
+            return;
+          }
+        }
+      } catch (err) {
+        // Fallback to static reports.json
+      }
+
+      try {
+        const resStatic = await fetch('./reports.json');
+        if (resStatic.ok) {
+          const dataStatic = await resStatic.json();
+          if (Array.isArray(dataStatic) && dataStatic.length > 0) {
+            dynamicCorpus = dataStatic;
+          }
+        }
+      } catch (err) {
+        // Keep embedded MOCK_CORPUS
+      }
     }
 
     // View Mode Switcher: Human vs. Compact vs. Machine Raw
@@ -686,31 +723,33 @@ City council members expressed optimism regarding the new administration's forei
       let filtered = [];
       let catTitle = "";
       if (category === "recent") {
-        filtered = [...MOCK_CORPUS];
+        filtered = [...dynamicCorpus];
         catTitle = "⏱️ Recent Epistemic Audits Stream";
       } else if (category === "best") {
-        filtered = MOCK_CORPUS.filter(c => c.category === "best" || c.suspicion_score <= 15.0);
+        filtered = dynamicCorpus.filter(c => c.category === "best" || (c.suspicion_score !== undefined && c.suspicion_score <= 15.0));
         catTitle = "🛡️ Highest Integrity & Cleanest Audits (0–15 Score)";
       } else if (category === "worst") {
-        filtered = MOCK_CORPUS.filter(c => c.category === "worst" || c.suspicion_score >= 60.0);
+        filtered = dynamicCorpus.filter(c => c.category === "worst" || (c.suspicion_score !== undefined && c.suspicion_score >= 60.0));
         catTitle = "🛑 Highly Flagged Deceptive & Fallacious Content (60+ Score)";
       } else if (category === "satire") {
-        filtered = MOCK_CORPUS.filter(c => c.is_satire);
+        filtered = dynamicCorpus.filter(c => c.is_satire);
         catTitle = "🎭 Legitimate Satire & Parody Showcase (Poe's Law)";
       }
 
       titleEl.textContent = catTitle;
       gridEl.innerHTML = filtered.map(item => {
-        const scoreClass = item.is_satire ? "satire" : (item.suspicion_score <= 15 ? "clean" : (item.suspicion_score <= 40 ? "low_suspicion" : (item.suspicion_score <= 70 ? "suspicious" : "deceptive")));
-        const badgeLabel = item.is_satire ? "SATIRE" : (item.suspicion_score <= 15 ? "CLEAN" : item.classification);
+        const score = typeof item.suspicion_score === "number" ? item.suspicion_score : 0.0;
+        const scoreClass = item.is_satire ? "satire" : (score <= 15 ? "clean" : (score <= 40 ? "low_suspicion" : (score <= 70 ? "suspicious" : "deceptive")));
+        const badgeLabel = item.is_satire ? "SATIRE" : (score <= 15 ? "CLEAN" : (item.classification || "AUDITED"));
+        const sha = item.content_sha256 || item.id || "";
         return `
-          <div class="drawer-card" onclick="loadReportByHash('${item.content_sha256}')">
+          <div class="drawer-card" onclick="loadReportByHash('${sha}')">
             <div class="drawer-card-top">
               <span class="badge ${scoreClass}">${badgeLabel}</span>
-              <span class="drawer-score ${scoreClass}">${item.suspicion_score.toFixed(1)}</span>
+              <span class="drawer-score ${scoreClass}">${score.toFixed(1)}</span>
             </div>
-            <div class="drawer-title-text">${escapeHtml(item.title)}</div>
-            <div class="drawer-url">${escapeHtml(item.url)}</div>
+            <div class="drawer-title-text">${escapeHtml(item.title || sha.slice(0, 30))}</div>
+            <div class="drawer-url">${escapeHtml(item.url || "")}</div>
           </div>
         `;
       }).join("");
@@ -724,27 +763,89 @@ City council members expressed optimism regarding the new administration's forei
     };
 
     window.loadRandomReport = function() {
-      const idx = Math.floor(Math.random() * MOCK_CORPUS.length);
-      const chosen = MOCK_CORPUS[idx];
-      loadReportByHash(chosen.content_sha256);
-      showToast(`Loaded random audit: ${chosen.title.slice(0, 35)}...`);
+      const idx = Math.floor(Math.random() * dynamicCorpus.length);
+      const chosen = dynamicCorpus[idx];
+      const sha = chosen.content_sha256 || chosen.id;
+      loadReportByHash(sha);
+      showToast(`Loaded random audit: ${(chosen.title || sha).slice(0, 35)}...`);
     };
 
-    window.loadReportByHash = function(hash) {
+    window.loadReportByHash = async function(hash) {
       window.closeDiscoveryDrawer();
-      const match = MOCK_CORPUS.find(c => c.content_sha256 === hash || c.url === hash || c.id === hash);
-      if (match) {
-        document.getElementById("header-query").value = match.content_sha256;
+      const match = dynamicCorpus.find(c => c.content_sha256 === hash || c.url === hash || c.id === hash) ||
+                    MOCK_CORPUS.find(c => c.content_sha256 === hash || c.url === hash || c.id === hash);
+      
+      if (match && match.violations && (match.article_text || match.violations.length > 0)) {
+        document.getElementById("header-query").value = match.content_sha256 || match.id;
         renderReport(match);
         const url = new URL(window.location);
-        url.searchParams.set("q", match.content_sha256);
+        url.searchParams.set("q", match.content_sha256 || match.id);
         window.history.replaceState({}, "", url);
+        return;
+      }
+
+      // Query REST API for full reconstituted report
+      const apiBase = getApiBaseUrl();
+      try {
+        const res = await fetch(`${apiBase}/api/reports/${encodeURIComponent(hash)}`);
+        if (res.ok) {
+          const fullReport = await res.json();
+          if (fullReport && fullReport.content_sha256) {
+            document.getElementById("header-query").value = fullReport.content_sha256;
+            renderReport(fullReport);
+            const url = new URL(window.location);
+            url.searchParams.set("q", fullReport.content_sha256);
+            window.history.replaceState({}, "", url);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Direct lookup failed:", err);
+      }
+
+      if (match) {
+        document.getElementById("header-query").value = match.content_sha256 || match.id;
+        renderReport(match);
+      } else {
+        showToast(`Report not found: ${hash.slice(0, 30)}`);
       }
     };
 
-    window.inspectAuditFromInput = function() {
+    window.inspectAuditFromInput = async function() {
       const q = document.getElementById("header-query").value.trim();
       if (!q) return;
+      
+      // If URL, check if in dynamicCorpus or trigger on-demand live audit
+      if (q.startsWith("http://") || q.startsWith("https://")) {
+        const match = dynamicCorpus.find(c => c.url === q) || MOCK_CORPUS.find(c => c.url === q);
+        if (match && match.violations) {
+          loadReportByHash(match.content_sha256 || match.id);
+          return;
+        }
+
+        // Trigger on-demand live audit
+        showToast("🔍 Triggering on-demand live epistemic audit...");
+        const apiBase = getApiBaseUrl();
+        try {
+          const res = await fetch(`${apiBase}/api/audit?url=${encodeURIComponent(q)}`, { method: "POST" });
+          if (res.ok) {
+            const report = await res.json();
+            dynamicCorpus.unshift(report);
+            renderReport(report);
+            const url = new URL(window.location);
+            url.searchParams.set("q", report.content_sha256);
+            window.history.replaceState({}, "", url);
+            showToast("✅ Live audit completed!");
+            return;
+          } else {
+            const errData = await res.json();
+            showToast(`Audit failed: ${errData.error || res.statusText}`);
+          }
+        } catch (err) {
+          showToast(`Audit error: ${err.message}`);
+        }
+      }
+
       loadReportByHash(q);
     };
 
@@ -1114,26 +1215,51 @@ ${(report.violations || []).length === 0 ? '✓ High epistemic integrity. No gro
       }
     };
 
-    // Initialization lifecycle
-    window.addEventListener("DOMContentLoaded", () => {
-      const q = getQueryParam("q");
-      const viewParam = getQueryParam("view") || "human";
+    // Check URL hash for direct JSON payload (e.g. #data=<base64_encoded_json>)
+    function checkUrlHashData() {
+      if (window.location.hash && window.location.hash.startsWith("#data=")) {
+        try {
+          const rawB64 = window.location.hash.slice(6);
+          const decoded = JSON.parse(decodeURIComponent(escape(atob(rawB64))));
+          if (decoded && decoded.content_sha256) {
+            renderReport(decoded);
+            document.getElementById("header-query").value = decoded.content_sha256;
+            return true;
+          }
+        } catch (e) {
+          console.warn("Failed to parse #data hash payload:", e);
+        }
+      }
+      return false;
+    }
 
+    // Initialization lifecycle
+    window.addEventListener("DOMContentLoaded", async () => {
+      const viewParam = getQueryParam("view") || "human";
       if (viewParam === "compact" || viewParam === "raw") {
         window.setViewMode(viewParam);
       }
 
-      let selected = null;
+      // Check if direct base64 data was supplied in URL hash
+      if (checkUrlHashData()) {
+        return;
+      }
+
+      // Fetch dynamic reports from live REST backend or static catalog
+      await fetchDynamicCorpus();
+
+      const q = getQueryParam("q");
       if (q) {
-        selected = MOCK_CORPUS.find(c => c.content_sha256 === q || c.url === q || c.id === q);
+        await window.loadReportByHash(q);
+        return;
       }
 
-      if (!selected) {
-        selected = MOCK_CORPUS[2]; // Default to suspicious zoning scenario
+      // Default selection from dynamic or mock corpus
+      let selected = dynamicCorpus.length > 0 ? dynamicCorpus[0] : MOCK_CORPUS[2];
+      if (selected) {
+        document.getElementById("header-query").value = selected.content_sha256 || selected.id || "";
+        renderReport(selected);
       }
-
-      document.getElementById("header-query").value = selected.content_sha256;
-      renderReport(selected);
     });
   </script>
 </body>

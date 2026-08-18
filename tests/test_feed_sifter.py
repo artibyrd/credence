@@ -114,3 +114,32 @@ async def test_morning_digest_generation(db_session: AsyncSession):
     assert "# 🌅 Credence Morning Epistemic Digest" in md_output
     assert "Clean Investigative Report" in md_output or "clean-investigation" in md_output
     assert "SPJ-1.1" in md_output
+
+
+@pytest.mark.asyncio
+async def test_sifter_cycle_and_telemetry(db_session: AsyncSession):
+    """Verify autonomous sifting cycle and database telemetry tracking."""
+    from unittest.mock import AsyncMock, patch
+
+    from credence.feeds.parser import ParsedFeed
+    from credence.feeds.sifter import get_sifter_status, run_sifting_cycle
+
+    # Mock feed parser to return hermetic offline entries
+    mock_feed = ParsedFeed(
+        title="ProPublica Main",
+        is_modified=True,
+        entries=[],
+    )
+
+    with patch("credence.feeds.worker.fetch_and_parse_feed", new_callable=AsyncMock, return_value=mock_feed):
+        # Bootstrap presets
+        await bootstrap_preset_feeds(db_session)
+
+        # Execute sifter cycle with auto_audit=False (dry_run)
+        summary = await run_sifting_cycle(db_session, auto_audit=False)
+        assert summary.total_feeds_polled >= 1
+
+        # Check sifter status telemetry
+        telemetry = await get_sifter_status(db_session)
+        assert telemetry["status"] == "online"
+        assert telemetry["active_feed_subscriptions"] >= 1

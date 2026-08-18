@@ -1,6 +1,6 @@
-"""Unit tests for Credence Rich CLI commands."""
-
+import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -211,3 +211,17 @@ async def test_cli_browse_and_formats(fixtures_dir: Path) -> None:
     await cli_report_view(identifier="browse", category="best", format_type="compact")
     await cli_report_view(identifier=file_url, format_type="human")
     await cli_report_view(identifier=file_url, format_type="compact")
+
+
+@pytest.mark.asyncio
+async def test_cli_export_catalog(tmp_path: Any, db_session: Any) -> None:
+    """Verify cli_export_catalog exports valid JSON catalog."""
+    from credence.cli.main import cli_export_catalog
+
+    out_dir = tmp_path / "web_export"
+    await cli_export_catalog(output_dir=str(out_dir))
+
+    json_file = out_dir / "reports.json"
+    assert json_file.exists()
+    content = json.loads(json_file.read_text(encoding="utf-8"))
+    assert isinstance(content, list)
