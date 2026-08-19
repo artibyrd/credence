@@ -221,7 +221,7 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
         "crypto-json-input",
         "crypto-status",
         "taxonomy-search-input",
-        "taxonomy-table-body",
+        "taxonomy-cards-container",
         "chip-tax-all",
         "chip-tax-spj",
         "chip-tax-iep",

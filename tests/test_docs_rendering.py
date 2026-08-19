@@ -222,15 +222,15 @@ async def test_interactive_playground_widgets(page: Page, docs_server: str) -> N
     assert chip_spj is not None
     await chip_spj.click()
     await page.wait_for_timeout(200)
-    rows = await page.query_selector_all("#taxonomy-table-body tr")
-    assert len(rows) >= 1
+    cards = await page.query_selector_all("#taxonomy-cards-container .taxonomy-rule-card")
+    assert len(cards) >= 1
 
     search_input = await page.query_selector("#taxonomy-search-input")
     assert search_input is not None
-    await search_input.fill("smear")
+    await search_input.fill("assertion")
     await page.wait_for_timeout(200)
-    filtered_rows = await page.query_selector_all("#taxonomy-table-body tr")
-    assert len(filtered_rows) >= 1
+    filtered_cards = await page.query_selector_all("#taxonomy-cards-container .taxonomy-rule-card")
+    assert len(filtered_cards) >= 1
 
     # 7. Multi-Model Comparator
     cards = await page.query_selector_all("#model-cards-container .model-comp-card")
@@ -266,13 +266,13 @@ async def test_interactive_playground_widgets(page: Page, docs_server: str) -> N
     assert len(spans) >= 1
 
     # 11. Schema.org ClaimReview & RFC 8785 Receipt Generator
-    cr_output = await page.input_value("#cr-json-output")
+    cr_output = await page.inner_text("#cr-json-output")
     assert "ClaimReview" in cr_output or "schema.org" in cr_output
     btn_tab_rfc = await page.query_selector("#btn-tab-rfc8785")
     assert btn_tab_rfc is not None
     await btn_tab_rfc.click()
     await page.wait_for_timeout(200)
-    rfc_output = await page.input_value("#cr-json-output")
+    rfc_output = await page.inner_text("#cr-json-output")
     assert "content_sha256" in rfc_output or "classification" in rfc_output
 
     # 12. Token Governor & 30% Headroom Circuit Breaker
@@ -420,3 +420,152 @@ async def test_tui_vector_svg_rendering(page: Page, docs_server: str) -> None:
                 assert box is not None, f"Visible TUI image #{idx} on route {route} has no bounding box"
                 assert box["width"] > 100, f"TUI image #{idx} bounding box width too small: {box['width']}"
                 assert box["height"] > 50, f"TUI image #{idx} bounding box height too small: {box['height']}"
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_anti_scrollbox_and_natural_flow_invariant(page: Page, docs_server: str) -> None:
+    """Verify Invariant 38: No nested vertical scrollboxes or trapped containers exist in reading prose."""
+    key_pages = [
+        "docs/playground",
+        "blog/conflict-of-pun-terest",
+        "blog/the-pizza-hut-problem",
+        "docs/invariants",
+        "docs/architecture",
+    ]
+
+    for route in key_pages:
+        await page.goto(f"{docs_server}/#{route}", wait_until="networkidle")
+        await page.wait_for_timeout(500)
+
+        # Check for any element inside #doc-content with an active vertical scrollbar
+        scroll_violations = await page.evaluate(
+            """() => {
+            const container = document.getElementById('doc-content');
+            if (!container) return [];
+            const elements = container.querySelectorAll('*');
+            const violations = [];
+            for (const el of elements) {
+                // Ignore code blocks with horizontal overflow or textareas used for active input
+                if (el.tagName === 'PRE' || el.tagName === 'TEXTAREA' || el.tagName === 'TABLE') continue;
+                const style = window.getComputedStyle(el);
+                if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                    if (el.scrollHeight > el.clientHeight + 10) {
+                        violations.push({
+                            tag: el.tagName,
+                            className: el.className,
+                            id: el.id,
+                            scrollHeight: el.scrollHeight,
+                            clientHeight: el.clientHeight
+                        });
+                    }
+                }
+            }
+            return violations;
+        }"""
+        )
+        assert len(scroll_violations) == 0, (
+            f"Found nested vertical scrollbox violations on route {route}: {scroll_violations}"
+        )
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_latex_math_rendering_and_zero_macro_leaks(page: Page, docs_server: str) -> None:
+    """Verify Invariant 37: Mathematical formulas parse cleanly into Unicode math without raw LaTeX backslash leaks."""
+    math_routes = [
+        "docs/mathematics/economics-of-truth",
+        "docs/mathematics/robust-consensus-proofs",
+        "blog/conflict-of-pun-terest",
+        "docs/invariants",
+    ]
+
+    for route in math_routes:
+        await page.goto(f"{docs_server}/#{route}", wait_until="networkidle")
+        await page.wait_for_timeout(500)
+
+        # Verify math elements are present
+        math_elements = await page.query_selector_all(".math-inline, .math-block")
+        assert len(math_elements) >= 3, f"Expected rendered math elements on {route}, found {len(math_elements)}"
+
+        # Check prose and math elements for unrendered raw LaTeX macros (excluding literal code blocks)
+        prose_texts = await page.evaluate(
+            """() => {
+            const container = document.getElementById('doc-content');
+            if (!container) return [];
+            const clone = container.cloneNode(true);
+            // Remove code and pre elements so code examples explaining LaTeX syntax are not flagged
+            clone.querySelectorAll('pre, code').forEach(el => el.remove());
+            return clone.innerText;
+        }"""
+        )
+        raw_macros = ["\\frac{", "\\mathbb{", "\\min_{", "\\sum_{", "\\tau_{", "\\pm ", "\\left(", "\\right)"]
+        for macro in raw_macros:
+            assert macro not in prose_texts, f"Found unrendered raw LaTeX macro '{macro}' in prose on route {route}"
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_taxonomy_rule_explorer_full_catalog_and_filtering(page: Page, docs_server: str) -> None:
+    """Verify Widget 6: Renders 46 authentic taxonomy rules with zero scrollbars, multi-filtering, and pagination."""
+    await page.goto(f"{docs_server}/#docs/playground", wait_until="networkidle")
+    await page.wait_for_timeout(600)
+
+    # 1. Total Rules Count
+    visible_count = await page.inner_text("#tax-visible-count")
+    assert visible_count == "46", f"Expected 46 total rules, got {visible_count}"
+
+    # 2. Category Chips Verification
+    # SPJ Journalism
+    await page.click("#chip-tax-spj")
+    await page.wait_for_timeout(200)
+    assert await page.inner_text("#tax-visible-count") == "12"
+
+    # IEP Fallacies
+    await page.click("#chip-tax-iep")
+    await page.wait_for_timeout(200)
+    assert await page.inner_text("#tax-visible-count") == "21"
+
+    # Deceptive UI
+    await page.click("#chip-tax-deceptive")
+    await page.wait_for_timeout(200)
+    assert await page.inner_text("#tax-visible-count") == "9"
+
+    # Domain Specific
+    await page.click("#chip-tax-domain")
+    await page.wait_for_timeout(200)
+    assert await page.inner_text("#tax-visible-count") == "4"
+
+    # Reset to All
+    await page.click("#chip-tax-all")
+    await page.wait_for_timeout(200)
+
+    # 3. Severity Dropdown Filter
+    await page.select_option("#taxonomy-severity-filter", "5")
+    await page.wait_for_timeout(200)
+    sev5_count = int(await page.inner_text("#tax-visible-count"))
+    assert sev5_count >= 4, f"Expected at least 4 Sev 5 rules, found {sev5_count}"
+
+    await page.select_option("#taxonomy-severity-filter", "ALL")
+    await page.wait_for_timeout(200)
+
+    # 4. Instant Search Filter
+    search_input = page.locator("#taxonomy-search-input")
+    await search_input.fill("ad hominem")
+    await page.wait_for_timeout(200)
+    assert int(await page.inner_text("#tax-visible-count")) >= 1
+
+    await search_input.fill("")
+    await page.wait_for_timeout(200)
+
+    # 5. Pagination
+    assert "Page 1" in await page.inner_text("#tax-page-indicator")
+    await page.click("#tax-next-btn")
+    await page.wait_for_timeout(200)
+    assert "Page 2" in await page.inner_text("#tax-page-indicator")
+
+    # 6. Show All Toggle
+    await page.click("#tax-show-all-btn")
+    await page.wait_for_timeout(200)
+    all_cards = await page.query_selector_all("#taxonomy-cards-container .taxonomy-rule-card")
+    assert len(all_cards) == 46, f"Expected all 46 rule cards visible, found {len(all_cards)}"
