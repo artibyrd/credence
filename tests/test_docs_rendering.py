@@ -139,11 +139,11 @@ async def test_no_raw_html_tag_leaks(page: Page, docs_server: str) -> None:
 @pytest.mark.e2e
 @pytest.mark.asyncio
 async def test_interactive_playground_widgets(page: Page, docs_server: str) -> None:
-    """Verify all 8 playground widgets initialize and respond accurately to user interactions."""
+    """Verify all 12 playground widgets initialize and respond accurately to user interactions."""
     await page.goto(f"{docs_server}/#docs/playground", wait_until="networkidle")
     await page.wait_for_timeout(500)
 
-    # 1. Mesh Gossip Simulator
+    # 1. Mesh Gossip Simulator & Node Inspector
     btn_gossip = await page.query_selector("#btn-broadcast-gossip")
     assert btn_gossip is not None
     await btn_gossip.click()
@@ -151,34 +151,55 @@ async def test_interactive_playground_widgets(page: Page, docs_server: str) -> N
     log_text = await page.inner_text("#mesh-event-log")
     assert "100% Cluster Saturation Reached" in log_text
 
-    # 2. SimHash Visualizer
+    # Node Inspector Click
+    await page.evaluate("window.__selectMeshNode(1)")
+    await page.wait_for_timeout(150)
+    inspector_text = await page.inner_text("#mesh-node-inspector")
+    assert "Node 1" in inspector_text
+
+    # 2. SimHash Visualizer & 64-Bit Differential Grid
     btn_sim = await page.query_selector("#btn-calc-simhash")
     assert btn_sim is not None
     await btn_sim.click()
     await page.wait_for_timeout(200)
     dh_val = await page.inner_text("#simhash-dh-val")
     assert dh_val.isdigit()
+    bit_tiles = await page.query_selector_all("#simhash-bitdiff-grid .bit-tile")
+    assert len(bit_tiles) == 64
 
-    # 3. Verbatim Grounding Tester
+    # Preset button interaction
+    btn_preset_plagiarism = await page.query_selector("#btn-preset-plagiarism")
+    if btn_preset_plagiarism:
+        await btn_preset_plagiarism.click()
+        await page.wait_for_timeout(200)
+        dh_new = await page.inner_text("#simhash-dh-val")
+        assert int(dh_new) > 0
+
+    # 3. Verbatim Grounding Tester & DOM Highlighting
     btn_ground = await page.query_selector("#btn-test-grounding")
     assert btn_ground is not None
     await btn_ground.click()
     await page.wait_for_timeout(200)
     ground_status = await page.inner_text("#grounding-status")
     assert "100% Grounded Citation" in ground_status
+    match_span = await page.query_selector("#grounding-preview-display .highlight-match")
+    assert match_span is not None
 
-    # 4. Saturation Calculator
+    # 4. Saturation Calculator & SVG Curve Plot
     slider = await page.query_selector("#calc-violations")
     assert slider is not None
     await slider.fill("4")
     await page.wait_for_timeout(200)
     score_text = await page.inner_text("#calc-result-score")
     assert float(score_text) > 0.0
+    curve_polyline = await page.query_selector("#calc-curve-svg polyline")
+    assert curve_polyline is not None
 
-    # 5. In-Browser WebCrypto Verifier
+    # 5. In-Browser WebCrypto Verifier & Tamper Detection
     btn_load = await page.query_selector("#btn-load-sample")
+    btn_tamper = await page.query_selector("#btn-tamper-sample")
     btn_verify = await page.query_selector("#btn-verify-crypto")
-    assert btn_load is not None and btn_verify is not None
+    assert btn_load is not None and btn_tamper is not None and btn_verify is not None
     await btn_load.click()
     await page.wait_for_timeout(200)
     await btn_verify.click()
@@ -186,21 +207,77 @@ async def test_interactive_playground_widgets(page: Page, docs_server: str) -> N
     crypto_status = await page.inner_text("#crypto-status")
     assert "WebCrypto Verification Succeeded" in crypto_status
 
-    # 6. Taxonomy Explorer
+    # Tamper test
+    await btn_tamper.click()
+    await page.wait_for_timeout(150)
+    await btn_verify.click()
+    await page.wait_for_timeout(150)
+    tamper_status = await page.inner_text("#crypto-status")
+    assert "Verification Failed" in tamper_status or "Signature Mismatch" in tamper_status
+
+    # 6. Taxonomy Explorer & Category Chips
+    chip_spj = await page.query_selector("#chip-tax-spj")
+    assert chip_spj is not None
+    await chip_spj.click()
+    await page.wait_for_timeout(200)
+    rows = await page.query_selector_all("#taxonomy-table-body tr")
+    assert len(rows) >= 1
+
     search_input = await page.query_selector("#taxonomy-search-input")
     assert search_input is not None
     await search_input.fill("smear")
     await page.wait_for_timeout(200)
-    rows = await page.query_selector_all("#taxonomy-table-body tr")
-    assert len(rows) >= 1
+    filtered_rows = await page.query_selector_all("#taxonomy-table-body tr")
+    assert len(filtered_rows) >= 1
 
     # 7. Multi-Model Comparator
     cards = await page.query_selector_all("#model-cards-container .model-comp-card")
     assert len(cards) == 5
 
-    # 8. Zero-Trust Dynamic Feed Simulator
+    # 8. Zero-Trust Dynamic Feed Simulator & Astroturfing Preset
     feed_score = await page.inner_text("#feed-result-score")
     assert float(feed_score) >= 0.0
+    btn_astro = await page.query_selector("#btn-preset-astroturf")
+    if btn_astro:
+        await btn_astro.click()
+        await page.wait_for_timeout(200)
+        astro_status = await page.inner_text("#feed-astroturf-status")
+        assert "HIGH RISK" in astro_status or "Astroturfing" in astro_status
+
+    # 9. The Galileo Rule Consensus Simulator
+    galileo_score = await page.inner_text("#galileo-consensus-score")
+    assert float(galileo_score) == 75.0
+    btn_toggle_gal = await page.query_selector("#btn-toggle-galileo")
+    assert btn_toggle_gal is not None
+    await btn_toggle_gal.click()
+    await page.wait_for_timeout(200)
+    naive_score = await page.inner_text("#galileo-consensus-score")
+    assert float(naive_score) < 75.0
+    # Toggle back on
+    await btn_toggle_gal.click()
+    await page.wait_for_timeout(150)
+
+    # 10. Epistemic Heuristic Text Scanner
+    scanner_score = await page.inner_text("#scanner-heuristic-score")
+    assert float(scanner_score) > 0.0
+    spans = await page.query_selector_all("#scanner-highlight-output .epistemic-span")
+    assert len(spans) >= 1
+
+    # 11. Schema.org ClaimReview & RFC 8785 Receipt Generator
+    cr_output = await page.input_value("#cr-json-output")
+    assert "ClaimReview" in cr_output or "schema.org" in cr_output
+    btn_tab_rfc = await page.query_selector("#btn-tab-rfc8785")
+    assert btn_tab_rfc is not None
+    await btn_tab_rfc.click()
+    await page.wait_for_timeout(200)
+    rfc_output = await page.input_value("#cr-json-output")
+    assert "content_sha256" in rfc_output or "classification" in rfc_output
+
+    # 12. Token Governor & 30% Headroom Circuit Breaker
+    headroom_text = await page.inner_text("#gov-headroom-pct")
+    assert "%" in headroom_text
+    gov_badge = await page.inner_text("#gov-state-badge")
+    assert "QUOTA_PRESERVED" in gov_badge or "ACTIVE_THINKING" in gov_badge
 
 
 @pytest.mark.e2e
