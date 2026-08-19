@@ -75,7 +75,7 @@ async def test_cli_quota() -> None:
     await cli_quota()
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_cli_audit_and_lookup(fixtures_dir: Path) -> None:
     """Verify CLI audit and lookup workflows."""
     file_url = f"file://{fixtures_dir / 'clean_article.html'}"
@@ -83,7 +83,7 @@ async def test_cli_audit_and_lookup(fixtures_dir: Path) -> None:
     await cli_lookup(file_url)
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_cli_verify_file_and_export(tmp_path: Path) -> None:
     """Verify verify-file and export-report CLI subcommands."""
     import json
