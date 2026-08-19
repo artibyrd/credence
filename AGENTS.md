@@ -57,6 +57,8 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Pure Logic Decoupling**: Business logic must execute and test decoupled from presentation layers (`tests/test_interfaces_isolation.py`).
 - **Universal Mermaid & Visual Syntax Guardrail**: All Mermaid diagrams must strictly use standard flow/graph/sequence syntax with special characters enclosed in double quotes (e.g. `id["Label (Details)"]`) and WCAG AA/AAA high contrast on dark slate.
 - **Documentation Progressive Disclosure & Search Indexing (Anti-Firehose & Anti-Oatmeal)**: Public landing pages, repository READMEs, and documentation gateways must prioritize calm, human-first on-ramps and 60-second jump-in quickstarts before exposing dense mathematical proofs or internal taxonomy enums (Anti-Firehose). All documentation articles must maintain rich search keyword metadata, multi-term indexing, and link to a master Topic Index (`docs/topic-index.md`) so users can locate specific concepts without sifting blindly (Anti-Oatmeal).
+- **Zero-Build Inline HTML Tag & Nested Math Integrity**: Custom zero-build Markdown parsers must mask and preserve safe author-supplied inline HTML tags (`<a>`, `<code>`, `<span>`) before entity escaping and use balanced-brace recursive parsing for nested LaTeX formulas (`\frac{...}{...}`) with zero raw tag or backslash leaks.
+- **Anti-Scrollbox & Natural Flow Presentation**: Presentation containers and interactive inspectors must never constrain content with fixed nested vertical scrollbars; technical payloads must use auto-height elements or collapsible `<details>` accordions with natural document flow.
 
 ---
 
