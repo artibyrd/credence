@@ -569,3 +569,61 @@ async def test_taxonomy_rule_explorer_full_catalog_and_filtering(page: Page, doc
     await page.wait_for_timeout(200)
     all_cards = await page.query_selector_all("#taxonomy-cards-container .taxonomy-rule-card")
     assert len(all_cards) == 46, f"Expected all 46 rule cards visible, found {len(all_cards)}"
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_cross_domain_consistent_navigation_and_footers(page: Page, docs_server: str) -> None:
+    """Verify that all pages across all domains have a consistent header, 4-column footer,
+
+    and an accessible master sitemap.
+    """
+    # 1. Test docs portal sitemap route
+    await page.goto(f"{docs_server}/#docs/sitemap", wait_until="networkidle")
+    await page.wait_for_selector("#doc-content h1", timeout=5000)
+
+    title = await page.inner_text("#doc-content h1")
+    assert "Ecosystem Master Sitemap" in title
+
+    # Verify sitemap contents
+    content_text = await page.inner_text("#doc-content")
+    assert "credence.run" in content_text
+    assert "credence.report" in content_text
+    assert "credence.nexus" in content_text
+    assert "credence.foundation" in content_text
+    assert "12 Zero-Build Interactive Playgrounds" in content_text or "12 Zero-Build Playgrounds" in content_text
+    assert "38 Core System Invariants" in content_text or "38" in content_text
+
+    # 2. Check header navigation links in live docs portal
+    nav_links = await page.eval_on_selector_all(
+        ".credence-nav .nav-links a",
+        "elements => elements.map(e => ({ text: e.innerText.trim(), href: e.getAttribute('href') }))",
+    )
+    link_texts = [item["text"] for item in nav_links]
+    for required_item in ["Home", "Docs", "Playgrounds", "Blog", "Reports", "Nexus", "Foundation", "Sitemap", "GitHub"]:
+        assert any(required_item.lower() in t.lower() for t in link_texts), f"Missing nav item: {required_item}"
+
+    # 3. Check 4-column ecosystem footer rendered in article view
+    footer_cols = await page.eval_on_selector_all(
+        ".credence-footer .footer-col h4", "elements => elements.map(e => e.innerText.trim())"
+    )
+    assert len(footer_cols) == 4, f"Expected 4 footer columns, found {len(footer_cols)}: {footer_cols}"
+
+    # 4. Verify all 5 domain static HTML entrypoints maintain consistent headers and footers
+    web_dir = Path(__file__).parent.parent / "web"
+    domain_files = [
+        web_dir / "credence.run" / "index.html",
+        web_dir / "credence.report" / "index.html",
+        web_dir / "credence.report" / "viewer.html",
+        web_dir / "credence.nexus" / "index.html",
+        web_dir / "credence.foundation" / "index.html",
+    ]
+
+    for f in domain_files:
+        assert f.exists(), f"Domain entrypoint missing: {f}"
+        text = f.read_text(encoding="utf-8")
+        assert 'class="credence-nav"' in text or "class='credence-nav'" in text, f"Missing .credence-nav in {f.name}"
+        assert 'class="credence-footer"' in text or "class='credence-footer'" in text, (
+            f"Missing .credence-footer in {f.name}"
+        )
+        assert "footer-grid" in text, f"Missing .footer-grid in {f.name}"

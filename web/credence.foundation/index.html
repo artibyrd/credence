@@ -25,9 +25,171 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     footer { text-align: center; margin-top: 4rem; color: var(--muted); font-size: 0.85rem; }
+
+    /* Unified Ecosystem Navigation Bar */
+    .credence-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1.5rem;
+      background: rgba(11, 15, 25, 0.95);
+      border-bottom: 1px solid var(--border, rgba(56, 189, 248, 0.15));
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+    }
+
+    .credence-nav .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .credence-nav .badge {
+      font-size: 0.72rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent, #38bdf8);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+
+    .credence-nav .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 1.25rem;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+    }
+
+    .credence-nav .nav-links a {
+      color: var(--muted, #94a3b8);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .credence-nav .nav-links a:hover,
+    .credence-nav .nav-links a.active {
+      color: var(--accent, #38bdf8);
+      text-decoration: none;
+    }
+
+    /* Unified Cross-Domain Ecosystem Footer */
+    footer.credence-footer {
+      padding: 3.5rem 1.5rem 2rem;
+      border-top: 1px solid var(--border, rgba(56, 189, 248, 0.15));
+      background: linear-gradient(180deg, rgba(11, 15, 25, 0.95), rgba(5, 8, 15, 0.98));
+      color: var(--muted, #94a3b8);
+      font-size: 0.9rem;
+      margin-top: 4rem;
+      width: 100%;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2.5rem;
+      margin-bottom: 2.5rem;
+      text-align: left;
+    }
+
+    .footer-col h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      letter-spacing: 0.02em;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .footer-col a {
+      color: var(--muted, #94a3b8);
+      text-decoration: none;
+      font-size: 0.88rem;
+      transition: color 0.15s ease, transform 0.15s ease;
+      display: inline-block;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent, #38bdf8);
+      transform: translateX(2px);
+    }
+
+    .footer-bottom {
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-bottom-links a {
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .footer-bottom-links a:hover {
+      color: var(--accent, #38bdf8);
+    }
   </style>
 </head>
 <body>
+  <!-- Unified Ecosystem Navigation Bar -->
+  <nav class="credence-nav">
+    <a href="https://credence.run" class="brand">
+      🛡️ Credence <span class="badge">v1.13.0</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="https://credence.run">Home</a></li>
+      <li><a href="https://docs.credence.run#docs/intro">Docs</a></li>
+      <li><a href="https://docs.credence.run#docs/playground">Playgrounds</a></li>
+      <li><a href="https://blog.credence.run#blog/conflict-of-pun-terest">Blog</a></li>
+      <li><a href="https://credence.report/viewer.html">Reports</a></li>
+      <li><a href="https://credence.nexus">Nexus</a></li>
+      <li><a href="https://credence.foundation" class="active">Foundation</a></li>
+      <li><a href="https://docs.credence.run#docs/sitemap">Sitemap</a></li>
+      <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </nav>
+
   <div class="container">
     <header>
       <span class="badge">Governance &amp; Cryptographic Custody</span>
@@ -95,9 +257,66 @@
       <pre><code>curl -fsSL https://keys.credence.foundation/root.pub</code></pre>
     </div>
 
-    <footer>
-      <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://credence.nexus">credence.nexus</a> &bull; <a href="https://credence.report">credence.report</a></p>
-    </footer>
   </div>
+
+  <footer class="credence-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>🌐 Sovereign Domains</h4>
+          <ul>
+            <li><a href="https://credence.run">credence.run (Core Engine)</a></li>
+            <li><a href="https://docs.credence.run">docs.credence.run (Docs Portal)</a></li>
+            <li><a href="https://blog.credence.run">blog.credence.run (Forensic Essays)</a></li>
+            <li><a href="https://credence.report">credence.report (Report Hub)</a></li>
+            <li><a href="https://credence.nexus">credence.nexus (Mesh Directory)</a></li>
+            <li><a href="https://credence.foundation">credence.foundation (Root Custody)</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>🎮 Interactive & Tools</h4>
+          <ul>
+            <li><a href="https://docs.credence.run#docs/playground">12 Zero-Build Playgrounds</a></li>
+            <li><a href="https://credence.report/viewer.html">Multi-Mode Report Viewer</a></li>
+            <li><a href="https://docs.credence.run#docs/walkthroughs/01-auditing-webpages-and-text">Auditing Webpages & Text</a></li>
+            <li><a href="https://docs.credence.run#docs/walkthroughs/02-zero-trust-feed-sifting">Zero-Trust Feed Sifter</a></li>
+            <li><a href="https://docs.credence.run#docs/tutorials/03-claude-cursor-fastmcp">Claude & Cursor FastMCP</a></li>
+            <li><a href="https://seeds.credence.nexus/peers.json">P2P Seed Manifest (peers.json)</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>🏛️ Knowledge & Proofs</h4>
+          <ul>
+            <li><a href="https://docs.credence.run#docs/sitemap">Ecosystem Master Sitemap</a></li>
+            <li><a href="https://docs.credence.run#docs/topic-index">Master Topic Index (Oatmeal)</a></li>
+            <li><a href="https://docs.credence.run#docs/invariants">38 Core System Invariants</a></li>
+            <li><a href="https://docs.credence.run#docs/mathematics/robust-consensus-proofs">Robust Consensus Proofs</a></li>
+            <li><a href="https://docs.credence.run#docs/mathematics/economics-of-truth">Economics of Decentralized Truth</a></li>
+            <li><a href="https://docs.credence.run#docs/changelog">Release Changelog (v1.13.0)</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>⚖️ Governance & Source</h4>
+          <ul>
+            <li><a href="https://keys.credence.foundation/root.pub">Root Public Key (root.pub)</a></li>
+            <li><a href="https://credence.foundation/v1/spj_ethics.json">SPJ Ethics Taxonomy JSON</a></li>
+            <li><a href="https://credence.foundation/v1/iep_fallacies.json">IEP Fallacies Catalog JSON</a></li>
+            <li><a href="https://credence.foundation/v1/deceptive_patterns.json">Deceptive Patterns JSON</a></li>
+            <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub Repository</a></li>
+            <li><a href="https://github.com/artibyrd/credence/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0 Open Source</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 Credence Network &bull; Zero npm dependencies &bull; 100% Zero-Build Sovereign Web</div>
+        <div class="footer-bottom-links">
+          <a href="https://docs.credence.run#docs/sitemap">Sitemap</a>
+          <a href="https://docs.credence.run#docs/topic-index">Topic Index</a>
+          <a href="https://docs.credence.run#docs/invariants">Invariants</a>
+          <a href="https://github.com/artibyrd/credence">Source</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

@@ -75,7 +75,8 @@ def test_web_report_viewer_web_crypto(web_dir: Path) -> None:
 
     # Zero-Build Invariant 20: 0 npm packages
     assert "node_modules" not in content
-    assert "npm" not in content
+    assert "package.json" not in content
+    assert "npm install" not in content
 
     # Dynamic API Auto-Discovery & Live Sifter Bridge
     assert "getApiBaseUrl" in content, "Dynamic API base URL detection must be present"

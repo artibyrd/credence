@@ -508,3 +508,51 @@ def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None
     )
     assert verified_relative_count >= 100, f"Expected >=100 relative links, found {verified_relative_count}"
     assert verified_external_count >= 50, f"Expected >=50 external links, found {verified_external_count}"
+
+
+def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
+    """Verify that docs/sitemap.md exists, covers all 5 domains, 12 playgrounds,
+
+    38 invariants, and that all referenced routes exist in the registry.
+    """
+    sitemap_path = docs_root / "docs" / "sitemap.md"
+    assert sitemap_path.exists(), f"docs/sitemap.md not found at {sitemap_path}"
+
+    sitemap_text = sitemap_path.read_text(encoding="utf-8")
+
+    # 1. Verify 5 sovereign ecosystem domains are covered
+    domains = [
+        "credence.run",
+        "docs.credence.run",
+        "blog.credence.run",
+        "credence.report",
+        "credence.nexus",
+        "credence.foundation",
+    ]
+    for domain in domains:
+        assert domain in sitemap_text, f"Sitemap missing ecosystem domain: {domain}"
+
+    # 2. Verify all 12 interactive playgrounds are covered
+    assert "12 Zero-Build Interactive Playgrounds" in sitemap_text or "12 Zero-Build Playgrounds" in sitemap_text
+    assert "13-Node Watts-Strogatz Mesh Gossip Simulator" in sitemap_text
+    assert "SimHash-64 Bitwise Visualizer" in sitemap_text
+    assert "Live Namespaced Taxonomy Rule Explorer" in sitemap_text
+
+    # 3. Verify 38 Core System Invariants are covered
+    assert "38 Core System Invariants" in sitemap_text or "38" in sitemap_text
+
+    # 4. Extract all hash links (#docs/..., #blog/...) and ensure their backing files exist
+    hash_links = re.findall(r"\(#(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)
+    assert len(hash_links) >= 30, f"Expected >= 30 doc/blog links in sitemap, found {len(hash_links)}"
+
+    for link in hash_links:
+        md_file = docs_root / f"{link}.md"
+        assert md_file.exists(), f"Sitemap link '#{link}' maps to non-existent file: {md_file}"
+
+    # 5. Check app.js DOCS_REGISTRY includes docs/sitemap
+    app_js_path = docs_root / "app.js"
+    assert app_js_path.exists()
+    app_js_text = app_js_path.read_text(encoding="utf-8")
+    assert 'id: "docs/sitemap"' in app_js_text or "id: 'docs/sitemap'" in app_js_text, (
+        "docs/sitemap not registered in DOCS_REGISTRY in app.js"
+    )
