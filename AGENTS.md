@@ -56,6 +56,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Edge Subdirectory Canonicalization**: Multi-domain edge routers (`_worker.js`) must intercept internal `env.ASSETS` folder redirects and enforce 301 canonical redirects to prevent folder names (e.g. `/credence.run/`) from appearing in browser address bars.
 - **Pure Logic Decoupling**: Business logic must execute and test decoupled from presentation layers (`tests/test_interfaces_isolation.py`).
 - **Universal Mermaid & Visual Syntax Guardrail**: All Mermaid diagrams must strictly use standard flow/graph/sequence syntax with special characters enclosed in double quotes (e.g. `id["Label (Details)"]`) and WCAG AA/AAA high contrast on dark slate.
+- **Documentation Progressive Disclosure & Search Indexing (Anti-Firehose & Anti-Oatmeal)**: Public landing pages, repository READMEs, and documentation gateways must prioritize calm, human-first on-ramps and 60-second jump-in quickstarts before exposing dense mathematical proofs or internal taxonomy enums (Anti-Firehose). All documentation articles must maintain rich search keyword metadata, multi-term indexing, and link to a master Topic Index (`docs/topic-index.md`) so users can locate specific concepts without sifting blindly (Anti-Oatmeal).
 
 ---
 

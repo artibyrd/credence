@@ -2,6 +2,23 @@
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.11.0] - 2026-08-18
+
+### Added
+- **Documentation Progressive Disclosure & Anti-Firehose Architecture**:
+  - Completely redesigned `credence.run` web landing page and `credence/README.md` to eliminate cognitive overload, Greek formula firehoses ($Q_i, E_i$), and internal enum constants on first-contact surfaces.
+  - Introduced human-first value propositions, 30-second interactive terminal quickstarts, and plain-English explanations of the 4 Pillars of Grounded Truth.
+  - Overhauled documentation gateway (`docs/intro.md`) with a "Choose Your Path" matrix and streamlined 3-step quickstart (`docs/quickstart.md`).
+- **Master Concept Directory & Topic Index ("No Marble Left in the Oatmeal")**:
+  - Published master Topic Index & Quick Reference cheat sheet (`docs/topic-index.md`) categorizing all CLI subcommands, configuration settings, AI integration configs, cost profiles, taxonomy catalogs, math proofs, and self-hosting runbooks.
+  - Added "Next Steps & Related Marbles" cross-navigation footers across core documentation pages.
+- **Client-Side Multi-Term Search Engine in `app.js`**:
+  - Added rich `keywords` and 1-line `desc` metadata to every registered guide in `DOCS_REGISTRY`.
+  - Upgraded `setupSearch()` to search across titles, descriptions, categories, and keywords simultaneously with multi-term query matching and automatic suppression of empty category headers.
+- **Knowledge Governance & System Invariants**:
+  - Added the **Documentation Progressive Disclosure & Search Indexing (Anti-Firehose & Anti-Oatmeal)** Invariant to `AGENTS.md` across all 4 ecosystem repositories.
+  - Expanded `knowledge-governance/SKILL.md` with the 5-level progressive disclosure hierarchy and concept searchability checklist.
+
 ## [1.10.0] - 2026-08-18
 
 ### Added

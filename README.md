@@ -1,328 +1,177 @@
-# Credence: Epistemic Trustworthiness Engine & Trust Network
+# Credence: Epistemic Trust Engine & Verification Mesh
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+[![FastMCP 2.0](https://img.shields.io/badge/FastMCP-2.0-cyan.svg)](https://docs.credence.run#docs/protocols/fastmcp)
 
-**Credence** is an autonomous epistemic evaluation engine, FastMCP server, and decentralized trust network. It captures web snapshots (rendered DOM, visual screenshot, and clean prose) and evaluates them against an **extensible, namespaced taxonomy registry**:
+**Credence** is an open-source trust engine, FastMCP 2.0 server, and decentralized verification network. It audits web articles, news stories, and research claims for **clickbait, logical fallacies, and deceptive tactics** — backing every finding with **100% exact verbatim quotes from the original text** so there are zero AI hallucinations.
 
-1. **The Society of Professional Journalists (SPJ) Code of Ethics** (`domain: JOURNALISTIC_ETHICS`)
-2. **The Internet Encyclopedia of Philosophy (IEP) List of Fallacies** (`domain: LOGICAL_FALLACY`)
-3. **Deceptive Patterns Catalog** (`domain: DECEPTIVE_PATTERN`)
-4. **Poe's Law Parody & Satire Classification Layer** (`content_type: SATIRE_PARODY` / `is_satire: bool`)
-5. **Future Domain Extensions** (`domain: DOMAIN_SPECIFIC`, e.g. medical claims, financial disclosures)
-
-Credence calculates a calibrated **Suspicion Score & Density Index**, eliminates hallucinations via **Grounded Citation Verification**, cryptographically signs evaluations using an **Ed25519 Node Identity**, gossips signed attestations across a **13-Node Heterogeneous P2P Mesh Network**, exposes tools over **FastMCP 2.0**, benchmarks against the **"Golden 12" Epistemic Testbed**, and deploys to **Google Cloud Run** via **Terraform** with strict cost controls ($15/mo budget ceiling, scale-to-zero).
+Every evaluation produces a cryptographically signed receipt (Ed25519) that can be verified by humans, queried by AI assistants (Claude, Cursor, Antigravity), or shared across a peer network at zero cost.
 
 ---
 
-## Canonical Domain Infrastructure
+## ⚡ 60-Second Quickstart
 
-The Credence network is anchored across 4 dedicated domains:
+Get started immediately with the CLI or Docker:
 
-| Domain | Role & Purpose | Production Endpoints |
-|---|---|---|
-| **`credence.run`** | **Primary Canonical Website, MCP Service & CLI Hub** | `https://credence.run`<br/>`https://mcp.credence.run/sse`<br/>`curl -fsSL https://credence.run/install \| sh` |
-| **`credence.nexus`** | **P2P Mesh Network & Bootstrap Seed Directory** | `https://seeds.credence.nexus/peers.json`<br/>`wss://relay.credence.nexus:8765`<br/>DNS SRV: `seed.credence.nexus` |
-| **`credence.foundation`**| **Taxonomy Governance & Root Key Custody** | `https://taxonomies.credence.foundation/v1/...`<br/>`https://keys.credence.foundation/root.pub` |
-| **`credence.report`** | **Public Audit Viewer & Shareable Permalinks** | `https://credence.report/a/{content_sha256}` |
-
----
-
-## The "Golden 12" Epistemic Benchmark Suite
-
-Credence includes an automated cross-profile benchmark suite that evaluates 12 diverse content scenarios across `FREE`, `BALANCED`, and `ULTRA` profiles:
+### 1. Install
 
 ```bash
-# Run the Golden 12 Benchmark Suite
-just benchmark
-# or
-poetry run credence benchmark
-```
+# Automated install (Linux & macOS)
+curl -fsSL https://credence.run/install.sh | bash
 
-See the full rubric and expected verdict matrix in 📘 **[Golden 12 Benchmark Suite Documentation](docs/benchmark-suite.md)**.
-
----
-
-## Operational Cost Profiles Mapped to Gemini Tiers
-
-Credence provides 3 preconfigured **Cost Profiles** that dynamically adjust model selection, thinking token budgets, article word limits, and spending caps:
-
-| Feature / Metric | `FREE` (Zero-Cost / Free Tier) | `BALANCED` (Pay-As-You-Go Dev) *(Default)* | `ULTRA` (Gemini Ultra / High Fidelity) |
-|---|---|---|---|
-| **Target Audience** | Gemini Free Tier (15 RPM / 1M TPM) | Standard Pay-As-You-Go ($0.10/$0.40 per 1M) | Gemini Advanced / Newsroom Desks |
-| **Primary Model** | `gemini-2.0-flash-lite` | `gemini-3.7-flash` | `gemini-3.7-flash` + `gemini-1.5-pro` |
-| **Thinking Budget** | $0$ tokens | $1,024$ tokens | $4,096$ tokens |
-| **Escalation Thinking** | $0$ tokens | $4,096$ tokens | $16,384$ tokens |
-| **Daily Spend Cap** | **$0.00 USD** (Strict Zero Spend) | **$0.50 USD/day** | **$15.00 USD/day** |
-| **Hourly Token Limit** | 50,000 tokens/hr | 100,000 tokens/hr | 2,000,000 tokens/hr |
-| **Daily Token Limit** | 250,000 tokens/day | 1,000,000 tokens/day | 20,000,000 tokens/day |
-| **Max Article Words** | 1,500 words | 3,000 words | 10,000 words (deep long-form) |
-| **Cloud Run Sizing** | `min=0, max=1, 384Mi` RAM | `min=0, max=2, 512Mi` RAM | `min=0 (or 1), max=5, 1024Mi` RAM |
-
----
-
-## Interactive Textual TUI Workstation
-
-Launch the full-screen terminal workstation with live audit history, interactive grounded citation inspector, reader view, and taxonomy tree:
-
-```bash
-just tui
-# or
-poetry run credence tui
-```
-
----
-
-## Real-Time Feed Sifter & Morning Epistemic Digest
-
-Credence includes an autonomous, zero-trust **RSS/Atom Feed Sifter & Morning Digest Generator** that protects users from corporate takeovers / commercial astroturfing (The "Pizza Hut Problem"):
-
-```bash
-# 1. Autodiscover feed endpoints from any target website
-poetry run credence feed discover "https://arstechnica.com"
-
-# 2. Run pre-flight forensic audit (evaluates topic entropy H_topic & SPJ ethics)
-poetry run credence feed inspect "https://arstechnica.com/feed"
-
-# 3. Bootstrap diverse categorized presets (investigative tech, science preprints, regional)
-poetry run credence feed bootstrap-presets --category investigative-tech
-
-# 4. View dynamic feed health rankings (F_j score, topic entropy, suspicion)
-poetry run credence feed health
-
-# 5. Launch real-time background sifter daemon
-poetry run credence sifter --interval 300 --profile balanced
-
-# 6. Generate the morning epistemic intelligence briefing
-poetry run credence digest --format terminal
-poetry run credence digest --format markdown --output morning_brief.md
-```
-
-### Keybindings in TUI
-- **`/`** or **`Ctrl+N`**: Open Audit URL dialog
-- **`j` / `k`** or **`↑` / `↓`**: Navigate recent audits and violations table
-- **`t`**: Switch to Taxonomy Catalog Explorer tab
-- **`k`**: Switch to Token Quota & Headroom tab
-- **`i`**: Switch to Node Cryptographic Identity tab
-- **`r`**: Refresh data from SQLite database
-- **`q`**: Quit
-
----
-
-## Model Context Protocol (FastMCP 2.0) Server
-
-Credence natively exposes its multi-agent evaluation pipeline and dynamic taxonomy catalogs over standard MCP transports:
-
-```bash
-# 1. Start FastMCP Server on stdio (Antigravity & Claude Desktop)
-just serve-stdio
-# or
-poetry run credence serve --transport stdio
-
-# 2. Start FastMCP Server on SSE / HTTP (Port 8000)
-just serve-sse
-# or
-poetry run credence serve --transport sse --host 0.0.0.0 --port 8000 --profile=balanced
-```
-
-### Registered FastMCP Tools
-- `credence_check_url`: Audits target webpage, calculates suspicion score, and signs Ed25519 attestation (supports `profile="ultra"`).
-- `credence_evaluate_text`: Audits raw prose text directly without web scraping (zero network overhead).
-- `credence_get_audit`: Queries cached audits by URL or content SHA-256 in $0$ LLM tokens.
-- `credence_verify_attestation`: Cryptographically verifies signed audit reports.
-- `credence_get_quota_status`: Returns token headroom %, active cost profile, daily spend, and circuit breaker status.
-- `credence_get_consensus`: Calculates Bayesian multi-node consensus across peer attestations.
-
----
-
-## 13-Node Decentralized Credence Mesh Cluster
-
-Run an isolated 13-node heterogeneous P2P mesh cluster with multi-hop gossip routing ($d = 4$), robust median Bayesian consensus, $f = 4$ Byzantine cartel isolation, and hardware safety governance:
-
-```bash
-# Start 13-node mesh cluster with hardware pre-flight check
-just mesh-cluster-up
-
-# View live P2P gossip logs
-just mesh-cluster-logs
-
-# Stop cluster
-just mesh-cluster-down
-```
-
----
-
-## Command-Line Interface (CLI)
-
-```bash
-# 1. Audit a webpage live with a specific profile
-poetry run credence audit https://example.com/article --profile=ultra
-
-# 2. List and inspect operational cost profiles
-poetry run credence profile list
-poetry run credence profile show ultra
-
-# 3. Check live Token Headroom & Safety Budget
-poetry run credence quota
-
-# 4. View local Ed25519 node identity and public key
-poetry run credence identity show
-
-# 5. Lookup cached audit by URL or content SHA-256
-poetry run credence lookup https://example.com/article
-
-# 6. Export formatted Markdown or JSON audit report
-poetry run credence export-report https://example.com/article --format markdown
-poetry run credence export-report https://example.com/article --format json -o /tmp/attestation.json
-
-# 7. Cryptographically verify an on-disk attestation JSON file
-poetry run credence verify-file /tmp/attestation.json
-
-# 8. Inspect P2P Node Quality Leaderboard ($Q_i$)
-poetry run credence rank
-
-# 9. Fetch, generate, and verify signed bootstrap seed manifests
-poetry run credence seeds fetch --url https://seeds.credence.nexus/peers.json
-poetry run credence seeds generate --output /tmp/seeds.json --valid-hours 24
-poetry run credence seeds verify --path /tmp/seeds.json
-
-# 10. Prune older token records and optimize SQLite database
-poetry run credence db-clean --retention-days 30
-
-# 11. List registered taxonomy catalogs & rule counts
-poetry run credence taxonomy list
-```
-
----
-
-## Developer Quickstart
-
-### Prerequisites
-- Python 3.12+
-- Poetry
-- Chromium / Playwright
-- Terraform $\ge 1.5.0$ (for Cloud Run deployment)
-
-### Local Setup
-```bash
-# Install dependencies
+# Or clone and install with Poetry
+git clone https://github.com/artibyrd/credence.git
+cd credence
 poetry install
-
-# Install Playwright browser binaries
-poetry run playwright install chromium
-
-# Copy environment template
-cp .env.example .env
 ```
 
-### Task Runner Commands (`Justfile`)
+*(Or run via Docker: `docker run -d -p 8000:8000 ghcr.io/artibyrd/credence:latest`)*
+
+### 2. Configure API Key (Optional)
+
+Credence uses **Gemini 3.7 Flash** by default for deep multi-agent evaluation. Set your key in your shell:
+
 ```bash
-# Run hermetic unit test suite (99 tests, <45s)
+export CREDENCE_GEMINI_API_KEY="your-gemini-api-key"
+```
+
+> 💡 **Zero-Cost / Offline Mode**: If no API key is provided, Credence runs in **100% offline heuristic mode** ($0.00 cost) using structural rules.
+
+### 3. Run Your First Audit
+
+```bash
+# Audit any URL directly from your terminal
+credence audit https://example.com/news-story
+
+# Launch the interactive full-screen terminal dashboard
+credence tui
+
+# Print a 24-hour morning epistemic news briefing
+credence digest
+```
+
+---
+
+## 🧭 Topic Index: Finding What You Need
+
+> Looking for a specific setting, command, or concept? Check our comprehensive **[Topic Index & Cheat Sheet](docs/topic-index.md)** ("Finding the Marble in the Oatmeal"):
+
+| Topic Category | Direct Jump Links |
+| :--- | :--- |
+| **🚀 Getting Started** | [POSIX Install](docs/quickstart.md#1-quick-installation) &bull; [Docker Setup](docs/quickstart.md#1-quick-installation) &bull; [API Key Config](docs/quickstart.md#2-api-key-configuration) &bull; [Node Germination](docs/protocols/node-germination-lifecycle.md) |
+| **💻 CLI & Workstation** | [`audit`](docs/walkthroughs/01-auditing-webpages-and-text.md) &bull; [`tui`](docs/integrations/tui-workstation.md) &bull; [`digest`](docs/walkthroughs/04-morning-digest-briefings.md) &bull; [`sifter`](docs/walkthroughs/02-zero-trust-feed-sifting.md) &bull; [`quota`](docs/protocols/token-governor.md) &bull; [`rank`](docs/protocols/epistemic-merit-and-leaderboards.md) |
+| **🤖 AI & FastMCP 2.0** | [Claude Desktop Config](docs/tutorials/03-claude-cursor-fastmcp.md) &bull; [Cursor Setup](docs/tutorials/03-claude-cursor-fastmcp.md) &bull; [Antigravity SDK](docs/agentic/01-antigravity-pair-programming-paradigm.md) &bull; [Epistemic Brake](docs/cookbooks/agentic-epistemic-brake.md) |
+| **💰 Cost & Tokens** | [`FREE` ($0.00)](docs/protocols/token-governor.md) &bull; [`BALANCED` (Default)](docs/portability/gemini-economic-rationale.md) &bull; [`ULTRA` (Investigative)](docs/cookbooks/financial-disclosures.md) &bull; [Headroom Breaker](docs/protocols/token-governor.md) |
+| **📜 Ethics & Taxonomies**| [SPJ Journalism Code](docs/cookbooks/taxonomy-engineering.md) &bull; [IEP Fallacies](docs/cookbooks/taxonomy-engineering.md) &bull; [Deceptive UI](docs/cookbooks/taxonomy-engineering.md) &bull; [Authoring YAML Rules](docs/cookbooks/taxonomy-engineering.md) |
+| **🎭 Satire & Parody** | [Poe's Law](docs/tutorials/02-satire-vs-disinformation.md) &bull; [Satire Neutralization](docs/security/satire-cloaking-defense.md) &bull; [`SPJ-1.6` Cloaking Override](docs/security/satire-cloaking-defense.md) |
+| **🕸️ P2P Mesh & Consensus**| [3-Node Quickstart](docs/tutorials/05-mesh-quickstart.md) &bull; [13-Node Chaos Lab](docs/tutorials/06-thirteen-node-chaos-lab.md) &bull; [Seed Nodes](docs/bootstrap-seeds.md) &bull; [DNS SRV Discovery](docs/mesh-engineering/dns-srv-discovery.md) |
+| **📐 Mathematical Proofs**| [Weighted Medians Proof](docs/mathematics/robust-consensus-proofs.md) &bull; [The Galileo Rule](docs/mathematics/robust-consensus-proofs.md) &bull; [SimHash-64](docs/mathematics/simhash-mirror-detection.md) |
+| **☁️ Operations & Hosting**| [Raspberry Pi Node](docs/operations/raspberry-pi-homelab.md) &bull; [Cloud Run ($15/mo Cap)](docs/deployment-cloudrun.md) &bull; [Tailscale Mesh](docs/operations/tailscale-wireguard-mesh.md) &bull; [WAL Maintenance](docs/operations/database-pruning-wal.md) |
+| **🏛️ 36 Core Invariants** | [Complete 36 Invariants Reference](docs/agent-invariants.md) |
+
+---
+
+## 🎯 4 Ways to Use Credence
+
+Credence maintains 100% synchronous feature parity across 4 distinct interfaces:
+
+### 1. 🖥️ Terminal Command Line (CLI)
+Run fast audits, filter JSON streams with `jq`, and enforce quality gates in GitHub Actions:
+```bash
+credence audit https://arstechnica.com/tech-policy/...
+credence audit https://example.com/claim --json | jq .suspicion_score
+```
+
+### 2. ⚡ AI Assistant Integration (FastMCP 2.0)
+Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims:
+```json
+{
+  "mcpServers": {
+    "credence": {
+      "command": "credence",
+      "args": ["serve", "--mcp"]
+    }
+  }
+}
+```
+
+### 3. 📟 Interactive Terminal Workstation (Textual TUI)
+Full-screen dashboard with keyboard navigation, live citation highlight inspector, taxonomy explorer, and token quota monitors:
+```bash
+credence tui
+```
+
+### 4. 🌐 Zero-Build Web Report Viewer
+Open, inspect, and share high-contrast verification receipts directly in your browser with zero npm bundles:
+- Public Report Viewer: [`https://credence.report/viewer.html`](https://credence.report/viewer.html)
+- Main Hub: [`https://credence.run`](https://credence.run)
+
+---
+
+## 💡 How It Works: The 4 Core Principles
+
+1. **Zero Hallucinations (Verbatim Grounding)**: Every single violation reported must cite an exact character-offset quote from the source text ($G=1.0$). If an AI cannot quote the exact sentence, the finding is discarded.
+2. **Standardized Ethics & Logic Rules**: Content is audited against established, open taxonomies:
+   - **SPJ Journalistic Ethics**: Unnamed sources, unverified allegations, conflicts of interest.
+   - **IEP Logical Fallacies**: Ad Hominem, Straw Man, False Dilemma, Circular Reasoning.
+   - **Deceptive Patterns**: Urgency countdowns, confirmshaming, hidden terms.
+3. **Poe's Law & Satire Awareness**: Genuine satire (*The Onion*, *The Babylon Bee*) is recognized and scored neutrally ($0.00$), so humor isn't penalized, while cloaked disinformation is stopped.
+4. **Cryptographic Proofs**: Evaluations are signed with an Ed25519 keypair into RFC 8785 canonical JSON. Anyone can verify that the audit hasn't been modified.
+
+---
+
+## 💰 Operational Cost Profiles
+
+Credence adapts to your budget with 3 preconfigured profiles:
+
+| Profile | Primary Engine | Thinking Tokens | Cost per 1k Audits | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **`FREE`** | Offline Heuristics | 0 tokens | **$0.00 (Zero Spend)** | Air-gapped CI/CD, hermetic pipelines |
+| **`BALANCED`** *(Default)* | Gemini 3.7 Flash | 1,024 – 4,096 tokens | **$0.34 – $0.68** | Daily news, RSS sifting, developer workflows |
+| **`ULTRA`** | Gemini 3.7 Flash + Pro | 8,192 – 16,384 tokens | **$1.10 – $2.20** | Deep investigative 10-K & legal filings |
+
+> 🛡️ **Headroom Circuit Breaker**: If your daily token budget reaches 30% remaining headroom, Credence automatically switches to offline heuristic mode to guarantee zero surprise bills.
+
+---
+
+## 🛠️ Developer Task Runner (`Justfile`)
+
+If you are developing or testing Credence, use the standard `just` commands:
+
+```bash
+# Verify developer dependencies
+just preflight
+
+# Run the hermetic test suite (144 tests, 100% offline)
 just test
 
-# Run code linters and type checkers (Ruff & Mypy)
+# Format and check types
 just lint
-
-# Autoformat code with Ruff
 just format
 
-# Run Golden 12 benchmark suite
+# Run the Golden 12 benchmark suite
 just benchmark
 
-# Launch interactive Textual TUI
-just tui
-
-# Build and test inside Docker container
-just docker-build
-just docker-test
+# Launch local 3-node mesh cluster
+just mesh-cluster-up
 ```
 
 ---
 
-## Core Documentation Suite (`/docs`)
+## 📚 Complete Documentation & Deep References
 
-- 📘 **[Architecture Overview](docs/architecture.md)**: End-to-end system topology, dual-capture ingestion, multi-agent pipeline, and cryptographic attestation flow.
-- 📘 **[The "Golden 12" Benchmark Suite](docs/benchmark-suite.md)**: 12 standardized epistemic evaluation fixtures across Free, Balanced, and Ultra operational cost profiles.
-- 📘 **[Operational Cost Profiles](docs/cost-profiles.md)**: Detailed comparison matrix for Free, Balanced, and Ultra operational presets.
-- 📘 **[Bootstrap Seeds & Node Quality ($Q_i$)](docs/bootstrap-seeds.md)**: 5-factor node quality scoring, RFC 8785 signed seed files (`peers.json`), and 4-tier discovery fallback.
-- 📘 **[Cloud Run Deployment & Terraform](docs/deployment-cloudrun.md)**: Step-by-step GCP operator guide with $15/mo budget cap, scale-to-zero, and Cloud Build CI/CD.
-- 📘 **[P2P Mesh Protocol & Consensus](docs/mesh-protocol.md)**: Multi-hop gossip routing, 13-node heterogeneous topology, robust median consensus, and Byzantine Sybil cartel isolation ($f = 4$).
-- 📘 **[FastMCP Server & Client Integration](docs/mcp-integration.md)**: FastMCP tool catalogs, dynamic resources, prompts, and Claude Desktop / Antigravity configs.
-- 📘 **[Scoring Calibration & Mathematical Rubrics](docs/scoring-calibration.md)**: Mathematical definitions for linear raw suspicion, exponential saturation curves, density indices, and satire neutralization.
-- 📘 **[Token Safety Governor & Model Tiering](docs/token-governor.md)**: Token budget safety, Gemini 3.7 Flash thinking token accounting, circuit breaker behavior, and quality gates.
-- 📘 **[Multi-Cloud Deployment (GCP + Cloudflare)](docs/deployment-multi-domain.md)**: Operator runbook for Cloud Run, Cloudflare WAF, and zero-egress R2 seed hosting.
-- 📘 **[White-Label Mesh Federation Guide](docs/federation-whitelabel.md)**: Turnkey guide to scaffolding sovereign, brand-customized mesh organizations via `credence init-org`.
-- 📘 **[Web Frontend Architecture & Zero-Build Invariant](docs/frontend-architecture.md)**: Zero-dependency web standards, native in-browser Web Crypto Ed25519 verification, and Cloudflare edge delivery.
-- 📘 **[Agent Invariants & Architectural Rules](docs/agent-invariants.md)**: Strict invariants for human developers and autonomous AI coding agents.
+- 📘 **[Documentation Portal](https://docs.credence.run)**: Interactive docs with zero npm build requirements.
+- 📘 **[Topic Index & Cheat Sheet](docs/topic-index.md)**: Categorized fast lookup for all commands and concepts.
+- 📘 **[The 36 Core System Invariants](docs/agent-invariants.md)**: Master architectural, mathematical, and security invariants.
+- 📘 **[Adversarial Threat Model FAQ](docs/faq-adversarial-defense.md)**: Red team analysis, prompt injection defense, and SSRF guards.
+- 📘 **[Mathematics of Robust Consensus](docs/mathematics/robust-consensus-proofs.md)**: Weighted medians and Galileo Rule proofs.
+- 📘 **[Cloud Run Deployment Guide](docs/deployment-cloudrun.md)**: Terraform production setup with $15/mo budget cap.
 
 ---
 
-## Project Structure
+## 📄 License
 
-```
-├── credence/
-│   ├── config.py              # CostProfile presets, Pydantic Settings & pricing matrix
-│   ├── db.py                  # Async SQLite Engine (WAL Mode)
-│   ├── models.py              # SQLModel Schema Definitions & TokenUsageRecord
-│   ├── identity.py            # Ed25519 Keypairs & RFC 8785 Canonical JSON Signing
-│   ├── taxonomy_loader.py     # Dynamic YAML Taxonomy Discovery & Hash Registry
-│   ├── taxonomies/            # Extensible YAML Rule Catalogs
-│   │   ├── spj_ethics.yaml
-│   │   ├── iep_fallacies.yaml
-│   │   └── deceptive_patterns.yaml
-│   ├── ingestion/             # Dual-Capture Ingestion & SimHash-64
-│   │   ├── extractor.py
-│   │   ├── hasher.py
-│   │   └── snapshot.py
-│   ├── pipeline/              # Multi-Agent Pipeline & Scoring Engine
-│   │   ├── governor.py        # Profile-aware TokenBudgetGovernor & Quality Gates
-│   │   ├── schemas.py         # Pydantic Output Models
-│   │   ├── scoring.py         # Calibrated Saturation Scoring
-│   │   ├── subagents.py       # Specialist Prompts & Grounded Quote Validator
-│   │   └── evaluator.py       # Orchestrator with SQLite Caching
-│   ├── server/                # FastMCP 2.0 Server (Stdio & SSE)
-│   │   └── app.py
-│   ├── mesh/                  # P2P Mesh Protocol & Bayesian Consensus
-│   │   ├── protocol.py
-│   │   ├── relay.py
-│   │   └── consensus.py
-│   ├── cli/                   # Rich Terminal CLI (Audit, Profile, Quota, Serve, Mesh)
-│   │   └── main.py
-│   └── tui/                   # Textual Terminal Workstation
-│       └── app.py
-├── terraform/                 # GCP Cloud Run Infrastructure Suite ($15/mo Cap)
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── cloud_run.tf
-│   ├── secret_manager.tf
-│   ├── budget.tf
-│   ├── monitoring.tf
-│   └── outputs.tf
-├── cloudbuild.yaml            # Cloud Build CI/CD (Lint -> Test Gate -> Build -> Deploy)
-├── tests/                     # Hermetic Pytest Suite (144 tests across 4 interfaces, red team & gauntlet)
-├── .agents/skills/            # Antigravity Progressive Disclosure Skills (Cluster, Benchmark, White-Label)
-├── docs/                      # Architectural Specs, 32 Invariants, Threat Model FAQ & Parity Matrix
-├── docker-compose.mesh.yml    # 13-Node Local Mesh Cluster Configuration
-├── Dockerfile                 # Multi-stage Container with Python 3.12 + Chromium
-├── Justfile                   # Task runner
-└── pyproject.toml
-```
-
----
-
-## Documentation & Deep References
-
-- 📘 **[Agent Guidelines & Invariants (32 Invariants)](docs/agent-invariants.md)**
-- 📘 **[Skeptic's FAQ & Adversarial Threat Model](docs/faq-adversarial-defense.md)**
-- 📘 **[Universal Feature Parity Matrix](docs/feature-parity-matrix.md)**
-- 📘 **[Decentralized Architecture Specification](docs/architecture.md)**
-- 📘 **[White-Label Federation Operator Guide](docs/federation-whitelabel.md)**
-- 📘 **[Multi-Cloud Multi-Domain Infrastructure Guide](docs/deployment-multi-domain.md)**
-
----
-
-## License
-MIT
-
+MIT License &copy; 2026 Credence Network Contributors.

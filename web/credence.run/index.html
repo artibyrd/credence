@@ -3,39 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence — Cryptographic Truth & Verification for AI and the Web</title>
-  <meta name="description" content="Autonomous epistemic evaluation engine, FastMCP 2.0 server, and decentralized P2P trust network.">
+  <title>Credence — The Trust Engine for AI and the Web</title>
+  <meta name="description" content="Autonomous epistemic evaluation engine, FastMCP 2.0 server, and decentralized trust network. Audit news and claims with zero hallucinations.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+  <!-- Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v1.10.0</span>
+      🛡️ Credence <span class="badge">v1.11.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run" class="active">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
+      <li><a href="https://docs.credence.run#docs/topic-index">Topic Index</a></li>
       <li><a href="https://blog.credence.run">Blog</a></li>
       <li><a href="https://credence.report/viewer.html">Report Viewer</a></li>
       <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
   </nav>
 
+  <!-- Welcoming Hero Section -->
   <header class="hero">
     <div class="container">
-      <span class="badge-pill">🛡️ v1.10.0 Stable &bull; Ed25519 Signed &bull; FastMCP 2.0</span>
-      <h1 class="hero-title">Cryptographic Truth &amp; Verification for AI &amp; the Web</h1>
+      <span class="badge-pill">🛡️ v1.11.0 Stable &bull; Verifiable Truth &bull; FastMCP 2.0</span>
+      <h1 class="hero-title">The Trust Engine for AI &amp; the Web</h1>
       <p class="hero-subtitle">
-        Auditing news, research, and web articles for <strong>clickbait, logical fallacies, and deceptive claims</strong> &mdash; producing Ed25519-signed, zero-hallucination truth attestations that AI agents and humans can verify in real time.
+        Audit news, research, and online claims for <strong>clickbait, logical fallacies, and deceptive tactics</strong> &mdash; backed by 100% exact quotes from the source so there are zero hallucinations.
       </p>
 
+      <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <a href="https://docs.credence.run#docs/quickstart" class="btn-primary" style="display: inline-block; padding: 0.75rem 1.75rem; background: var(--accent-cyan, #38bdf8); color: #0f172a; font-weight: 700; text-decoration: none; border-radius: 8px; font-size: 1rem;">⚡ Quickstart in 60s</a>
+        <a href="https://docs.credence.run#docs/topic-index" class="btn-secondary" style="display: inline-block; padding: 0.75rem 1.75rem; background: rgba(255,255,255,0.08); color: #fff; font-weight: 600; text-decoration: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); font-size: 1rem;">🧭 Topic Index &amp; Cheat Sheet</a>
+        <a href="https://credence.report/viewer.html" class="btn-secondary" style="display: inline-block; padding: 0.75rem 1.75rem; background: rgba(255,255,255,0.08); color: #fff; font-weight: 600; text-decoration: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); font-size: 1rem;">🔍 Try Live Viewer</a>
+      </div>
+
+      <!-- Quickstart Terminal Card -->
       <div class="terminal-card">
         <div class="terminal-header">
           <span class="dot dot-red"></span>
           <span class="dot dot-yellow"></span>
           <span class="dot dot-green"></span>
-          <span class="terminal-title">bash &mdash; quickstart</span>
+          <span class="terminal-title">bash &mdash; 30-second quickstart</span>
         </div>
         <div class="terminal-body">
           <div class="command-line">
@@ -43,15 +53,15 @@
             <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://credence.run/install.sh | bash')">Copy</button>
           </div>
           <div class="command-line">
-            <code>credence audit https://example.com/breaking-news</code>
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('credence audit https://example.com/breaking-news')">Copy</button>
+            <code>credence audit https://example.com/news-story</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('credence audit https://example.com/news-story')">Copy</button>
           </div>
           <div class="command-line">
-            <code>credence digest --format terminal # 24-hour morning epistemic brief</code>
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('credence digest --format terminal')">Copy</button>
+            <code>credence digest # Print morning 24-hour executive news briefing</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('credence digest')">Copy</button>
           </div>
           <div class="command-line">
-            <code>credence serve --mcp # Connect live to Claude, Cursor &amp; Antigravity</code>
+            <code>credence serve --mcp # Connect instantly to Claude &amp; Cursor</code>
             <button class="copy-btn" onclick="navigator.clipboard.writeText('credence serve --mcp')">Copy</button>
           </div>
         </div>
@@ -60,41 +70,76 @@
   </header>
 
   <main class="container">
-    <!-- 4 Interfaces Showcase -->
+    <!-- Why Credence (4 Pillars) -->
     <section style="margin-bottom: 4.5rem;">
       <div style="text-align: center; margin-bottom: 2.5rem;">
-        <span style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Universal Parity</span>
-        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">One Engine. 4 Seamless Interfaces.</h2>
-        <p style="color: var(--text-muted); max-width: 650px; margin: 0.5rem auto 0;">Interact with the Credence epistemic pipeline wherever you work — from terminal shell scripts to AI coding assistants and browser tabs.</p>
+        <span style="color: var(--accent-cyan, #38bdf8); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Why Credence</span>
+        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">Fact-Checking You Can Actually Trust</h2>
+        <p style="color: var(--text-muted, #94a3b8); max-width: 650px; margin: 0.5rem auto 0;">No subjective opinion scores or black-box ratings. Every evaluation is grounded in transparent rules and verifiable proof.</p>
       </div>
 
       <div class="grid-2">
-        <div class="card" style="border-left: 3px solid var(--accent-cyan);">
+        <div class="card" style="border-left: 3px solid #38bdf8;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍 Zero AI Hallucinations</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Verbatim Grounded Quotes</h3>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 0;">Every flagged violation requires an exact, word-for-word quote from the original article. If an AI cannot quote the exact sentence, the flag is discarded.</p>
+        </div>
+
+        <div class="card" style="border-left: 3px solid #10b981;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📜 Established Ethics Standards</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Journalism &amp; Logic Rules</h3>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 0;">Audits follow the Society of Professional Journalists (SPJ) Code of Ethics, established logical fallacy catalogs (Ad Hominem, Straw Man), and deceptive pattern registries.</p>
+        </div>
+
+        <div class="card" style="border-left: 3px solid #f59e0b;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎭 Smart Satire Awareness</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Poe's Law Defense</h3>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 0;">Legitimate humor and parody (<em>The Onion, The Babylon Bee</em>) are recognized and neutralized so jokes aren't penalized, while cloaked disinformation is stopped.</p>
+        </div>
+
+        <div class="card" style="border-left: 3px solid #a855f7;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔏 Tamper-Proof Receipts</div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Cryptographic Attestations</h3>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 0;">Every evaluation produces an Ed25519-signed receipt. Anyone can verify that the score and quoted evidence haven't been altered by any intermediary.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Interfaces Showcase -->
+    <section style="margin-bottom: 4.5rem;">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span style="color: var(--accent-cyan, #38bdf8); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Universal Parity</span>
+        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">One Engine. 4 Seamless Interfaces.</h2>
+        <p style="color: var(--text-muted, #94a3b8); max-width: 650px; margin: 0.5rem auto 0;">Interact with the Credence epistemic pipeline wherever you work — from terminal shell scripts to AI coding assistants and browser tabs.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="border-left: 3px solid var(--accent-cyan, #38bdf8);">
           <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🖥️ CLI Command Line</div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Human-Friendly &amp; Scriptable</h3>
-          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Rich terminal tables with ANSI color scoring, structured JSON streams for shell pipelines (<code>jq</code>, <code>xargs</code>), and CI/CD PR review gates.</p>
-          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-cyan);">credence audit &lt;url&gt; --json | jq .suspicion_score</code>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Fast, Scriptable &amp; Clean</h3>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 1rem;">Rich terminal tables with color scoring, structured JSON streams for shell pipelines (<code>jq</code>, <code>xargs</code>), and automated CI/CD PR review gates.</p>
+          <code style="background: var(--bg-code, #1e293b); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-cyan, #38bdf8);">credence audit &lt;url&gt;</code>
         </div>
 
-        <div class="card" style="border-left: 3px solid var(--accent-blue);">
+        <div class="card" style="border-left: 3px solid var(--accent-blue, #60a5fa);">
           <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚡ FastMCP 2.0 (AI Agents)</div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Standard I/O &amp; SSE Streaming</h3>
-          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Equip Claude Desktop, Cursor, and autonomous agent swarms with tools to evaluate URLs, inspect citations, and query consensus trust scores.</p>
-          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-blue);">tools/call: credence_check_url</code>
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Claude Desktop &amp; Cursor</h3>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 1rem;">Equip Claude Desktop, Cursor, and autonomous agent swarms with tools to evaluate URLs, inspect citations, and check source claims in real time.</p>
+          <code style="background: var(--bg-code, #1e293b); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-blue, #60a5fa);">credence serve --mcp</code>
         </div>
 
-        <div class="card" style="border-left: 3px solid var(--accent-green);">
+        <div class="card" style="border-left: 3px solid var(--accent-green, #10b981);">
           <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📟 Textual TUI Workstation</div>
           <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Full-Screen Terminal IDE</h3>
-          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Keyboard-driven terminal workstation with live audit history, interactive verbatim citation viewer, taxonomy catalog explorer, and feed status.</p>
-          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-green);">credence tui</code>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 1rem;">Keyboard-driven terminal workstation with live audit history, interactive verbatim citation viewer, taxonomy catalog explorer, and feed health status.</p>
+          <code style="background: var(--bg-code, #1e293b); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-green, #10b981);">credence tui</code>
         </div>
 
-        <div class="card" style="border-left: 3px solid var(--accent-amber);">
-          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🌐 Zero-Build Web &amp; Extension</div>
+        <div class="card" style="border-left: 3px solid var(--accent-amber, #f59e0b);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🌐 Zero-Build Web &amp; Viewer</div>
           <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Vanilla HTML5 &bull; 0 npm Bundles</h3>
-          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">High-contrast Web Crypto report viewer (<code>credence.report</code>), Manifest V3 browser extension, and interactive in-browser simulator with zero node dependencies.</p>
-          <code style="background: var(--bg-code); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-amber);">https://credence.report/viewer.html</code>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin-bottom: 1rem;">High-contrast Web Crypto report viewer (<code>credence.report</code>), browser extension, and interactive in-browser simulator with zero node dependencies.</p>
+          <code style="background: var(--bg-code, #1e293b); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--accent-amber, #f59e0b);">https://credence.report/viewer.html</code>
         </div>
       </div>
     </section>
@@ -102,42 +147,42 @@
     <!-- How Credence Works (Visual 4-Step Flow) -->
     <section style="margin-bottom: 4.5rem;">
       <div style="text-align: center; margin-bottom: 2.5rem;">
-        <span style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Architecture</span>
-        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">How Credence Works</h2>
-        <p style="color: var(--text-muted); max-width: 650px; margin: 0.5rem auto 0;">From raw webpage capture to cryptographically signed truth attestations in 4 clear steps.</p>
+        <span style="color: var(--accent-cyan, #38bdf8); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">How It Works</span>
+        <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">From Raw Article to Verifiable Receipt</h2>
+        <p style="color: var(--text-muted, #94a3b8); max-width: 650px; margin: 0.5rem auto 0;">A simple, transparent 4-step pipeline designed for speed and accuracy.</p>
       </div>
 
       <div class="grid-2">
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">1</span>
-            <h3 style="margin: 0; font-size: 1.15rem;">Capture &amp; Verbatim Grounding</h3>
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan, #38bdf8); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">1</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">1. Clean Content Capture</h3>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">Headless Chromium captures rendered DOM, cleaned prose, and screenshots. Every finding strictly requires an exact verbatim character match from the source text ($G = 1.0$) — eliminating AI hallucinations entirely.</p>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem;">Headless Chromium captures the rendered page, strips away ads and tracker noise, and extracts clean prose while preserving the original layout and structure.</p>
         </div>
 
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">2</span>
-            <h3 style="margin: 0; font-size: 1.15rem;">Multi-Taxonomy Specialist Audit</h3>
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan, #38bdf8); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">2</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">2. Multi-Rule Ethical Audit</h3>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">Specialist agents evaluate content against pinned taxonomy catalogs: <strong>SPJ Journalistic Ethics</strong> (unnamed sources, unverified allegations), <strong>Logical Fallacies</strong> (Ad Hominem, Straw Man), and <strong>Deceptive UI Patterns</strong>.</p>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem;">Evaluates content against clear, standardized catalogs: journalistic ethics (unnamed sources, unverified allegations), logical fallacies, and deceptive user interface patterns.</p>
         </div>
 
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">3</span>
-            <h3 style="margin: 0; font-size: 1.15rem;">Ed25519 Cryptographic Envelope</h3>
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan, #38bdf8); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">3</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">3. Verbatim Quote Validation</h3>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">The node canonicalizes the audit into RFC 8785 JSON, signs it with its Ed25519 private key, and gossips the attestation across the P2P mesh network for instant zero-token adoption ($0.00 compute cost) by peer nodes.</p>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem;">Every identified issue is strictly cross-referenced against the raw text. If the evidence cannot be highlighted word-for-word in the original article, it is discarded.</p>
         </div>
 
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">4</span>
-            <h3 style="margin: 0; font-size: 1.15rem;">The Galileo Rule &amp; Swarm Defense</h3>
+            <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan, #38bdf8); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">4</span>
+            <h3 style="margin: 0; font-size: 1.15rem;">4. Cryptographic Proof Receipt</h3>
           </div>
-          <p style="color: var(--text-muted); font-size: 0.95rem;">Absence of evidence is not evidence of absence. Verified domain authorities submitting 100% grounded citations cannot be silenced by dishonest swarms, and rogue nodes are autonomously slashed.</p>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem;">The audit report is signed with an Ed25519 cryptographic signature. Anyone can verify the results and share them across the peer network at zero cost.</p>
         </div>
       </div>
     </section>
@@ -145,10 +190,10 @@
     <!-- FastMCP 2.0 Integration -->
     <section style="margin-top: 2rem; margin-bottom: 4rem;">
       <div style="text-align: center; margin-bottom: 2rem;">
-        <span style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">AI Tooling</span>
+        <span style="color: var(--accent-cyan, #38bdf8); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">AI Integration</span>
         <h2 style="font-size: 2.2rem; font-weight: 700; margin-top: 0.35rem;">Plug Into Claude &amp; Cursor in Seconds</h2>
-        <p style="text-align: center; color: var(--text-muted); max-width: 650px; margin: 0.5rem auto 0;">
-          Add Credence directly to your <code>claude_desktop_config.json</code> or Antigravity MCP settings:
+        <p style="text-align: center; color: var(--text-muted, #94a3b8); max-width: 650px; margin: 0.5rem auto 0;">
+          Add Credence directly to your <code>claude_desktop_config.json</code> or Cursor MCP settings:
         </p>
       </div>
 
@@ -157,7 +202,7 @@
           <span class="dot dot-red"></span>
           <span class="dot dot-yellow"></span>
           <span class="dot dot-green"></span>
-          <span class="terminal-title">json &mdash; mcp config</span>
+          <span class="terminal-title">json &mdash; claude_desktop_config.json</span>
         </div>
         <div class="terminal-body">
           <pre style="margin: 0; color: #38bdf8; font-family: monospace; font-size: 0.9rem;">{
@@ -171,6 +216,37 @@
         </div>
       </div>
     </section>
+
+    <!-- Deep Dives & Navigation Hub -->
+    <section style="margin-bottom: 4.5rem; background: var(--bg-card, #1e293b); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border, #334155);">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span style="color: var(--accent-cyan, #38bdf8); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Explore Further</span>
+        <h2 style="font-size: 1.8rem; font-weight: 700; margin-top: 0.25rem;">Find Exactly What You Need</h2>
+        <p style="color: var(--text-muted, #94a3b8); font-size: 0.95rem; margin: 0.25rem auto 0;">No getting lost in manuals. Jump straight to the concept, guide, or deep dive you're looking for.</p>
+      </div>
+
+      <div class="grid-2" style="gap: 1rem;">
+        <a href="https://docs.credence.run#docs/topic-index" style="display: block; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none;">
+          <b style="color: #38bdf8; font-size: 1rem;">🧭 Topic Index &amp; Cheat Sheet &rarr;</b>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.85rem; margin: 0.35rem 0 0;">The "Marbles in the Oatmeal" directory. Direct links to every CLI command, config setting, and tool.</p>
+        </a>
+
+        <a href="https://docs.credence.run#docs/tutorials/01-clickbait-teardown" style="display: block; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none;">
+          <b style="color: #10b981; font-size: 1rem;">🎓 Hands-On Tutorials &rarr;</b>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.85rem; margin: 0.35rem 0 0;">Step-by-step guides for clickbait teardowns, Claude/Cursor integration, and feed sifting.</p>
+        </a>
+
+        <a href="https://docs.credence.run#docs/invariants" style="display: block; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none;">
+          <b style="color: #f59e0b; font-size: 1rem;">🏛️ 36 Core System Invariants &rarr;</b>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.85rem; margin: 0.35rem 0 0;">Complete engineering guarantees, safety constraints, and mathematical rules.</p>
+        </a>
+
+        <a href="https://docs.credence.run#docs/mathematics/robust-consensus-proofs" style="display: block; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none;">
+          <b style="color: #a855f7; font-size: 1rem;">📐 Mathematics &amp; Consensus Proofs &rarr;</b>
+          <p style="color: var(--text-muted, #94a3b8); font-size: 0.85rem; margin: 0.35rem 0 0;">Formal proofs for Domain Authority Weighted Medians, Galileo Rule, and SimHash-64.</p>
+        </a>
+      </div>
+    </section>
   </main>
 
   <footer class="credence-footer">
@@ -178,9 +254,9 @@
       <p>&copy; 2026 Credence Network. Open Source Apache-2.0 License.</p>
       <div class="footer-links">
         <a href="https://docs.credence.run">Documentation</a>
-        <a href="https://blog.credence.run">Sovereign Blog</a>
-        <a href="https://seeds.credence.nexus/peers.json">Genesis Seeds</a>
-        <a href="https://taxonomies.credence.foundation">Taxonomies</a>
+        <a href="https://docs.credence.run#docs/topic-index">Topic Index</a>
+        <a href="https://blog.credence.run">Blog</a>
+        <a href="https://credence.report/viewer.html">Report Viewer</a>
         <a href="https://github.com/artibyrd/credence">GitHub</a>
       </div>
     </div>
