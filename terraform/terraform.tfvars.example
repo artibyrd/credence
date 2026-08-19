@@ -26,3 +26,11 @@ domain_credence_run         = "credence.run"
 domain_credence_nexus       = "credence.nexus"
 domain_credence_foundation  = "credence.foundation"
 domain_credence_report      = "credence.report"
+
+# Monitoring & Alerting Configuration (Dual-Tier: 'simple' or 'advanced')
+monitoring_tier             = "simple" # 'simple' (Guy in his basement easy mode) or 'advanced'
+discord_webhook_url         = ""       # "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+enable_uptime_check         = true
+alert_memory_threshold      = 0.85     # 85% RAM threshold
+alert_5xx_count_threshold   = 5        # Alert on > 5 errors in 5 min
+

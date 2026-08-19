@@ -616,6 +616,75 @@ async def cli_quota() -> None:
         return
 
 
+def cli_health(url: str = "http://localhost:8000") -> None:
+    """Check node health and print Interface Telemetry Loopback status."""
+    import httpx
+
+    from credence.server.app import global_telemetry
+
+    try:
+        if url.startswith("http"):
+            with httpx.Client(timeout=3.0) as client:
+                r = client.get(f"{url.rstrip('/')}/api/health")
+                if r.status_code == 200:
+                    data = r.json()
+                    status = data.get("status", "unknown")
+                    version = data.get("version", "unknown")
+                    telem = data.get("telemetry", {})
+
+                    status_style = "green" if status == "healthy" else ("yellow" if status == "degraded" else "red")
+                    console.print(
+                        Panel(
+                            f"[bold {status_style}]● Node Status: {status.upper()}[/bold {status_style}]  |  [dim]Version: v{version}[/dim]\n\n"
+                            f"• Uptime:           {telem.get('uptime_seconds', 0)}s\n"
+                            f"• Memory Usage:     {telem.get('memory_mb', 0)} MB\n"
+                            f"• Requests (5m):    Total: {telem.get('request_counts', {}).get('total', 0)} | "
+                            f"2xx: [green]{telem.get('request_counts', {}).get('2xx', 0)}[/green] | "
+                            f"4xx: [yellow]{telem.get('request_counts', {}).get('4xx', 0)}[/yellow] | "
+                            f"5xx: [red]{telem.get('request_counts', {}).get('5xx', 0)}[/red]\n"
+                            f"• Latency (P50/P95): {telem.get('latencies_ms', {}).get('p50', 0)}ms / {telem.get('latencies_ms', {}).get('p95', 0)}ms\n"
+                            f"• Active Alerts:    {len(telem.get('active_alerts', []))}",
+                            title="[bold]Credence Node Health & Telemetry[/bold]",
+                            border_style=status_style,
+                        )
+                    )
+                    if telem.get("active_alerts"):
+                        table = Table(title="Active Incidents & Alerts", box=box.ROUNDED)
+                        table.add_column("Severity", style="bold")
+                        table.add_column("Alert ID")
+                        table.add_column("Details")
+                        for a in telem["active_alerts"]:
+                            sev_style = "bold red" if a.get("severity") == "critical" else "yellow"
+                            table.add_row(
+                                f"[{sev_style}]{a.get('severity', '').upper()}[/{sev_style}]",
+                                a.get("id", ""),
+                                a.get("message", ""),
+                            )
+                        console.print(table)
+                    return
+    except Exception:
+        pass
+
+    # Fallback to local in-process telemetry snapshot
+    telem = global_telemetry.get_snapshot()
+    status = telem["status"]
+    status_style = "green" if status == "healthy" else ("yellow" if status == "degraded" else "red")
+    console.print(
+        Panel(
+            f"[bold {status_style}]● In-Process Status: {status.upper()}[/bold {status_style}]\n\n"
+            f"• Memory Usage:     {telem['memory_mb']} MB\n"
+            f"• Requests (5m):    Total: {telem['request_counts']['total']} | "
+            f"2xx: [green]{telem['request_counts']['2xx']}[/green] | "
+            f"4xx: [yellow]{telem['request_counts']['4xx']}[/yellow] | "
+            f"5xx: [red]{telem['request_counts']['5xx']}[/red]\n"
+            f"• Latency (P50/P95): {telem['latencies_ms']['p50']}ms / {telem['latencies_ms']['p95']}ms\n"
+            f"• Active Alerts:    {len(telem['active_alerts'])}",
+            title="[bold]Credence In-Process Telemetry[/bold]",
+            border_style=status_style,
+        )
+    )
+
+
 def cli_serve(
     transport: str = "stdio",
     host: str = "0.0.0.0",  # noqa: S104
@@ -1088,6 +1157,9 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
         return True
     elif cmd == "benchmark":
         asyncio.run(cli_benchmark())
+        return True
+    elif cmd in ("health", "alerts"):
+        cli_health(url=getattr(args, "url", "http://localhost:8000"))
         return True
     return False
 
@@ -2379,6 +2451,22 @@ def main() -> None:
         help="Action: list, show",
     )
     subjects_parser.add_argument("subject_id", nargs="?", default=None, help="Subject namespace ID.")
+
+    # health command
+    health_parser = subparsers.add_parser(
+        "health", help="Check live node health, active alert conditions, and SRE telemetry."
+    )
+    health_parser.add_argument(
+        "--url", default="http://localhost:8000", help="Base URL of running node (default: http://localhost:8000)."
+    )
+
+    # alerts command
+    alerts_parser = subparsers.add_parser(
+        "alerts", help="Display active incidents, 5xx spike warnings, and alert conditions."
+    )
+    alerts_parser.add_argument(
+        "--url", default="http://localhost:8000", help="Base URL of running node (default: http://localhost:8000)."
+    )
 
     if len(sys.argv) == 1:
         # Default to launching TUI if no args provided in interactive terminal

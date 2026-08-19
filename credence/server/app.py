@@ -22,7 +22,9 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, List, Optional
+from collections import deque
+from dataclasses import dataclass
+from typing import Any, Deque, List, Optional
 
 from mcp.server.mcpserver import MCPServer
 from sqlmodel import col, select
@@ -66,6 +68,139 @@ class ServerRateLimiter:
 
 
 _global_rate_limiter = ServerRateLimiter()
+
+
+@dataclass
+class TelemetryEvent:
+    timestamp: float
+    status_code: int
+    path: str
+    duration_ms: float
+    error_message: Optional[str] = None
+
+
+class ServerTelemetryTracker:
+    """In-memory rolling telemetry tracker for Interface Telemetry Loopback (ITLP-v1)."""
+
+    def __init__(self, window_seconds: float = 300.0) -> None:
+        self.window_seconds = window_seconds
+        self.start_time: float = time.time()
+        self._events: Deque[TelemetryEvent] = deque()
+
+    def record_request(
+        self, status_code: int, path: str, duration_ms: float, error_message: Optional[str] = None
+    ) -> None:
+        now = time.time()
+        event = TelemetryEvent(
+            timestamp=now,
+            status_code=status_code,
+            path=path,
+            duration_ms=duration_ms,
+            error_message=error_message,
+        )
+        self._events.append(event)
+        self._prune(now)
+
+    def _prune(self, now: float) -> None:
+        cutoff = now - self.window_seconds
+        while self._events and self._events[0].timestamp < cutoff:
+            self._events.popleft()
+
+    def reset(self) -> None:
+        """Reset events (useful for hermetic tests)."""
+        self._events.clear()
+        self.start_time = time.time()
+
+    def get_snapshot(self) -> dict[str, Any]:
+        import resource
+
+        now = time.time()
+        self._prune(now)
+
+        count_2xx = sum(1 for e in self._events if 200 <= e.status_code < 300)
+        count_3xx = sum(1 for e in self._events if 300 <= e.status_code < 400)
+        count_4xx = sum(1 for e in self._events if 400 <= e.status_code < 500)
+        count_5xx = sum(1 for e in self._events if e.status_code >= 500)
+        total = len(self._events)
+
+        latencies = [e.duration_ms for e in self._events]
+        latencies.sort()
+        p50 = latencies[int(len(latencies) * 0.5)] if latencies else 0.0
+        p95 = latencies[int(len(latencies) * 0.95)] if latencies else 0.0
+
+        try:
+            rusage = resource.getrusage(resource.RUSAGE_SELF)
+            memory_mb = round(rusage.ru_maxrss / 1024.0, 2)
+        except Exception:
+            memory_mb = 0.0
+
+        active_alerts: list[dict[str, Any]] = []
+        status = "healthy"
+
+        if count_5xx >= 5:
+            active_alerts.append(
+                {
+                    "id": "alert_5xx_spike",
+                    "severity": "critical",
+                    "title": "5xx Server Error Spike",
+                    "message": f"Detected {count_5xx} HTTP 5xx errors in the last 5 minutes.",
+                }
+            )
+            status = "degraded"
+        elif count_5xx > 0:
+            active_alerts.append(
+                {
+                    "id": "warn_5xx_errors",
+                    "severity": "warning",
+                    "title": "Occasional 5xx Server Errors",
+                    "message": f"Recorded {count_5xx} HTTP 5xx errors in the last 5 minutes.",
+                }
+            )
+
+        if memory_mb > 850.0:
+            active_alerts.append(
+                {
+                    "id": "alert_high_memory",
+                    "severity": "warning",
+                    "title": "High Memory Pressure",
+                    "message": f"Memory consumption at {memory_mb} MB (exceeds 85% safety baseline).",
+                }
+            )
+            if status == "healthy":
+                status = "degraded"
+
+        recent_errors = [
+            {
+                "time": time.strftime("%H:%M:%S", time.gmtime(e.timestamp)),
+                "path": e.path,
+                "status": e.status_code,
+                "error": e.error_message,
+            }
+            for e in reversed(self._events)
+            if e.status_code >= 400
+        ][:10]
+
+        return {
+            "status": status,
+            "uptime_seconds": int(now - self.start_time),
+            "memory_mb": memory_mb,
+            "request_counts": {
+                "total": total,
+                "2xx": count_2xx,
+                "3xx": count_3xx,
+                "4xx": count_4xx,
+                "5xx": count_5xx,
+            },
+            "latencies_ms": {
+                "p50": round(p50, 1),
+                "p95": round(p95, 1),
+            },
+            "active_alerts": active_alerts,
+            "recent_errors": recent_errors,
+        }
+
+
+global_telemetry = ServerTelemetryTracker()
 
 
 def _register_eval_tools(server: MCPServer) -> None:
@@ -363,6 +498,14 @@ def _register_query_tools(server: MCPServer) -> None:
             status = await get_token_headroom_status(s)
             return json.dumps(status.model_dump(mode="json"), indent=2)
         return "{}"
+
+    @server.tool(
+        name="credence_get_health_status",
+        description="Retrieve live node health, active alert conditions (5xx spikes, memory saturation), and SRE telemetry for Interface Telemetry Loopback (ITLP-v1).",
+    )
+    async def get_health_status() -> str:
+        snapshot = global_telemetry.get_snapshot()
+        return json.dumps(snapshot, indent=2)
 
 
 def _register_consensus_tools(server: MCPServer) -> None:
@@ -725,6 +868,12 @@ def _register_taxonomy_resources(server: MCPServer) -> None:
             },
             indent=2,
         )
+
+    @server.resource("credence://node/health")
+    def get_node_health_resource() -> str:
+        """Live node health, active alerts, and rolling telemetry snapshot."""
+        snapshot = global_telemetry.get_snapshot()
+        return json.dumps(snapshot, indent=2)
 
     @server.resource("credence://mesh/seeds")
     async def get_mesh_seeds_resource() -> str:
@@ -1264,16 +1413,18 @@ async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
 
 
 async def api_health(request: Any) -> Any:
-    """REST API: Health check endpoint."""
+    """REST API: Health check endpoint with Interface Telemetry Loopback (ITLP-v1)."""
     from starlette.responses import JSONResponse
 
     from credence import __version__
 
+    telemetry_data = global_telemetry.get_snapshot()
     return JSONResponse(
         {
-            "status": "healthy",
+            "status": telemetry_data["status"],
             "service": "credence",
             "version": __version__,
+            "telemetry": telemetry_data,
         }
     )
 
@@ -1765,6 +1916,27 @@ def create_server_app(
         allow_headers=["*"],
         allow_credentials=True,
     )
+
+    # Add Telemetry Middleware for Interface Telemetry Loopback (ITLP-v1)
+    from starlette.middleware.base import BaseHTTPMiddleware
+
+    class TelemetryMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Any, call_next: Any) -> Any:
+            t0 = time.perf_counter()
+            status_code = 500
+            error_msg = None
+            try:
+                response = await call_next(request)
+                status_code = response.status_code
+                return response
+            except Exception as exc:
+                error_msg = str(exc)
+                raise
+            finally:
+                dt_ms = (time.perf_counter() - t0) * 1000.0
+                global_telemetry.record_request(status_code, request.url.path, dt_ms, error_msg)
+
+    app.add_middleware(TelemetryMiddleware)
 
     # Lifespan task for Sifter Daemon & Auto-Germination
     should_sift = enable_sifter or os.environ.get("CREDENCE_SIFTER_ENABLED", "").lower() in ("1", "true")

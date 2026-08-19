@@ -220,6 +220,23 @@ class CredenceApp(App):
         border: round $accent;
         background: $surface;
     }
+
+    #header_status_pill {
+        dock: top;
+        height: auto;
+        padding: 0 1;
+        background: $surface;
+        border-bottom: solid $primary;
+        text-align: center;
+        text-style: bold;
+    }
+
+    #ops_panel {
+        padding: 1;
+        border: round $accent;
+        margin: 1;
+        background: $surface;
+    }
     """
 
     BINDINGS = [
@@ -234,6 +251,7 @@ class CredenceApp(App):
         ("5", "switch_to_leaderboard", "Leaderboard"),
         ("6", "switch_to_quota", "Quota"),
         ("7", "switch_to_identity", "Identity"),
+        ("8", "switch_to_ops", "Ops & Alerts"),
         ("o", "open_in_browser", "Open in Web"),
         ("e", "export_report_action", "Export Report"),
         ("f", "focus_filter", "Filter Findings"),
@@ -249,6 +267,7 @@ class CredenceApp(App):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
+        yield Static("🟢 Node Status: HEALTHY", id="header_status_pill")
         with Horizontal():
             # Left Sidebar: Audit History
             with Vertical(id="sidebar"):
@@ -304,6 +323,10 @@ class CredenceApp(App):
                     with TabPane("🔑 Node Identity", id="tab_identity"):
                         yield Static("Loading Node Identity...", id="identity_panel")
 
+                    with TabPane("🚨 Ops & Alerts", id="tab_ops"):
+                        with VerticalScroll():
+                            yield Static("Loading Node Telemetry & Alert Status...", id="ops_panel")
+
         yield Footer()
 
     async def on_mount(self) -> None:
@@ -339,6 +362,10 @@ class CredenceApp(App):
         await self._populate_digest_panel()
         self._populate_identity_panel()
         await self._populate_quota_panel()
+        await self._refresh_telemetry_loopback()
+
+        # Set up periodic telemetry loopback updates (3s interval)
+        self.set_interval(3.0, self._refresh_telemetry_loopback)
 
         # Load recent audits from DB
         await self.load_recent_audits()
@@ -807,6 +834,73 @@ class CredenceApp(App):
     def action_switch_to_identity(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_identity"
+
+    def action_switch_to_ops(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_ops"
+
+    async def _refresh_telemetry_loopback(self) -> None:
+        from credence.server.app import global_telemetry
+
+        telem = global_telemetry.get_snapshot()
+        status = telem.get("status", "healthy")
+        counts = telem.get("request_counts", {})
+        count_5xx = counts.get("5xx", 0)
+        memory_mb = telem.get("memory_mb", 0.0)
+        alerts = telem.get("active_alerts", [])
+
+        # Update Header Status Pill
+        try:
+            pill = self.query_one("#header_status_pill", Static)
+            if count_5xx >= 5 or any(a.get("severity") == "critical" for a in alerts):
+                pill.update(f"[bold red]🔴 ⚠️ CRITICAL: 5xx Spike Detected ({count_5xx} errors in 5m)[/bold red]")
+            elif memory_mb > 850.0:
+                pill.update(f"[bold yellow]🟡 WARNING: High Memory Pressure ({memory_mb} MB)[/bold yellow]")
+            elif count_5xx > 0:
+                pill.update(f"[bold yellow]🟡 WARNING: {count_5xx} 5xx Error(s) in last 5m[/bold yellow]")
+            else:
+                pill.update(
+                    "[bold green]🟢 Node Status: HEALTHY[/bold green] [dim]| Scale-to-Zero Active | No Active Alerts[/dim]"
+                )
+        except Exception:
+            pass
+
+        # Update Ops & Alerts Panel
+        try:
+            ops = self.query_one("#ops_panel", Static)
+            lines = [
+                "[bold cyan]🚨 Credence Interface Telemetry Loopback (ITLP-v1)[/bold cyan]\n",
+                f"[bold]Node Health:[/bold]       {'[bold green]HEALTHY[/bold green]' if status == 'healthy' else '[bold red]' + status.upper() + '[/bold red]'}",
+                f"[bold]Uptime:[/bold]            {telem.get('uptime_seconds', 0)} seconds",
+                f"[bold]Memory Baseline:[/bold]   {memory_mb} MB / 1024 MB ({round(memory_mb / 1024 * 100, 1)}%)",
+                f"[bold]Latency Percentiles:[/bold] P50: {telem.get('latencies_ms', {}).get('p50', 0)}ms | P95: {telem.get('latencies_ms', {}).get('p95', 0)}ms\n",
+                "[bold]Rolling Request Window (5m):[/bold]",
+                f"  • Total Requests: {counts.get('total', 0)}",
+                f"  • 2xx Success:     [green]{counts.get('2xx', 0)}[/green]",
+                f"  • 3xx Redirect:    [cyan]{counts.get('3xx', 0)}[/cyan]",
+                f"  • 4xx Client Err:  [yellow]{counts.get('4xx', 0)}[/yellow]",
+                f"  • 5xx Server Err:  [red]{counts.get('5xx', 0)}[/red]\n",
+            ]
+            if alerts:
+                lines.append("[bold red]Active Incidents & Alerts:[/bold red]")
+                for a in alerts:
+                    lines.append(
+                        f"  • [{a.get('severity', '').upper()}] [bold]{a.get('title', '')}:[/bold] {a.get('message', '')}"
+                    )
+            else:
+                lines.append("[bold green]✓ Zero active alerts or critical failure conditions.[/bold green]")
+
+            recent_errs = telem.get("recent_errors", [])
+            if recent_errs:
+                lines.append("\n[bold yellow]Recent HTTP Error Events:[/bold yellow]")
+                for e in recent_errs[:5]:
+                    lines.append(
+                        f"  • [{e.get('time')}] [red]{e.get('status')}[/red] {e.get('path')} ({e.get('error') or 'HTTP error'})"
+                    )
+
+            ops.update("\n".join(lines))
+        except Exception:
+            pass
 
     async def _populate_leaderboard_views(self) -> None:
         from credence.mesh.merit import get_leaderboard, get_local_node_merit

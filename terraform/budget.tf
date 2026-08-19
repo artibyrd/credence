@@ -32,9 +32,9 @@ resource "google_billing_budget" "budget" {
   }
 
   dynamic "all_updates_rule" {
-    for_each = length(var.alert_email_addresses) > 0 ? [1] : []
+    for_each = local.has_notification_channels ? [1] : []
     content {
-      monitoring_notification_channels = []
+      monitoring_notification_channels = local.all_notification_channels
       disable_default_iam_recipients   = false
     }
   }

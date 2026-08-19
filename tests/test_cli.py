@@ -240,3 +240,18 @@ async def test_cli_germinate(db_session: Any) -> None:
     with patch("credence.feeds.worker.fetch_and_parse_feed", new_callable=AsyncMock, return_value=mock_feed):
         await cli_germinate(burst=0, no_mesh=False, profile="free")
         await cli_germinate(burst=0, no_mesh=True, profile="free")
+
+
+@pytest.mark.unit
+def test_cli_health_and_alerts() -> None:
+    """Verify cli_health and cli_alerts render panels cleanly."""
+    from credence.cli.main import cli_health
+    from credence.server.app import global_telemetry
+
+    global_telemetry.reset()
+    global_telemetry.record_request(200, "/health", 5.0)
+    global_telemetry.record_request(500, "/api/audit", 50.0, "Test Error")
+
+    # In-process fallback path
+    cli_health(url="")
+    cli_health(url="http://localhost:8000")

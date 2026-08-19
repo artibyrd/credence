@@ -105,3 +105,56 @@ variable "gemini_api_key" {
   sensitive   = true
   default     = ""
 }
+
+# ==============================================================================
+# Monitoring & Alerting Configuration (Dual-Tier: Simple / Advanced)
+# ==============================================================================
+
+variable "monitoring_tier" {
+  type        = string
+  description = "Monitoring and alerting tier: 'simple' (Guy in his basement easy mode: 3 essential failure alerts + Discord/Email), 'advanced' (extended SRE metrics, log error tracking, P95 latency alerts), or 'disabled'."
+  default     = "simple"
+
+  validation {
+    condition     = contains(["simple", "advanced", "disabled"], var.monitoring_tier)
+    error_message = "monitoring_tier must be one of: 'simple', 'advanced', 'disabled'."
+  }
+}
+
+variable "discord_webhook_url" {
+  type        = string
+  description = "Discord or Powercord incoming webhook URL for incident alerts and monthly budget thresholds."
+  sensitive   = true
+  default     = ""
+}
+
+variable "enable_uptime_check" {
+  type        = bool
+  description = "Enable global 60-second HTTP uptime check against /health endpoint."
+  default     = true
+}
+
+variable "alert_memory_threshold" {
+  type        = number
+  description = "Memory utilization threshold (0.0 - 1.0) triggering early OOM warning (default: 0.85 = 85%)."
+  default     = 0.85
+}
+
+variable "alert_cpu_threshold" {
+  type        = number
+  description = "CPU utilization threshold (0.0 - 1.0) triggering CPU saturation warning in advanced tier (default: 0.90 = 90%)."
+  default     = 0.90
+}
+
+variable "alert_latency_p95_ms" {
+  type        = number
+  description = "P95 request latency threshold in milliseconds triggering performance degradation alert in advanced tier (default: 5000ms)."
+  default     = 5000
+}
+
+variable "alert_5xx_count_threshold" {
+  type        = number
+  description = "Number of 5xx HTTP server errors over a 5-minute window triggering server crash alert (default: 5)."
+  default     = 5
+}
+

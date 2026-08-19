@@ -38,3 +38,24 @@ output "taxonomies_bucket_name" {
   description = "Google Cloud Storage bucket for static taxonomy catalogs and root keys."
   value       = google_storage_bucket.taxonomies_bucket.name
 }
+
+output "monitoring_dashboard_id" {
+  description = "Resource ID of the deployed Google Cloud Monitoring dashboard."
+  value       = google_monitoring_dashboard.credence_dashboard.id
+}
+
+output "monitoring_tier" {
+  description = "Active monitoring and alerting tier ('simple', 'advanced', or 'disabled')."
+  value       = var.monitoring_tier
+}
+
+output "uptime_check_id" {
+  description = "Resource ID of the global HTTP uptime probe (if enabled)."
+  value       = length(google_monitoring_uptime_check_config.credence_http_uptime) > 0 ? google_monitoring_uptime_check_config.credence_http_uptime[0].id : "disabled"
+}
+
+output "active_notification_channels" {
+  description = "List of configured Google Cloud Monitoring notification channel names."
+  value       = local.all_notification_channels
+}
+

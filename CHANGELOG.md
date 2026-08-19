@@ -1,71 +1,54 @@
-# Changelog
+# Release Changelog
 
-All notable changes to the **Credence** project will be documented in this file.
+All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
----
-
-## [1.1.1] - 2026-08-18
+## [1.10.0] - 2026-08-18
 
 ### Added
-- **Zero-Build Mermaid.js Engine Integration**: Vendored standalone zero-build Mermaid v10.9.1 engine (`assets/mermaid.min.js`) into `credence-docs/` and `credence/web/assets/`, enabling native SVG rendering for all 24+ architecture, protocol sequence, and mesh topology diagrams.
-- **Dark Aesthetic Diagram Theme**: Configured dark palette (`#0d121f` container, `#38bdf8` cyan glow borders, `#f8fafc` typography) matching the Credence design system.
-- **Copy to Clipboard Buttons**: Added animated one-click copy buttons and uppercase language tags (`BASH`, `PYTHON`, `YAML`, `JSON`, `TEXT`) across all fenced code blocks.
-- **GitHub Alert Callouts Styling**: Added distinctive dark glassmorphism containers and icons for `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, and `> [!CAUTION]`.
-- **Automated Live Rendering Test Suite**: Created `tests/test_docs_rendering.py` with Playwright + headless Chromium verifying zero unrendered Mermaid diagrams, zero raw HTML tag leaks, full interactivity across all 8 playground widgets, and 0 console errors across all documentation pages.
-- **Extended Static Integrity Suite**: Updated `tests/test_docs_integrity.py` with static Mermaid syntax validation and complete DOM element coverage for all 8 playground widgets.
+- **Dual-Tier SRE Observability & Discord Webhook Integration**:
+  - Implemented the **"Guy in His Basement" Easy Mode** (`monitoring_tier = "simple"`, default):
+    - 3 Essential Failure Guardrails: Service Outage (global HTTP `/health` uptime probe), 5xx Error Spikes ($>5$ in 5m), and Container Memory Pressure ($>85\%$ RAM).
+    - First-class Discord & Powercord incoming webhook integration (`discord_webhook_url`) using native GCP `webhook_tokenauth` channels.
+    - Automated budget alert integration at 50%, 80%, and 100% of the $15.00/mo cap.
+  - Implemented the **Advanced Production Tier** (`monitoring_tier = "advanced"`):
+    - Log-based error metric (`credence_error_logs`), P95 request latency degradation alert ($>5000\text{ms}$), CPU saturation alert ($>90\%$), and Cloud Scheduler feed publisher failure monitor.
+  - Upgraded SRE Telemetry Dashboard with multi-chart visual grid.
+- **Interface Telemetry Loopback Protocol (ITLP-v1)**:
+  - Added thread-safe in-memory `ServerTelemetryTracker` aggregating rolling 5-minute request distributions (Total, 2xx, 3xx, 4xx, 5xx), memory consumption (`resource.getrusage`), and latency percentiles.
+  - Added Starlette `TelemetryMiddleware` and enriched `/health` and `/api/health` REST endpoints with real-time telemetry and active alert diagnostics.
+  - Added FastMCP 2.0 tool `credence_get_health_status` and resource `credence://node/health` for agent self-awareness.
+  - Added Terminal CLI commands `credence health` and `credence alerts` with Rich diagnostic panels.
+  - Upgraded Textual TUI with live Header Alert Status Badge (`🟢 Healthy` / `🟡 High Memory` / `🔴 ⚠️ 5xx Spike Detected`) and dedicated `🚨 Ops & Alerts` tab (Key `8`).
+- **Comprehensive Documentation & Published Articles**:
+  - Featured Blog Essay: *"Interface Telemetry Loopback: Closing the Circuit Between Cloud SRE, Local TUIs, and AI Agents"*.
+  - Blog Essay: *"Basement Ops: Zero-Bloat Cloud Monitoring, Discord Webhooks & TUI Telemetry for Sovereign Nodes"*.
+  - Protocol Specification: `ITLP-v1` (*Interface Telemetry Loopback Protocol*).
+  - Hands-On Tutorial: `Tutorial 13: Dual-Tier Cloud Monitoring, Discord Webhooks & Interface Telemetry`.
+  - Updated GCP Cloud Run Deployment Guides.
 
-### Fixed
-- **Markdown Block Parsing Precedence**: Overhauled `parseMarkdown` in `app.js` to prioritize code block fences before HTML tag inspection, eliminating raw HTML tag leaks (`&lt;/div&gt;`, `&lt;textarea&gt;`) inside code samples and interactive widgets.
-- **LaTeX Math & Currency Formatting**: Corrected regex evaluation ordering in `formatMath` to prevent operator prefix collisions (`\left` transforming to `≤ft`) and unescaped currency strings (`\$18,291.00`).
-- **Interactive Playground Layouts**: Enhanced `.interactive-widget` container styling in `styles.css` with responsive flexbox layouts and real-time state feedback across all 8 simulator widgets.
-- **Content Security Policy Alignment**: Updated `index.html` CSP `connect-src` to permit Cloudflare Web Analytics beacons (`cloudflareinsights.com`).
-
----
-
-## [1.1.0] - 2026-08-18
-
-### Added
-- **Zero-Trust Dynamic Feed Discovery**: Zero-dependency HTML `<link rel="alternate">` parser and well-known endpoint prober (`discover_feed_endpoints`) for autonomous RSS 2.0, Atom 1.0, and JSON Feed discovery without brittle static whitelists.
-- **Pre-Flight Forensic Audit & Shannon Topic Entropy ($H_{\text{topic}}$)**: Pre-ingestion forensic auditor calculating Shannon entropy penalized by top-token concentration ratio ($C_{\text{top3}}$) to mathematically detect commercial takeovers, sponsored native ads, and astroturfing pivots (The "Pizza Hut Problem").
-- **Dynamic Feed Quality Scoring ($F_j$) & Autonomous Eviction**: 4-factor composite feed health index ($F_j = 0.35(1 - \bar{S}/100) + 0.25G + 0.20H + 0.20T$) with automated probation ($<0.70$) and mesh-wide eviction quarantine ($<0.40$).
-- **Real-Time Feed Sifter Daemon**: Background async sifter daemon with jitter scheduling, conditional HTTP 304 caching, and Rendezvous Hashing (HRW) P2P mesh work-sharing yielding 92.3% compute savings at $0.00 token cost.
-- **Morning Epistemic Digest Briefing Engine**: Automated daily briefings aggregating the past 24 hours of evaluated coverage into Clean Journalism, Rhetorical Fallacies, Deceptive Flags, Satire Alerts, and Compute Savings metrics.
-- **Universal 4-Interface Synchronous Parity**: CLI (`feed`, `sifter`, `digest`), FastMCP 2.0 (`credence_discover_feeds`, `credence_inspect_feed_health`, `credence_generate_digest`, `credence://digest/morning`), Textual TUI (`tab_digest`), and Zero-Build Web UI (Section 8 Playground).
-
----
-
-## [1.0.1] - 2026-08-17
+## [1.9.0] - 2026-08-18
 
 ### Added
-- **Multi-Cloud Production Deployment**: Provisioned and live-verified GCP Cloud Run v2 (`credence-server`) and Cloudflare multi-domain edge routing.
-- **FastMCP 2.0 Live SSE Endpoint**: Real-time Server-Sent Events streaming on `https://mcp.credence.run/sse` with session assignment and CORS preflight handling.
-- **Zero-Build Multi-Domain Edge Router**: Cloudflare Worker (`_worker.js`) routing across `credence.run`, `credence.nexus`, `credence.foundation`, and `credence.report` with 0 npm dependencies.
-- **Air-Gapped Genesis Root Key Ceremony**: Generated network root Ed25519 keypair and published canonical RFC 8785 signed `peers.json` and pinned `root.pub`.
-- **Streamlined Operator Justfile Recipes**: Added `just gcp-build`, `just tf-plan`, `just tf-apply`, and `just seed-sync` for one-command deployment.
-- **Hermetic Documentation Integrity Test Suite**: Added `tests/test_docs_integrity.py` validating 47 docs, 7 interactive widgets, and zero-npm compliance in <0.1s.
-- **Platform Portability Specifications**: 5 comprehensive specifications for multi-model adapters (Claude 3.7 Sonnet, GPT-4o, DeepSeek-R1, local Ollama) and multi-cloud deployment (AWS, Azure, Hetzner, K8s).
-- **Interactive Model Cost Comparator**: Section 7 in `docs/playground.md` for real-time model cost, latency, and sovereignty trade-off analysis.
-
-### Changed
-- **Hostname-Aware Dynamic Routing**: Decoupled `docs.credence.run` (technical documentation portal) and `blog.credence.run` (sovereign editorial publication) within a unified zero-build engine.
-- **Token Safety Governor**: Updated model tiering to pin `gemini-3.7-flash` as primary reasoning engine across `BALANCED` and `ULTRA` profiles with thinking token budgets ($1,024 \dots 16,384$).
-
-### Fixed
-- **Transport Security Host Header Validation**: Configured `TransportSecuritySettings` on FastMCP SSE app to allow public domain proxies and Cloudflare CDN headers without `Invalid Host` rejections.
-- **Asset Boundary Protection**: Configured `.assetsignore` and `binding = "ASSETS"` in `web/wrangler.toml` to prevent Cloudflare Worker build errors.
-
----
-
-## [1.0.0] - 2026-08-17
-
-### Added
-- **Core Ingestion & Dual Capture**: Playwright Chromium headless engine and Trafilatura content extraction with memory-safe concurrency gates and SSRF defense.
-- **Epistemic Scoring & Saturation Math**: 4-specialist evaluation pipeline (Truth, Harm, Fallacies, Deceptive Patterns) with exponential saturation scoring.
-- **Verbatim Grounding Validator**: Whitespace-insensitive character-offset citation verification ($G=1.0$) with 50% slash penalty on hallucinated quotes.
-- **P2P Mesh Network Engine**: 13-node Watts-Strogatz small-world gossip diffusion, Bayesian consensus aggregator, and Byzantine fault tolerance ($3f+1$).
-- **The Galileo Rule**: Asymmetric evidence weighting preventing Sybil cartels from overriding verified domain authorities.
-- **Zero-Build Web UI & Textual TUI**: Vanilla HTML5/ES modules web suite and interactive terminal workstation (`credence tui`).
-- **Golden 12 Benchmark Suite**: Multi-profile cross-entropy and accuracy evaluation suite (`just benchmark`).
+- **Two-Phase Epistemic Leaderboard, Sovereign Mesh Merit & Closed-Loop Network Routing**:
+  - Implemented **Phase 1 (Sovereign Mesh Node Merit)**:
+    - 5-level Epistemic Tier progression (`SPROUT` $\to$ `SIFTER` $\to$ `AUDITOR` $\to$ `SPECIALIST` $\to$ `ROOT_ANCHOR`) rooted in cryptographic merit and empirical domain expertise.
+    - 8 cryptographically verifiable Epistemic Merit Badges (`sprout_node`, `sifter_pioneer`, `verified_auditor`, `domain_specialist`, `philanthropic_relay`, `root_seed_candidate`, `galileo_pioneer`, `sybil_shield`).
+    - Shields.io-compatible dynamic SVG badge generator (`generate_svg_badge`) and publisher trust badges (`generate_publisher_svg_badge`).
+    - 24-hour operator maintenance grace period with smooth half-life uptime decay ($\tau=24\text{h}$).
+    - 4-level deterministic tie-breaking (Metric Score $\to$ Tokens Seeded $\to$ First Seen $\to$ Public Key Hex).
+    - Multi-category leaderboards (`quality`, `subjects`, `philanthropy`, `galileo`, `teams`).
+    - Closed-loop network routing with 4 Traffic Shaping Classes (`FAST_LANE` = 500 msgs/s, `STANDARD` = 50 msgs/s, `CHOKED` = 1 msg/s, `QUARANTINED` = 0 msgs/s).
+    - Rate-limiting, /24 subnet clustering to prevent Sybil collusion, and zero-cost attestation caching gate (`should_adopt_attestation`).
+  - Implemented **Phase 2 (Global Web Epistemic Intelligence)**:
+    - Domain Epistemic Index ($DEI$) calculator with trust banding (`HIGH_INTEGRITY`, `RELIABLE`, `MIXED`, `LOW_INTEGRITY`, `DECEPTIVE`).
+    - Domain Rankings: Epistemic Honor Roll (most trusted domains) vs Deception Hotlist (Wall of Shame) vs Astroturf Detection Alerts.
+    - Top 10 Violated Rules Aggregator across all audited snapshot violations with representative grounded excerpts.
+    - Macro Global Epistemic Weather Barometer and Category Integrity Dials.
+    - Community Verification Bounties for breaking and unaudited wire stories.
+  - **Universal 4-Surface Integration Parity**:
+    - **CLI**: `credence leaderboard`, `credence merit`, `credence badge export`, `credence rankings`, `credence bounties`.
+    - **FastMCP 2.0**: 6 tools (`credence_get_leaderboard`, `credence_get_node_merit`, `credence_get_domain_rankings`, `credence_get_taxonomy_analytics`, `credence_get_epistemic_weather`, `credence_get_bounties`) and 7 resources (`credence://leaderboard/...`, `credence://merit/...`, `credence://rankings/...`, `credence://weather/...`, `credence://bounties`).
+    - **Textual TUI**: New `🏆 Leaderboard` tab (`tab_leaderboard`) with dual-panel mesh rankings, local merit profile, and unlocked badges.
+    - **Zero-Build Web UI**: Interactive multi-tab leaderboards and SVG badge embedder on `credence.nexus`, plus DEI Honor Roll/Wall of Shame on `credence.report`.
+    - **Justfile**: Added `just leaderboard`, `just merit`, `just rankings`, `just weather`.
+  - **Hermetic Testing**: Added 5 dedicated test suites with 100% network-free pass (`test_merit_edge_cases.py`, `test_merit_and_leaderboards.py`, `test_adversarial_gamification.py`, `test_web_analytics.py`, `test_leaderboard_interfaces.py`).

@@ -31,11 +31,13 @@ async def test_fastmcp_server_initialization() -> None:
     assert "credence_list_feeds" in tool_names
     assert "credence_remove_feed_subscription" in tool_names
     assert "credence_get_feed_stats" in tool_names
+    assert "credence_get_health_status" in tool_names
 
     resources = await server.list_resources()
     resource_uris = [r.uri for r in resources]
     assert "credence://taxonomies" in resource_uris
     assert "credence://node/identity" in resource_uris
+    assert "credence://node/health" in resource_uris
     assert "credence://mesh/seeds" in resource_uris
     assert "credence://profiles" in resource_uris
     assert "credence://subjects/registry" in resource_uris
@@ -235,14 +237,20 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
     app = create_server_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        # 1. Health check
+        # 1. Health check (with Interface Telemetry Loopback payload)
         res_health = await client.get("/health")
         assert res_health.status_code == 200
-        assert res_health.json()["status"] == "healthy"
+        health_json = res_health.json()
+        assert health_json["status"] == "healthy"
+        assert "telemetry" in health_json
+        assert "uptime_seconds" in health_json["telemetry"]
+        assert "request_counts" in health_json["telemetry"]
 
         res_api_health = await client.get("/api/health")
         assert res_api_health.status_code == 200
-        assert res_api_health.json()["status"] == "healthy"
+        api_health_json = res_api_health.json()
+        assert api_health_json["status"] == "healthy"
+        assert "telemetry" in api_health_json
 
         # 2. Reports endpoint
         res_reports = await client.get("/api/reports?category=recent&limit=10")
@@ -269,3 +277,62 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
         assert res_germ.status_code == 200
         germ_data = res_germ.json()
         assert germ_data["status"] == "germinated"
+
+
+@pytest.mark.unit
+async def test_server_telemetry_tracker_and_alerts() -> None:
+    """Verify ServerTelemetryTracker rolling window, 5xx alert triggers, and memory pressure warnings."""
+    from credence.server.app import global_telemetry
+
+    global_telemetry.reset()
+    snap = global_telemetry.get_snapshot()
+    assert snap["status"] == "healthy"
+    assert snap["request_counts"]["total"] == 0
+    assert len(snap["active_alerts"]) == 0
+
+    # 1. Record normal 2xx traffic
+    for _ in range(10):
+        global_telemetry.record_request(status_code=200, path="/api/reports", duration_ms=15.0)
+
+    snap = global_telemetry.get_snapshot()
+    assert snap["request_counts"]["total"] == 10
+    assert snap["request_counts"]["2xx"] == 10
+    assert snap["status"] == "healthy"
+
+    # 2. Record 5xx errors to trigger spike alert (>= 5 errors)
+    for _ in range(5):
+        global_telemetry.record_request(
+            status_code=500, path="/api/audit", duration_ms=120.0, error_message="Internal Server Error"
+        )
+
+    snap = global_telemetry.get_snapshot()
+    assert snap["request_counts"]["5xx"] == 5
+    assert snap["status"] == "degraded"
+    assert any(a["id"] == "alert_5xx_spike" for a in snap["active_alerts"])
+    assert len(snap["recent_errors"]) == 5
+
+    # 3. Clean reset
+    global_telemetry.reset()
+    snap_after = global_telemetry.get_snapshot()
+    assert snap_after["request_counts"]["total"] == 0
+    assert snap_after["status"] == "healthy"
+
+
+@pytest.mark.unit
+async def test_fastmcp_health_tool_and_resource() -> None:
+    """Verify FastMCP credence_get_health_status tool and credence://node/health resource."""
+    server = create_mcp_server()
+
+    # Read resource
+    res: Any = await server.read_resource("credence://node/health")
+    assert res is not None
+    data = json.loads(res[0].content)
+    assert "status" in data
+    assert "request_counts" in data
+
+    # Call tool
+    tool_res: Any = await server.call_tool("credence_get_health_status", arguments={})
+    assert tool_res is not None
+    tool_data = json.loads(tool_res.content[0].text)
+    assert "status" in tool_data
+    assert "uptime_seconds" in tool_data

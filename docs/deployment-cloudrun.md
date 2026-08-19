@@ -1,6 +1,6 @@
-# Cloud Run Deployment & Terraform Infrastructure Guide
+# Cloud Run Deployment & Dual-Tier Monitoring Guide
 
-This guide covers deploying the **Credence FastMCP Server** to **Google Cloud Platform (Cloud Run v2)** with strict cost controls ($15/month budget ceiling, scale-to-zero) and automated **Cloud Build CI/CD**.
+This guide covers deploying the **Credence FastMCP Server** to **Google Cloud Platform (Cloud Run v2)** with strict cost controls ($15/month budget ceiling, scale-to-zero compute), automated **Cloud Build CI/CD**, and **Dual-Tier SRE Observability** with **Discord & Powercord Alerting**.
 
 ---
 
@@ -8,32 +8,48 @@ This guide covers deploying the **Credence FastMCP Server** to **Google Cloud Pl
 
 ```mermaid
 graph LR
-    subgraph Client ["Clients / Coding Assistants"]
+    subgraph Client ["Clients & Operators"]
         Antigravity[Antigravity IDE / Agent] -->|HTTPS / SSE| CloudRun
-        Claude[Claude Desktop] -->|HTTPS / SSE| CloudRun
+        TUI[Textual TUI / Terminal CLI] -->|Telemetry Loopback| CloudRun
     end
 
     subgraph GCP ["Google Cloud Platform (us-central1)"]
-        CloudRun["Cloud Run v2 Service<br/>(Scale-to-Zero | 512Mi | 1 CPU)"]
+        CloudRun["Cloud Run v2 Service<br/>(Scale-to-Zero | 1024Mi | 1 CPU)"]
         SM["Secret Manager<br/>(credence-gemini-api-key)"]
         Budget["Cloud Billing Budget<br/>($15.00/mo Ceiling)"]
-        Monitoring["Cloud Monitoring<br/>(Latency & Token Gauges)"]
+        Monitoring["Cloud Monitoring<br/>(Dual-Tier SRE & Uptime)"]
         CloudRun --> SM
         CloudRun --> Monitoring
+    end
+
+    subgraph Egress ["Alert Dispatch"]
+        Discord["Discord / Powercord Webhook"]
+        Email["Direct Admin Email"]
+        Monitoring --> Discord
+        Monitoring --> Email
+        Budget --> Discord
+        Budget --> Email
     end
 ```
 
 ---
 
-## 2. Prerequisites
+## 2. Dual-Tier Monitoring Architecture
 
-1. Google Cloud SDK (`gcloud`) installed and authenticated.
-2. Terraform $\ge 1.5.0$.
-3. A Google Cloud project with Billing enabled.
+Credence provisions observability according to two operational modes controlled by `monitoring_tier`:
+
+| Feature | "Guy in His Basement" Easy Mode (`monitoring_tier = "simple"`) | Advanced Production Tier (`monitoring_tier = "advanced"`) |
+| :--- | :--- | :--- |
+| **Default** | Yes (Default) | Optional |
+| **Notification Channels**| Discord / Powercord Webhook (`discord_webhook_url`), Direct Email | Discord Webhook, Direct Email, Multi-Channel |
+| **Budget Alerts** | 50%, 80%, 100% cap alerts sent to Discord & Email | 50%, 80%, 100% cap alerts sent to Discord & Email |
+| **Core Failure Alerts** | 1. 🛑 Global Uptime Probe Failure (`/health`)<br/>2. 🔥 5xx Server Error Spike ($>5$ in 5m)<br/>3. ⚠️ Memory Near-OOM ($>85\%$) | 1. 🛑 Global Uptime Probe Failure<br/>2. 🔥 5xx Server Error Spike<br/>3. ⚠️ Memory Near-OOM |
+| **Extended Alerts** | *Disabled (Zero false alarms)* | 4. ⏱️ P95 Latency Degradation ($>5000\text{ms}$)<br/>5. ⚙️ CPU Saturation ($>90\%$)<br/>6. 📅 Seed Publisher Cron Failure<br/>7. 📜 Log metric for `ERROR`/`CRITICAL` logs |
+| **Dashboard** | 4-Quadrant SRE Visual Console | Multi-widget console with error log streams |
 
 ---
 
-## 3. Deployment Steps via Terraform
+## 3. Terraform Deployment Steps
 
 ### Step 1: Initialize gcloud & Enable APIs
 ```bash
@@ -58,6 +74,11 @@ credence_profile            = "balanced" # or 'free', 'ultra'
 monthly_budget_limit_usd    = 15.00
 billing_account_id          = "YOUR_BILLING_ACCOUNT_ID"
 alert_email_addresses       = ["admin@yourdomain.com"]
+
+# Dual-Tier Monitoring & Discord Webhook
+monitoring_tier             = "simple" # or "advanced"
+discord_webhook_url         = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+enable_uptime_check         = true
 ```
 
 ### Step 3: Initialize and Apply Terraform
@@ -112,41 +133,3 @@ The repository provides a single canonical parameterized operator command family
 | `just gcp germinate [burst]` | Remote Sifting | Invokes remote `/api/germinate` endpoint to trigger Miracle-Gro ignition. |
 | `just gcp rollback <revision>` | Safe Revert | Rolls back 100% traffic allocation to a previous healthy revision. |
 | `just deploy backend` | Safe Deploy | Submits container build via Cloud Build, deploys to Cloud Run, and executes health probe. |
-
----
-
-## 6. GitHub Actions Automated Deployment (`.github/workflows/deploy-backend.yml`)
-
-Cloud Run deployments can be automated on release tags (`v*.*.*`) or via manual trigger (`workflow_dispatch`).
-
-### Step 1: Configure Workload Identity Federation (Recommended)
-```bash
-# 1. Create Workload Identity Pool
-gcloud iam workload-identity-pools create "github-pool" \
-    --project="YOUR_PROJECT_ID" \
-    --location="global" \
-    --display-name="GitHub Actions Pool"
-
-# 2. Create Workload Identity Provider for GitHub Repository
-gcloud iam workload-identity-pools providers create-oidc "github-provider" \
-    --project="YOUR_PROJECT_ID" \
-    --location="global" \
-    --workload-identity-pool="github-pool" \
-    --display-name="GitHub Provider" \
-    --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
-    --issuer-uri="https://token.actions.githubusercontent.com"
-
-# 3. Grant Service Account Access
-gcloud iam service-accounts add-iam-policy-binding "credence-cloud-run-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
-    --project="YOUR_PROJECT_ID" \
-    --role="roles/iam.workloadIdentityUser" \
-    --member="principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/artibyrd/credence"
-```
-
-### Step 2: Configure GitHub Repository Secrets
-Add the following secrets to `artibyrd/credence` via `gh secret set`:
-- `GCP_WORKLOAD_IDENTITY_PROVIDER`: `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider`
-- `GCP_SERVICE_ACCOUNT`: `credence-cloud-run-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com`
-
-When secrets are omitted, the workflow cleanly skips automated deployment and provides instructions for operator deployment via `just deploy backend`.
-
