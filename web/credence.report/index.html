@@ -94,6 +94,37 @@
       <div id="live-stream-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
     </div>
 
+    <!-- Domain Epistemic Index (DEI) Honor Roll & Wall of Shame -->
+    <div class="report-hero" style="padding: 1.75rem; margin-top: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h2 style="font-size: 1.2rem; color: #fff; margin: 0;">🌐 Web Domain Epistemic Index (DEI)</h2>
+        <div style="display: flex; gap: 0.35rem;">
+          <button id="btn-dei-best" class="discover-pill pill-best" style="cursor: pointer;" onclick="switchDei('best')">🛡️ Honor Roll</button>
+          <button id="btn-dei-worst" class="discover-pill pill-worst" style="cursor: pointer;" onclick="switchDei('worst')">🛑 Wall of Shame</button>
+        </div>
+      </div>
+      <div id="dei-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 0.9rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+          <div>
+            <b style="color: #fff; font-size: 0.95rem;">🥇 #1 reuters.com</b>
+            <span style="color: var(--text-dim); font-size: 0.8rem; display: block;">High Integrity • 0.0 Avg Suspicion • 100% Grounded</span>
+          </div>
+          <div style="text-align: right;">
+            <span class="badge clean" style="font-size: 0.8rem;">98.5% DEI</span>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 0.9rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+          <div>
+            <b style="color: #fff; font-size: 0.95rem;">🥈 #2 bbc.com</b>
+            <span style="color: var(--text-dim); font-size: 0.8rem; display: block;">High Integrity • 2.1 Avg Suspicion • 96% Grounded</span>
+          </div>
+          <div style="text-align: right;">
+            <span class="badge clean" style="font-size: 0.8rem;">95.2% DEI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- How it works card -->
     <div class="panel-card" style="margin-top: 1.5rem;">
       <div class="panel-title">
@@ -179,6 +210,36 @@
         }).join("");
       }
     });
+
+    window.switchDei = async function(cat) {
+      const apiBase = getApiBaseUrl();
+      const list = document.getElementById("dei-list");
+      try {
+        const res = await fetch(`${apiBase}/api/rankings/domains?category=${encodeURIComponent(cat)}&limit=10`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.rankings && data.rankings.length > 0) {
+            list.innerHTML = data.rankings.map(d => {
+              const bandClass = d.trust_band === 'HIGH_INTEGRITY' || d.trust_band === 'RELIABLE' ? 'clean' : (d.trust_band === 'MODERATE_SUSPICION' ? 'suspicious' : 'deceptive');
+              const medal = d.rank === 1 ? '🥇 #1' : (d.rank === 2 ? '🥈 #2' : (d.rank === 3 ? '🥉 #3' : `#${d.rank}`));
+              return `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 0.9rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                  <div>
+                    <b style="color: #fff; font-size: 0.95rem;">${medal} ${d.domain}</b>
+                    <span style="color: var(--text-dim); font-size: 0.8rem; display: block;">${d.trust_band} • ${d.avg_suspicion.toFixed(1)} Avg Suspicion • ${d.total_audits} Audits</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="badge ${bandClass}" style="font-size: 0.8rem;">${d.dei_score.toFixed(1)}% DEI</span>
+                  </div>
+                </div>
+              `;
+            }).join("");
+          }
+        }
+      } catch (e) {
+        console.log('Serving baseline DEI rankings.');
+      }
+    };
   </script>
 </body>
 </html>

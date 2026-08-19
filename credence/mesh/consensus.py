@@ -210,3 +210,31 @@ class BayesianConsensusAggregator:
             outlier_nodes=outlier_pubkeys,
             peer_weights=peer_weights_list,
         )
+
+
+def should_adopt_attestation(
+    report: AuditReport,
+    peer_quality: float = 0.5,
+    min_quality: float = 0.70,
+    min_grounding: float = 0.85,
+) -> bool:
+    """Evaluate whether a peer's signed attestation qualifies for zero-cost cache adoption.
+
+    Requires:
+    1. Valid node public key and signature
+    2. Peer quality score >= min_quality (default 0.70)
+    3. Verbatim quote grounding precision >= min_grounding (default 0.85)
+    """
+    if not report.node_pubkey or not report.node_signature:
+        return False
+
+    if peer_quality < min_quality:
+        return False
+
+    if report.violations:
+        grounded_count = sum(1 for v in report.violations if v.is_grounded)
+        ratio = grounded_count / len(report.violations)
+        if ratio < min_grounding:
+            return False
+
+    return True

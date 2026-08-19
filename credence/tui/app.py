@@ -194,6 +194,32 @@ class CredenceApp(App):
         margin: 1;
         background: $surface;
     }
+
+    #leaderboard_split {
+        height: 1fr;
+    }
+
+    #leaderboard_left {
+        width: 50%;
+        height: 1fr;
+        margin-right: 1;
+    }
+
+    #leaderboard_right {
+        width: 50%;
+        height: 1fr;
+    }
+
+    #leaderboard_table {
+        height: 1fr;
+        border: solid $secondary;
+    }
+
+    #merit_panel {
+        padding: 1;
+        border: round $accent;
+        background: $surface;
+    }
     """
 
     BINDINGS = [
@@ -205,8 +231,9 @@ class CredenceApp(App):
         ("2", "switch_to_taxonomies", "Taxonomies"),
         ("3", "switch_to_subjects", "Subjects"),
         ("4", "switch_to_feeds", "Feeds"),
-        ("5", "switch_to_quota", "Quota"),
-        ("6", "switch_to_identity", "Identity"),
+        ("5", "switch_to_leaderboard", "Leaderboard"),
+        ("6", "switch_to_quota", "Quota"),
+        ("7", "switch_to_identity", "Identity"),
         ("o", "open_in_browser", "Open in Web"),
         ("e", "export_report_action", "Export Report"),
         ("f", "focus_filter", "Filter Findings"),
@@ -257,6 +284,16 @@ class CredenceApp(App):
                     with TabPane("📡 Feeds & Dedup", id="tab_feeds"):
                         yield DataTable(id="feeds_table")
 
+                    with TabPane("🏆 Leaderboard", id="tab_leaderboard"):
+                        with Horizontal(id="leaderboard_split"):
+                            with Vertical(id="leaderboard_left"):
+                                yield Label("🏆 Epistemic Mesh Leaderboard ($Q_i$)", classes="metric_title")
+                                yield DataTable(id="leaderboard_table")
+                            with Vertical(id="leaderboard_right"):
+                                yield Label("🛡️ Local Node Merit & Badges", classes="metric_title")
+                                with VerticalScroll():
+                                    yield Static("Loading Node Merit Card...", id="merit_panel")
+
                     with TabPane("🌅 Morning Digest", id="tab_digest"):
                         with VerticalScroll():
                             yield Static("Loading Morning Digest...", id="digest_panel")
@@ -289,10 +326,16 @@ class CredenceApp(App):
         feeds_table.cursor_type = "row"
         feeds_table.add_columns("Tier", "Title", "Quality (F_j)", "Feed URL", "Subject", "Status")
 
+        # Set up leaderboard table
+        lb_table = self.query_one("#leaderboard_table", DataTable)
+        lb_table.cursor_type = "row"
+        lb_table.add_columns("Rank", "Alias", "Tier", "Score", "Uptime", "Traffic")
+
         # Populate Views
         self._populate_taxonomy_tree()
         self._populate_subjects_tree()
         await self._populate_feeds_table()
+        await self._populate_leaderboard_views()
         await self._populate_digest_panel()
         self._populate_identity_panel()
         await self._populate_quota_panel()
@@ -753,6 +796,10 @@ class CredenceApp(App):
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_feeds"
 
+    def action_switch_to_leaderboard(self) -> None:
+        tabs = self.query_one("#tabs", TabbedContent)
+        tabs.active = "tab_leaderboard"
+
     def action_switch_to_quota(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_quota"
@@ -760,6 +807,53 @@ class CredenceApp(App):
     def action_switch_to_identity(self) -> None:
         tabs = self.query_one("#tabs", TabbedContent)
         tabs.active = "tab_identity"
+
+    async def _populate_leaderboard_views(self) -> None:
+        from credence.mesh.merit import get_leaderboard, get_local_node_merit
+
+        table = self.query_one("#leaderboard_table", DataTable)
+        table.clear()
+        panel = self.query_one("#merit_panel", Static)
+
+        async for session in get_session():
+            entries = await get_leaderboard(session, category="quality", limit=25)
+            for e in entries:
+                rank_lbl = f"🥇 #{e.rank}" if e.rank == 1 else (f"🥈 #{e.rank}" if e.rank == 2 else f"#{e.rank}")
+                traffic_str = (
+                    f"[bold green]{e.traffic_class}[/bold green]"
+                    if e.traffic_class == "FAST_LANE"
+                    else f"[yellow]{e.traffic_class}[/yellow]"
+                )
+                table.add_row(
+                    rank_lbl,
+                    e.node_alias,
+                    e.tier,
+                    f"{e.score:.3f}",
+                    f"{e.uptime_ratio * 100:.1f}%",
+                    traffic_str,
+                )
+
+            card = await get_local_node_merit(session)
+            tier_color = "cyan" if card.tier == "ROOT_ANCHOR" else ("magenta" if card.tier == "SPECIALIST" else "green")
+            lines = [
+                f"[bold]Node Alias:[/bold]       [cyan]{card.node_alias}[/cyan]",
+                f"[bold]Epistemic Tier:[/bold]   [{tier_color}]{card.tier}[/{tier_color}] (Rank #{card.rank_overall} of {card.total_nodes})",
+                f"[bold]Traffic Status:[/bold]   [bold green]{card.traffic_class}[/bold green]",
+                f"[bold]5-Factor Quality:[/bold] [bold]{card.quality_score:.4f}[/bold]",
+                f"[bold]Uptime / Grounding:[/bold] {card.uptime_ratio * 100:.1f}% / {card.grounding_ratio * 100:.1f}%",
+                "",
+                "[bold yellow]⚡ Compute Philanthropy:[/bold yellow]",
+                f"  • Tokens Seeded: [bold]{card.tokens_seeded:,}[/bold]",
+                f"  • Value Donated: [bold green]${card.usd_saved_estimate:.4f} USD[/bold green]",
+                f"  • Galileo Finds: [bold]{card.galileo_discoveries}[/bold]",
+                "",
+                f"[bold]Earned Badges ({len(card.unlocked_badges)}):[/bold]",
+            ]
+            for b in card.unlocked_badges:
+                lines.append(f"  • {b.icon} [bold]{b.name}[/bold]: {b.description}")
+
+            panel.update("\n".join(lines))
+            break
 
     def action_sync_feeds_action(self) -> None:
         """Trigger background syndicated feed synchronization."""

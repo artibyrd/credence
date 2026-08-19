@@ -3,20 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence Nexus — P2P Mesh Network & Bootstrap Seed Directory</title>
-  <meta name="description" content="Decentralized P2P mesh network, live bootstrap seed directory, and 5-factor node quality rankings for Credence.">
+  <title>Credence Nexus — P2P Mesh Network & Epistemic Leaderboards</title>
+  <meta name="description" content="Decentralized P2P mesh network, live bootstrap seed directory, epistemic badges, and 5-factor node quality rankings for Credence.">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1.5rem 0 1rem 0;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: var(--bg-surface, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      color: #94a3b8;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+    }
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .badge-item {
+      background: var(--bg-surface, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .badge-preview {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: bold;
+      background: #0f172a;
+      border: 1px solid #334155;
+    }
+    .traffic-fast { color: #4ade80; font-weight: bold; }
+    .traffic-std { color: #facc15; }
+    .traffic-choke { color: #f87171; }
+  </style>
 </head>
 <body>
   <div class="container">
     <header>
       <span class="badge">Decentralized Trust Network</span>
       <h1>Credence Nexus</h1>
-      <p class="lead">Peer-to-peer gossip network topology, live bootstrap seed directory (<code>peers.json</code>), and 5-factor node quality rankings (Qᵢ).</p>
+      <p class="lead">Peer-to-peer gossip network topology, live bootstrap seed directory (<code>peers.json</code>), compute philanthropy odometers, and 5-factor node quality rankings (Qᵢ).</p>
     </header>
 
     <div class="card">
-      <h2>Bootstrap Seed Manifest</h2>
+      <h2>Bootstrap Seed Manifest & Node Ignition</h2>
       <p style="color: var(--text-muted); margin-bottom: 1rem;">
         New and recovering mesh nodes bootstrap routing tables from the cryptographically signed seed manifest:
       </p>
@@ -28,55 +80,156 @@ credence mesh --port 8765 --seeds "https://seeds.credence.nexus/peers.json"</cod
     </div>
 
     <div class="card">
-      <h2>5-Factor Node Quality Leaderboard ($Q_i$)</h2>
-      <p style="color: var(--text-muted);">
-        Nodes qualify as bootstrap seed candidates based on:
-        <br/><code>Q_i = 0.25*Uptime + 0.30*ConsensusConcordance + 0.25*QuoteGrounding + 0.10*TaxonomyCurrency + 0.10*KeyLongevity</code>
-      </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2>Epistemic Mesh Leaderboards</h2>
+          <p style="color: var(--text-muted); margin: 0;">Ranked by cryptographic consensus, verifiable citations, and compute contributions.</p>
+        </div>
+        <div id="connection-status" style="font-size: 0.85rem; color: #4ade80; background: rgba(74, 222, 128, 0.1); padding: 0.35rem 0.75rem; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.2);">
+          ● Mesh Telemetry Active
+        </div>
+      </div>
 
-      <table>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-cat="quality" onclick="switchCategory('quality')">🏆 5-Factor Quality ($Q_i$)</button>
+        <button class="tab-btn" data-cat="philanthropy" onclick="switchCategory('philanthropy')">⚡ Compute Philanthropy</button>
+        <button class="tab-btn" data-cat="galileo" onclick="switchCategory('galileo')">🔭 Galileo Discoveries</button>
+        <button class="tab-btn" data-cat="subjects" onclick="switchCategory('subjects')">🧠 Domain Expertise</button>
+      </div>
+
+      <table id="leaderboard-table">
         <thead>
           <tr>
             <th>Rank</th>
             <th>Node Alias</th>
-            <th>Region</th>
-            <th>Q_i Score</th>
+            <th>Epistemic Tier</th>
+            <th id="score-header">Score</th>
             <th>Uptime</th>
-            <th>Role</th>
+            <th>Grounding</th>
+            <th>Traffic</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="leaderboard-body">
           <tr>
-            <td><b>#1</b></td>
+            <td><b>🥇 #1</b></td>
             <td><code>anchor-us-central1</code></td>
-            <td>us-central1</td>
-            <td>0.985</td>
+            <td><span style="color:#38bdf8;">ROOT_ANCHOR</span></td>
+            <td><b>0.9850</b></td>
             <td>99.98%</td>
-            <td><span class="status-seed">ROOT SEED</span></td>
+            <td>100.0%</td>
+            <td><span class="traffic-fast">FAST_LANE</span></td>
           </tr>
           <tr>
-            <td><b>#2</b></td>
+            <td><b>🥈 #2</b></td>
             <td><code>anchor-europe-west1</code></td>
-            <td>europe-west1</td>
-            <td>0.972</td>
+            <td><span style="color:#c084fc;">SPECIALIST</span></td>
+            <td><b>0.9720</b></td>
             <td>99.95%</td>
-            <td><span class="status-seed">SEED</span></td>
+            <td>98.5%</td>
+            <td><span class="traffic-fast">FAST_LANE</span></td>
           </tr>
           <tr>
-            <td><b>#3</b></td>
+            <td><b>🥉 #3</b></td>
             <td><code>bridge-asia-east1</code></td>
-            <td>asia-east1</td>
-            <td>0.958</td>
+            <td><span style="color:#60a5fa;">AUDITOR</span></td>
+            <td><b>0.9580</b></td>
             <td>99.80%</td>
-            <td><span class="status-seed">SEED</span></td>
+            <td>97.0%</td>
+            <td><span class="traffic-std">STANDARD</span></td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="card">
+      <h2>🛡️ Verifiable Epistemic Badges</h2>
+      <p style="color: var(--text-muted);">
+        Embed dynamic, real-time SVG merit badges in your GitHub README, documentation, or sovereign organization portal:
+      </p>
+      <div class="badge-grid">
+        <div class="badge-item">
+          <div style="font-weight: bold; color: #fff;">🌱 Sprout Node</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">Completed Genesis germination and minted Ed25519 identity.</div>
+          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#4ade80;">sprout: ACTIVE</span></div>
+        </div>
+        <div class="badge-item">
+          <div style="font-weight: bold; color: #fff;">🌾 Sifter Pioneer</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">Evaluated 100+ feed items with zero fatal runtime faults.</div>
+          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#38bdf8;">sifter: 100+</span></div>
+        </div>
+        <div class="badge-item">
+          <div style="font-weight: bold; color: #fff;">⚡ Philanthropic Relay</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">Seeded 10,000+ tokens of compute to peer nodes.</div>
+          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#facc15;">seeded: 10k tok</span></div>
+        </div>
+        <div class="badge-item">
+          <div style="font-weight: bold; color: #fff;">🔭 Galileo Pioneer</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">Discovered grounded truth that corrected swarm consensus.</div>
+          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#c084fc;">galileo: VERIFIED</span></div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <pre><code>&lt;!-- Markdown Badge Embed Example --&gt;
+![Credence Merit](https://api.credence.nexus/api/badge/root_seed_candidate.svg?node=anchor-us-central1&theme=dark)</code></pre>
+      </div>
     </div>
 
     <footer>
       <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://taxonomies.credence.foundation">Taxonomy Governance</a> &bull; <a href="https://credence.report">Audit Reports</a></p>
     </footer>
   </div>
+
+  <script type="module">
+    let currentCategory = 'quality';
+
+    window.switchCategory = async function(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-cat') === cat);
+      });
+
+      const header = document.getElementById('score-header');
+      if (cat === 'philanthropy') header.textContent = 'Tokens Seeded';
+      else if (cat === 'galileo') header.textContent = 'Discoveries';
+      else header.textContent = 'Score';
+
+      try {
+        const res = await fetch(`/api/leaderboard?category=${encodeURIComponent(cat)}&limit=25`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.leaderboard && data.leaderboard.length > 0) {
+            renderTable(data.leaderboard, cat);
+          }
+        }
+      } catch (e) {
+        console.log('Serving offline baseline leaderboard data.');
+      }
+    };
+
+    function renderTable(entries, cat) {
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = '';
+      entries.forEach(e => {
+        const tr = document.createElement('tr');
+        const rankStr = e.rank === 1 ? '🥇 #1' : (e.rank === 2 ? '🥈 #2' : (e.rank === 3 ? '🥉 #3' : `#${e.rank}`));
+        const scoreStr = cat === 'philanthropy' ? e.tokens_seeded.toLocaleString() : (cat === 'galileo' ? e.score : e.score.toFixed(4));
+        const trafficClass = e.traffic_class === 'FAST_LANE' ? 'traffic-fast' : (e.traffic_class === 'STANDARD' ? 'traffic-std' : 'traffic-choke');
+
+        tr.innerHTML = `
+          <td><b>${rankStr}</b></td>
+          <td><code>${e.node_alias}</code></td>
+          <td><span style="color:#38bdf8;">${e.tier}</span></td>
+          <td><b>${scoreStr}</b></td>
+          <td>${(e.uptime_ratio * 100).toFixed(1)}%</td>
+          <td>${(e.grounding_ratio * 100).toFixed(1)}%</td>
+          <td><span class="${trafficClass}">${e.traffic_class}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Try live fetch on load
+    window.switchCategory('quality');
+  </script>
 </body>
 </html>

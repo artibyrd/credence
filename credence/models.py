@@ -149,6 +149,17 @@ class PeerMetricRecord(SQLModel, table=True):
     is_seed_candidate: bool = Field(
         default=False, index=True, description="True if node qualifies as a top seed candidate"
     )
+    team_tag: Optional[str] = Field(default=None, index=True, description="Federation team / organization tag")
+    tokens_seeded_count: int = Field(default=0, description="Total LLM tokens saved for peers via adopted attestations")
+    attestations_seeded_count: int = Field(default=0, description="Total signed audits adopted by peers")
+    galileo_discoveries_count: int = Field(default=0, description="Consensus-shifting grounded detections")
+    traffic_class: str = Field(
+        default="STANDARD", description="P2P Traffic Class: FAST_LANE, STANDARD, CHOKED, QUARANTINED"
+    )
+    ip_subnet: Optional[str] = Field(
+        default=None, index=True, description="Normalized /24 or /48 network prefix for Sybil clustering"
+    )
+    badges_unlocked_json: str = Field(default="[]", description="JSON list of earned badge IDs and award metadata")
 
 
 class SubjectRecord(SQLModel, table=True):

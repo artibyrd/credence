@@ -1093,7 +1093,7 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
 
 
 def _dispatch_mesh_commands(args: argparse.Namespace) -> bool:
-    """Dispatch P2P mesh and federation subcommands."""
+    """Dispatch P2P mesh, merit, and federation subcommands."""
     cmd = args.command
     if cmd == "mesh":
         seeds_list = [s.strip() for s in args.seeds.split(",") if s.strip()]
@@ -1109,8 +1109,50 @@ def _dispatch_mesh_commands(args: argparse.Namespace) -> bool:
             )
         )
         return True
-    elif cmd == "rank":
-        asyncio.run(cli_rank())
+    elif cmd in ("leaderboard", "rank"):
+        asyncio.run(
+            cli_leaderboard(
+                category=getattr(args, "category", "quality"),
+                limit=getattr(args, "limit", 50),
+                format_type=getattr(args, "format", "human"),
+                team_filter=getattr(args, "team", None),
+            )
+        )
+        return True
+    elif cmd == "merit":
+        asyncio.run(
+            cli_merit(
+                pubkey=getattr(args, "pubkey", None),
+                export_svg=getattr(args, "output", None),
+            )
+        )
+        return True
+    elif cmd == "badge":
+        cli_badge_export(
+            badge_id=getattr(args, "badge_id", "root_seed_candidate"),
+            output_path=getattr(args, "output", None),
+            node=getattr(args, "node", "credence-node"),
+            theme=getattr(args, "theme", "dark"),
+        )
+        return True
+    elif cmd == "rankings":
+        asyncio.run(
+            cli_rankings(
+                ranking_type=getattr(args, "ranking_type", "domains"),
+                category=getattr(args, "category", "best"),
+                limit=getattr(args, "limit", 50),
+                format_type=getattr(args, "format", "human"),
+            )
+        )
+        return True
+    elif cmd == "bounties":
+        asyncio.run(
+            cli_rankings(
+                ranking_type="bounties",
+                limit=getattr(args, "limit", 20),
+                format_type=getattr(args, "format", "human"),
+            )
+        )
         return True
     elif cmd == "init-org":
         cli_init_org(
@@ -1251,89 +1293,297 @@ async def cli_seeds(
         )
 
 
-async def cli_rank() -> None:
-    """Display Rich terminal leaderboard of mesh nodes ranked by the 5-factor quality score."""
-    from credence.mesh.quality import NodeMetrics, rank_nodes
-    from credence.models import PeerMetricRecord
+async def cli_leaderboard(
+    category: str = "quality",
+    limit: int = 50,
+    format_type: str = "human",
+    team_filter: Optional[str] = None,
+) -> None:
+    """Display Rich terminal leaderboard of P2P mesh nodes."""
+    from dataclasses import asdict
+
+    from credence.db import get_session, init_db
+    from credence.mesh.merit import get_leaderboard
 
     await init_db()
-    metrics_list: List[NodeMetrics] = []
+    async for s in get_session():
+        entries = await get_leaderboard(s, category=category, limit=limit, team_filter=team_filter)
+        fmt = format_type.lower()
+        if fmt == "json":
+            print(json.dumps([asdict(e) for e in entries], indent=2))
+            return
+        elif fmt == "ndjson":
+            for e in entries:
+                print(json.dumps(asdict(e)))
+            return
+        elif fmt == "tsv":
+            print("rank\tnode_alias\tpubkey\ttier\tscore\tquality\tuptime\tgrounding\ttokens_seeded\ttraffic")
+            for e in entries:
+                print(
+                    f"{e.rank}\t{e.node_alias}\t{e.node_pubkey[:16]}\t{e.tier}\t{e.score}\t{e.quality_score}\t{e.uptime_ratio}\t{e.grounding_ratio}\t{e.tokens_seeded}\t{e.traffic_class}"
+                )
+            return
 
-    async for session in get_session():
-        stmt = select(PeerMetricRecord)
-        records = (await session.exec(stmt)).all()
-        for r in records:
-            metrics_list.append(
-                NodeMetrics(
-                    node_pubkey=r.node_pubkey,
-                    node_alias=r.node_alias,
-                    ws_url=r.ws_url,
-                    total_heartbeats_sent=r.total_heartbeats_sent,
-                    successful_heartbeats=r.successful_heartbeats,
-                    average_latency_ms=r.average_latency_ms,
-                    total_attestations_evaluated=r.total_attestations_evaluated,
-                    median_score_deviations_sum=r.median_score_deviations_sum,
-                    grounded_citations_count=r.grounded_citations_count,
-                    total_citations_count=r.total_citations_count,
-                    has_valid_catalog_hashes=r.has_valid_catalog_hashes,
+        # Human Rich table
+        table = Table(
+            title=f"[bold cyan]🏆 Epistemic Mesh Leaderboard — {category.upper()}[/bold cyan]",
+            box=box.ROUNDED,
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Rank", justify="center", style="bold", width=6)
+        table.add_column("Node Alias", style="cyan", width=22)
+        table.add_column("Public Key", style="dim", width=18)
+        table.add_column("Tier", justify="center", width=14)
+        table.add_column("Score", justify="right", style="bold green", width=10)
+        table.add_column("Uptime", justify="right", style="white", width=9)
+        table.add_column("Grounding", justify="right", style="white", width=11)
+        table.add_column("Tokens Seeded", justify="right", style="yellow", width=15)
+        table.add_column("Traffic", justify="center", width=12)
+
+        for e in entries:
+            rank_str = (
+                f"🥇 #{e.rank}"
+                if e.rank == 1
+                else (f"🥈 #{e.rank}" if e.rank == 2 else (f"🥉 #{e.rank}" if e.rank == 3 else f"#{e.rank}"))
+            )
+            tier_color = (
+                "cyan"
+                if e.tier == "ROOT_ANCHOR"
+                else ("magenta" if e.tier == "SPECIALIST" else ("blue" if e.tier == "AUDITOR" else "green"))
+            )
+            tier_str = f"[{tier_color}]{e.tier}[/{tier_color}]"
+            score_fmt = f"{e.score:,.0f}" if category == "philanthropy" else f"{e.score:.4f}"
+            traffic_color = (
+                "bold green"
+                if e.traffic_class == "FAST_LANE"
+                else ("yellow" if e.traffic_class == "STANDARD" else "red")
+            )
+            traffic_str = f"[{traffic_color}]{e.traffic_class}[/{traffic_color}]"
+
+            table.add_row(
+                rank_str,
+                e.node_alias,
+                f"{e.node_pubkey[:12]}...",
+                tier_str,
+                score_fmt,
+                f"{e.uptime_ratio * 100.0:.1f}%",
+                f"{e.grounding_ratio * 100.0:.1f}%",
+                f"{e.tokens_seeded:,}",
+                traffic_str,
+            )
+
+        console.print(table)
+        if len(entries) == 1 and entries[0].node_alias.startswith("local"):
+            console.print(
+                Panel(
+                    "[bold yellow]🌱 Solitary Genesis Node Mode:[/bold yellow] You are running standalone with 0 connected peers.\n"
+                    "Connect to remote peers via `credence mesh --seeds https://seeds.credence.nexus/peers.json` to begin mutual observation gossip.",
+                    border_style="yellow",
+                )
+            )
+        break
+
+
+async def cli_rank() -> None:
+    """Backward-compatible alias for cli_leaderboard."""
+    await cli_leaderboard(category="quality", limit=25, format_type="human")
+
+
+async def cli_merit(pubkey: Optional[str] = None, export_svg: Optional[str] = None) -> None:
+    """Display or export full Epistemic Merit profile for a node."""
+    from pathlib import Path
+
+    from credence.db import get_session, init_db
+    from credence.mesh.merit import generate_svg_badge, get_local_node_merit
+
+    await init_db()
+    async for s in get_session():
+        card = await get_local_node_merit(s, local_pubkey=pubkey)
+        if export_svg:
+            svg = generate_svg_badge(badge_id="root_seed_candidate", node_alias=card.node_alias, score_or_val=card.tier)
+            Path(export_svg).write_text(svg, encoding="utf-8")
+            console.print(f"[bold green]✓ Exported SVG merit badge to:[/bold green] {export_svg}")
+            return
+
+        # Rich Merit Card Presentation
+        tier_color = "cyan" if card.tier == "ROOT_ANCHOR" else ("magenta" if card.tier == "SPECIALIST" else "green")
+        lines = [
+            f"[bold]Node Alias:[/bold]       [cyan]{card.node_alias}[/cyan] ({card.node_pubkey[:16]}...)",
+            f"[bold]Epistemic Tier:[/bold]   [{tier_color}]{card.tier}[/{tier_color}] (Rank #{card.rank_overall} of {card.total_nodes} nodes)",
+            f"[bold]Traffic Status:[/bold]   [bold green]{card.traffic_class}[/bold green]",
+            f"[bold]5-Factor Quality:[/bold] [bold]{card.quality_score:.4f}[/bold] (Uptime: {card.uptime_ratio * 100:.1f}%, Grounding: {card.grounding_ratio * 100:.1f}%)",
+            f"[bold]Active Longevity:[/bold] {card.longevity_days:.1f} days",
+            "",
+            "[bold yellow]⚡ Compute Philanthropy Odometer:[/bold yellow]",
+            f"  • Tokens Donated to Peers: [bold]{card.tokens_seeded:,}[/bold] tokens",
+            f"  • Swarm Compute Value:     [bold green]${card.usd_saved_estimate:.4f} USD[/bold green]",
+            f"  • Attestations Seeded:     [bold]{card.attestations_seeded:,}[/bold]",
+            f"  • Galileo Discoveries:     [bold]{card.galileo_discoveries}[/bold]",
+            "",
+            f"[bold]Unlocked Epistemic Badges ({len(card.unlocked_badges)}):[/bold]",
+        ]
+        for b in card.unlocked_badges:
+            lines.append(f"  • {b.icon} [bold]{b.name}[/bold]: {b.description}")
+
+        if card.next_tier:
+            bar_len = int(card.next_tier_progress * 20)
+            bar_str = f"[green]{'█' * bar_len}[/green][dim]{'░' * (20 - bar_len)}[/dim]"
+            lines.append("")
+            lines.append(
+                f"[bold]Next Tier Milestone ({card.next_tier}):[/bold] {bar_str} ({int(card.next_tier_progress * 100)}%)"
+            )
+
+        console.print(
+            Panel("\n".join(lines), title="[bold cyan]🛡️ Credence Epistemic Merit Card[/bold cyan]", border_style="cyan")
+        )
+        break
+
+
+def cli_badge_export(
+    badge_id: str = "root_seed_candidate",
+    output_path: Optional[str] = None,
+    node: str = "credence-node",
+    theme: str = "dark",
+) -> None:
+    """Generate and write a standalone SVG badge file."""
+    from pathlib import Path
+
+    from credence.mesh.merit import generate_svg_badge
+
+    out_file = output_path or f"{badge_id}.svg"
+    svg = generate_svg_badge(badge_id=badge_id, node_alias=node, score_or_val="VERIFIED", theme=theme)
+    Path(out_file).write_text(svg, encoding="utf-8")
+    console.print(f"[bold green]✓ Generated SVG Badge:[/bold green] {out_file}")
+
+
+async def cli_rankings(
+    ranking_type: str = "domains",
+    category: str = "best",
+    limit: int = 50,
+    format_type: str = "human",
+) -> None:
+    """Display Web Epistemic Analytics and Domain rankings."""
+    from dataclasses import asdict
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import (
+        get_community_bounties,
+        get_domain_leaderboard,
+        get_global_epistemic_weather,
+        get_top_violated_rules,
+    )
+
+    await init_db()
+    async for s in get_session():
+        if ranking_type == "rules":
+            rules = await get_top_violated_rules(s, limit=limit)
+            if format_type.lower() == "json":
+                print(json.dumps([asdict(r) for r in rules], indent=2))
+                return
+            table = Table(title="[bold magenta]📊 Top Violated Rules Across the Web[/bold magenta]", box=box.ROUNDED)
+            table.add_column("Rank", justify="center", width=6)
+            table.add_column("Rule ID", style="cyan", width=12)
+            table.add_column("Domain", style="dim", width=22)
+            table.add_column("Name", style="bold white", width=28)
+            table.add_column("Violations", justify="right", style="yellow", width=12)
+            table.add_column("Freq %", justify="right", style="bold red", width=10)
+            table.add_column("Avg Sev", justify="center", width=9)
+            for r in rules:
+                table.add_row(
+                    f"#{r.rank}",
+                    r.rule_id,
+                    r.domain,
+                    r.name,
+                    str(r.total_violations),
+                    f"{r.percentage_of_all_audits:.1f}%",
+                    f"{r.avg_severity:.1f}/5",
+                )
+            console.print(table)
+
+        elif ranking_type == "weather":
+            weather = await get_global_epistemic_weather(s)
+            if format_type.lower() == "json":
+                print(json.dumps(asdict(weather), indent=2))
+                return
+            cond_color = (
+                "green"
+                if weather.global_weather_score >= 75.0
+                else ("yellow" if weather.global_weather_score >= 50.0 else "red")
+            )
+            lines = [
+                f"[bold]Global Epistemic Climate:[/bold] [{cond_color}]{weather.global_weather_score:.1f} / 100.0 [{weather.weather_condition}][/{cond_color}]",
+                f"[bold]Total Web Audits Sampled:[/bold] {weather.total_web_audits:,} snapshots",
+                "",
+                "[bold]Category Integrity Dials:[/bold]",
+            ]
+            for c in weather.categories:
+                bar_len = int((c.health_score / 100.0) * 20)
+                bar_str = f"[green]{'█' * bar_len}[/green][dim]{'░' * (20 - bar_len)}[/dim]"
+                lines.append(
+                    f"  • {c.category_name:<32} {bar_str} [bold]{c.health_score:.1f}%[/bold] ({c.status_label})"
+                )
+            console.print(
+                Panel(
+                    "\n".join(lines),
+                    title="[bold cyan]🌍 Global Web Epistemic Weather Barometer[/bold cyan]",
+                    border_style="cyan",
                 )
             )
 
-    if not metrics_list:
-        # Create representative sample for demonstration if database is empty
-        identity = load_or_create_node_identity()
-        metrics_list.append(
-            NodeMetrics(
-                node_pubkey=identity.public_key_hex,
-                node_alias="local-node",
-                ws_url=f"ws://{settings.MESH_HOST}:{settings.MESH_PORT}",
-                total_heartbeats_sent=100,
-                successful_heartbeats=100,
-                average_latency_ms=25.0,
-                total_attestations_evaluated=12,
-                median_score_deviations_sum=1.2,
-                grounded_citations_count=15,
-                total_citations_count=15,
-                has_valid_catalog_hashes=True,
+        elif ranking_type == "bounties":
+            bounties = await get_community_bounties(s, limit=limit)
+            if format_type.lower() == "json":
+                print(json.dumps([asdict(b) for b in bounties], indent=2))
+                return
+            table = Table(title="[bold yellow]🎯 Open Community Epistemic Bounties[/bold yellow]", box=box.ROUNDED)
+            table.add_column("ID", style="dim", width=12)
+            table.add_column("Urgency", justify="center", width=10)
+            table.add_column("Subject", style="cyan", width=20)
+            table.add_column("Headline / Title", style="white")
+            table.add_column("Audits", justify="center", width=10)
+            for b in bounties:
+                urg_str = (
+                    f"[bold red]{b.urgency}[/bold red]" if b.urgency == "HIGH" else f"[yellow]{b.urgency}[/yellow]"
+                )
+                table.add_row(
+                    b.bounty_id, urg_str, b.subject, b.title, f"{b.node_audits_count}/{b.target_consensus_nodes}"
+                )
+            console.print(table)
+
+        else:  # "domains" / default
+            domains = await get_domain_leaderboard(s, category=category, limit=limit)
+            if format_type.lower() == "json":
+                print(json.dumps([asdict(d) for d in domains], indent=2))
+                return
+            title_str = (
+                "🛡️ Epistemic Honor Roll (Most Trusted Domains)"
+                if category in ("best", "clean")
+                else "🛑 Deception Hotlist (Wall of Shame)"
             )
-        )
-
-    ranked = rank_nodes(metrics_list, top_k=25)
-
-    table = Table(
-        title="[bold]Credence Epistemic Node Quality Leaderboard ($Q_i$)[/bold]",
-        show_header=True,
-        header_style="bold magenta",
-    )
-    table.add_column("Rank", justify="right", style="dim")
-    table.add_column("Node Alias", style="bold cyan")
-    table.add_column("Pubkey", style="dim")
-    table.add_column("Endpoint URL", style="green")
-    table.add_column("Q_i Total", justify="right", style="bold yellow")
-    table.add_column("Uptime (25%)", justify="right")
-    table.add_column("Concord (30%)", justify="right")
-    table.add_column("Ground (25%)", justify="right")
-    table.add_column("Tax (10%)", justify="right")
-    table.add_column("Age (10%)", justify="right")
-    table.add_column("Status", justify="center")
-
-    for idx, s in enumerate(ranked, 1):
-        status_label = "[bold green]SEED CANDIDATE[/bold green]" if s.is_seed_candidate else "[dim]PEER[/dim]"
-        table.add_row(
-            f"#{idx}",
-            s.node_alias,
-            f"{s.node_pubkey[:12]}...",
-            s.ws_url,
-            f"{s.quality_score:.4f}",
-            f"{s.uptime_factor:.2f}",
-            f"{s.concordance_factor:.2f}",
-            f"{s.grounding_factor:.2f}",
-            f"{s.taxonomy_factor:.2f}",
-            f"{s.longevity_factor:.2f}",
-            status_label,
-        )
-
-    console.print(table)
+            table = Table(title=f"[bold]{title_str}[/bold]", box=box.ROUNDED)
+            table.add_column("Rank", justify="center", width=6)
+            table.add_column("Domain FQDN", style="cyan", width=28)
+            table.add_column(
+                "DEI Score", justify="right", style="bold green" if category == "best" else "bold red", width=11
+            )
+            table.add_column("Trust Band", justify="center", width=16)
+            table.add_column("Avg Suspicion", justify="right", width=14)
+            table.add_column("Audits", justify="right", width=8)
+            table.add_column("Badges", style="italic", width=24)
+            for d in domains:
+                band_color = "green" if d.trust_band in ("HIGH_INTEGRITY", "RELIABLE") else "red"
+                table.add_row(
+                    f"#{d.rank}",
+                    d.domain,
+                    f"{d.dei_score:.1f}%",
+                    f"[{band_color}]{d.trust_band}[/{band_color}]",
+                    f"{d.avg_suspicion:.1f}",
+                    str(d.total_audits),
+                    ", ".join(d.badges) if d.badges else "—",
+                )
+            console.print(table)
+        break
 
 
 def _dispatch_utility_commands(args: argparse.Namespace) -> None:
@@ -1974,10 +2224,78 @@ def main() -> None:
         help="Validity duration in hours for generated seed manifest (default: 24).",
     )
 
-    # rank command
-    subparsers.add_parser(
-        "rank",
-        help="Display Rich terminal leaderboard of mesh nodes ranked by the 5-factor quality score ($Q_i$).",
+    # leaderboard command (and rank alias)
+    for lb_name in ["leaderboard", "rank"]:
+        lb_parser = subparsers.add_parser(
+            lb_name,
+            help="Display Rich terminal leaderboard of mesh nodes (quality, subjects, philanthropy, galileo, teams).",
+        )
+        lb_parser.add_argument(
+            "--category",
+            "-c",
+            choices=["quality", "subjects", "philanthropy", "galileo", "teams"],
+            default="quality",
+            help="Leaderboard ranking category (default: quality).",
+        )
+        lb_parser.add_argument("--limit", "-l", type=int, default=50, help="Max entries to return (default: 50).")
+        lb_parser.add_argument(
+            "--format",
+            choices=["human", "compact", "json", "ndjson", "tsv"],
+            default="human",
+            help="Output formatting style.",
+        )
+        lb_parser.add_argument("--team", "-t", default=None, help="Filter by federation team tag.")
+
+    # merit command
+    merit_parser = subparsers.add_parser(
+        "merit", help="Inspect local or remote node Epistemic Merit card, badges, and compute impact."
+    )
+    merit_parser.add_argument(
+        "action", nargs="?", default="show", choices=["show", "export"], help="Action: show or export."
+    )
+    merit_parser.add_argument("--pubkey", "-p", default=None, help="Node Ed25519 public key hex.")
+    merit_parser.add_argument("--output", "-o", default=None, help="Output file path when exporting SVG badge.")
+
+    # badge command
+    badge_parser = subparsers.add_parser("badge", help="Generate and export standalone SVG Epistemic Badges.")
+    badge_parser.add_argument(
+        "action", nargs="?", default="export", choices=["export", "list"], help="Action: export or list."
+    )
+    badge_parser.add_argument("badge_id", nargs="?", default="root_seed_candidate", help="Badge identifier.")
+    badge_parser.add_argument("--output", "-o", default=None, help="Output file path for SVG badge.")
+    badge_parser.add_argument("--node", "-n", default="credence-node", help="Node alias label in SVG.")
+    badge_parser.add_argument("--theme", choices=["dark", "light"], default="dark", help="Color theme.")
+
+    # rankings command
+    rankings_parser = subparsers.add_parser(
+        "rankings", help="Display Web Epistemic Analytics, Domain rankings (DEI), and Top Violated Rules."
+    )
+    rankings_parser.add_argument(
+        "ranking_type",
+        nargs="?",
+        default="domains",
+        choices=["domains", "rules", "weather", "bounties"],
+        help="Ranking type: domains, rules, weather, bounties",
+    )
+    rankings_parser.add_argument(
+        "--category",
+        "-c",
+        choices=["best", "worst", "astroturf"],
+        default="best",
+        help="Domain category filter (default: best).",
+    )
+    rankings_parser.add_argument("--limit", "-l", type=int, default=50, help="Max entries to return.")
+    rankings_parser.add_argument(
+        "--format", choices=["human", "compact", "json"], default="human", help="Output format."
+    )
+
+    # bounties command
+    bounties_parser = subparsers.add_parser(
+        "bounties", help="List open community verification bounties for breaking feeds."
+    )
+    bounties_parser.add_argument("--limit", "-l", type=int, default=20, help="Max bounties to list.")
+    bounties_parser.add_argument(
+        "--format", choices=["human", "compact", "json"], default="human", help="Output format."
     )
 
     # init-org command

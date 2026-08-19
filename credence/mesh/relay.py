@@ -15,6 +15,7 @@ import json
 import logging
 from collections import OrderedDict
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import websockets
@@ -51,6 +52,28 @@ class LRUDeduplicator:
         return False
 
 
+class PeerTrafficClass(str, Enum):
+    """P2P Traffic Shaping Bands."""
+
+    FAST_LANE = "FAST_LANE"  # 500 msgs/s - Top performers (Q_i >= 0.85)
+    STANDARD = "STANDARD"  # 50 msgs/s - Standard healthy nodes
+    CHOKED = "CHOKED"  # 1 msg/s - Flaky / high deviation nodes
+    QUARANTINED = "QUARANTINED"  # 0 msgs/s - Slashed / malicious nodes
+
+
+def extract_ip_subnet(remote_address: str) -> str:
+    """Extract normalized /24 (IPv4) or /48 (IPv6) subnet prefix for Sybil clustering."""
+    clean = remote_address.replace("ws://", "").replace("wss://", "")
+    host = clean.split(":")[0].split("/")[0]
+    if "." in host:  # IPv4
+        parts = host.split(".")
+        if len(parts) == 4 and all(p.isdigit() for p in parts):
+            return f"{parts[0]}.{parts[1]}.{parts[2]}.0/24"
+    if host == "localhost":
+        return "localhost/32"
+    return host
+
+
 class PeerConnection:
     """Wrapper around an active P2P WebSocket connection."""
 
@@ -59,25 +82,41 @@ class PeerConnection:
         websocket: Any,
         remote_address: str,
         is_inbound: bool = True,
+        traffic_class: PeerTrafficClass = PeerTrafficClass.STANDARD,
     ) -> None:
         self.websocket = websocket
         self.remote_address = remote_address
+        self.ip_subnet = extract_ip_subnet(remote_address)
         self.is_inbound = is_inbound
         self.node_pubkey: Optional[str] = None
         self.node_alias: Optional[str] = None
         self.handshake_completed: bool = False
         self.supported_catalog_hashes: Dict[str, str] = {}
+        self.traffic_class: PeerTrafficClass = traffic_class
         self.msg_count_window: int = 0
         self.window_start_time: float = datetime.now(timezone.utc).timestamp()
 
-    def check_rate_limit(self, max_per_sec: int = 50) -> bool:
-        """Rate limit checker using rolling 1-second window."""
+    def get_max_rate(self) -> int:
+        """Get allowed messages per second for the active traffic class."""
+        if self.traffic_class == PeerTrafficClass.FAST_LANE:
+            return 500
+        elif self.traffic_class == PeerTrafficClass.CHOKED:
+            return 1
+        elif self.traffic_class == PeerTrafficClass.QUARANTINED:
+            return 0
+        return 50  # STANDARD default
+
+    def check_rate_limit(self, max_per_sec: Optional[int] = None) -> bool:
+        """Rate limit checker using rolling 1-second window and traffic class limits."""
+        limit = max_per_sec if max_per_sec is not None else self.get_max_rate()
+        if limit <= 0:
+            return False
         now = datetime.now(timezone.utc).timestamp()
         if now - self.window_start_time > 1.0:
             self.window_start_time = now
             self.msg_count_window = 0
         self.msg_count_window += 1
-        return self.msg_count_window <= max_per_sec
+        return self.msg_count_window <= limit
 
 
 class MeshGossipRelay:

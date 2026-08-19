@@ -202,6 +202,22 @@ tui: (preflight "poetry")
 benchmark: (preflight "poetry")
     poetry run credence benchmark
 
+# Display Epistemic Mesh Leaderboard (quality, subjects, philanthropy, galileo, teams)
+leaderboard category="quality": (preflight "poetry")
+    poetry run credence leaderboard --category {{category}}
+
+# Display local node Epistemic Merit card, badges, and compute odometer
+merit: (preflight "poetry")
+    poetry run credence merit
+
+# Display Web Epistemic Analytics and Domain rankings (domains, rules, weather, bounties)
+rankings type="domains" category="best": (preflight "poetry")
+    poetry run credence rankings {{type}} --category {{category}}
+
+# Display Global Epistemic Weather report
+weather: (preflight "poetry")
+    poetry run credence rankings weather
+
 # Manage syndicated feed sifter and catalog export (once, bootstrap, export)
 sifter action="once": (preflight "poetry")
     #!/usr/bin/env bash

@@ -932,6 +932,204 @@ def _register_subject_resources(server: MCPServer) -> None:
         return await _execute_browse_audits(category=category, limit=20, format="json")
 
 
+def _register_merit_and_analytics_tools(server: MCPServer) -> None:
+    """Register gamification, leaderboard, and web analytics tools."""
+
+    @server.tool(
+        name="credence_get_leaderboard",
+        description="Retrieve ranked P2P mesh node leaderboard across categories: quality, subjects, philanthropy, galileo, or teams.",
+    )
+    async def get_leaderboard_tool(
+        category: str = "quality",
+        limit: int = 50,
+        team: Optional[str] = None,
+    ) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.mesh.merit import get_leaderboard
+
+        await init_db()
+        async for session in get_session():
+            entries = await get_leaderboard(session, category=category, limit=limit, team_filter=team)
+            return json.dumps([asdict(e) for e in entries], indent=2)
+        return "[]"
+
+    @server.tool(
+        name="credence_get_node_merit",
+        description="Inspect a mesh node's full merit card, unlocked badges, traffic class, and compute impact.",
+    )
+    async def get_node_merit_tool(node_pubkey: Optional[str] = None) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.mesh.merit import get_local_node_merit
+
+        await init_db()
+        async for session in get_session():
+            card = await get_local_node_merit(session, local_pubkey=node_pubkey)
+            return json.dumps(asdict(card), indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_get_domain_rankings",
+        description="Retrieve Domain Epistemic Index (DEI) publisher trust rankings: best (Honor Roll), worst (Wall of Shame), or astroturf.",
+    )
+    async def get_domain_rankings_tool(
+        category: str = "best",
+        min_audits: int = 1,
+        limit: int = 50,
+    ) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_domain_leaderboard
+
+        await init_db()
+        async for session in get_session():
+            ranks = await get_domain_leaderboard(session, category=category, min_audits=min_audits, limit=limit)
+            return json.dumps([asdict(r) for r in ranks], indent=2)
+        return "[]"
+
+    @server.tool(
+        name="credence_get_taxonomy_analytics",
+        description="Retrieve analytics on the Top 10 most frequently violated rules across the web.",
+    )
+    async def get_taxonomy_analytics_tool(limit: int = 10) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_top_violated_rules
+
+        await init_db()
+        async for session in get_session():
+            rules = await get_top_violated_rules(session, limit=limit)
+            return json.dumps([asdict(r) for r in rules], indent=2)
+        return "[]"
+
+    @server.tool(
+        name="credence_get_epistemic_weather",
+        description="Retrieve the global macro Epistemic Weather report and category integrity gauges.",
+    )
+    async def get_epistemic_weather_tool() -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_global_epistemic_weather
+
+        await init_db()
+        async for session in get_session():
+            weather = await get_global_epistemic_weather(session)
+            return json.dumps(asdict(weather), indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_get_bounties",
+        description="Retrieve open community verification quests and bounties for breaking or unaudited articles.",
+    )
+    async def get_bounties_tool(limit: int = 20) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_community_bounties
+
+        await init_db()
+        async for session in get_session():
+            bounties = await get_community_bounties(session, limit=limit)
+            return json.dumps([asdict(b) for b in bounties], indent=2)
+        return "[]"
+
+
+def _register_merit_and_analytics_resources(server: MCPServer) -> None:
+    """Register merit, leaderboard, and web analytics resources."""
+
+    @server.resource("credence://leaderboard/{category}")
+    async def get_leaderboard_resource(category: str) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.mesh.merit import get_leaderboard
+
+        await init_db()
+        async for session in get_session():
+            entries = await get_leaderboard(session, category=category, limit=50)
+            return json.dumps([asdict(e) for e in entries], indent=2)
+        return "[]"
+
+    @server.resource("credence://node/merit")
+    async def get_node_merit_resource() -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.mesh.merit import get_local_node_merit
+
+        await init_db()
+        async for session in get_session():
+            card = await get_local_node_merit(session)
+            return json.dumps(asdict(card), indent=2)
+        return "{}"
+
+    @server.resource("credence://merit/badges")
+    def get_merit_badges_resource() -> str:
+        from dataclasses import asdict
+
+        from credence.mesh.merit import BADGE_REGISTRY
+
+        return json.dumps([asdict(b) for b in BADGE_REGISTRY.values()], indent=2)
+
+    @server.resource("credence://rankings/domains/{category}")
+    async def get_domain_rankings_resource(category: str) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_domain_leaderboard
+
+        await init_db()
+        async for session in get_session():
+            ranks = await get_domain_leaderboard(session, category=category, limit=50)
+            return json.dumps([asdict(r) for r in ranks], indent=2)
+        return "[]"
+
+    @server.resource("credence://rankings/rules")
+    async def get_rankings_rules_resource() -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_top_violated_rules
+
+        await init_db()
+        async for session in get_session():
+            rules = await get_top_violated_rules(session, limit=10)
+            return json.dumps([asdict(r) for r in rules], indent=2)
+        return "[]"
+
+    @server.resource("credence://weather/global")
+    async def get_weather_resource() -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_global_epistemic_weather
+
+        await init_db()
+        async for session in get_session():
+            weather = await get_global_epistemic_weather(session)
+            return json.dumps(asdict(weather), indent=2)
+        return "{}"
+
+    @server.resource("credence://bounties")
+    async def get_bounties_resource() -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_community_bounties
+
+        await init_db()
+        async for session in get_session():
+            bounties = await get_community_bounties(session, limit=20)
+            return json.dumps([asdict(b) for b in bounties], indent=2)
+        return "[]"
+
+
 def _register_prompts(server: MCPServer) -> None:
     """Register FastMCP prompt templates."""
 
@@ -1326,6 +1524,166 @@ async def api_germinate(request: Any) -> Any:
         return JSONResponse(summary.model_dump(mode="json"))
 
 
+async def api_leaderboard(request: Any) -> Any:
+    """REST API: Query P2P node leaderboard."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.mesh.merit import get_leaderboard
+
+    cat = request.query_params.get("category", "quality")
+    team = request.query_params.get("team")
+    try:
+        limit = min(int(request.query_params.get("limit", 50)), 100)
+    except ValueError:
+        limit = 50
+
+    await init_db()
+    async for s in get_session():
+        entries = await get_leaderboard(s, category=cat, limit=limit, team_filter=team)
+        return JSONResponse({"category": cat, "total": len(entries), "leaderboard": [asdict(e) for e in entries]})
+    return JSONResponse({"leaderboard": []})
+
+
+async def api_get_merit(request: Any) -> Any:
+    """REST API: Get node merit card."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.mesh.merit import get_local_node_merit
+
+    pubkey = request.path_params.get("identifier") or request.query_params.get("pubkey")
+    await init_db()
+    async for s in get_session():
+        card = await get_local_node_merit(s, local_pubkey=pubkey)
+        return JSONResponse(asdict(card))
+    return JSONResponse({"error": "Unavailable"}, status_code=500)
+
+
+async def api_get_badge_svg(request: Any) -> Any:
+    """REST API: Dynamic SVG badge endpoint."""
+    from starlette.responses import Response
+
+    from credence.mesh.merit import generate_svg_badge
+
+    badge_id = request.path_params.get("badge_id", "root_seed_candidate").replace(".svg", "")
+    node = request.query_params.get("node", "credence-node")
+    score = request.query_params.get("score", "VERIFIED")
+    theme = request.query_params.get("theme", "dark")
+
+    svg_content = generate_svg_badge(badge_id=badge_id, node_alias=node, score_or_val=score, theme=theme)
+    return Response(content=svg_content, media_type="image/svg+xml")
+
+
+async def api_get_publisher_badge(request: Any) -> Any:
+    """REST API: Dynamic Publisher SVG badge endpoint."""
+    from starlette.responses import Response
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import generate_publisher_svg_badge, get_domain_leaderboard
+
+    domain = request.path_params.get("domain", "reuters.com").replace(".svg", "")
+    theme = request.query_params.get("theme", "dark")
+
+    dei_val = 85.0
+    status = "CLEAN"
+    await init_db()
+    async for s in get_session():
+        ranks = await get_domain_leaderboard(s, category="best", limit=100)
+        for r in ranks:
+            if r.domain == domain:
+                dei_val = r.dei_score
+                status = r.trust_band
+                break
+
+    svg = generate_publisher_svg_badge(domain=domain, dei_score=dei_val, status=status, theme=theme)
+    return Response(content=svg, media_type="image/svg+xml")
+
+
+async def api_rankings_domains(request: Any) -> Any:
+    """REST API: Query Domain Epistemic Index rankings."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import get_domain_leaderboard
+
+    cat = request.query_params.get("category", "best")
+    try:
+        limit = min(int(request.query_params.get("limit", 50)), 100)
+    except ValueError:
+        limit = 50
+
+    await init_db()
+    async for s in get_session():
+        ranks = await get_domain_leaderboard(s, category=cat, limit=limit)
+        return JSONResponse({"category": cat, "total": len(ranks), "rankings": [asdict(r) for r in ranks]})
+    return JSONResponse({"rankings": []})
+
+
+async def api_rankings_rules(request: Any) -> Any:
+    """REST API: Query Top 10 most violated rules."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import get_top_violated_rules
+
+    try:
+        limit = min(int(request.query_params.get("limit", 10)), 50)
+    except ValueError:
+        limit = 10
+
+    await init_db()
+    async for s in get_session():
+        rules = await get_top_violated_rules(s, limit=limit)
+        return JSONResponse({"total": len(rules), "rules": [asdict(r) for r in rules]})
+    return JSONResponse({"rules": []})
+
+
+async def api_weather(request: Any) -> Any:
+    """REST API: Query Global Epistemic Weather report."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import get_global_epistemic_weather
+
+    await init_db()
+    async for s in get_session():
+        report = await get_global_epistemic_weather(s)
+        return JSONResponse(asdict(report))
+    return JSONResponse({"error": "Unavailable"}, status_code=500)
+
+
+async def api_bounties(request: Any) -> Any:
+    """REST API: Query community verification bounties."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import get_community_bounties
+
+    try:
+        limit = min(int(request.query_params.get("limit", 20)), 50)
+    except ValueError:
+        limit = 20
+
+    await init_db()
+    async for s in get_session():
+        bounties = await get_community_bounties(s, limit=limit)
+        return JSONResponse({"total": len(bounties), "bounties": [asdict(b) for b in bounties]})
+    return JSONResponse({"bounties": []})
+
+
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
@@ -1339,8 +1697,10 @@ def create_mcp_server() -> MCPServer:
     _register_mesh_tools(server)
     _register_feed_sync_tools(server)
     _register_feed_management_tools(server)
+    _register_merit_and_analytics_tools(server)
     _register_taxonomy_resources(server)
     _register_subject_resources(server)
+    _register_merit_and_analytics_resources(server)
     _register_prompts(server)
     return server
 
@@ -1384,6 +1744,15 @@ def create_server_app(
         Route("/api/sifter/status", endpoint=api_sifter_status, methods=["GET", "OPTIONS"]),
         Route("/api/sifter/cycle", endpoint=api_sifter_cycle, methods=["POST", "OPTIONS"]),
         Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
+        Route("/api/leaderboard", endpoint=api_leaderboard, methods=["GET", "OPTIONS"]),
+        Route("/api/merit", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
+        Route("/api/merit/{identifier:path}", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
+        Route("/api/badge/publisher/{domain:path}", endpoint=api_get_publisher_badge, methods=["GET", "OPTIONS"]),
+        Route("/api/badge/{badge_id:path}", endpoint=api_get_badge_svg, methods=["GET", "OPTIONS"]),
+        Route("/api/rankings/domains", endpoint=api_rankings_domains, methods=["GET", "OPTIONS"]),
+        Route("/api/rankings/rules", endpoint=api_rankings_rules, methods=["GET", "OPTIONS"]),
+        Route("/api/weather", endpoint=api_weather, methods=["GET", "OPTIONS"]),
+        Route("/api/bounties", endpoint=api_bounties, methods=["GET", "OPTIONS"]),
     ]
     for r in rest_routes:
         app.router.routes.insert(0, r)

@@ -73,6 +73,40 @@ async def init_db(engine: AsyncEngine | None = None) -> None:
                     "ALTER TABLE auditrecord ADD COLUMN evaluation_method VARCHAR DEFAULT 'llm_multi_agent';"
                 )
 
+            res_peer = await conn.exec_driver_sql("PRAGMA table_info(peermetricrecord);")
+            peer_cols = [row[1] for row in res_peer.fetchall()]
+            if len(peer_cols) > 0:
+                if "team_tag" not in peer_cols:
+                    await conn.exec_driver_sql("ALTER TABLE peermetricrecord ADD COLUMN team_tag VARCHAR;")
+                if "tokens_seeded_count" not in peer_cols:
+                    await conn.exec_driver_sql(
+                        "ALTER TABLE peermetricrecord ADD COLUMN tokens_seeded_count INTEGER DEFAULT 0;"
+                    )
+                if "attestations_seeded_count" not in peer_cols:
+                    await conn.exec_driver_sql(
+                        "ALTER TABLE peermetricrecord ADD COLUMN attestations_seeded_count INTEGER DEFAULT 0;"
+                    )
+                if "galileo_discoveries_count" not in peer_cols:
+                    await conn.exec_driver_sql(
+                        "ALTER TABLE peermetricrecord ADD COLUMN galileo_discoveries_count INTEGER DEFAULT 0;"
+                    )
+                if "traffic_class" not in peer_cols:
+                    await conn.exec_driver_sql(
+                        "ALTER TABLE peermetricrecord ADD COLUMN traffic_class VARCHAR DEFAULT 'STANDARD';"
+                    )
+                if "ip_subnet" not in peer_cols:
+                    await conn.exec_driver_sql("ALTER TABLE peermetricrecord ADD COLUMN ip_subnet VARCHAR;")
+                if "badges_unlocked_json" not in peer_cols:
+                    await conn.exec_driver_sql("ALTER TABLE peermetricrecord ADD COLUMN badges_unlocked_json VARCHAR;")
+
+            res_dom = await conn.exec_driver_sql("PRAGMA table_info(domainmetricrecord);")
+            dom_cols = [row[1] for row in res_dom.fetchall()]
+            if len(dom_cols) > 0:
+                if "unique_domains_count" not in dom_cols:
+                    await conn.exec_driver_sql(
+                        "ALTER TABLE domainmetricrecord ADD COLUMN unique_domains_count INTEGER DEFAULT 1;"
+                    )
+
 
 @asynccontextmanager
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
