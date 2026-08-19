@@ -354,7 +354,7 @@ gcp action="status" arg="": (preflight "gcloud")
                 burst = os.environ.get('BURST_VAL', '3')
                 url = base + '/api/germinate?burst=' + burst
                 try:
-                    r = httpx.post(url, timeout=45.0)
+                    r = httpx.post(url, timeout=120.0)
                     print('Status: ' + str(r.status_code))
                     print(json.dumps(r.json(), indent=2))
                 except Exception as e:
