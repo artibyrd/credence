@@ -2,6 +2,32 @@
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.12.0] - 2026-08-18
+
+### Added
+- **Aggregate Public Publisher Analytics & Longitudinal Trend Visualization**:
+  - Implemented `get_publisher_analytics(session, domain)` and `list_all_publishers_summary(session)` in `credence/subjects/analytics.py`.
+  - Added composite **Domain Epistemic Index ($DEI$)**, 5 standardized Trust Bands (`HIGH_INTEGRITY`, `RELIABLE`, `MIXED`, `POOR`, `DECEPTIVE`), and **Forensic Sourcing Ratios**:
+    - **Byline Transparency Ratio ($R_{\text{byline}}$)**: Proportion of published articles containing verified human bylines.
+    - **Single-Source Reliance Ratio ($R_{\text{single}}$)**: Frequency of articles relying on a single uncorroborated press release (`SPJ-1.1`, `SPJ-1.2`).
+    - **Conflict Disclosure Rate ($R_{\text{COI}}$)**: Rate of explicit conflict of interest disclosures for municipal/commercial coverage (`SPJ-3.1`, `SPJ-3.2`).
+    - **Advertorial Separation Index ($ASI$)**: Separation metric isolating disguised native advertorials (`SPJ-3.3`, `DEC-1.4`, `AST-1.1`).
+  - Added monthly longitudinal trend buckets (`period_label`, `audits_count`, `avg_suspicion`, `avg_dei`, `violations_count`).
+- **Universal 4-Way Interface Parity for Publisher Analytics**:
+  - **FastMCP 2.0 Tools & Resources**: Added tool `credence_get_publisher_analytics` and live resources `credence://analytics/publishers` and `credence://analytics/publisher/{domain}`.
+  - **Starlette REST API Gateway**: Added endpoints `GET /api/analytics/publishers` and `GET /api/analytics/publisher/{domain:path}` with CORS support.
+  - **CLI Workstation**: Added `credence rankings outlet <domain>` terminal dashboard and `credence export-analytics <domain> --format [json|csv] -o <file>`.
+  - **Zero-Build Web UI**: Added interactive **Publisher Analytics & Trends** tab on `credence.report/viewer.html` with zero-build inline SVG trendline charts and 1-click clipboard export.
+- **InMaricopa Exurban Civic News Monopoly Case Study & Interactive Forensics Workbench**:
+  - Sowed `https://inmaricopa.com/feed/` into preset feed catalogs (`PRESET_FEED_CATALOGS["regional-civic"]`).
+  - Created hermetic benchmark test suite `tests/test_inmaricopa_casestudy.py` validating the 4 forensic case study pillars ($R_{\text{COI}}$, $ASI$, $R_{\text{multi-source}}$, and $DEI$).
+  - Published editorial investigative whitepaper `blog/conflict-of-pun-terest.md` (*"Conflict of Pun-terest: 347 Reasons Why Maricopa's Publisher-Politician Problem Fails the Epistemic Smell Test"*).
+  - Embedded **Interactive Forensic Epistemic Workbench** with 5 real article presets, clickable verbatim grounding highlights, dynamic reform simulator sliders, and RFC 8785 Ed25519 canonical receipt downloads.
+- **Sovereign Blog Categorization & Prominent Playgrounds**:
+  - Reorganized sovereign blog into 4 distinct thematic tracks (*Investigative Case Studies & Field Forensics*, *Consensus Mathematics & Game Theory*, *Agentic Architecture & Sovereign AI*, and *Homelab Ops & Infrastructure*).
+  - Promoted *Conflict of Pun-terest* to the pinned #1 featured landing dispatch on `blog.credence.run`.
+  - Surfaced *Interactive Playgrounds* prominently across docs navigation, sidebar, topic index, and landing pages.
+
 ## [1.11.0] - 2026-08-18
 
 ### Added

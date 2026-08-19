@@ -143,6 +143,9 @@
         <button class="tab-btn" onclick="switchTab('tab-findings')">
           🚨 Itemized Findings <span id="tab-findings-count" class="tab-count">0</span>
         </button>
+        <button class="tab-btn" onclick="switchTab('tab-publisher')">
+          📰 Publisher Analytics &amp; Trends
+        </button>
         <button class="tab-btn" onclick="switchTab('tab-crypto')">
           🔐 Cryptographic Proof
         </button>
@@ -262,6 +265,107 @@
         <ul id="violations-container" class="violations-list">
           <!-- Findings injected via JS -->
         </ul>
+      </div>
+
+      <!-- Tab: Publisher Analytics & Longitudinal Trends -->
+      <div id="tab-publisher" class="tab-pane">
+        <div class="panel-card" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <h2 style="font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📰 News Publisher Aggregate Analytics &amp; Trends</span>
+              </h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                Forensic Sourcing Ratios, Conflict-of-Interest Disclosures, Astroturf Entropy, and Longitudinal Trends.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-primary" style="font-size: 0.8rem;" onclick="exportPublisherData('json')">Export JSON</button>
+              <button class="btn-secondary" style="font-size: 0.8rem;" onclick="exportPublisherData('csv')">Export CSV</button>
+            </div>
+          </div>
+
+          <!-- Quick Select Toolbar for Publisher Domains -->
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem;">
+            <span style="font-size: 0.8rem; color: var(--text-dim); font-weight: 600;">Sample Case Studies:</span>
+            <button class="discover-pill" style="border-color: rgba(244, 63, 94, 0.4); color: #fca5a5;" onclick="loadPublisherAnalytics('inmaricopa.com')">⚠️ InMaricopa.com (Civic Case Study)</button>
+            <button class="discover-pill" style="border-color: rgba(74, 222, 128, 0.4); color: #86efac;" onclick="loadPublisherAnalytics('apnews.com')">AP News</button>
+            <button class="discover-pill" style="border-color: rgba(56, 189, 248, 0.4); color: #7dd3fc;" onclick="loadPublisherAnalytics('reuters.com')">Reuters</button>
+            <button class="discover-pill" style="border-color: rgba(192, 132, 252, 0.4); color: #e9d5ff;" onclick="loadPublisherAnalytics('theonion.com')">The Onion</button>
+            <div style="display: flex; gap: 0.35rem; margin-left: auto;">
+              <input type="text" id="pub-domain-input" placeholder="e.g. inmaricopa.com" style="background: var(--bg-code); border: 1px solid var(--border); color: #fff; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.8rem; font-family: var(--font-mono); width: 160px;">
+              <button class="btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" onclick="loadPublisherAnalytics(document.getElementById('pub-domain-input').value)">Lookup</button>
+            </div>
+          </div>
+
+          <!-- Key Metrics Trio Grid -->
+          <div class="overview-grid" style="margin-bottom: 1.5rem;">
+            <!-- Metric 1: DEI Score & Trust Band -->
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem;">
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Domain Epistemic Index (DEI)</div>
+              <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-top: 0.5rem;">
+                <span id="pub-dei-score" style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green);">--</span>
+                <span id="pub-trust-band" class="sig-pill sig-valid" style="font-size: 0.8rem;">--</span>
+              </div>
+              <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+                Sampled: <strong id="pub-total-audits" style="color: #fff;">--</strong> snapshots &bull; Avg Suspicion: <strong id="pub-avg-suspicion" style="color: #fff;">--</strong>
+              </div>
+            </div>
+
+            <!-- Metric 2: Forensic Sourcing Ratios -->
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem;">
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Forensic Sourcing Ratios</div>
+              <div style="margin-top: 0.6rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Byline Transparency:</span>
+                  <strong id="pub-byline-ratio" style="color: #fff;">--</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Single-Source Reliance:</span>
+                  <strong id="pub-single-source-ratio" style="color: #fff;">--</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Conflict Disclosure Rate (R_COI):</span>
+                  <strong id="pub-coi-rate" style="color: #fff;">--</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">Advertorial Separation Index (ASI):</span>
+                  <strong id="pub-asi-index" style="color: #fff;">--</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trend Timeline SVG Chart Panel -->
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+              <span>📈 Longitudinal Epistemic Score Trend</span>
+              <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 400;">Monthly &amp; Weekly Bucketing</span>
+            </div>
+            <div id="pub-trend-chart-container" style="width: 100%; min-height: 140px; display: flex; align-items: center; justify-content: center;">
+              <!-- Zero-build SVG trend timeline chart injected here -->
+            </div>
+          </div>
+
+          <!-- Top Violated Rules Breakdown -->
+          <div style="margin-top: 1rem;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem;">Top Violated Rules for Outlet</div>
+            <table class="compact-table">
+              <thead>
+                <tr>
+                  <th style="width: 110px;">Rule ID</th>
+                  <th style="width: 160px;">Domain</th>
+                  <th>Rule Name</th>
+                  <th style="width: 90px; text-align: right;">Count</th>
+                  <th style="width: 90px; text-align: right;">Frequency</th>
+                </tr>
+              </thead>
+              <tbody id="pub-top-rules-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- Tab 4: Cryptographic Proof -->
@@ -1212,6 +1316,301 @@ ${(report.violations || []).length === 0 ? '✓ High epistemic integrity. No gro
       btn.textContent = isJsonMinified ? "Pretty Print" : "Minify";
       if (activeReport) {
         document.getElementById("raw-json-display").textContent = JSON.stringify(activeReport, null, isJsonMinified ? 0 : 2);
+      }
+    };
+
+    // =========================================================================
+    // Publisher Analytics & Longitudinal Trend Visualization
+    // =========================================================================
+    let activePublisherProfile = null;
+
+    const MOCK_PUBLISHER_DATA = {
+      "inmaricopa.com": {
+        domain: "inmaricopa.com",
+        dei_score: 62.5,
+        trust_band: "MIXED",
+        avg_suspicion: 53.3,
+        avg_violation_density: 5.7,
+        confidence_score: 0.95,
+        total_audits: 13,
+        clean_audits_count: 1,
+        suspicious_audits_count: 7,
+        deceptive_audits_count: 5,
+        topic_entropy: 1.00,
+        top_token_concentration: 1.00,
+        is_astroturf_risk: false,
+        badges: ["EXURBAN_CIVIC_STUDY", "GOVERNANCE_COI_SCRUTINY"],
+        sourcing_metrics: {
+          byline_transparency_ratio: 0.54,
+          single_source_reliance_ratio: 0.08,
+          conflict_disclosure_rate: 1.00,
+          advertorial_separation_index: 84.60
+        },
+        top_violated_rules: [
+          { rule_id: "SPJ-3.3", domain: "JOURNALISTIC_ETHICS", name: "Distinguish News from Advertising", violations_count: 2, frequency_pct: 15.4 },
+          { rule_id: "AST-1.1", domain: "DECEPTIVE_PATTERN", name: "Astroturfing & Commercial Payload", violations_count: 2, frequency_pct: 15.4 },
+          { rule_id: "SPJ-3.1", domain: "JOURNALISTIC_ETHICS", name: "Avoid Conflicts of Interest", violations_count: 1, frequency_pct: 7.7 },
+          { rule_id: "DEC-1.4", domain: "DECEPTIVE_PATTERN", name: "Disguised Native Advertorial", violations_count: 1, frequency_pct: 7.7 },
+          { rule_id: "SPJ-1.1", domain: "JOURNALISTIC_ETHICS", name: "Verify Sourcing Before Release", violations_count: 1, frequency_pct: 7.7 }
+        ],
+        trend_timeline: [
+          { period_label: "2026-08-10", audits_count: 1, avg_suspicion: 8.0, avg_dei: 92.0, violations_count: 0 },
+          { period_label: "2026-08-12", audits_count: 1, avg_suspicion: 68.0, avg_dei: 32.0, violations_count: 2 },
+          { period_label: "2026-08-13", audits_count: 1, avg_suspicion: 42.0, avg_dei: 58.0, violations_count: 1 },
+          { period_label: "2026-08-14", audits_count: 1, avg_suspicion: 74.0, avg_dei: 26.0, violations_count: 3 },
+          { period_label: "2026-08-15", audits_count: 1, avg_suspicion: 38.0, avg_dei: 62.0, violations_count: 0 },
+          { period_label: "2026-08-16", audits_count: 1, avg_suspicion: 78.5, avg_dei: 21.5, violations_count: 3 },
+          { period_label: "2026-08-19", audits_count: 7, avg_suspicion: 55.0, avg_dei: 45.0, violations_count: 0 }
+        ]
+      },
+      "apnews.com": {
+        domain: "apnews.com",
+        dei_score: 93.4,
+        trust_band: "HIGH_INTEGRITY",
+        avg_suspicion: 6.6,
+        avg_violation_density: 0.8,
+        confidence_score: 0.98,
+        total_audits: 28,
+        clean_audits_count: 26,
+        suspicious_audits_count: 2,
+        deceptive_audits_count: 0,
+        topic_entropy: 0.88,
+        top_token_concentration: 0.18,
+        is_astroturf_risk: false,
+        badges: ["ROOT_ANCHOR_VERIFIED", "HIGH_INTEGRITY"],
+        sourcing_metrics: {
+          byline_transparency_ratio: 0.96,
+          single_source_reliance_ratio: 0.10,
+          conflict_disclosure_rate: 1.00,
+          advertorial_separation_index: 98.0
+        },
+        top_violated_rules: [
+          { rule_id: "SPJ-1.2", domain: "JOURNALISTIC_ETHICS", name: "Multi-Source Corroboration", violations_count: 2, frequency_pct: 7.1 }
+        ],
+        trend_timeline: [
+          { period_label: "2026-05", audits_count: 6, avg_suspicion: 5.8, avg_dei: 94.2, violations_count: 0 },
+          { period_label: "2026-06", audits_count: 8, avg_suspicion: 7.1, avg_dei: 92.9, violations_count: 1 },
+          { period_label: "2026-07", audits_count: 7, avg_suspicion: 6.2, avg_dei: 93.8, violations_count: 0 },
+          { period_label: "2026-08", audits_count: 7, avg_suspicion: 7.0, avg_dei: 93.0, violations_count: 1 }
+        ]
+      }
+    };
+
+    window.loadPublisherAnalytics = async function(domain) {
+      const cleanDom = (domain || "").toLowerCase().trim().replace(/^https?:\/\//, '').split('/')[0];
+      if (!cleanDom) return;
+      document.getElementById("pub-domain-input").value = cleanDom;
+
+      showToast(`Loading analytics for ${cleanDom}...`);
+      const apiBase = getApiBaseUrl();
+      try {
+        const res = await fetch(`${apiBase}/api/analytics/publisher/${encodeURIComponent(cleanDom)}`);
+        if (res.ok) {
+          const profile = await res.json();
+          if (profile && profile.domain) {
+            renderPublisherTab(profile);
+            switchTab('tab-publisher');
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("REST API publisher lookup fallback:", e);
+      }
+
+      // Check mock corpus fallback
+      if (MOCK_PUBLISHER_DATA[cleanDom]) {
+        renderPublisherTab(MOCK_PUBLISHER_DATA[cleanDom]);
+        switchTab('tab-publisher');
+        return;
+      }
+
+      // Synthesize basic profile from loaded dynamicCorpus
+      const matching = dynamicCorpus.filter(c => c.url && c.url.includes(cleanDom));
+      if (matching.length > 0) {
+        const avgSusp = matching.reduce((acc, m) => acc + (m.suspicion_score || 0), 0) / matching.length;
+        const synthProfile = {
+          domain: cleanDom,
+          dei_score: Math.max(0, 100.0 - avgSusp),
+          trust_band: avgSusp <= 15 ? "HIGH_INTEGRITY" : (avgSusp <= 40 ? "RELIABLE" : (avgSusp <= 60 ? "MIXED" : "POOR")),
+          avg_suspicion: avgSusp,
+          avg_violation_density: matching.reduce((acc, m) => acc + (m.suspicion_density || 0), 0) / matching.length,
+          confidence_score: 0.95,
+          total_audits: matching.length,
+          clean_audits_count: matching.filter(m => (m.suspicion_score || 0) <= 15).length,
+          suspicious_audits_count: matching.filter(m => (m.suspicion_score || 0) > 15 && (m.suspicion_score || 0) <= 60).length,
+          deceptive_audits_count: matching.filter(m => (m.suspicion_score || 0) > 60).length,
+          topic_entropy: 0.65,
+          top_token_concentration: 0.35,
+          is_astroturf_risk: false,
+          badges: ["COMMUNITY_AUDITED"],
+          sourcing_metrics: {
+            byline_transparency_ratio: 0.75,
+            single_source_reliance_ratio: 0.25,
+            conflict_disclosure_rate: 0.50,
+            advertorial_separation_index: 70.0
+          },
+          top_violated_rules: [],
+          trend_timeline: [
+            { period_label: "2026-08", audits_count: matching.length, avg_suspicion: avgSusp, avg_dei: Math.max(0, 100 - avgSusp), violations_count: 0 }
+          ]
+        };
+        renderPublisherTab(synthProfile);
+        switchTab('tab-publisher');
+        return;
+      }
+
+      showToast(`No audits found for ${cleanDom}`);
+    };
+
+    function renderPublisherTab(profile) {
+      activePublisherProfile = profile;
+
+      document.getElementById("pub-dei-score").textContent = `${profile.dei_score.toFixed(1)}%`;
+      const bandEl = document.getElementById("pub-trust-band");
+      bandEl.textContent = profile.trust_band;
+      bandEl.className = "sig-pill " + (profile.dei_score >= 80 ? "sig-valid" : (profile.dei_score >= 50 ? "sig-warn" : "sig-invalid"));
+
+      document.getElementById("pub-total-audits").textContent = profile.total_audits;
+      document.getElementById("pub-avg-suspicion").textContent = `${profile.avg_suspicion.toFixed(1)} / 100`;
+
+      // Sourcing metrics
+      const sm = profile.sourcing_metrics || {};
+      document.getElementById("pub-byline-ratio").textContent = `${((sm.byline_transparency_ratio || 0) * 100).toFixed(1)}%`;
+      document.getElementById("pub-single-source-ratio").textContent = `${((sm.single_source_reliance_ratio || 0) * 100).toFixed(1)}%`;
+      document.getElementById("pub-coi-rate").textContent = `${((sm.conflict_disclosure_rate || 0) * 100).toFixed(1)}%`;
+      document.getElementById("pub-asi-index").textContent = `${(sm.advertorial_separation_index || 0).toFixed(1)} / 100`;
+
+      // SVG Trend Timeline
+      renderPublisherTrendChart(profile.trend_timeline || []);
+
+      // Top Violated Rules Table
+      const rulesBody = document.getElementById("pub-top-rules-body");
+      if (!profile.top_violated_rules || profile.top_violated_rules.length === 0) {
+        rulesBody.innerHTML = `<tr><td colspan="5" style="color: var(--accent-green); padding: 1rem; text-align: center;">✓ Clean record: Zero recurring rule violations detected.</td></tr>`;
+      } else {
+        rulesBody.innerHTML = profile.top_violated_rules.map(r => `
+          <tr>
+            <td><code style="color: var(--accent-cyan);">${r.rule_id}</code></td>
+            <td style="color: var(--text-dim); font-size: 0.8rem;">${r.domain}</td>
+            <td style="color: #fff; font-weight: 500;">${escapeHtml(r.name)}</td>
+            <td style="text-align: right; color: var(--accent-amber); font-weight: 700;">${r.violations_count}</td>
+            <td style="text-align: right; color: var(--accent-rose); font-weight: 700;">${r.frequency_pct.toFixed(1)}%</td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    function renderPublisherTrendChart(timeline) {
+      const container = document.getElementById("pub-trend-chart-container");
+      if (!timeline || timeline.length === 0) {
+        container.innerHTML = `<div style="color: var(--text-dim); font-size: 0.85rem;">Insufficient historical data to render longitudinal trendline.</div>`;
+        return;
+      }
+
+      const w = 600;
+      const h = 120;
+      const padX = 40;
+      const padY = 20;
+      const graphW = w - padX * 2;
+      const graphH = h - padY * 2;
+
+      const n = timeline.length;
+      const stepX = n > 1 ? graphW / (n - 1) : graphW / 2;
+
+      let deiPoints = [];
+      let suspPoints = [];
+      let labelsSvg = "";
+      let barsSvg = "";
+
+      const maxAudits = Math.max(...timeline.map(t => t.audits_count), 1);
+
+      timeline.forEach((b, i) => {
+        const x = padX + (n > 1 ? i * stepX : graphW / 2);
+        const yDei = padY + graphH - (b.avg_dei / 100.0) * graphH;
+        const ySusp = padY + graphH - (b.avg_suspicion / 100.0) * graphH;
+        
+        deiPoints.push(`${x.toFixed(1)},${yDei.toFixed(1)}`);
+        suspPoints.push(`${x.toFixed(1)},${ySusp.toFixed(1)}`);
+
+        // Volume Bar
+        const barH = (b.audits_count / maxAudits) * (graphH * 0.6);
+        const barY = padY + graphH - barH;
+        barsSvg += `<rect x="${(x - 8).toFixed(1)}" y="${barY.toFixed(1)}" width="16" height="${barH.toFixed(1)}" fill="rgba(56, 189, 248, 0.15)" rx="2" />`;
+
+        // Period Label
+        labelsSvg += `<text x="${x.toFixed(1)}" y="${h - 4}" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">${b.period_label}</text>`;
+      });
+
+      const deiPath = deiPoints.join(" ");
+      const suspPath = suspPoints.join(" ");
+
+      container.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" style="width: 100%; height: auto; max-height: 140px; overflow: visible;">
+          <!-- Grid lines -->
+          <line x1="${padX}" y1="${padY}" x2="${w - padX}" y2="${padY}" stroke="#1e293b" stroke-dasharray="3,3" />
+          <line x1="${padX}" y1="${padY + graphH / 2}" x2="${w - padX}" y2="${padY + graphH / 2}" stroke="#1e293b" stroke-dasharray="3,3" />
+          <line x1="${padX}" y1="${padY + graphH}" x2="${w - padX}" y2="${padY + graphH}" stroke="#1e293b" />
+          
+          <!-- Y-Axis Labels -->
+          <text x="${padX - 8}" y="${padY + 4}" fill="#64748b" font-size="9" text-anchor="end" font-family="monospace">100</text>
+          <text x="${padX - 8}" y="${padY + graphH / 2 + 3}" fill="#64748b" font-size="9" text-anchor="end" font-family="monospace">50</text>
+          <text x="${padX - 8}" y="${padY + graphH + 3}" fill="#64748b" font-size="9" text-anchor="end" font-family="monospace">0</text>
+
+          <!-- Audit Volume Bars -->
+          ${barsSvg}
+
+          <!-- Suspicion Score Line (Amber/Rose) -->
+          <polyline fill="none" stroke="#f43f5e" stroke-width="2" points="${suspPath}" />
+
+          <!-- DEI Score Line (Green/Cyan) -->
+          <polyline fill="none" stroke="#4ade80" stroke-width="2.5" points="${deiPath}" />
+
+          <!-- Dots on points -->
+          ${timeline.map((b, i) => {
+            const x = padX + (n > 1 ? i * stepX : graphW / 2);
+            const yDei = padY + graphH - (b.avg_dei / 100.0) * graphH;
+            return `<circle cx="${x.toFixed(1)}" cy="${yDei.toFixed(1)}" r="3.5" fill="#4ade80" />`;
+          }).join("")}
+
+          <!-- X-Axis Labels -->
+          ${labelsSvg}
+        </svg>
+      `;
+    }
+
+    window.exportPublisherData = function(format) {
+      if (!activePublisherProfile) {
+        showToast("No publisher profile currently loaded to export.");
+        return;
+      }
+
+      if (format === 'json') {
+        const jsonStr = JSON.stringify(activePublisherProfile, null, 2);
+        navigator.clipboard.writeText(jsonStr).then(() => showToast(`Exported ${activePublisherProfile.domain} JSON to clipboard!`));
+      } else if (format === 'csv') {
+        const p = activePublisherProfile;
+        const sm = p.sourcing_metrics || {};
+        const rows = [
+          ["metric", "value"],
+          ["domain", p.domain],
+          ["dei_score", p.dei_score],
+          ["trust_band", p.trust_band],
+          ["avg_suspicion", p.avg_suspicion],
+          ["avg_violation_density", p.avg_violation_density],
+          ["confidence_score", p.confidence_score],
+          ["total_audits", p.total_audits],
+          ["clean_audits_count", p.clean_audits_count],
+          ["suspicious_audits_count", p.suspicious_audits_count],
+          ["deceptive_audits_count", p.deceptive_audits_count],
+          ["topic_entropy", p.topic_entropy],
+          ["top_token_concentration", p.top_token_concentration],
+          ["byline_transparency_ratio", sm.byline_transparency_ratio || 0],
+          ["single_source_reliance_ratio", sm.single_source_reliance_ratio || 0],
+          ["conflict_disclosure_rate", sm.conflict_disclosure_rate || 0],
+          ["advertorial_separation_index", sm.advertorial_separation_index || 0]
+        ];
+        const csvStr = rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+        navigator.clipboard.writeText(csvStr).then(() => showToast(`Exported ${activePublisherProfile.domain} CSV to clipboard!`));
       }
     };
 

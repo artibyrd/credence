@@ -1188,9 +1188,53 @@ def _register_merit_and_analytics_tools(server: MCPServer) -> None:
             return json.dumps([asdict(b) for b in bounties], indent=2)
         return "[]"
 
+    @server.tool(
+        name="credence_get_publisher_analytics",
+        description="Retrieve deep aggregate public analytics, DEI score, forensic sourcing ratios, astroturf entropy, and trend timelines for any specific news publisher.",
+    )
+    async def get_publisher_analytics_tool(domain: str) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_publisher_analytics
+
+        await init_db()
+        async for session in get_session():
+            profile = await get_publisher_analytics(session, domain=domain)
+            if profile:
+                return json.dumps(asdict(profile), indent=2)
+            return json.dumps({"error": f"No audit records found for publisher '{domain}'."})
+        return "{}"
+
 
 def _register_merit_and_analytics_resources(server: MCPServer) -> None:
     """Register merit, leaderboard, and web analytics resources."""
+
+    @server.resource("credence://analytics/publishers")
+    async def list_publishers_resource() -> str:
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import list_all_publishers_summary
+
+        await init_db()
+        async for session in get_session():
+            summaries = await list_all_publishers_summary(session)
+            return json.dumps(summaries, indent=2)
+        return "[]"
+
+    @server.resource("credence://analytics/publisher/{domain}")
+    async def get_publisher_analytics_resource(domain: str) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.subjects.analytics import get_publisher_analytics
+
+        await init_db()
+        async for session in get_session():
+            profile = await get_publisher_analytics(session, domain=domain)
+            if profile:
+                return json.dumps(asdict(profile), indent=2)
+            return json.dumps({"error": f"No analytics found for domain: '{domain}'"})
+        return "{}"
 
     @server.resource("credence://leaderboard/{category}")
     async def get_leaderboard_resource(category: str) -> str:
@@ -1835,6 +1879,44 @@ async def api_bounties(request: Any) -> Any:
     return JSONResponse({"bounties": []})
 
 
+async def api_list_publishers(request: Any) -> Any:
+    """REST API: Query summary analytics for all audited news publishers."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import list_all_publishers_summary
+
+    await init_db()
+    async for s in get_session():
+        summaries = await list_all_publishers_summary(s)
+        return JSONResponse({"total": len(summaries), "publishers": summaries})
+    return JSONResponse({"total": 0, "publishers": []})
+
+
+async def api_publisher_analytics(request: Any) -> Any:
+    """REST API: Query deep aggregate public analytics, DEI score, forensic metrics, and trends for a specific publisher."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import get_publisher_analytics
+
+    domain = request.path_params.get("domain", "") or request.query_params.get("domain", "")
+    if not domain:
+        return JSONResponse(
+            {"error": "Publisher domain is required, e.g. /api/analytics/publisher/inmaricopa.com"}, status_code=400
+        )
+
+    await init_db()
+    async for s in get_session():
+        profile = await get_publisher_analytics(s, domain=domain)
+        if not profile:
+            return JSONResponse({"error": f"No audit records found for publisher '{domain}'"}, status_code=404)
+        return JSONResponse(asdict(profile))
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
@@ -1902,6 +1984,8 @@ def create_server_app(
         Route("/api/badge/{badge_id:path}", endpoint=api_get_badge_svg, methods=["GET", "OPTIONS"]),
         Route("/api/rankings/domains", endpoint=api_rankings_domains, methods=["GET", "OPTIONS"]),
         Route("/api/rankings/rules", endpoint=api_rankings_rules, methods=["GET", "OPTIONS"]),
+        Route("/api/analytics/publishers", endpoint=api_list_publishers, methods=["GET", "OPTIONS"]),
+        Route("/api/analytics/publisher/{domain:path}", endpoint=api_publisher_analytics, methods=["GET", "OPTIONS"]),
         Route("/api/weather", endpoint=api_weather, methods=["GET", "OPTIONS"]),
         Route("/api/bounties", endpoint=api_bounties, methods=["GET", "OPTIONS"]),
     ]

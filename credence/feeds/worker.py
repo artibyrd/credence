@@ -285,6 +285,7 @@ PRESET_FEED_CATALOGS = {
         ("NIH News Releases", "https://www.nih.gov/news-events/news-releases/feed.xml", 2),
     ],
     "regional-civic": [
+        ("InMaricopa: Local News & Civic", "https://inmaricopa.com/feed/", 1),
         ("CalMatters: California Policy", "https://calmatters.org/feed/", 2),
         ("The Texas Tribune", "https://www.texastribune.org/feeds/main/", 2),
         ("Spotlight PA", "https://www.spotlightpa.org/feeds/rss.xml", 2),

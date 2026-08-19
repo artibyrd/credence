@@ -128,9 +128,9 @@ def test_bayesian_consensus_rogue_outlier_filtering() -> None:
 
 
 @pytest.mark.unit
-async def test_mesh_relay_lifecycle() -> None:
+async def test_mesh_relay_lifecycle(free_tcp_port: int) -> None:
     """Verify MeshGossipRelay starts WebSocket server and shuts down cleanly."""
-    relay = MeshGossipRelay(port=8799, peer_seeds=[])
+    relay = MeshGossipRelay(port=free_tcp_port, peer_seeds=[])
     await relay.start()
     assert relay.get_peer_count() == 0
     await relay.stop()

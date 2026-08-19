@@ -413,3 +413,98 @@ def test_tui_vector_assets_integrity(docs_root: Path) -> None:
             assert ref_path.exists(), f"Broken TUI image reference '{match}' in {md_file.name}"
 
     assert tui_ref_count >= 10, f"Expected at least 10 TUI SVG image references across docs, found {tui_ref_count}"
+
+
+@pytest.mark.unit
+def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None:
+    """Verify all internal markdown file links, section anchors, and app route links resolve cleanly without broken targets."""
+    import urllib.parse
+
+    app_js = docs_root / "app.js"
+    assert app_js.exists(), "app.js must exist"
+    app_js_text = app_js.read_text(encoding="utf-8")
+    registered_ids = set(re.findall(r'id:\s*["\']([^"\']+)["\']', app_js_text))
+    assert len(registered_ids) >= 40, "Expected registered docs in app.js"
+
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    assert len(md_files) >= 45, "Expected markdown documents"
+
+    def slugify_heading(h: str) -> str:
+        h = h.strip().lower()
+        h = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", h)
+        h = re.sub(r"[*_`#~]", "", h)
+        h = re.sub(r"[^\w\s-]", "", h)
+        h = re.sub(r"[\s]+", "-", h)
+        return h.strip("-")
+
+    broken_links: list[tuple[str, str, str, str]] = []
+    verified_relative_count = 0
+    verified_external_count = 0
+    verified_anchor_count = 0
+
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        rel_doc = str(md_file.relative_to(docs_root))
+
+        local_anchors = set(re.findall(r'id=["\']([^"\']+)["\']', text))
+        local_anchors.update(re.findall(r'<a\s+name=["\']([^"\']+)["\']', text))
+        for line in text.splitlines():
+            if line.startswith("#"):
+                local_anchors.add(slugify_heading(line.lstrip("#").strip()))
+
+        links = re.findall(r"(?<!\!)\[([^\]]+)\]\(([^)]+)\)", text)
+
+        for label, target in links:
+            target = target.strip()
+            if not target or target.startswith("javascript:") or target.startswith("mailto:"):
+                continue
+
+            # 1. External URL syntax validation (hermetic, zero-network)
+            if target.startswith("http://") or target.startswith("https://"):
+                verified_external_count += 1
+                parsed = urllib.parse.urlparse(target)
+                if not parsed.scheme or not parsed.netloc:
+                    broken_links.append((rel_doc, label, target, "Invalid URL syntax"))
+                continue
+
+            # 2. App Route links (#docs/... or #blog/...)
+            if target.startswith("#docs/") or target.startswith("#blog/"):
+                route_id = target.lstrip("#").split("#")[0].split(":")[0]
+                if route_id not in registered_ids:
+                    broken_links.append((rel_doc, label, target, f"Route ID '{route_id}' not found in DOCS_REGISTRY"))
+                continue
+
+            # 3. Same-file section anchor (#anchor)
+            if target.startswith("#"):
+                verified_anchor_count += 1
+                anchor = target.lstrip("#")
+                if anchor not in local_anchors:
+                    broken_links.append(
+                        (rel_doc, label, target, f"Local anchor '#{anchor}' not found in {md_file.name}")
+                    )
+                continue
+
+            # 4. Relative file link (path/to/file.md or path/to/file.md#anchor)
+            verified_relative_count += 1
+            target_path_str, _, anchor = target.partition("#")
+
+            resolved_target = (md_file.parent / target_path_str).resolve()
+            if not resolved_target.exists():
+                broken_links.append((rel_doc, label, target, f"Target file '{target_path_str}' does not exist on disk"))
+            elif anchor:
+                target_text = resolved_target.read_text(encoding="utf-8")
+                target_anchors = set(re.findall(r'id=["\']([^"\']+)["\']', target_text))
+                target_anchors.update(re.findall(r'<a\s+name=["\']([^"\']+)["\']', target_text))
+                for line in target_text.splitlines():
+                    if line.startswith("#"):
+                        target_anchors.add(slugify_heading(line.lstrip("#").strip()))
+                if anchor not in target_anchors:
+                    broken_links.append(
+                        (rel_doc, label, target, f"Anchor '#{anchor}' not found in {resolved_target.name}")
+                    )
+
+    assert len(broken_links) == 0, f"Found {len(broken_links)} broken links in documentation:\n" + "\n".join(
+        f"  - [{doc}] '{lbl}' -> '{tgt}': {reason}" for doc, lbl, tgt, reason in broken_links
+    )
+    assert verified_relative_count >= 100, f"Expected >=100 relative links, found {verified_relative_count}"
+    assert verified_external_count >= 50, f"Expected >=50 external links, found {verified_external_count}"

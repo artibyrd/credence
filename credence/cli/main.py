@@ -1214,6 +1214,7 @@ def _dispatch_mesh_commands(args: argparse.Namespace) -> bool:
                 category=getattr(args, "category", "best"),
                 limit=getattr(args, "limit", 50),
                 format_type=getattr(args, "format", "human"),
+                domain=getattr(args, "domain", None),
             )
         )
         return True
@@ -1529,11 +1530,145 @@ def cli_badge_export(
     console.print(f"[bold green]✓ Generated SVG Badge:[/bold green] {out_file}")
 
 
+async def cli_publisher_analytics(
+    domain: str,
+    format_type: str = "human",
+    output_path: Optional[str] = None,
+) -> None:
+    """Display or export deep aggregate public analytics for a specific news publisher."""
+    import csv
+    import io
+    from dataclasses import asdict
+    from pathlib import Path
+
+    from credence.db import get_session, init_db
+    from credence.subjects.analytics import get_publisher_analytics
+
+    await init_db()
+    async for s in get_session():
+        profile = await get_publisher_analytics(s, domain=domain)
+        if not profile:
+            console.print(f"[bold red]No audit records found for publisher:[/] {domain}")
+            return
+
+        fmt = format_type.lower()
+        if fmt == "json":
+            out_str = json.dumps(asdict(profile), indent=2)
+            if output_path:
+                Path(output_path).write_text(out_str, encoding="utf-8")
+                console.print(f"[bold green]✓ Exported publisher analytics JSON to:[/] {output_path}")
+            else:
+                print(out_str)
+            return
+        elif fmt == "csv":
+            buffer = io.StringIO()
+            writer = csv.writer(buffer)
+            writer.writerow(["metric", "value"])
+            writer.writerow(["domain", profile.domain])
+            writer.writerow(["dei_score", profile.dei_score])
+            writer.writerow(["trust_band", profile.trust_band])
+            writer.writerow(["avg_suspicion", profile.avg_suspicion])
+            writer.writerow(["avg_violation_density", profile.avg_violation_density])
+            writer.writerow(["confidence_score", profile.confidence_score])
+            writer.writerow(["total_audits", profile.total_audits])
+            writer.writerow(["clean_audits_count", profile.clean_audits_count])
+            writer.writerow(["suspicious_audits_count", profile.suspicious_audits_count])
+            writer.writerow(["deceptive_audits_count", profile.deceptive_audits_count])
+            writer.writerow(["topic_entropy", profile.topic_entropy])
+            writer.writerow(["top_token_concentration", profile.top_token_concentration])
+            writer.writerow(["byline_ratio", profile.sourcing_metrics.byline_transparency_ratio])
+            writer.writerow(["single_source_ratio", profile.sourcing_metrics.single_source_reliance_ratio])
+            writer.writerow(["coi_disclosure_rate", profile.sourcing_metrics.conflict_disclosure_rate])
+            writer.writerow(["advertorial_sep_index", profile.sourcing_metrics.advertorial_separation_index])
+            out_str = buffer.getvalue()
+            if output_path:
+                Path(output_path).write_text(out_str, encoding="utf-8")
+                console.print(f"[bold green]✓ Exported publisher analytics CSV to:[/] {output_path}")
+            else:
+                print(out_str)
+            return
+
+        # Default: Rich Terminal Dashboard Card
+        band_style = (
+            "green"
+            if profile.trust_band in ("HIGH_INTEGRITY", "RELIABLE")
+            else ("yellow" if profile.trust_band == "MIXED" else "bold red")
+        )
+        header_lines = [
+            f"[bold]Publisher Domain:[/bold]     [cyan]{profile.domain}[/cyan]",
+            f"[bold]Domain Epistemic Index:[/bold] [{band_style}]{profile.dei_score:.1f}% ({profile.trust_band})[/{band_style}]",
+            f"[bold]Audits Sampled:[/bold]        {profile.total_audits} (Clean: [green]{profile.clean_audits_count}[/green], Suspicious: [yellow]{profile.suspicious_audits_count}[/yellow], Flagged: [red]{profile.deceptive_audits_count}[/red])",
+            f"[bold]Avg Suspicion Score:[/bold]   {profile.avg_suspicion:.1f} / 100.0 (Density: {profile.avg_violation_density:.1f}/1k words)",
+            f"[bold]Topic Diversity (H):[/bold]   {profile.topic_entropy:.3f} (Concentration C_top3: {profile.top_token_concentration * 100:.1f}%)",
+            "",
+            "[bold yellow]🔬 Forensic Sourcing & Ethics Ratios:[/bold yellow]",
+            f"  • Byline Transparency Ratio:     [green]{profile.sourcing_metrics.byline_transparency_ratio * 100:.1f}%[/green]",
+            f"  • Single-Source Reliance Ratio:  {'[red]' if profile.sourcing_metrics.single_source_reliance_ratio > 0.4 else '[green]'}{profile.sourcing_metrics.single_source_reliance_ratio * 100:.1f}%{'/red]' if profile.sourcing_metrics.single_source_reliance_ratio > 0.4 else '[/green]'}",
+            f"  • Conflict-of-Interest Rate:     {'[green]' if profile.sourcing_metrics.conflict_disclosure_rate >= 0.8 else '[bold red]'}{profile.sourcing_metrics.conflict_disclosure_rate * 100:.1f}%{'/green]' if profile.sourcing_metrics.conflict_disclosure_rate >= 0.8 else '[/bold red]'}",
+            f"  • Advertorial Separation Index:  {profile.sourcing_metrics.advertorial_separation_index:.1f} / 100.0",
+        ]
+        if profile.badges:
+            header_lines.append(f"\n[bold]Earned Badges:[/bold] {', '.join(profile.badges)}")
+
+        console.print(
+            Panel(
+                "\n".join(header_lines),
+                title=f"[bold cyan]📰 Publisher Epistemic Profile: {profile.domain}[/bold cyan]",
+                border_style=band_style,
+            )
+        )
+
+        # Top Violated Rules Table
+        if profile.top_violated_rules:
+            t_rules = Table(title="[bold]Top Violated Rules for Outlet[/bold]", box=box.ROUNDED)
+            t_rules.add_column("Rule ID", style="cyan", width=12)
+            t_rules.add_column("Domain", style="dim", width=22)
+            t_rules.add_column("Name", style="white", width=28)
+            t_rules.add_column("Violations", justify="right", style="yellow", width=12)
+            t_rules.add_column("Freq %", justify="right", style="bold red", width=10)
+            for r in profile.top_violated_rules:
+                t_rules.add_row(
+                    r["rule_id"], r["domain"], r["name"], str(r["violations_count"]), f"{r['frequency_pct']:.1f}%"
+                )
+            console.print(t_rules)
+
+        # Historical Trend Timeline Table
+        if profile.trend_timeline:
+            t_trend = Table(title="[bold]Historical Longitudinal Trends[/bold]", box=box.ROUNDED)
+            t_trend.add_column("Date / Period", style="cyan", width=16)
+            t_trend.add_column("Audits", justify="center", width=10)
+            t_trend.add_column("Avg Suspicion", justify="right", width=16)
+            t_trend.add_column("Est DEI", justify="right", style="bold green", width=12)
+            t_trend.add_column("Violations", justify="right", style="yellow", width=12)
+            for b in profile.trend_timeline:
+                t_trend.add_row(
+                    b.period_label,
+                    str(b.audits_count),
+                    f"{b.avg_suspicion:.1f}",
+                    f"{b.avg_dei:.1f}%",
+                    str(b.violations_count),
+                )
+            console.print(t_trend)
+
+        # Flagged Quotes
+        if profile.representative_flagged_quotes:
+            t_quotes = Table(title="[bold]Representative Flagged Quotations[/bold]", box=box.ROUNDED)
+            t_quotes.add_column("Rule", style="cyan", width=12)
+            t_quotes.add_column("Sev", justify="center", width=6)
+            t_quotes.add_column("Cited Excerpt", style="italic", width=40)
+            t_quotes.add_column("Reasoning", style="dim")
+            for q in profile.representative_flagged_quotes:
+                t_quotes.add_row(q["rule_id"], f"{q['severity']}/5", f'"{q["quote"]}"', q["reasoning"])
+            console.print(t_quotes)
+        break
+
+
 async def cli_rankings(
     ranking_type: str = "domains",
     category: str = "best",
     limit: int = 50,
     format_type: str = "human",
+    domain: Optional[str] = None,
 ) -> None:
     """Display Web Epistemic Analytics and Domain rankings."""
     from dataclasses import asdict
@@ -1545,6 +1680,15 @@ async def cli_rankings(
         get_global_epistemic_weather,
         get_top_violated_rules,
     )
+
+    if (
+        ranking_type in ("outlet", "publisher")
+        or domain
+        or ("." in ranking_type and ranking_type not in ("domains", "rules", "weather", "bounties"))
+    ):
+        target_dom = domain or (ranking_type if "." in ranking_type else category)
+        await cli_publisher_analytics(domain=target_dom, format_type=format_type)
+        return
 
     await init_db()
     async for s in get_session():
@@ -1673,6 +1817,14 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         cli_verify_file(args.path)
     elif cmd == "export-report":
         asyncio.run(cli_export_report(args.identifier, format_type=args.format, output_path=args.output))
+    elif cmd == "export-analytics":
+        target_domain = args.domain or getattr(args, "domain_opt", None)
+        if not target_domain:
+            console.print(
+                "[bold red]Error:[/] Publisher domain is required. e.g. `credence export-analytics inmaricopa.com`"
+            )
+            return
+        asyncio.run(cli_publisher_analytics(target_domain, format_type=args.format, output_path=args.output))
     elif cmd == "report":
         asyncio.run(
             cli_report_view(
@@ -2340,25 +2492,43 @@ def main() -> None:
 
     # rankings command
     rankings_parser = subparsers.add_parser(
-        "rankings", help="Display Web Epistemic Analytics, Domain rankings (DEI), and Top Violated Rules."
+        "rankings",
+        help="Display Web Epistemic Analytics, Domain rankings (DEI), Top Violated Rules, or Publisher Profiles.",
     )
     rankings_parser.add_argument(
         "ranking_type",
         nargs="?",
         default="domains",
-        choices=["domains", "rules", "weather", "bounties"],
-        help="Ranking type: domains, rules, weather, bounties",
+        help="Ranking type: domains, rules, weather, bounties, outlet, or specific domain FQDN",
     )
     rankings_parser.add_argument(
         "--category",
         "-c",
-        choices=["best", "worst", "astroturf"],
         default="best",
-        help="Domain category filter (default: best).",
+        help="Domain category filter (best, worst, astroturf) or publisher domain if using outlet ranking.",
     )
+    rankings_parser.add_argument("--domain", "-d", default=None, help="Target publisher domain for outlet analytics.")
     rankings_parser.add_argument("--limit", "-l", type=int, default=50, help="Max entries to return.")
     rankings_parser.add_argument(
-        "--format", choices=["human", "compact", "json"], default="human", help="Output format."
+        "--format", choices=["human", "compact", "json", "csv"], default="human", help="Output format."
+    )
+
+    # export-analytics command
+    export_analytics_parser = subparsers.add_parser(
+        "export-analytics",
+        help="Export aggregate publisher analytics, DEI metrics, and trend timelines to JSON or CSV.",
+    )
+    export_analytics_parser.add_argument(
+        "domain", nargs="?", default=None, help="Target publisher domain (e.g. inmaricopa.com)."
+    )
+    export_analytics_parser.add_argument(
+        "--domain", "-d", dest="domain_opt", default=None, help="Target publisher domain option."
+    )
+    export_analytics_parser.add_argument(
+        "--format", choices=["json", "csv"], default="json", help="Export format (default: json)."
+    )
+    export_analytics_parser.add_argument(
+        "--output", "-o", default=None, help="Filepath to write exported analytics data to (stdout if omitted)."
     )
 
     # bounties command
