@@ -83,7 +83,7 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Run Hermetic Pytest Suite (<20s)
-        run: poetry run pytest tests/ -m "unit" -n auto --durations=10
+        run: poetry run pytest tests/ -m "unit" --durations=10
 
       - name: Run Offline Mock E2E Integration Suite
         run: poetry run pytest tests/e2e/test_mock_e2e.py -v
