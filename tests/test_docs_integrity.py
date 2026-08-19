@@ -584,3 +584,65 @@ def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
     assert 'id: "docs/sitemap"' in app_js_text or "id: 'docs/sitemap'" in app_js_text, (
         "docs/sitemap not registered in DOCS_REGISTRY in app.js"
     )
+
+
+@pytest.mark.unit
+def test_hermetic_unit_test_markers_invariant() -> None:
+    """Verify that all tests marked with @pytest.mark.unit are strictly hermetic.
+
+    Ensures that no unit test imports Playwright or calls browser scraping functions, preventing
+    browser runtime dependency leaks into fast CI verification gates.
+    """
+    import ast
+
+    tests_dir = Path(__file__).resolve().parent
+
+    for py_file in tests_dir.rglob("test_*.py"):
+        if "e2e" in py_file.parts:
+            continue
+
+        file_content = py_file.read_text(encoding="utf-8")
+        try:
+            tree = ast.parse(file_content, filename=str(py_file))
+        except SyntaxError as e:
+            pytest.fail(f"Syntax error in test file {py_file}: {e}")
+
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                # Skip self-test
+                if node.name == "test_hermetic_unit_test_markers_invariant":
+                    continue
+
+                is_unit = False
+                for dec in node.decorator_list:
+                    # Check for @pytest.mark.unit
+                    if (
+                        isinstance(dec, ast.Attribute)
+                        and dec.attr == "unit"
+                        and isinstance(dec.value, ast.Attribute)
+                        and dec.value.attr == "mark"
+                    ):
+                        is_unit = True
+                        break
+
+                if is_unit:
+                    # Inspect function AST for forbidden browser calls/imports
+                    for subnode in ast.walk(node):
+                        if isinstance(subnode, ast.Call):
+                            call_name = ""
+                            if isinstance(subnode.func, ast.Name):
+                                call_name = subnode.func.id
+                            elif isinstance(subnode.func, ast.Attribute):
+                                call_name = subnode.func.attr
+
+                            assert call_name not in ["capture_webpage", "async_playwright"], (
+                                f"Invariant Violation: {py_file.name}::{node.name} is marked as @pytest.mark.unit "
+                                f"but calls '{call_name}'. Browser scraping tests must be marked @pytest.mark.integration."
+                            )
+                        elif isinstance(subnode, (ast.Import, ast.ImportFrom)):
+                            mod_name = getattr(subnode, "module", "") or ""
+                            names = [alias.name for alias in subnode.names]
+                            assert "playwright" not in mod_name and not any("playwright" in n for n in names), (
+                                f"Invariant Violation: {py_file.name}::{node.name} is marked as @pytest.mark.unit "
+                                f"but imports Playwright. Browser tests must be marked @pytest.mark.integration."
+                            )

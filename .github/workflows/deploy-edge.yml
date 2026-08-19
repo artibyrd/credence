@@ -16,6 +16,7 @@ jobs:
   deploy:
     name: Deploy Cloudflare Edge Router
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

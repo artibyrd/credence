@@ -11,6 +11,20 @@ last_verified: '2026-08-19'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.15.2] - 2026-08-19
+
+### CI/CD Hardening & Workflow Resilience
+- **Shift-Left Test Marker Static Gate (`tests/test_docs_integrity.py`)**:
+  - Added `test_hermetic_unit_test_markers_invariant` to statically inspect the AST of all test suites during `just check`, verifying that no test marked `@pytest.mark.unit` imports Playwright or invokes `capture_webpage`.
+- **Atomic Release Preflight Cleanliness Guard (`Justfile`)**:
+  - Added working-tree cleanliness preflights (`git diff --quiet` and `git diff --cached --quiet`) to the `release` recipe, preventing partial or unstaged tagging desynchronization.
+- **Workflow Timeout Bounds Across All Pipelines (`.github/workflows/*.yml`)**:
+  - Enforced strict 5-minute timeout bounds on CI test gates, Terraform verification, and Edge Router deployment, and 10-minute timeout bounds on container build and Cloud Run deployment workflows.
+- **Local & Remote Pytest Execution Parity (`Justfile`)**:
+  - Aligned `just test unit` to execute `poetry run pytest tests/ -m "unit" --durations=10`, guaranteeing identical hermetic unit execution locally and in CI.
+- **Knowledge Governance & Sovereign Invariants (`AGENTS.md`)**:
+  - Persisted the *Hermetic Unit Test Isolation & Zero-Browser CI* and *Atomic Release Working-Tree Cleanliness* universal non-negotiable invariants via `/learn`.
+
 ## [1.15.1] - 2026-08-19
 
 ### Epistemic Audit Viewer & Catalog Integrity Fixes

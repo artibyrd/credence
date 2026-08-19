@@ -27,6 +27,7 @@ jobs:
   deploy-cloud-run:
     name: Build & Deploy Cloud Run Service
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

@@ -19,6 +19,7 @@ jobs:
   verify-and-test:
     name: Full Test Verification Gate
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -55,6 +56,7 @@ jobs:
     name: Build & Publish Container (GHCR)
     needs: verify-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -92,6 +94,7 @@ jobs:
     name: Create GitHub Release & Upload Artifacts
     needs: verify-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

@@ -129,7 +129,7 @@ test suite="unit" extra="": (preflight "poetry")
     set -euo pipefail
     case "{{suite}}" in
         unit)
-            poetry run pytest tests/ -m "not integration and not e2e" -n auto --durations=10 {{extra}}
+            poetry run pytest tests/ -m "unit" --durations=10 {{extra}}
             ;;
         all)
             poetry run pytest tests/ -n auto --durations=10 {{extra}}
@@ -639,6 +639,8 @@ git-sync action="status" arg="":
 
 # Execute full atomic ecosystem release pipeline
 release version message:
+    @git diff --quiet || (echo "❌ Error: Working tree has unstaged changes. Please commit or stash before releasing." && exit 1)
+    @git diff --cached --quiet || (echo "❌ Error: Staging area has uncommitted changes. Please commit before releasing." && exit 1)
     @just check
     @just sync-version {{version}}
     @just git-sync commit "feat(ecosystem): release v{{version}} - {{message}}"
