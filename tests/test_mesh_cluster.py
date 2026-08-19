@@ -97,10 +97,9 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
         relays.append(r)
 
     try:
-        for r in relays:
-            await r.start()
+        await asyncio.gather(*(r.start() for r in relays))
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.2)
 
         report = AuditReport(
             url="https://example.com/multi-hop-target",
@@ -114,15 +113,14 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
         signed_report = sign_audit_report(report, identities[0])
 
         await relays[0].broadcast_attestation(signed_report)
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.3)
 
         assert relays[3].deduplicator._seen  # Node 4
         assert relays[4].deduplicator._seen  # Node 5
         assert relays[6].deduplicator._seen  # Node 7
 
     finally:
-        for r in relays:
-            await r.stop()
+        await asyncio.gather(*(r.stop() for r in relays))
 
 
 @pytest.mark.unit
@@ -157,11 +155,10 @@ async def test_13_node_multi_hop_gossip_diffusion(tmp_path: Path) -> None:
         relays.append(r)
 
     try:
-        for r in relays:
-            await r.start()
+        await asyncio.gather(*(r.start() for r in relays))
 
         # Allow all 13 nodes to establish peer connections
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.3)
 
         report = AuditReport(
             url="https://example.com/13-node-benchmark",
@@ -178,7 +175,7 @@ async def test_13_node_multi_hop_gossip_diffusion(tmp_path: Path) -> None:
         await relays[0].broadcast_attestation(signed_report)
 
         # Allow multi-hop gossip diffusion to saturate all 13 nodes
-        await asyncio.sleep(1.2)
+        await asyncio.sleep(0.4)
 
         # Confirm distant perimeter and anchor nodes (Node 7, Node 10, Node 12) received it
         assert relays[6].deduplicator._seen  # Node 7 (Ultra Anchor B)
@@ -186,8 +183,7 @@ async def test_13_node_multi_hop_gossip_diffusion(tmp_path: Path) -> None:
         assert relays[11].deduplicator._seen  # Node 12 (Free Relay)
 
     finally:
-        for r in relays:
-            await r.stop()
+        await asyncio.gather(*(r.stop() for r in relays))
 
 
 @pytest.mark.unit
@@ -259,7 +255,7 @@ async def test_pathological_linear_daisy_chain_ttl_exhaustion(tmp_path: Path) ->
             await r.start()
 
         # Allow sequential handshakes to connect across the entire chain
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.3)
 
         report = AuditReport(
             url="https://example.com/daisy-target",
@@ -274,7 +270,7 @@ async def test_pathological_linear_daisy_chain_ttl_exhaustion(tmp_path: Path) ->
 
         # Broadcast from Node 1
         await relays[0].broadcast_attestation(signed_report)
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(0.4)
 
         # Message should reach the end of the line (Node 5)
         assert relays[4].deduplicator._seen
@@ -449,7 +445,7 @@ async def test_13_node_dynamic_seed_bootstrap(tmp_path: Path) -> None:
             await r.start()
 
         # Allow connections to stabilize
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.3)
 
         # Broadcast attestation from Node 13
         raw_report = AuditReport(
@@ -466,7 +462,7 @@ async def test_13_node_dynamic_seed_bootstrap(tmp_path: Path) -> None:
         await relays[12].broadcast_attestation(signed_report, gossip_ttl=6)
 
         # Allow multi-hop gossip diffusion
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(0.4)
 
         # Verify Node 1 and Node 7 (the seed nodes) and Node 5 received the attestation
         assert relays[0].deduplicator._seen  # Node 1
@@ -654,10 +650,9 @@ async def test_13_node_feed_preingestion_work_sharing_and_zero_token_adoption(
         relays.append(r)
 
     try:
-        for r in relays:
-            await r.start()
+        await asyncio.gather(*(r.start() for r in relays))
 
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.3)
 
         # Node 1 discovers feed article, audits and signs it
         feed_url = "https://global-apiculture.org/2026/ventilated-bee-suits"
@@ -690,7 +685,7 @@ async def test_13_node_feed_preingestion_work_sharing_and_zero_token_adoption(
 
         # Node 1 gossips the signed attestation across the 13-node mesh
         await relays[0].broadcast_attestation(signed_report, gossip_ttl=6)
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(0.4)
 
         # Verify multi-hop diffusion: distant Node 7 and Node 10 received the attestation
         assert relays[6].deduplicator._seen  # Node 7
@@ -709,8 +704,7 @@ async def test_13_node_feed_preingestion_work_sharing_and_zero_token_adoption(
         assert avoidance_result.suspicion_score == 10.0
 
     finally:
-        for r in relays:
-            await r.stop()
+        await asyncio.gather(*(r.stop() for r in relays))
 
 
 @pytest.mark.asyncio
@@ -750,10 +744,9 @@ async def test_13_node_concurrent_swarm_germination_and_mesh_cross_adoption(
         relays.append(r)
 
     try:
-        for r in relays:
-            await r.start()
+        await asyncio.gather(*(r.start() for r in relays))
 
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.3)
 
         # Mock feed parser to return unique entries based on the feed URL
         async def mock_fetch_feed(feed_url: str, **kwargs: Any) -> ParsedFeed:
@@ -814,7 +807,7 @@ async def test_13_node_concurrent_swarm_germination_and_mesh_cross_adoption(
                 summaries = await asyncio.gather(*tasks)
 
         # Allow multi-hop gossip diffusion
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(0.4)
 
         # Verify both anchor nodes successfully germinated
         assert len(summaries) == 2
@@ -826,5 +819,4 @@ async def test_13_node_concurrent_swarm_germination_and_mesh_cross_adoption(
         assert seen_counts >= 2
 
     finally:
-        for r in relays:
-            await r.stop()
+        await asyncio.gather(*(r.stop() for r in relays))

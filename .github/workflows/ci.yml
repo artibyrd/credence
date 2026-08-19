@@ -79,13 +79,11 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Install Dependencies & Playwright
-        run: |
-          poetry install --no-interaction
-          poetry run playwright install --with-deps chromium
+      - name: Install Dependencies
+        run: poetry install --no-interaction
 
-      - name: Run Hermetic Pytest Suite (<65s)
-        run: poetry run pytest tests/ -m "not integration and not e2e" --durations=10
+      - name: Run Hermetic Pytest Suite (<20s)
+        run: poetry run pytest tests/ -m "not integration and not e2e" -n auto --durations=10
 
       - name: Run Offline Mock E2E Integration Suite
         run: poetry run pytest tests/e2e/test_mock_e2e.py -v

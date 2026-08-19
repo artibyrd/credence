@@ -157,7 +157,12 @@ async def test_cli_seeds_and_rank(tmp_path: Path) -> None:
 @pytest.mark.unit
 async def test_cli_feeds_and_subjects() -> None:
     """Verify feeds and subjects CLI subcommands."""
+    from unittest.mock import AsyncMock, patch
+
     from credence.cli.main import cli_feeds, cli_subjects
+    from credence.feeds.parser import ParsedFeed
+
+    mock_feed = ParsedFeed(title="Test Feed", is_modified=True, entries=[])
 
     # Test feeds add, list, stats, sync, remove
     await cli_feeds(
@@ -170,7 +175,8 @@ async def test_cli_feeds_and_subjects() -> None:
     )
     await cli_feeds(action="list")
     await cli_feeds(action="stats")
-    await cli_feeds(action="sync", dry_run=True, evaluate=False)
+    with patch("credence.feeds.worker.fetch_and_parse_feed", new_callable=AsyncMock, return_value=mock_feed):
+        await cli_feeds(action="sync", dry_run=True, evaluate=False)
     await cli_feeds(action="remove", url="https://example.com/feed.xml")
 
     # Test subjects list and show

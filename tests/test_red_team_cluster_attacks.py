@@ -19,6 +19,7 @@ from credence.mesh.relay import PeerConnection
 from credence.pipeline.schemas import AuditReport
 from credence.pipeline.subagents import build_specialist_prompt
 from credence.server.app import ServerRateLimiter
+from credence.taxonomy_loader import TaxonomyRegistry
 
 
 @pytest.mark.unit
@@ -123,7 +124,7 @@ def test_attack_consensus_salami_slicing_damped() -> None:
 
 
 @pytest.mark.unit
-def test_attack_indirect_prompt_injection_contained() -> None:
+def test_attack_indirect_prompt_injection_contained(test_registry: TaxonomyRegistry) -> None:
     """Attack 4: Malicious article attempts to break out of delimiters and inject fake clean JSON.
 
     Defense: Text is enclosed in <untrusted_source_text> with strict security directives.
@@ -143,7 +144,7 @@ def test_attack_indirect_prompt_injection_contained() -> None:
         char_count=len(adversarial_text),
     )
 
-    prompt = build_specialist_prompt("spj_ethics", extracted)
+    prompt = build_specialist_prompt("spj_ethics", extracted, reg=test_registry)
 
     # Verify structural enclosure & security directive presence
     assert "<untrusted_source_text>" in prompt

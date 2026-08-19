@@ -24,8 +24,9 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 # Copy dependency specifications
 COPY pyproject.toml poetry.lock* ./
 
-# Install python dependencies (excluding root package)
-RUN poetry install --no-root
+# Install production python dependencies (excluding dev tools and root package)
+RUN --mount=type=cache,target=/root/.cache/pypoetry \
+    poetry install --without dev --no-root
 
 # Install Playwright browser and OS dependencies
 RUN poetry run playwright install --with-deps chromium
@@ -33,8 +34,9 @@ RUN poetry run playwright install --with-deps chromium
 # Copy application source code
 COPY . .
 
-# Install root project
-RUN poetry install
+# Install root project without development dependencies
+RUN --mount=type=cache,target=/root/.cache/pypoetry \
+    poetry install --without dev
 
 EXPOSE 8000
 

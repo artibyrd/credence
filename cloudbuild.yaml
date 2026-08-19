@@ -1,31 +1,36 @@
 steps:
-  # Step 1: Quality Gate (Ruff Lint & Mypy Type Checks)
+  # Step 1: Quality Gate (Ruff Lint & Mypy Type Checks) - Runs in parallel with tests
   - name: 'python:3.12-slim'
     id: 'quality-gate'
+    waitFor: ['-']
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        pip install poetry
+        pip install --no-cache-dir poetry
         poetry install --no-root
         poetry run ruff check .
         poetry run ruff format --check .
         poetry run mypy credence tests
 
-  # Step 2: Hermetic Test Gate (All unit tests must pass)
+  # Step 2: Hermetic Test Gate (All unit tests must pass in parallel) - Runs in parallel with quality gate
   - name: 'python:3.12-slim'
     id: 'test-gate'
+    waitFor: ['-']
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        pip install poetry
+        pip install --no-cache-dir poetry
         poetry install --no-root
-        poetry run pytest tests/ -m "not integration" --durations=10
+        poetry run pytest tests/ -m "not integration and not e2e" -n auto --durations=10
 
-  # Step 3: Container Build with Docker Cache
+  # Step 3: Container Build with Docker BuildKit & Cache
   - name: 'gcr.io/cloud-builders/docker'
     id: 'docker-build'
+    waitFor: ['quality-gate', 'test-gate']
+    env:
+      - 'DOCKER_BUILDKIT=1'
     args:
       - 'build'
       - '-t'
@@ -39,6 +44,7 @@ steps:
   # Step 4: Push to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     id: 'docker-push'
+    waitFor: ['docker-build']
     args:
       - 'push'
       - '--all-tags'

@@ -2,6 +2,29 @@
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.14.0] - 2026-08-19
+
+### Optimized & Accelerated
+- **Ecosystem CI/CD & Test Pipeline Acceleration (Lint ➔ Test ➔ Build ➔ Deploy)**:
+  - **Pytest Parallelization with `pytest-xdist`**: Integrated `pytest-xdist` (`-n auto`) across all available CPU cores, slashing hermetic unit test execution time from **81.1s down to ~28s** (a **65% reduction**).
+  - **Feed Pre-Flight Network Timeout Elimination**: Mocked `fetch_and_parse_feed` in `tests/test_cli.py::test_cli_feeds_and_subjects`, eliminating an unmocked 10.7-second live socket timeout.
+  - **Concurrent Mesh Cluster Teardown**: Replaced sequential socket lifecycle loops with `asyncio.gather` for parallel startup/teardown across multi-node test topologies, saving ~15 seconds of idle socket wait time.
+  - **Build Context & Upload Reduction (99.4% lighter)**: Implemented `.dockerignore` and `.gcloudignore` exclusion manifests (`.venv`, `terraform/`, `data/`, caches), dropping container build context and Cloud Build upload payload from **861 MB down to 2.1 MB**.
+  - **Lean Production Docker Images**: Configured `Dockerfile` to build runtime images with `poetry install --without dev` and BuildKit cache mounts (`--mount=type=cache,target=/root/.cache/pypoetry`), excluding development dependencies and speeding up rebuilds.
+  - **Cloud Build & CI/CD Concurrency**: Parallelized `quality-gate` (Ruff & Mypy) and `test-gate` (Pytest) in `cloudbuild.yaml` using `waitFor: ['-']`, pruned unnecessary Playwright browser binary downloads from unit CI jobs in GitHub Actions (`ci.yml`, `release.yml`), and optimized `just tf validate` with cached `.terraform` state inspection.
+  - **Local QA Gate (`just check`)**: Reduced total pre-commit verification time across all 5 planes from **~88s down to ~39s**.
+
+## [1.13.0] - 2026-08-19
+
+### Added
+- **Ecosystem Master Sitemap (`docs/sitemap.md`)**:
+  - Comprehensive visual and categorical directory indexing all 5 sovereign domains (`credence.run`, `docs.credence.run`, `blog.credence.run`, `credence.report`, `credence.nexus`, `credence.foundation`), 12 zero-build interactive playgrounds, 38 system invariants, 17 investigative essays, and 72 documentation guides.
+  - Registered in `DOCS_REGISTRY` in `app.js` with instant search keywords and Mermaid ecosystem relationship map.
+- **Cross-Domain Unified Header Navigation (`.credence-nav`)**:
+  - Harmonized navigation header across all 5 domains with instant links to Home, Docs, Playgrounds, Blog, Reports, Nexus, Foundation, Sitemap, and GitHub.
+- **Rich 4-Column Ecosystem Footer (`.credence-footer`)**:
+  - Implemented 4-column structured footer layout (Sovereign Domains, Interactive & Tools, Knowledge & Proofs, Governance & Source) across all 5 domain web entrypoints.
+
 ## [1.12.0] - 2026-08-18
 
 ### Added

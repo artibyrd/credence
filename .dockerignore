@@ -1,13 +1,53 @@
+# Docker build context exclusions for Credence
 .venv
+.venv/**
 __pycache__
-*.pyc
-.pytest_cache
-.ruff_cache
-.mypy_cache
-.coverage
-htmlcov
+__pycache__/**
+*.py[cod]
+*$py.class
+
+# VCS
 .git
-data/snapshots/*
-!data/snapshots/.gitkeep
-data/*.db
-data/*.sqlite
+.git/**
+.gitignore
+
+# Caches & Test artifacts
+.pytest_cache
+.pytest_cache/**
+.mypy_cache
+.mypy_cache/**
+.ruff_cache
+.ruff_cache/**
+.coverage
+.coverage.*
+htmlcov
+htmlcov/**
+tests
+tests/**
+
+# Infrastructure & State
+terraform
+terraform/**
+data
+data/**
+*.db
+*.sqlite
+*.sqlite3
+
+# Web assets & standalone docs (deployed via Cloudflare Edge Plane)
+web
+web/**
+docs
+docs/**
+blog
+blog/**
+credence-docs
+credence-docs/**
+
+# IDE & OS
+.DS_Store
+.idea
+.idea/**
+.vscode
+.vscode/**
+*.swp

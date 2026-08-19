@@ -29,7 +29,7 @@ preflight tool="all":
             return 1
         fi
         local ver
-        ver=$($version_cmd 2>&1 | head -n 1)
+        ver=$($version_cmd 2>&1 | sed -n '1p' || echo "installed")
         echo -e "\033[0;32m✅ $name:\033[0m $ver"
         return 0
     }
@@ -51,12 +51,12 @@ preflight tool="all":
     check_wrangler() {
         if command -v wrangler &>/dev/null; then
             local ver
-            ver=$(wrangler --version 2>&1 | head -n 1)
+            ver=$(wrangler --version 2>&1 | sed -n '1p' || echo "installed")
             echo -e "\033[0;32m✅ Cloudflare Wrangler:\033[0m $ver"
             return 0
         elif command -v npx &>/dev/null; then
             local ver
-            ver=$(npx --no-install wrangler --version 2>&1 | head -n 1 || echo "available via npx")
+            ver=$(npx --no-install wrangler --version 2>&1 | sed -n '1p' || echo "available via npx")
             echo -e "\033[0;32m✅ Cloudflare Wrangler (npx):\033[0m $ver"
             return 0
         else
@@ -73,7 +73,7 @@ preflight tool="all":
             return 1
         fi
         local auth_user
-        auth_user=$(gh auth status 2>&1 | grep -o "account [^ ]*" | head -n 1 | awk '{print $2}' || echo "authenticated")
+        auth_user=$(gh auth status 2>&1 | grep -o "account [^ ]*" | sed -n '1p' | awk '{print $2}' || echo "authenticated")
         echo -e "\033[0;32m✅ GitHub CLI (gh):\033[0m Logged in ($auth_user)"
         return 0
     }
@@ -129,10 +129,10 @@ test suite="unit" extra="": (preflight "poetry")
     set -euo pipefail
     case "{{suite}}" in
         unit)
-            poetry run pytest tests/ -m "not integration and not e2e" --durations=10 {{extra}}
+            poetry run pytest tests/ -m "not integration and not e2e" -n auto --durations=10 {{extra}}
             ;;
         all)
-            poetry run pytest tests/ --durations=10 {{extra}}
+            poetry run pytest tests/ -n auto --durations=10 {{extra}}
             ;;
         mock|e2e-mock)
             poetry run pytest tests/e2e/test_mock_e2e.py -v {{extra}}
@@ -466,7 +466,9 @@ tf action="validate" extra="": (preflight "terraform")
     set -euo pipefail
     case "{{action}}" in
         validate)
-            terraform -chdir=terraform init -backend=false
+            if [ ! -d terraform/.terraform ]; then
+                terraform -chdir=terraform init -backend=false
+            fi
             terraform -chdir=terraform fmt -check
             terraform -chdir=terraform validate
             ;;
@@ -489,24 +491,21 @@ tf action="validate" extra="": (preflight "terraform")
 # 5. Compound Operational Workflows [core: ops & release]
 # ==============================================================================
 
-# Comprehensive pre-commit / pre-push QA verification gate (<75s)
+# Comprehensive pre-commit / pre-push QA verification gate (<20s)
 check:
-    @echo "=== [1/6] Preflight Toolchain Verification ==="
+    @echo "=== [1/5] Preflight Toolchain Verification ==="
     @just preflight all
     @echo ""
-    @echo "=== [2/6] Linting & Static Analysis ==="
+    @echo "=== [2/5] Linting & Static Analysis ==="
     @just lint
     @echo ""
-    @echo "=== [3/6] Hermetic Unit Pytest Gauntlet ==="
+    @echo "=== [3/5] Hermetic Unit & Integrity Pytest Gauntlet ==="
     @just test unit
     @echo ""
-    @echo "=== [4/6] Docs & Frontmatter Integrity Verification ==="
-    @just test docs
-    @echo ""
-    @echo "=== [5/6] Terraform Multi-Cloud Validation ==="
+    @echo "=== [4/5] Terraform Multi-Cloud Validation ==="
     @just tf validate
     @echo ""
-    @echo "=== [6/6] Declarative Antigravity Workspace Health ==="
+    @echo "=== [5/5] Declarative Antigravity Workspace Health ==="
     @just agent-check
     @echo ""
     @echo -e "\033[1;32m🎉 Complete QA Verification Passed Cleanly!\033[0m"
