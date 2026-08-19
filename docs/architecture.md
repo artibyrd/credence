@@ -1,6 +1,15 @@
-# Architecture of Credence
+---
+title: Decentralized Architecture
+description: Multi-tier architecture specification spanning ingestion, multi-agent
+  evaluation, token governance, and P2P mesh.
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
+---
 
-**Credence** is an autonomous epistemic evaluation engine, FastMCP server, and decentralized trust network designed to analyze digital media against formal journalistic ethics, logical fallacies, and deceptive UI patterns.
+# Decentralized Architecture
+
+**Credence** is an autonomous epistemic evaluation engine, FastMCP 2.0 server, and decentralized trust network designed to analyze digital media against formal journalistic ethics, logical fallacies, and deceptive UI patterns.
 
 ```mermaid
 graph TD
@@ -43,154 +52,44 @@ graph TD
     end
 ```
 
+### Architectural Component Matrix
+
+| Layer | Primary Responsibilities | Core Technologies | Key Invariants |
+| :--- | :--- | :--- | :--- |
+| **Ingestion** | Dual DOM/prose extraction, SimHash-64 deduplication | Trafilatura, Playwright, SQLite WAL | SSRF guard, semaphore concurrency |
+| **Governance** | Token budget metering, offline heuristics | TokenBudgetGovernor, Rule Catalogs | Circuit breaker at 30% headroom |
+| **Evaluation** | 4-specialist audit, verbatim substring grounding | Gemini 3.7 Flash, Namespaced Taxonomies | $G=1.00$ exact quote matching |
+| **Cryptographic Mesh** | Ed25519 signing, epidemic gossip, consensus | RFC 8785 Canonical JSON, Ed25519 | $3f+1$ Sybil resistance, Galileo Rule |
+| **Presentation** | CLI, Textual TUI, FastMCP 2.0, Zero-Build Web | Rich, Textual, FastMCP, WebCrypto | 4-interface synchronous feature parity |
+
+> [!TIP]
+> **Decoupled Architecture**: In accordance with the Pure Logic Decoupling Invariant, all business logic and scoring mathematics execute completely independent of UI rendering layers.
+
 ---
 
 ## 1. Dual-Capture Ingestion Engine
 
-Credence captures both the structural content and visual presentation of any webpage:
-- **Clean Prose Extraction** ([`credence/ingestion/extractor.py`](file:///home/pendragon/Projects/credence/credence/ingestion/extractor.py)): Uses Trafilatura to extract primary article text, title, author bylines, site names, and schema.org metadata while stripping ads and navigation boilerplate.
-- **Visual & DOM Snapshotting** ([`credence/ingestion/snapshot.py`](file:///home/pendragon/Projects/credence/credence/ingestion/snapshot.py)): Runs headless Chromium via Playwright to generate full-page visual screenshots (`.png`) and rendered DOM dumps (`.html`).
-- **Memory Protection Gate**: All Playwright browser instances are strictly serialized through an `asyncio.Semaphore(1)` gate (`MAX_CONCURRENT_SNAPSHOTS`), preventing OOM crashes in low-resource environments.
-- **Deterministic Content Hashes** ([`credence/ingestion/hasher.py`](file:///home/pendragon/Projects/credence/credence/ingestion/hasher.py)):
+Credence captures both structural content and visual presentation:
+- **Clean Prose Extraction**: Uses Trafilatura to extract primary article text, title, author bylines, and schema.org metadata while stripping tracking scripts and ad boilerplate.
+- **Visual & DOM Snapshotting**: Runs headless Chromium via Playwright to generate full-page visual screenshots (`.png`) and rendered DOM dumps (`.html`).
+- **Memory Protection Gate**: All Playwright browser instances are strictly serialized through an `asyncio.Semaphore(1)` gate (`MAX_CONCURRENT_SNAPSHOTS`), preventing OOM crashes.
+- **Deterministic Content Hashes**:
   - Unicode NFKC normalization and whitespace collapsing.
-  - Exact cryptographic `SHA-256` content hash.
+  - Cryptographic `SHA-256` content hash.
   - 64-bit `SimHash` with Hamming distance comparison to identify mirror sites and near-duplicate publications.
 
 ---
 
-## 2. Dynamic & Extensible Taxonomies
+## 2. Multi-Agent Evaluation Pipeline
 
-Taxonomies are completely decoupled from evaluation math:
-- YAML catalogs reside in [`credence/taxonomies/`](file:///home/pendragon/Projects/credence/credence/taxonomies):
-  1. **SPJ Journalism Ethics** (`spj_ethics.yaml`): Seek truth, minimize harm, act independently, be accountable.
-  2. **IEP Logical Fallacies** (`iep_fallacies.yaml`): 6 cognitive clusters covering relevance, presumption, causality, emotion, ambiguity, and syllogisms.
-  3. **Deceptive Patterns** (`deceptive_patterns.yaml`): UI/UX dark patterns including confirmshaming, fake countdown timers, disguised ads, and roach motels.
-- Dynamic Discovery ([`credence/taxonomy_loader.py`](file:///home/pendragon/Projects/credence/credence/taxonomy_loader.py)):
-  - Auto-discovers any arbitrary `.yaml` file added to the directory.
-  - Generates namespaced rule URIs (e.g. `journalistic-ethics:seek-truth/SPJ-1.1@v1.0.0`).
-  - Calculates deterministic canonical SHA-256 catalog hashes for cryptographic verification across decentralized mesh nodes.
+The evaluation pipeline dispatches 4 specialist agents:
+1. **SPJ Ethics Auditor**: Truth and verification, minimizing harm, editorial independence, and transparency.
+2. **IEP Fallacy Auditor**: Informal and formal fallacies grouped into 6 cognitive families.
+3. **Deceptive Patterns Auditor**: Visual dark patterns, fake countdown timers, and confirmshaming.
+4. **Provenance & Satire Classifier**: Masthead badges, schema markup, and `SPJ-1.6` cloaking checks.
 
 ---
 
-## 3. Multi-Agent Pipeline & Grounded Citation Verification
+## 3. Cryptographic Mesh & Bayesian Consensus
 
-Four specialized auditors scrutinize content in parallel:
-1. **SPJ Ethics Auditor**: Verifies sourcing, anonymous bylines, and conflicts of interest.
-2. **IEP Fallacy Auditor**: Dissects syllogistic breakdowns and manipulative rhetoric.
-3. **Deceptive Pattern Auditor**: Identifies manipulative UI phrasing, forced actions, and disguised ads.
-4. **Satire & Provenance Auditor**: Evaluates comedic hyperbole, absurd premises, and humor disclaimers to prevent Poe's Law false positives.
-
-### Grounded Citation Verification
-To eliminate LLM hallucinations, every violation finding must include an exact cited excerpt (`quote_or_element`). The **Grounded Quote Validator** ([`credence/pipeline/subagents.py`](file:///home/pendragon/Projects/credence/credence/pipeline/subagents.py)) tests the quote against the raw extracted prose using whitespace-insensitive substring and fuzzy token matching. Citations that fail grounding are stripped from scoring.
-
----
-
-## 4. Mathematical Scoring & Satire Calibration Engine
-
-Suspicion scores are computed using non-linear saturation curves:
-- **Raw Suspicion**: $\text{raw\_score} = \sum_{v \in V} \text{severity}_v \times \text{confidence}_v \times \text{domain\_weight}_v$.
-- **Suspicion Density**: $\text{density} = \frac{|V|}{\max(50, \text{word\_count})} \times 1000$ (violations per 1k words).
-- **Calibrated Score ($0..100$)**: $\text{score} = 100 \times (1 - e^{-\text{raw\_score} / 12.0})$.
-- **Poe's Law Satire Neutralization**: Legitimate satire (`is_satire=True`) zeroes the suspicion score to `0.0` and assigns `classification: SATIRE_PARODY`. Cloaked bad-faith disinformation (`SPJ-1.6`) bypasses neutralization.
-
----
-
-## 5. Token Safety Governor & Quality Gate
-
-The **TokenBudgetGovernor** ([`credence/pipeline/governor.py`](file:///home/pendragon/Projects/credence/credence/pipeline/governor.py)) guarantees autonomous audits never starve interactive Antigravity pairing sessions:
-- Dedicated isolated API key priority (`CREDENCE_GEMINI_API_KEY`).
-- In-database rolling token tracking (hourly limit, daily limit, USD spend cap) in SQLite (`TokenUsageRecord`).
-- **Circuit Breaker**: Automatically trips into offline heuristic mode (`QUOTA_PRESERVED`) if limits are approached.
-- **Thinking Token Accounting**: Tracks and bills reasoning tokens from **Gemini 3.7 Flash Thinking**.
-- **Dynamic Quality Gate**: If grounded citation ratio drops below $75\%$, confidence is $<0.80$, or scores land on ambiguous boundaries ($12.0 - 18.0$), the governor dynamically elevates the thinking budget ($1,024 \to 4,096$ tokens) for tiebreaking.
-
----
-
-## 6. Cryptographic Node Identity & Signed Attestations
-
-Every audit is cryptographically verifiable:
-- **Ed25519 Node Keypair** ([`credence/identity.py`](file:///home/pendragon/Projects/credence/credence/identity.py)): Persisted at `data/node_identity.key` with `0600` permissions.
-- **RFC 8785 Canonical JSON Serialization**: Guarantees deterministic binary payloads for signature generation.
-- **Tamper-Proof Verification**: Modifying any property (score, URL, quote, reasoning) immediately invalidates the signature.
-
----
-
-## 7. Developer & Analyst Interfaces
-
-- **Textual TUI Workstation** (`just tui` / `credence tui`): Full-screen interactive terminal workstation featuring live sidebar history, interactive violations data table, reader view, taxonomy browser, token quota monitors, and audit modal.
-- **Rich CLI** (`credence audit`, `credence lookup`, `credence identity`, `credence quota`, `credence taxonomy`, `credence benchmark`): Formatted terminal summaries with colored gauges and tables.
-
----
-
-## 8. Decentralized P2P Mesh & Robust Median Consensus
-
-- **13-Node Heterogeneous Lattice** ($N = 13, d = 4$): Triangulates 3 Ultra anchors, 4 Balanced bridges, and 6 Free relays.
-- **Byzantine Cartel Resilience** ($N \ge 3f + 1, f = 4$): Isolates coordinated 4-node malicious cartels ($30.8\%$ adversarial fraction).
-- **Robust Median Centering**: Measures outlier deviations strictly from the median score ($|S_i - S_{\text{median}}| > 25.0$), completely preventing arithmetic mean-drag attacks.
-- **The "Golden 12" Epistemic Benchmark Suite**: Automated 12-scenario evaluation matrix testing adversarial edge cases across all 3 cost profiles (`just benchmark`).
-- **Host Resource Safety Governor**: Hardware pre-flight memory check auto-scales clusters to protect low-RAM systems (e.g. Raspberry Pis $<2\text{GB}$) alongside hard 128MB container cgroups limits.
-
----
-
-## 9. Canonical 4-Domain Multi-Cloud Architecture & Edge CDN
-
-Credence deploys across 4 dedicated canonical domains using a hybrid **Cloudflare Anycast + GCP Cloud Run** architecture:
-
-```mermaid
-graph TD
-    User["User / Agent / Browser / Mesh Node"] --> CFEdge["Cloudflare Global Anycast Edge (300+ PoPs)<br/>- Strict SSL/TLS & Zero-Egress R2 Caching<br/>- WAF Rate Limiting (Anti-Denial-of-Wallet)"]
-
-    subgraph CFDomains ["Canonical 4-Domain Surfaces"]
-        CFRun["<b>credence.run</b><br/>Pages: Landing Hub & install.sh"]
-        CFMCP["<b>mcp.credence.run</b><br/>Proxy: FastMCP SSE Server (/sse)"]
-        CFNexus["<b>seeds.credence.nexus</b><br/>R2: peers.json + DNS SRV"]
-        CFFoundation["<b>taxonomies.credence.foundation</b><br/>R2: Static JSON Catalogs & root.pub"]
-        CFReport["<b>credence.report</b><br/>Edge Cache: /a/{sha256} Viewer"]
-    end
-
-    CFEdge --> CFDomains
-
-    subgraph GCPCore ["GCP Sovereign Core (Scale-to-Zero, $15/mo Budget Cap)"]
-        CloudRun["Cloud Run v2 (credence-server)<br/>- FastMCP SSE Server<br/>- scale-to-zero (min=0, max=2)"]
-        SecretManager["Secret Manager<br/>- CREDENCE_GEMINI_API_KEY<br/>- MESH_ROOT_ED25519_KEY<br/>- CLOUDFLARE_API_TOKEN"]
-        CloudScheduler["Cloud Scheduler Job (0 */12 * * *)<br/>- Recalculates Node Quality ($Q_i$)<br/>- Signs & Uploads peers.json"]
-        BudgetGuard["Cloud Billing Budget Guard ($15.00/mo)"]
-    end
-
-    CFMCP --> |"Origin Proxy"| CloudRun
-    CFReport --> |"Cache Miss Fetch"| CloudRun
-    CloudScheduler --> |"Read Root Key"| SecretManager
-    CloudScheduler --> |"Upload peers.json"| CFNexus
-    CloudRun --> |"Mount Secrets"| SecretManager
-```
-
----
-
-## 10. Zero-Build Web Frontends & Web Crypto Verification
-
-In accordance with **Invariant 20**:
-- All public web frontends across the ecosystem are built strictly using **vanilla modern web standards** (Semantic HTML5, CSS Custom Properties, native ES Modules) with **zero Node.js/npm dependencies**.
-- Client-side cryptographic verification of signed audit reports and bootstrap seed files executes natively via the W3C **Web Cryptography API** (`window.crypto.subtle`) in $<2\text{ms}$ without loading third-party JavaScript crypto libraries.
-- Shared permalinks on `credence.report/a/{sha256}` support OpenGraph and Twitter card bot unfurling via serverless metadata injection with long-lived edge caching (`s-maxage=2592000`).
-
----
-
-## 11. Sovereign White-Label Federation
-
-In accordance with **Invariant 21**:
-- Any organization (newsroom, university journalism department, enterprise compliance team, or DAO) can generate and deploy their own independent, sovereign Credence-compatible mesh trust network with 1 command:
-  ```bash
-  credence init-org --name "Truth Consortium" --domain "truthconsortium.org"
-  ```
-- Scaffolds independent root Ed25519 keypairs, parameterized Terraform variables, static taxonomy mirrors, and branded landing pages without requiring JavaScript build tools.
-
----
-
-## 12. Syndicated Feed Pre-Ingestion, Mesh Effort Avoidance & Empirical Subject Expertise
-
-In accordance with **Invariants 22, 23, and 24**:
-- **Autonomous Feed Ingestion**: Native RSS 2.0, Atom 1.0, and JSON Feed 1.1 polling with HTTP `ETag`/`304` short-circuiting and token headroom safety pauses.
-- **BitTorrent "Generous Defaults" Work Sharing**: Evaluated audits are freely seeded across the mesh at $0.00 compute. Nodes divide feed lists so $N$ nodes cover $N \times$ more internet without duplicating LLM tokens.
-- **Empirical Domain Expertise ($E_i$, No Diplomas)**: Authority in specialized fields (e.g. apiculture, canine care, clinical oncology) is earned exclusively through observable track records ($E_i = 0.40 C + 0.35 G + 0.15 V + 0.10 L$). Citing ungrounded/hallucinated quotes slashes domain score by 50%.
-- **Universal Feature Parity**: Full capabilities exposed across CLI, FastMCP 2.0, Textual TUI, and Zero-Build Web portals. See 📘 **[Universal Feature Parity Matrix](feature-parity-matrix.md)**.
-
+Nodes sign audit reports using **Ed25519** over **RFC 8785 Canonical JSON**. Signed envelopes are gossiped across the 13-node Watts-Strogatz mesh, and consensus is aggregated using Domain Authority Weighted Medians with the Galileo Rule protection.

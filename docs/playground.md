@@ -1,6 +1,10 @@
 ---
-title: "Interactive Zero-Build Playgrounds"
-description: "In-browser WebCrypto verification, 13-node mesh gossip simulator, epistemic text scanner, and consensus engine."
+title: Interactive Zero-Build Playgrounds
+description: In-browser WebCrypto verification, 13-node mesh gossip simulator, epistemic
+  text scanner, and consensus engine.
+since_version: v1.11.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Interactive Zero-Build Playgrounds 🎮
@@ -34,6 +38,8 @@ Experience Credence's core mathematical models, cryptographic verification, epis
 | **10. Epistemic Text Scanner** | Live clickbait, fallacy & urgency auditor | Client-Side Regex Pattern Tokenizer |
 | **11. ClaimReview & RFC 8785** | Google Fact-Check JSON-LD & envelope builder | Schema.org JSON & Canonical RFC 8785 |
 | **12. Token Governor & Circuit Breaker** | 30% Headroom quota preservation meter | Real-time Headroom Gauge & Circuit Breaker |
+
+> ⚡ **Looking for the Live Swarm Dashboard?** Visit the zero-build **[Credence Nexus Live Dashboard](https://credence.nexus/dashboard.html)** to inspect first-person node health, BitTorrent work-sharing compute savings, and category score breakdowns across the peer-to-peer network.
 
 ---
 
@@ -215,28 +221,42 @@ Filter and inspect rules across the Society of Professional Journalists (SPJ), I
 
 <div class="interactive-widget" id="taxonomy-explorer-widget">
   <div class="filter-chip-group">
-    <button type="button" id="chip-tax-all" class="filter-chip active">All Catalogs</button>
-    <button type="button" id="chip-tax-spj" class="filter-chip">SPJ Journalism</button>
-    <button type="button" id="chip-tax-iep" class="filter-chip">IEP Fallacies</button>
-    <button type="button" id="chip-tax-deceptive" class="filter-chip">Deceptive UI</button>
-    <button type="button" id="chip-tax-domain" class="filter-chip">Domain Specific</button>
+    <button type="button" id="chip-tax-all" class="filter-chip active">All Catalogs (<span id="count-tax-all">46</span>)</button>
+    <button type="button" id="chip-tax-spj" class="filter-chip">SPJ Journalism (<span id="count-tax-spj">12</span>)</button>
+    <button type="button" id="chip-tax-iep" class="filter-chip">IEP Fallacies (<span id="count-tax-iep">21</span>)</button>
+    <button type="button" id="chip-tax-deceptive" class="filter-chip">Deceptive UI (<span id="count-tax-deceptive">9</span>)</button>
+    <button type="button" id="chip-tax-domain" class="filter-chip">Domain Extensions (<span id="count-tax-domain">4</span>)</button>
   </div>
 
-  <input type="text" id="taxonomy-search-input" class="search-input" placeholder="Filter rules by keyword, severity, or domain URI...">
-  <div class="taxonomy-table-container">
-    <table class="taxonomy-table">
-      <thead>
-        <tr>
-          <th>Namespaced Rule URI</th>
-          <th>Severity</th>
-          <th>Domain Cluster</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody id="taxonomy-table-body">
-        <!-- Injected via JavaScript -->
-      </tbody>
-    </table>
+  <div class="taxonomy-controls-bar">
+    <div style="flex: 1; min-width: 260px;">
+      <input type="text" id="taxonomy-search-input" class="search-input" placeholder="Search rules by ID, keyword, cluster, or detection signal...">
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <select id="taxonomy-severity-filter" class="widget-select" style="padding: 0.65rem 0.85rem; background: #020617; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 6px; color: #f8fafc; font-size: 0.85rem;">
+        <option value="ALL">All Severities</option>
+        <option value="5">Sev 5 (Critical)</option>
+        <option value="4">Sev 4 (High)</option>
+        <option value="3">Sev 3 (Moderate)</option>
+        <option value="2">Sev 2 (Minor)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="taxonomy-stats-bar">
+    <div id="taxonomy-results-count" style="font-size: 0.85rem; color: var(--text-muted);">Showing <strong style="color: var(--accent-cyan);" id="tax-visible-count">46</strong> rules</div>
+    <div style="font-size: 0.78rem; color: var(--text-muted);">Click <strong>Copy URI</strong> to copy canonical namespaced URI for CLI &amp; Prompts</div>
+  </div>
+
+  <div id="taxonomy-cards-container" class="taxonomy-cards-list">
+    <!-- Injected via JavaScript -->
+  </div>
+
+  <div class="taxonomy-pagination-bar" id="taxonomy-pagination">
+    <button type="button" id="tax-prev-btn" class="widget-btn" disabled>&larr; Previous</button>
+    <span id="tax-page-indicator" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Page 1 of 6</span>
+    <button type="button" id="tax-next-btn" class="widget-btn">Next &rarr;</button>
+    <button type="button" id="tax-show-all-btn" class="widget-btn" style="margin-left: 0.5rem;">Show All</button>
   </div>
 </div>
 
@@ -416,7 +436,13 @@ Generate Google Search-ready Schema.org `ClaimReview` JSON-LD and deterministic 
     <button type="button" id="btn-cr-download" class="widget-btn">💾 Download .credence.json</button>
   </div>
 
-  <textarea id="cr-json-output" class="widget-textarea" style="height: 160px;" readonly></textarea>
+  <div style="margin-top: 1rem; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; background: #020617; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.85rem; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid rgba(56, 189, 248, 0.15); font-size: 0.78rem; color: var(--text-muted);">
+      <span id="cr-header-badge" style="font-weight: 600; color: #38bdf8;">Schema.org ClaimReview JSON-LD</span>
+      <span style="font-family: var(--font-mono, monospace);">RFC 8785 Canonical Serialization</span>
+    </div>
+    <pre id="cr-json-output" style="margin: 0; padding: 0.85rem 1rem; color: #38bdf8; font-family: var(--font-mono, monospace); font-size: 0.82rem; line-height: 1.45; overflow-x: auto; max-height: 380px;"></pre>
+  </div>
 </div>
 
 ---

@@ -2,13 +2,11 @@
 FROM python:3.12-slim-bookworm AS base
 
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-ENV PATH="$POETRY_HOME/bin:$PATH"
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    PATH="/app/.venv/bin:/opt/poetry/bin:$PATH"
 
 WORKDIR /app
 
@@ -29,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/pypoetry \
     poetry install --without dev --no-root
 
 # Install Playwright browser and OS dependencies
-RUN poetry run playwright install --with-deps chromium
+RUN playwright install --with-deps chromium
 
 # Copy application source code
 COPY . .
@@ -38,10 +36,14 @@ COPY . .
 RUN --mount=type=cache,target=/root/.cache/pypoetry \
     poetry install --without dev
 
+# Precompile bytecode to eliminate Python AST compilation overhead during cold boot
+RUN python -m compileall -q /app/.venv /app/credence
+
 EXPOSE 8000
 
-# Container Healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/sse || poetry run credence identity show || exit 1
+# Container Healthcheck (fast non-blocking /health probe)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["poetry", "run", "python", "-m", "credence.server.app"]
+# Direct virtualenv execution bypassing poetry CLI process wrapper
+CMD ["credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]

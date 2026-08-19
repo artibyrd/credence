@@ -1,6 +1,11 @@
 ---
-title: "Zero-Coordination Swarm Partitioning with Rendezvous Hashing"
-description: "How Credence P2P mesh clusters use Highest Random Weight (HRW) Rendezvous Hashing to partition syndicated feeds without central coordinators, saving 92.3% compute."
+title: Zero-Coordination Swarm Partitioning with Rendezvous Hashing
+description: How Credence P2P mesh clusters use Highest Random Weight (HRW) Rendezvous
+  Hashing to partition syndicated feeds without central coordinators, saving 92.3%
+  compute.
+since_version: v1.14.1
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Zero-Coordination Swarm Partitioning with Rendezvous Hashing

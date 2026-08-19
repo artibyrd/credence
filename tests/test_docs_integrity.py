@@ -144,6 +144,8 @@ def test_all_markdown_files_valid_frontmatter(docs_root: Path) -> None:
         assert isinstance(data, dict), f"Frontmatter in {md_file.name} is not a valid YAML mapping"
         assert "title" in data, f"Missing 'title' in frontmatter of {md_file.name}"
         assert "description" in data, f"Missing 'description' in frontmatter of {md_file.name}"
+        assert "since_version" in data, f"Missing 'since_version' in frontmatter of {md_file.name}"
+        assert "verified_version" in data, f"Missing 'verified_version' in frontmatter of {md_file.name}"
 
 
 @pytest.mark.unit

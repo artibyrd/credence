@@ -1,6 +1,10 @@
 ---
-title: "Tutorial 13: Dual-Tier Cloud Monitoring, Discord Webhooks & Interface Telemetry"
-description: "Step-by-step tutorial for configuring Discord alert webhooks, Cloud Run SRE dashboards, and real-time TUI telemetry loopbacks."
+title: 'Tutorial 13: Dual-Tier Cloud Monitoring, Discord Webhooks & Interface Telemetry'
+description: Step-by-step tutorial for configuring Discord alert webhooks, Cloud Run
+  SRE dashboards, and real-time TUI telemetry loopbacks.
+since_version: v1.10.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Tutorial 13: Dual-Tier Cloud Monitoring, Discord Webhooks & Interface Telemetry

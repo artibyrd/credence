@@ -26,7 +26,8 @@ resource "google_cloud_run_v2_service" "credence" {
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
-    service_account = google_service_account.cloud_run_sa.email
+    service_account       = google_service_account.cloud_run_sa.email
+    execution_environment = "EXECUTION_ENVIRONMENT_GEN2"
 
     scaling {
       min_instance_count = var.min_instance_count
@@ -36,7 +37,7 @@ resource "google_cloud_run_v2_service" "credence" {
     containers {
       image = var.container_image
 
-      command = ["poetry", "run", "credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+      command = ["credence", "serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
 
       ports {
         container_port = 8000
@@ -47,7 +48,8 @@ resource "google_cloud_run_v2_service" "credence" {
           cpu    = local.active_resources.cpu
           memory = local.active_resources.memory
         }
-        cpu_idle = true # Scale-to-zero compute savings when idle
+        cpu_idle          = true # Scale-to-zero compute savings when idle
+        startup_cpu_boost = true # Dynamic CPU boost during cold boot
       }
 
       env {
@@ -78,10 +80,12 @@ resource "google_cloud_run_v2_service" "credence" {
       }
 
       startup_probe {
-        timeout_seconds   = 10
-        period_seconds    = 10
-        failure_threshold = 3
-        tcp_socket {
+        initial_delay_seconds = 1
+        period_seconds        = 2
+        timeout_seconds       = 2
+        failure_threshold     = 5
+        http_get {
+          path = "/health"
           port = 8000
         }
       }

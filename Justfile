@@ -535,6 +535,8 @@ deploy target="backend" project_id="credence-prod-505902":
                 --project {{project_id}} \
                 --memory 1Gi \
                 --cpu 1 \
+                --execution-environment gen2 \
+                --cpu-boost \
                 --allow-unauthenticated
             echo "=== [3/3] Executing Post-Deployment Live Health Probe ==="
             just gcp probe

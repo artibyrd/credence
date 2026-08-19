@@ -1,11 +1,65 @@
 ---
-title: "Release Changelog"
-description: "Version history, release notes, and milestone accomplishments across the Credence network."
+title: Release Changelog
+description: Version history, release notes, and milestone accomplishments across
+  the Credence network.
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.15.0] - 2026-08-19
+
+### Observability & Operator Workstation
+- **Credence Node & Mesh Health, Telemetry & Scored Pages Dashboard**:
+  - **First-Person Node Operator View ("My Node at a Glance")**: Prominent hero status panel answering the 4 fundamental operator questions: *What is my server doing?* (runtime, memory RSS vs 850 MB ceiling, token headroom), *How many articles have I processed?* (lifetime & today counts, average suspicion score $\overline{S}$, verbatim grounding $G=1.00$), *What connections do I maintain in the mesh?* (active peers, seed connectivity, $3f+1$ Byzantine safety margin), and *What compute savings has my node realized?* (tokens and USD avoided via BitTorrent work-sharing).
+  - **Zero-Build Web Dashboard (`web/credence.nexus/dashboard.html`)**: Interactive vanilla HTML5/ES Modules dashboard with 5 modular tabs (**Overview, Sources & Domains, Categories & Rules, P2P Mesh Swarm, SRE & Telemetry**), live endpoint switcher (`Local Node` $\leftrightarrow$ `Custom Node` $\leftrightarrow$ `Demo Swarm`), and configurable auto-refresh polling (Off, 1s, 3s, 5s, 10s).
+  - **Terminal CLI Workstation (`credence stats`)**: Full-featured CLI command rendering operator summary panels, SRE telemetry tables, and recent audit tickers, with `--breakdown` for publisher domain trust bands and content category distributions, `--watch` for continuous live terminal monitoring, and `--json` for machine-readable JSON exports.
+  - **Textual TUI Workstation Telemetry**: Integrated real-time node activity, BitTorrent compute savings odometers, and SRE percentile gauges into the full-screen terminal IDE.
+  - **FastMCP 2.0 & REST Protocol Parity**: Registered FastMCP tool `credence_get_mesh_stats` and resource `credence://mesh/stats`, alongside REST routes `GET /api/v1/mesh/stats` and `GET /api/mesh/stats`.
+  - **New Blueprint & Sovereign Engineering Essay**:
+    - **Technical Blueprint (`docs/blueprints/node-and-mesh-telemetry-dashboard.md`)**: Complete architectural specification for node operator observability, metric aggregation formulas, and zero-build web dashboards.
+    - **Engineering Essay (`blog/real-time-mesh-observability.md`)**: Sovereign design philosophy for observing decentralized epistemic swarms without centralized cloud loggers or SaaS telemetry.
+  - **Automated Test Gate (`tests/test_dashboard.py`)**: 100% automated test coverage across metric aggregations, REST API schemas, FastMCP tool/resource serialization, CLI execution, and zero-npm web asset integrity.
+
+### Performance & Compute Plane
+- **Cloud Run Scale-to-Zero Container Cold Start Optimization (81.2% Faster)**:
+  - **Dynamic Startup CPU Boost (`startup_cpu_boost = true`)**: Enabled Google Cloud Run v2 Startup CPU Boost to allocate 2–4 vCPUs during container boot, halving CPU-bound CPython AST parsing and module import evaluation at $0.00 idle cost.
+  - **Direct Virtualenv Execution**: Eliminated Poetry CLI process wrapper overhead (~1,000ms) by putting `/app/.venv/bin` in `PATH` and invoking `credence serve` directly.
+  - **Build-Time Bytecode Precompilation (`compileall`)**: Precompiled all `.py` files to `.pyc` during Docker build and removed `PYTHONDONTWRITEBYTECODE=1` in production container images to eliminate runtime AST compilation.
+  - **Dynamic Lazy Import Deferral**: Deferred top-level imports of heavy scraping and reasoning subtrees (`trafilatura`, `dateparser`, `playwright`, `DualCaptureResult`, `ExtractedContent`, `audit_url`, `evaluate_snapshot`, `BayesianConsensusAggregator`) into tool handlers, dropping core server module import latency by 49% (from 2,860ms to 1,460ms).
+  - **Aggressive HTTP Readiness Probing**: Configured 2-second HTTP probe against `/health` with a 1-second initial delay, cutting probe detection lag from up to 10s down to ~1.5–2.0s.
+  - **Execution Environment Gen 2**: Enforced Second Generation execution environment for dedicated Linux kernel performance and faster filesystem paging.
+
+### Documentation & User Experience
+- **Collapsible Sidebar Navigation (`credence-docs`)**:
+  - Upgraded documentation portal navigation to semantic HTML5 `<details class="sidebar-group">` with custom animated chevrons, category item count badges, and `localStorage` state persistence across the 15 categories and 84 documents.
+  - Added smart active auto-expansion: automatically expands the category containing the current document while keeping others neatly tucked.
+  - Added intelligent search expansion: typing in `#doc-search` automatically reveals all matching categories and collapses non-matching ones.
+  - Added a "Toggle All" quick toolbar button for expanding or collapsing all categories with one click.
+- **Documentation Freshness Audit & Version Provenance Badges**:
+  - Audited all 107 Markdown documents in `docs/` and `blog/` to ensure zero obsolete flags, model names, or deprecated commands.
+  - Enriched all documentation frontmatter with `since_version`, `verified_version: "v1.15.0"`, and `last_verified: "2026-08-19"`.
+  - Added visual provenance badges to `.doc-metadata-bar` in `app.js` and `styles.css` rendering glowing `✅ Verified in v1.15.0` and `📦 Added in vX.X.X` tags with audit date tooltips.
+  - Added automated test assertion in `test_docs_integrity.py` (`test_all_markdown_files_valid_frontmatter`) to ensure all future documentation maintains `since_version` and `verified_version` fields.
+- **New Operational Blueprints & Engineering Essays**:
+  - **Cloud Run Scale-to-Zero Blueprint (`docs/blueprints/cloudrun-scale-to-zero-cold-start-optimization.md`)**: Comprehensive technical guide detailing the 5-pillar serverless cold start framework, microVM allocation, import graphs, and performance metrics.
+  - **Taming the 10-Second Cold Start Essay (`blog/taming-the-10-second-cold-start-scale-to-zero.md`)**: Forensic teardown of Python serverless boot bottlenecks, unmasking the silent Poetry tax, and unlocking sub-2.5s scale-to-zero cold starts.
+  - Updated `deployment-cloudrun.md`, `topic-index.md`, and `cloudrun-ops` operational skill.
+
+### Knowledge Governance & Invariant Scalability Architecture
+- **3-Tier Invariant Scalability Framework**:
+  - Restructured `AGENTS.md` into high-density **Tier 0 Universal Core Invariants (P0 Non-Negotiables)** (<800 tokens, 62% token reduction), eliminating cognitive oatmeal and attention dilution.
+  - Stratified subsystem-specific runbooks into **Tier 1 Progressive Subsystem Skills** (`.agents/skills/`), loading playbooks dynamically on-demand.
+  - Shifted mechanical syntax, version parity, and formatting rules into **Tier 2 Shift-Left Automated Integrity Tests** (`tests/test_docs_integrity.py`), executing in <0.3s during `just check`.
+  - Maintained canonical reference catalog and mathematical proofs in **Tier 3 Reference Specifications** (`docs/invariants.md`).
+- **New Blueprint & Engineering Essay**:
+  - **Invariant Scalability Blueprint (`docs/blueprints/invariant-scalability-and-knowledge-governance.md`)**: Architectural blueprint detailing the 3-tier hierarchy, cognitive failure modes of flat rulebooks, and token budget governance.
+  - **Scaling Invariants Without Prompt Bloat Essay (`blog/scaling-system-invariants-without-prompt-bloat.md`)**: Engineering essay exploring attention dilution in AI coding agents and shift-left deterministic test gates.
+  - Updated `AGENTS.md` across all 4 ecosystem repositories, `.agents/skills/knowledge-governance/SKILL.md`, and master `docs/topic-index.md`.
 
 ## [1.14.1] - 2026-08-19
 

@@ -1,6 +1,10 @@
 ---
-title: "Quickstart & Installation"
-description: "Get started with Credence CLI, FastMCP 2.0 server, and Textual TUI in under 60 seconds."
+title: Quickstart & Installation
+description: Get started with Credence CLI, FastMCP 2.0 server, and Textual TUI in
+  under 60 seconds.
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Quickstart & Installation ⚡
@@ -180,9 +184,20 @@ All 144 unit tests execute hermetically in under 60 seconds with zero external n
 
 ---
 
-## 🧭 Next Steps & Related Marbles
+## 🧭 Next Steps & External References
 
+### 📚 Official Developer Tools & Documentation
+* **Gemini API**: [Get a Gemini API Key on Google AI Studio](https://aistudio.google.com/app/apikey) &bull; [Google Gemini API Docs](https://ai.google.dev/docs)
+* **Package Management**: [Poetry Dependency Management](https://python-poetry.org/docs/) &bull; [Python 3.12 Release Notes](https://docs.python.org/3.12/)
+* **Containers & CI/CD**: [Docker Engine Overview](https://docs.docker.com/engine/) &bull; [GitHub Container Registry (GHCR)](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+* **IDE & Agent Environments**: [Claude Desktop](https://claude.ai/download) &bull; [Cursor AI Code Editor](https://www.cursor.com/) &bull; [Model Context Protocol](https://modelcontextprotocol.io/)
+
+### 🔗 Related Guides & Playgrounds in Credence
+* 🎮 **[Interactive Zero-Build Playgrounds](playground.md)**: Test 12 algorithms live in your browser without installing anything.
+* 🔬 **[Case Study: Conflict of Pun-terest](../blog/conflict-of-pun-terest.md)**: Forensic case study auditing an elected publisher's civic monopoly.
 * 🧭 **[Topic Index & Cheat Sheet](topic-index.md)**: Searchable reference covering all commands, settings, and flags.
 * 📖 **[Auditing Webpages & Text Walkthrough](walkthroughs/01-auditing-webpages-and-text.md)**: In-depth guide to interpreting suspicion scores and violation categories.
 * 📰 **[Morning Epistemic Digest](walkthroughs/04-morning-digest-briefings.md)**: Setting up automated daily 24-hour news briefings.
 * 🤖 **[Claude & Cursor Integration Tutorial](tutorials/03-claude-cursor-fastmcp.md)**: Detailed multi-agent setup patterns.
+* 🕸️ **[3-Node Mesh Quickstart](tutorials/05-mesh-quickstart.md)**: Spin up a local P2P gossip mesh in 5 minutes.
+

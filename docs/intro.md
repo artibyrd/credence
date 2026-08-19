@@ -1,6 +1,10 @@
 ---
-title: "Introduction & Overview"
-description: "Welcome to Credence: the open epistemic trust engine for AI and the web."
+title: Introduction & Overview
+description: 'Welcome to Credence: the open epistemic trust engine for AI and the
+  web.'
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Welcome to Credence 🛡️
@@ -8,6 +12,10 @@ description: "Welcome to Credence: the open epistemic trust engine for AI and th
 **Credence** is an open-source trust engine, FastMCP 2.0 server, and decentralized verification network. It audits web articles, news stories, and research claims for **clickbait, logical fallacies, and deceptive tactics** — backing every finding with **100% exact quotes from the original text** so there are zero AI hallucinations.
 
 Instead of subjective "truthiness" scores or centralized arbiters, Credence provides **transparent, verifiable receipts** that anyone can inspect.
+
+:::note
+🎮 **Try It in Your Browser**: Experience Credence's algorithms live without installing anything! Test the **[12 Interactive Zero-Build Playgrounds](playground.md)** (13-node mesh simulator, SimHash matrix, Token Governor) and the **[InMaricopa Forensic Case Study Workbench](../blog/conflict-of-pun-terest.md)** with live clickable DOM evidence and policy reform simulation.
+:::
 
 ---
 
@@ -17,7 +25,9 @@ Where would you like to start?
 
 | Your Goal | Recommended Starting Point | Time Needed |
 | :--- | :--- | :--- |
-| **🚀 Just jump in and try it** | [Quickstart & Installation Guide](quickstart.md) | **1 minute** |
+| **🎮 Try interactive browser playgrounds** | [Interactive Zero-Build Playgrounds](playground.md) | **Instant (Zero Install)** |
+| **🔬 Inspect live forensic case study** | [Conflict of Pun-terest: InMaricopa Case Study](../blog/conflict-of-pun-terest.md) | **2 minutes** |
+| **🚀 Just jump in and try the CLI** | [Quickstart & Installation Guide](quickstart.md) | **1 minute** |
 | **🧭 Find a specific command or topic** | [Topic Index & Concept Directory](topic-index.md) | **Instant** |
 | **🤖 Connect to Claude Desktop or Cursor** | [Claude & Cursor FastMCP Tutorial](tutorials/03-claude-cursor-fastmcp.md) | **2 minutes** |
 | **📰 Get an automated morning news brief** | [Morning Digest Walkthrough](walkthroughs/04-morning-digest-briefings.md) | **3 minutes** |
@@ -81,6 +91,6 @@ When you're ready to explore under the hood:
 
 * 🧭 **[Topic Index & Concept Directory](topic-index.md)**: Searchable directory of all commands, settings, and invariants.
 * 🎓 **[Hands-On Tutorials](tutorials/01-clickbait-teardown.md)**: Step-by-step forensic teardowns and chaos labs.
-* 🏛️ **[36 Core System Invariants](agent-invariants.md)**: Master architectural, mathematical, and safety guarantees.
+* 🏛️ **[36 Core System Invariants](invariants.md)**: Master architectural, mathematical, and safety guarantees.
 * 📐 **[Mathematics of Robust Consensus](mathematics/robust-consensus-proofs.md)**: Formal proofs for weighted medians and the Galileo Rule.
 * ☁️ **[GCP Cloud Run Deployment](deployment-cloudrun.md)**: Production Terraform templates with $15/mo budget cap.

@@ -1,6 +1,10 @@
 ---
-title: "Topic Index & Quick Reference"
-description: "Comprehensive concept index, cheat sheet, and fast-lookup directory for the Credence ecosystem."
+title: Topic Index & Quick Reference
+description: Comprehensive concept index, cheat sheet, and fast-lookup directory for
+  the Credence ecosystem.
+since_version: v1.11.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # 🧭 Topic Index & Quick Reference
@@ -55,6 +59,7 @@ description: "Comprehensive concept index, cheat sheet, and fast-lookup director
 | `credence serve --mcp` | Start FastMCP 2.0 server on `stdio` | [Claude & Cursor Integration](tutorials/03-claude-cursor-fastmcp.md) |
 | `credence serve --transport sse` | Start FastMCP 2.0 streaming HTTP/SSE server | [FastMCP 2.0 Protocol](protocols/fastmcp.md) |
 | `credence quota` | Inspect current token usage and headroom safety | [Token Governor Protocol](protocols/token-governor.md) |
+| `credence stats` | Real-time node health, SRE vitals, and mesh telemetry | [Node & Mesh Telemetry Blueprint](blueprints/node-and-mesh-telemetry-dashboard.md) |
 | `credence rank` | View local and peer P2P node quality leaderboard ($Q_i$) | [Epistemic Merit & Leaderboards](protocols/epistemic-merit-and-leaderboards.md) |
 | `credence rankings inmaricopa.com` | View publisher DEI score, trust band, and forensic sourcing ratios | [Conflict of Pun-terest](../blog/conflict-of-pun-terest.md) |
 | `credence export-analytics <domain>` | Export machine-readable publisher analytics JSON/CSV | [Conflict of Pun-terest](../blog/conflict-of-pun-terest.md) |
@@ -141,6 +146,10 @@ description: "Comprehensive concept index, cheat sheet, and fast-lookup director
 * **CI/CD Acceleration Post-Mortem**: Slashing build context upload bloat from 860MB to 2MB &rarr; [From 860MB to 2MB](../blog/from-860mb-to-2mb-sub-40s-cicd-pipeline.md)
 * **Raspberry Pi Homelab Node**: Low-power $0.00/mo self-hosting guide &rarr; [Raspberry Pi Homelab Guide](operations/raspberry-pi-homelab.md)
 * **GCP Cloud Run Deployment**: Production Terraform templates with $15/mo budget cap and scale-to-zero &rarr; [GCP Cloud Run Deployment](deployment-cloudrun.md)
+* **Cloud Run Cold Start Optimization Blueprint**: 5-pillar architectural framework for sub-2.5s scale-to-zero serverless cold starts &rarr; [Cloud Run Cold Start Blueprint](blueprints/cloudrun-scale-to-zero-cold-start-optimization.md)
+* **Node & Mesh Telemetry Dashboard Blueprint**: Technical specification for real-time node operator observability and BitTorrent compute savings &rarr; [Node & Mesh Telemetry Blueprint](blueprints/node-and-mesh-telemetry-dashboard.md)
+* **Real-Time Mesh Observability Essay**: First-person operator telemetry and decentralized swarm visibility without SaaS tracking &rarr; [Real-Time Mesh Observability](../blog/real-time-mesh-observability.md)
+* **Taming the 10-Second Cold Start Essay**: Forensic teardown of Python serverless boot bottlenecks &rarr; [Taming the 10s Cold Start](../blog/taming-the-10-second-cold-start-scale-to-zero.md)
 * **Tailscale & WireGuard Peering**: Encrypted private overlay mesh networks &rarr; [Tailscale Peering Guide](operations/tailscale-wireguard-mesh.md)
 * **SQLite Database Maintenance**: WAL checkpoints, vacuuming, and 30-day token retention pruning &rarr; [Database Pruning & WAL Care](operations/database-pruning-wal.md)
 * **Discord Webhook Alerts**: Setting up live notifications for high-suspicion breaking news &rarr; [Discord Alerting Guide](tutorials/13-discord-alerting-and-basement-monitoring.md)
@@ -159,6 +168,8 @@ For complete engineering invariants, safety constraints, and mathematical guaran
   * *Invariants 16–20*: DNS SRV Peering, Air-Gapped Sneakernets, Zero-npm Web Standards, Node Germination.
   * *Invariants 21–36*: Epistemic Merits, Traffic Shaping, Telemetry Loopbacks, Multi-Cloud Portability.
   * *Invariants 37–38*: Zero-Build Inline HTML Tag & Nested Math Integrity, Anti-Scrollbox Natural Flow Presentation.
+* 🏛️ **[Invariant Scalability & Knowledge Governance Blueprint](blueprints/invariant-scalability-and-knowledge-governance.md)**: 3-tier governance architecture preventing prompt bloat and attention dilution.
+* 📰 **[Scaling Invariants Without Prompt Bloat Essay](../blog/scaling-system-invariants-without-prompt-bloat.md)**: Engineering essay on shift-left automated test gates and progressive skills.
 
 ---
 

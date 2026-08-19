@@ -1,4 +1,15 @@
-# Tutorial 02: Poe's Law & Satire Cloaking Hard-Overrides
+---
+title: 'Tutorial 02: Poe''s Law & Satire Cloaking'
+description: How Credence protects legitimate parody while stripping satire protection
+  from cloaked disinformation under SPJ-1.6.
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
+sidebar:
+  order: 2
+---
+
+# Tutorial 02: Poe's Law & Satire Cloaking
 
 Explore how **Credence** handles the nuance between legitimate satire (like *The Onion*) and deceptive "satire-cloaked" disinformation that advances harmful medical or civic falsehoods.
 
@@ -23,7 +34,7 @@ credence audit https://theonion.com/example-satire-story
 ### The Result:
 - **Structural Cue Recognized**: Credence extracts masthead cues and Schema.org metadata.
 - **Score Neutralization**: Suspicion score is neutralized to **`0.00 / 100`** with `is_satire: true`.
-- Honest parody is protected from automated censorship.
+- Honest parody is protected from automated penalties.
 
 ---
 
@@ -44,3 +55,15 @@ credence audit https://deceptive-site.test/fake-vaccine-claim
   Finding: Unsubstantiated lethal medical allegation cannot be cloaked as satire.
   Satire Protection: DISABLED
   ```
+
+---
+
+## 3. Inspecting Satire Neutralization in the TUI
+
+Launch `credence tui` to view how legitimate parody is visually represented in the terminal workstation:
+
+![TUI Satire View](assets/tui/04-inspector-satire.svg)
+
+* The top status banner prominently displays the cyan badge `[🎭 SATIRE / PARODY (Poe's Law Neutralized)]`.
+* The executive summary confirms the neutralization rationale, explaining that legitimate exaggeration is not penalized with epistemic suspicion points.
+

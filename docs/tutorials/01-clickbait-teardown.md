@@ -1,4 +1,15 @@
-# Tutorial 01: Auditing Anonymous Clickbait & Inspecting Grounded Citations
+---
+title: 'Tutorial 01: Auditing Anonymous Clickbait'
+description: Learn how to use the Credence CLI to audit unverified web articles and
+  inspect grounded citations.
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
+sidebar:
+  order: 1
+---
+
+# Tutorial 01: Auditing Anonymous Clickbait
 
 Learn how to use the **Credence CLI** to audit an unverified, sensationalized web article, inspect its DOM extraction, verify grounded quote offsets ($G = 1.0$), and calculate suspicion scores.
 
@@ -14,7 +25,7 @@ Learn how to use the **Credence CLI** to audit an unverified, sensationalized we
 
 ## 1. Running Your First Audit
 
-To evaluate an online URL or local fixture:
+To evaluate an online URL:
 
 ```bash
 credence audit https://example.com/breaking-news --profile BALANCED
@@ -54,13 +65,32 @@ Detected Violations:
 
 ---
 
-## 3. Exporting the Signed Attestation
+---
+
+## 3. Inspecting in the Textual TUI Workstation
+
+You can also inspect clickbait and deceptive patterns interactively in the full-screen terminal workstation:
+
+```bash
+credence tui
+```
+
+Press `/`, submit the URL, and examine the dual-pane inspector:
+
+![Credence TUI Workstation](assets/tui/01-inspector-rich.svg)
+
+* **Left Panel**: Filter violations by severity or domain (e.g. `SPJ-1.1`, `MED-1.2`, `DP-1.1`).
+* **Right Panel**: Full verbatim grounded quotes and specialist justifications.
+* Press `v` to toggle between **Rich Takeaway**, **Compact Digest**, and **Raw RFC 8785 JSON** modes.
+
+---
+
+## 4. Exporting the Signed Attestation
 
 To export the signed RFC 8785 canonical JSON envelope:
 
 ```bash
-credence audit https://example.com/breaking-news --output audit_report.json
+credence export --url https://example.com/breaking-news --output breaking-news.credence.json
 ```
 
-You can view the cryptographic attestation in the interactive viewer:
-👉 [https://credence.report/viewer.html](https://credence.report/viewer.html)
+Inspect the exported file to view the Ed25519 public key, timestamp, content hash, and signed payload.

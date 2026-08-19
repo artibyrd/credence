@@ -32,13 +32,7 @@ from sqlmodel import col, select
 from credence.config import COST_PROFILES, CostProfile
 from credence.db import get_session, init_db
 from credence.identity import load_or_create_node_identity, verify_audit_report
-from credence.ingestion.extractor import ExtractedContent
-from credence.ingestion.hasher import compute_content_sha256, compute_simhash
-from credence.ingestion.snapshot import DualCaptureResult
-from credence.mesh.consensus import BayesianConsensusAggregator
 from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
-from credence.pipeline.evaluator import audit_url, evaluate_snapshot
-from credence.pipeline.governor import get_token_headroom_status
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 from credence.taxonomy_loader import registry
 
@@ -211,6 +205,8 @@ def _register_eval_tools(server: MCPServer) -> None:
         description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies.",
     )
     async def check_url(url: str, force: bool = False, profile: Optional[str] = None) -> str:
+        from credence.pipeline.evaluator import audit_url
+
         prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
         report = await audit_url(url, force_refresh=force, profile_override=prof_cfg)
         return json.dumps(report.model_dump(mode="json"), indent=2)
@@ -225,6 +221,11 @@ def _register_eval_tools(server: MCPServer) -> None:
         byline: str = "Direct MCP Input",
         profile: Optional[str] = None,
     ) -> str:
+        from credence.ingestion.extractor import ExtractedContent
+        from credence.ingestion.hasher import compute_content_sha256, compute_simhash
+        from credence.ingestion.snapshot import DualCaptureResult
+        from credence.pipeline.evaluator import evaluate_snapshot
+
         prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
         extracted = ExtractedContent(
             title=title,
@@ -493,6 +494,8 @@ def _register_query_tools(server: MCPServer) -> None:
         description="Get real-time token headroom %, spend metrics, and circuit breaker status.",
     )
     async def get_quota_status() -> str:
+        from credence.pipeline.governor import get_token_headroom_status
+
         await init_db()
         async for s in get_session():
             status = await get_token_headroom_status(s)
@@ -506,6 +509,21 @@ def _register_query_tools(server: MCPServer) -> None:
     async def get_health_status() -> str:
         snapshot = global_telemetry.get_snapshot()
         return json.dumps(snapshot, indent=2)
+
+    @server.tool(
+        name="credence_get_mesh_stats",
+        description="Retrieve comprehensive Node & P2P Mesh health, SRE vitals, BitTorrent compute savings, and scored pages analytics across sources and categories.",
+    )
+    async def get_mesh_stats() -> str:
+        from credence.db import get_session, init_db
+        from credence.mesh.stats import calculate_mesh_stats
+
+        await init_db()
+        snapshot = global_telemetry.get_snapshot()
+        async for s in get_session():
+            stats = await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
+            return json.dumps(stats, indent=2)
+        return "{}"
 
 
 def _register_consensus_tools(server: MCPServer) -> None:
@@ -538,6 +556,7 @@ def _register_consensus_tools(server: MCPServer) -> None:
         description="Get Bayesian consensus suspicion score across known mesh peer attestations, with optional subject-weighted expertise weighting.",
     )
     async def get_consensus(content_sha256: str, subject_id: Optional[str] = None) -> str:
+        from credence.mesh.consensus import BayesianConsensusAggregator
         from credence.models import DomainMetricRecord
 
         await init_db()
@@ -888,6 +907,19 @@ def _register_taxonomy_resources(server: MCPServer) -> None:
             },
             indent=2,
         )
+
+    @server.resource("credence://mesh/stats")
+    async def get_mesh_stats_resource() -> str:
+        """Comprehensive Node & P2P Mesh health, SRE vitals, and scored pages analytics."""
+        from credence.db import get_session, init_db
+        from credence.mesh.stats import calculate_mesh_stats
+
+        await init_db()
+        snapshot = global_telemetry.get_snapshot()
+        async for s in get_session():
+            stats = await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
+            return json.dumps(stats, indent=2)
+        return "{}"
 
 
 def _register_subject_resources(server: MCPServer) -> None:
@@ -1473,6 +1505,21 @@ async def api_health(request: Any) -> Any:
     )
 
 
+async def api_mesh_stats(request: Any) -> Any:
+    """REST API: Retrieve comprehensive Node & P2P Mesh health, SRE vitals, and scored pages analytics."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.mesh.stats import calculate_mesh_stats
+
+    await init_db()
+    snapshot = global_telemetry.get_snapshot()
+    async for s in get_session():
+        stats = await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
+        return JSONResponse(stats)
+    return JSONResponse({})
+
+
 async def api_reports(request: Any) -> Any:
     """REST API: Query paginated and categorized audit reports."""
     import secrets
@@ -1970,6 +2017,8 @@ def create_server_app(
     rest_routes = [
         Route("/health", endpoint=api_health, methods=["GET"]),
         Route("/api/health", endpoint=api_health, methods=["GET"]),
+        Route("/api/v1/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
+        Route("/api/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
         Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
         Route("/api/audit", endpoint=api_audit_url, methods=["POST", "GET", "OPTIONS"]),

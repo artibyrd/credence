@@ -119,6 +119,14 @@ export default {
           const targetUrl = new URL(loc, request.url);
           response = await env.ASSETS.fetch(new Request(targetUrl, request));
         }
+        // Clean URL fallback: try .html if extensionless path returns 404
+        if (response.status === 404 && !reqPath.includes('.')) {
+          const htmlAssetUrl = new URL(finalPath + '.html', request.url);
+          const htmlResponse = await env.ASSETS.fetch(new Request(htmlAssetUrl, request));
+          if (htmlResponse.status < 400) {
+            response = htmlResponse;
+          }
+        }
       } else {
         response = await fetch(new Request(assetUrl, request));
       }

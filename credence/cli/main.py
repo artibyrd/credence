@@ -685,6 +685,170 @@ def cli_health(url: str = "http://localhost:8000") -> None:
     )
 
 
+def cli_stats(
+    url: str = "http://localhost:8000",
+    watch: bool = False,
+    breakdown: bool = False,
+    json_output: bool = False,
+) -> None:
+    from typing import Any
+
+    import httpx
+    from rich.panel import Panel
+    from rich.table import Table
+
+    from credence.db import get_session, init_db
+    from credence.mesh.stats import calculate_mesh_stats
+    from credence.server.app import global_telemetry
+
+    async def _fetch_data() -> dict[str, Any]:
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                r = await client.get(f"{url.rstrip('/')}/api/v1/mesh/stats")
+                if r.status_code == 200:
+                    data = r.json()
+                    if isinstance(data, dict):
+                        return data
+        except Exception:
+            pass
+
+        # Fallback to local database and in-process telemetry
+        await init_db()
+        snapshot = global_telemetry.get_snapshot()
+        async for s in get_session():
+            return await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
+        return {}
+
+    def _render_display(data: dict) -> None:
+        my = data.get("my_node", {})
+        sre = data.get("sre_telemetry", {})
+        mesh = data.get("mesh_dynamics", {})
+        savings = mesh.get("compute_savings", {})
+
+        status = my.get("status", "healthy")
+        status_style = "bold green" if status == "healthy" else ("bold yellow" if status == "degraded" else "bold red")
+
+        # 1. My Node at a Glance Header Panel
+        v_break = my.get("verdicts_breakdown", {})
+        clean_c = v_break.get("clean", 0)
+        low_c = v_break.get("low_suspicion", 0)
+        susp_c = v_break.get("suspicious", 0)
+        decep_c = v_break.get("high_deception", 0)
+        sat_c = v_break.get("satire", 0)
+        total_a = my.get("total_audited_lifetime", 0)
+
+        hero_text = (
+            f"[{status_style}]● MY NODE STATUS: {status.upper()}[/{status_style}]  |  "
+            f"[bold cyan]Node ID:[/bold cyan] [dim]{my.get('node_id', 'unknown')}[/dim]  |  "
+            f"[bold]Merit:[/bold] [green]{my.get('merit', {}).get('score', 100.0)}[/green] ({my.get('merit', {}).get('tier', 'Verified')})\n\n"
+            f"[bold]1. WHAT IS MY SERVER DOING?[/bold]\n"
+            f"   • Runtime:          [bold]{my.get('uptime_human', '0m')}[/bold] uptime  |  Memory: [bold]{my.get('memory_mb', 0)} MB[/bold] / {my.get('memory_limit_mb', 850)} MB ceiling ({my.get('memory_percent', 0)}%)\n"
+            f"   • Cost Profile:     [bold cyan]{str(my.get('active_profile', 'BALANCED')).upper()}[/bold cyan]  |  Daily Headroom: [green]{my.get('token_headroom', {}).get('remaining_quota', 0):,} tokens[/green] (Circuit Breaker: [bold]{my.get('token_headroom', {}).get('circuit_breaker', 'NORMAL')}[/bold])\n\n"
+            f"[bold]2. HOW MANY ARTICLES HAVE I PROCESSED?[/bold]\n"
+            f"   • Total Audited:    [bold green]{total_a:,}[/bold green] lifetime ([cyan]{my.get('total_audited_today', 0)} today[/cyan])  |  Avg Suspicion: [bold]{my.get('avg_suspicion_score', 0.0)}[/bold]  |  Grounding: [green]G = {my.get('avg_grounding_quotient', 1.0):.2f}[/green]\n"
+            f"   • Verdicts:         [green]{clean_c} Clean[/green] | [yellow]{low_c} Low Suspicion[/yellow] | [dark_orange]{susp_c} Suspicious[/dark_orange] | [red]{decep_c} High Deception[/red] | [cyan]{sat_c} Satire[/cyan]\n\n"
+            f"[bold]3. WHAT CONNECTIONS DO I HAVE IN THE MESH?[/bold]\n"
+            f"   • P2P Connections:  [bold cyan]{mesh.get('connected_peers_count', 0)} active peer nodes[/bold cyan]  |  Bootstrap Seeds: [green]CONNECTED[/green] ({mesh.get('seeds_status', {}).get('canonical_domain', 'seeds.credence.nexus')})\n"
+            f"   • Work-Sharing:     [bold green]{savings.get('tokens_saved_estimate', 0):,} tokens saved[/bold green] ([green]${savings.get('usd_saved_estimate', 0.0):.2f}[/green] avoided at $0.00 spend via [bold]{savings.get('adopted_from_mesh_count', 0)}[/bold] mesh adoptions)\n"
+            f"   • Safety Margin:    [dim]{mesh.get('byzantine_safety_margin', '3f+1 Verified')}[/dim]"
+        )
+        console.print(
+            Panel(hero_text, title="[bold]🛡️ Credence Node & Mesh Health Dashboard[/bold]", border_style="cyan")
+        )
+
+        # 2. SRE Telemetry & Latencies
+        sre_table = Table(title="SRE Telemetry & Latency Percentiles", box=box.ROUNDED)
+        sre_table.add_column("Requests (5m)", justify="center")
+        sre_table.add_column("2xx Success", style="green", justify="center")
+        sre_table.add_column("4xx Client Err", style="yellow", justify="center")
+        sre_table.add_column("5xx Server Err", style="red", justify="center")
+        sre_table.add_column("Latency P50", justify="center")
+        sre_table.add_column("Latency P95", justify="center")
+        sre_table.add_column("Active Alerts", justify="center")
+
+        lats = sre.get("latencies_ms", {})
+        sre_table.add_row(
+            f"{sre.get('requests_total', 0)}",
+            f"{sre.get('requests_2xx', 0)}",
+            f"{sre.get('requests_4xx', 0)}",
+            f"{sre.get('requests_5xx', 0)}",
+            f"{lats.get('p50', 0)}ms",
+            f"{lats.get('p95', 0)}ms",
+            f"{len(sre.get('active_alerts', []))}",
+        )
+        console.print(sre_table)
+
+        # 3. If breakdown requested: Source & Category tables
+        if breakdown:
+            sources = data.get("sources_breakdown", [])
+            if sources:
+                src_table = Table(title="Audited Sources & Domain Epistemic Index", box=box.ROUNDED)
+                src_table.add_column("Domain / Publisher", style="bold")
+                src_table.add_column("Total Audits", justify="right")
+                src_table.add_column("Avg Suspicion", justify="right")
+                src_table.add_column("Trust Band", style="cyan")
+                src_table.add_column("Clean / Flagged", justify="center")
+                for s in sources[:10]:
+                    src_table.add_row(
+                        s["domain"],
+                        f"{s['total_audits']}",
+                        f"{s['avg_suspicion']}",
+                        s["trust_band"],
+                        f"[green]{s['clean_count']}[/green] / [red]{s['flagged_count']}[/red]",
+                    )
+                console.print(src_table)
+
+            cats = data.get("categories_breakdown", {})
+            cat_table = Table(title="Content Category Breakdown", box=box.ROUNDED)
+            cat_table.add_column("Category", style="bold")
+            cat_table.add_column("Audited Count", justify="right")
+            cat_table.add_column("Percentage", justify="right")
+            for cname, count in cats.items():
+                if count > 0:
+                    pct = f"{round((count / max(1, total_a)) * 100, 1)}%"
+                    cat_table.add_row(cname, f"{count}", pct)
+            console.print(cat_table)
+
+            viols = data.get("top_violations", [])
+            if viols:
+                v_table = Table(title="Top Triggered Taxonomy Violations", box=box.ROUNDED)
+                v_table.add_column("Rule Code", style="bold yellow")
+                v_table.add_column("Domain Taxonomy")
+                v_table.add_column("Trigger Frequency", justify="right")
+                for v in viols[:5]:
+                    v_table.add_row(v["rule_id"], v["domain"], f"{v['count']}")
+                console.print(v_table)
+
+        # 4. Recent Audits Ticker
+        recent = data.get("recent_audits", [])
+        if recent:
+            rec_table = Table(title="Recent Audits by My Node", box=box.SIMPLE)
+            rec_table.add_column("Time", style="dim")
+            rec_table.add_column("Domain / Title", style="bold")
+            rec_table.add_column("Suspicion", justify="right")
+            rec_table.add_column("Verdict")
+            for r in recent[:5]:
+                v_color = "green" if r["suspicion_score"] <= 15 else ("yellow" if r["suspicion_score"] <= 40 else "red")
+                if r.get("is_satire"):
+                    v_color = "cyan"
+                rec_table.add_row(
+                    r["audited_at"][-8:],
+                    f"{r['domain']} - {r['title'][:40]}",
+                    f"[{v_color}]{r['suspicion_score']}[/{v_color}]",
+                    f"[{v_color}]{r['classification']}[/{v_color}]",
+                )
+            console.print(rec_table)
+
+    data = asyncio.run(_fetch_data())
+    if json_output:
+        import json
+
+        console.print_json(json.dumps(data))
+        return
+
+    _render_display(data)
+
+
 def cli_serve(
     transport: str = "stdio",
     host: str = "0.0.0.0",  # noqa: S104
@@ -1160,6 +1324,14 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
         return True
     elif cmd in ("health", "alerts"):
         cli_health(url=getattr(args, "url", "http://localhost:8000"))
+        return True
+    elif cmd == "stats":
+        cli_stats(
+            url=getattr(args, "url", "http://localhost:8000"),
+            watch=getattr(args, "watch", False),
+            breakdown=getattr(args, "breakdown", False),
+            json_output=getattr(args, "json", False),
+        )
         return True
     return False
 
@@ -2629,6 +2801,21 @@ def main() -> None:
     health_parser.add_argument(
         "--url", default="http://localhost:8000", help="Base URL of running node (default: http://localhost:8000)."
     )
+
+    # stats command
+    stats_parser = subparsers.add_parser(
+        "stats", help="Display comprehensive Node & Mesh Health, Stats, and Scored Pages Dashboard."
+    )
+    stats_parser.add_argument(
+        "--url", default="http://localhost:8000", help="Base URL of running node (default: http://localhost:8000)."
+    )
+    stats_parser.add_argument(
+        "--breakdown", "-b", action="store_true", help="Display detailed source domain and category tables."
+    )
+    stats_parser.add_argument(
+        "--watch", "-w", action="store_true", help="Continuously refresh the dashboard in real-time."
+    )
+    stats_parser.add_argument("--json", "-j", action="store_true", help="Output machine-readable raw JSON.")
 
     # alerts command
     alerts_parser = subparsers.add_parser(

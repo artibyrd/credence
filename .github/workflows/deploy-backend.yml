@@ -80,6 +80,8 @@ jobs:
             --project="${PROJECT_ID}" \
             --memory="1Gi" \
             --cpu="1" \
+            --execution-environment="gen2" \
+            --cpu-boost \
             --allow-unauthenticated
 
       - name: Verify Live Service Health

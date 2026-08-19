@@ -1,6 +1,10 @@
 ---
-title: "The Domain Epistemic Index & Sourcing Forensics"
-description: "Forensic methodology, mathematical ratios, and longitudinal metrics for evaluating public publisher integrity and detecting disguised advertorials."
+title: The Domain Epistemic Index & Sourcing Forensics
+description: Forensic methodology, mathematical ratios, and longitudinal metrics for
+  evaluating public publisher integrity and detecting disguised advertorials.
+since_version: v1.14.1
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # The Domain Epistemic Index & Sourcing Forensics

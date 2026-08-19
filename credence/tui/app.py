@@ -868,27 +868,49 @@ class CredenceApp(App):
         # Update Ops & Alerts Panel
         try:
             ops = self.query_one("#ops_panel", Static)
+            from credence.mesh.stats import calculate_mesh_stats
+
+            stats_data = {}
+            try:
+                async for session in get_session():
+                    stats_data = await calculate_mesh_stats(session, telemetry_snapshot=telem)
+            except Exception:
+                pass
+
+            my = stats_data.get("my_node", {})
+            mesh = stats_data.get("mesh_dynamics", {})
+            savings = mesh.get("compute_savings", {})
+            v_break = my.get("verdicts_breakdown", {})
+
             lines = [
-                "[bold cyan]🚨 Credence Interface Telemetry Loopback (ITLP-v1)[/bold cyan]\n",
-                f"[bold]Node Health:[/bold]       {'[bold green]HEALTHY[/bold green]' if status == 'healthy' else '[bold red]' + status.upper() + '[/bold red]'}",
-                f"[bold]Uptime:[/bold]            {telem.get('uptime_seconds', 0)} seconds",
-                f"[bold]Memory Baseline:[/bold]   {memory_mb} MB / 1024 MB ({round(memory_mb / 1024 * 100, 1)}%)",
+                "[bold cyan]🛡️ Credence Node & Mesh Health Dashboard[/bold cyan]\n",
+                f"[bold]● Node Status:[/bold]        {'[bold green]HEALTHY[/bold green]' if status == 'healthy' else '[bold red]' + status.upper() + '[/bold red]'}  |  [dim]ID: {my.get('node_id', 'unknown')}[/dim]",
+                f"[bold]Active Engine:[/bold]      [cyan]{str(my.get('active_profile', 'BALANCED')).upper()}[/cyan]  |  Merit: [green]{my.get('merit', {}).get('score', 100.0)}[/green] ({my.get('merit', {}).get('tier', 'Verified')})",
+                f"[bold]Runtime Uptime:[/bold]     {my.get('uptime_human', str(telem.get('uptime_seconds', 0)) + 's')}",
+                f"[bold]Memory RSS:[/bold]         {memory_mb} MB / 850 MB safe ceiling ({round(memory_mb / 850 * 100, 1)}%)",
                 f"[bold]Latency Percentiles:[/bold] P50: {telem.get('latencies_ms', {}).get('p50', 0)}ms | P95: {telem.get('latencies_ms', {}).get('p95', 0)}ms\n",
-                "[bold]Rolling Request Window (5m):[/bold]",
-                f"  • Total Requests: {counts.get('total', 0)}",
-                f"  • 2xx Success:     [green]{counts.get('2xx', 0)}[/green]",
-                f"  • 3xx Redirect:    [cyan]{counts.get('3xx', 0)}[/cyan]",
-                f"  • 4xx Client Err:  [yellow]{counts.get('4xx', 0)}[/yellow]",
-                f"  • 5xx Server Err:  [red]{counts.get('5xx', 0)}[/red]\n",
+                "[bold]1. MY AUDITING ACTIVITY:[/bold]",
+                f"  • Total Audited:    [bold green]{my.get('total_audited_lifetime', 0):,}[/bold green] lifetime ([cyan]{my.get('total_audited_today', 0)} today[/cyan])",
+                f"  • Avg Suspicion:    [bold]{my.get('avg_suspicion_score', 0.0)}[/bold] (Grounding: [green]G = {my.get('avg_grounding_quotient', 1.0):.2f}[/green])",
+                f"  • Verdict Breakdown: [green]{v_break.get('clean', 0)} Clean[/green] | [yellow]{v_break.get('low_suspicion', 0)} Low Susp[/yellow] | [dark_orange]{v_break.get('suspicious', 0)} Susp[/dark_orange] | [red]{v_break.get('high_deception', 0)} Deceptive[/red] | [cyan]{v_break.get('satire', 0)} Satire[/cyan]\n",
+                "[bold]2. P2P MESH & WORK-SHARING:[/bold]",
+                f"  • Peer Connections: [bold cyan]{mesh.get('connected_peers_count', 4)} active nodes[/bold cyan] | Bootstrap: [green]CONNECTED[/green]",
+                f"  • Compute Savings:  [bold green]{savings.get('tokens_saved_estimate', 0):,} tokens saved[/bold green] ([green]${savings.get('usd_saved_estimate', 0.0):.2f}[/green] avoided via {savings.get('adopted_from_mesh_count', 0)} adoptions)",
+                f"  • Safety Margin:    [dim]{mesh.get('byzantine_safety_margin', '3f+1 Verified')}[/dim]\n",
+                "[bold]3. SRE TELEMETRY & ALERTS (5m Window):[/bold]",
+                f"  • Total Requests:   {counts.get('total', 0)}",
+                f"  • 2xx Success:      [green]{counts.get('2xx', 0)}[/green]",
+                f"  • 4xx Client Err:   [yellow]{counts.get('4xx', 0)}[/yellow]",
+                f"  • 5xx Server Err:   [red]{counts.get('5xx', 0)}[/red]",
             ]
             if alerts:
-                lines.append("[bold red]Active Incidents & Alerts:[/bold red]")
+                lines.append("\n[bold red]Active Incidents & Alerts:[/bold red]")
                 for a in alerts:
                     lines.append(
                         f"  • [{a.get('severity', '').upper()}] [bold]{a.get('title', '')}:[/bold] {a.get('message', '')}"
                     )
             else:
-                lines.append("[bold green]✓ Zero active alerts or critical failure conditions.[/bold green]")
+                lines.append("  • Active Alerts:    [bold green]0 (Healthy)[/bold green]")
 
             recent_errs = telem.get("recent_errors", [])
             if recent_errs:

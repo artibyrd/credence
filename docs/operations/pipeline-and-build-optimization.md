@@ -1,6 +1,10 @@
 ---
-title: "Multi-Plane Pipeline & Build Optimization Handbook"
-description: "Operational engineering reference for developer workstation tuning, multi-core pytest parallelization, lean container builds, and sub-40s QA gates."
+title: Multi-Plane Pipeline & Build Optimization Handbook
+description: Operational engineering reference for developer workstation tuning, multi-core
+  pytest parallelization, lean container builds, and sub-40s QA gates.
+since_version: v1.14.1
+verified_version: v1.15.0
+last_verified: '2026-08-19'
 ---
 
 # Multi-Plane Pipeline & Build Optimization Handbook

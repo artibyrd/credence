@@ -1,4 +1,15 @@
-# Tutorial 04: Scaffolding a Sovereign Trust Federation with `credence init-org`
+---
+title: 'Tutorial 04: Sovereign Org Scaffolding'
+description: Scaffold an independent, custom-branded trust federation using the credence
+  init-org command.
+since_version: v1.0.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
+sidebar:
+  order: 4
+---
+
+# Tutorial 04: Sovereign Org Scaffolding
 
 Learn how newsrooms, universities, and sovereign consortiums can instantiate an independent Credence federation with custom root keys, custom taxonomies, and multi-cloud Terraform templates.
 

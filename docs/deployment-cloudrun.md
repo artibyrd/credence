@@ -1,3 +1,12 @@
+---
+title: Cloud Run Deployment & Dual-Tier Monitoring Guide
+description: Deploying to Google Cloud Run with Terraform, $15/mo budget cap, scale-to-zero
+  compute, and automated CI/CD.
+since_version: v1.8.0
+verified_version: v1.15.0
+last_verified: '2026-08-19'
+---
+
 # Cloud Run Deployment & Dual-Tier Monitoring Guide
 
 This guide covers deploying the **Credence FastMCP Server** to **Google Cloud Platform (Cloud Run v2)** with strict cost controls ($15/month budget ceiling, scale-to-zero compute), automated **Cloud Build CI/CD**, and **Dual-Tier SRE Observability** with **Discord & Powercord Alerting**.
@@ -133,3 +142,17 @@ The repository provides a single canonical parameterized operator command family
 | `just gcp germinate [burst]` | Remote Sifting | Invokes remote `/api/germinate` endpoint to trigger Miracle-Gro ignition. |
 | `just gcp rollback <revision>` | Safe Revert | Rolls back 100% traffic allocation to a previous healthy revision. |
 | `just deploy backend` | Safe Deploy | Submits container build via Cloud Build, deploys to Cloud Run, and executes health probe. |
+
+---
+
+## 6. Scale-to-Zero Cold Start Optimization & SRE Tuning
+
+When operating under `min_instance_count = 0` ($0.00 idle compute ceiling), Credence implements a 5-pillar serverless cold start optimization framework:
+
+1. **Startup CPU Boost (`startup_cpu_boost = true`)**: Dynamically allocates 2–4 vCPUs during container boot to accelerate CPU-bound Python AST parsing and import graph loading.
+2. **Direct Virtualenv Binary Execution**: Bypasses Poetry's CLI wrapper by executing `/app/.venv/bin/credence serve` directly with `PATH="/app/.venv/bin:$PATH"`, saving ~950ms.
+3. **Build-Time Bytecode Precompilation (`compileall`)**: Docker images precompile `.pyc` files during build, eliminating AST compilation on cold boots.
+4. **Lazy Dependency Deferral**: Heavy modules (`trafilatura`, `dateparser`, `playwright`) are lazy-loaded inside tool handlers, dropping module import latency by >48%.
+5. **Aggressive HTTP Readiness Probing**: Startup probes check `http_get` on `/health` with a 2s period and 1s initial delay, cutting probe detection lag from up to 10s down to ~1.5–2.0s.
+
+*For complete benchmarks and mathematical breakdown, see the [Cloud Run Cold Start Blueprint](blueprints/cloudrun-scale-to-zero-cold-start-optimization.md) and [Engineering Blog Essay](../blog/taming-the-10-second-cold-start-scale-to-zero.md).*
