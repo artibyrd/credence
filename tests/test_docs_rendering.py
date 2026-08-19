@@ -113,6 +113,7 @@ async def test_no_raw_html_tag_leaks(page: Page, docs_server: str) -> None:
         "docs/playground",
         "docs/tutorials/01-clickbait-teardown",
         "docs/integrations/browser-extension-mv3",
+        "blog/conflict-of-pun-terest",
         "blog/the-pizza-hut-problem",
         "blog/the-pareto-frontier-of-truth",
         "blog/bittorrent-for-truth",
@@ -124,13 +125,14 @@ async def test_no_raw_html_tag_leaks(page: Page, docs_server: str) -> None:
 
         # Check prose paragraphs, headings, and list items outside code blocks
         prose_elements = await page.query_selector_all(
-            ".markdown-body > p, .markdown-body > h1, .markdown-body > h2, .markdown-body > h3, .markdown-body > ul > li, .markdown-body > ol > li"
+            ".markdown-body > p, .markdown-body > h1, .markdown-body > h2, .markdown-body > h3, .markdown-body > ul > li, .markdown-body > ol > li, .live-monitor-callout"
         )
         for el in prose_elements:
             html = await el.inner_html()
-            # Leaked HTML tags appear as &lt;div&gt;, &lt;/div&gt;, &lt;textarea, etc. inside <p>
+            # Leaked HTML tags appear as &lt;div&gt;, &lt;/div&gt;, &lt;textarea, &lt;a href=, etc. inside <p>
             assert "&lt;/div&gt;" not in html, f"Found leaked &lt;/div&gt; in prose on {route}: {html}"
             assert "&lt;div" not in html or "<code" in html, f"Found leaked &lt;div in prose on {route}: {html}"
+            assert "&lt;a href" not in html or "<code" in html, f"Found leaked &lt;a href in prose on {route}: {html}"
             assert "&lt;textarea" not in html or "<code" in html, (
                 f"Found leaked &lt;textarea in prose on {route}: {html}"
             )
