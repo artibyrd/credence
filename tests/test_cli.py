@@ -184,7 +184,7 @@ async def test_cli_feeds_and_subjects() -> None:
     cli_subjects(action="show", subject_id="apiculture.equipment")
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_cli_browse_and_formats(fixtures_dir: Path) -> None:
     """Verify CLI multi-format output (compact, json, ndjson, tsv) and discovery browsing."""
     from credence.cli.main import cli_audit, cli_browse_audits, cli_lookup, cli_report_view

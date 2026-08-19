@@ -76,7 +76,7 @@ def test_parse_satire_json_response() -> None:
     assert verdict.confidence == 0.95
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_evaluate_snapshot_clean_article(fixtures_dir: Path, tmp_path: Path) -> None:
     """Verify evaluation of a high-integrity clean news article."""
     file_url = f"file://{fixtures_dir / 'clean_article.html'}"
@@ -90,7 +90,7 @@ async def test_evaluate_snapshot_clean_article(fixtures_dir: Path, tmp_path: Pat
     assert report.node_signature is not None
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_evaluate_snapshot_satire_article(fixtures_dir: Path, tmp_path: Path) -> None:
     """Verify Poe's law satire filter neutralizes suspicion score."""
     file_url = f"file://{fixtures_dir / 'satire_article.html'}"
@@ -102,7 +102,7 @@ async def test_evaluate_snapshot_satire_article(fixtures_dir: Path, tmp_path: Pa
     assert report.suspicion_score == 0.0
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_evaluate_snapshot_deceptive_page(fixtures_dir: Path, tmp_path: Path) -> None:
     """Verify deceptive pattern detection flags violations and increases suspicion score."""
     file_url = f"file://{fixtures_dir / 'deceptive_page.html'}"
@@ -114,7 +114,7 @@ async def test_evaluate_snapshot_deceptive_page(fixtures_dir: Path, tmp_path: Pa
     assert report.classification in ["SUSPICIOUS", "DECEPTIVE"]
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_audit_url_database_cache(fixtures_dir: Path, db_session: AsyncSession) -> None:
     """Verify audit_url persists to database and second call hits the cache."""
     file_url = f"file://{fixtures_dir / 'clean_article.html'}"

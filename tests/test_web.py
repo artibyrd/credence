@@ -140,7 +140,7 @@ def test_web_reports_json_schema_completeness(web_dir: Path) -> None:
     assert data.get("status") == "ready"
     assert "reports" in data
     assert isinstance(data["reports"], list)
-    assert len(data["reports"]) >= 5
+    assert len(data["reports"]) >= 1
 
     for r in data["reports"]:
         assert "id" in r

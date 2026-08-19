@@ -66,7 +66,7 @@ def test_extract_outbound_links() -> None:
     assert "/local-path" not in links
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 async def test_capture_webpage_local_file(fixtures_dir: Path, tmp_path: Path) -> None:
     """Verify Playwright captures rendered HTML and screenshot from a local HTML file."""
     file_url = f"file://{fixtures_dir / 'clean_article.html'}"
