@@ -9,7 +9,7 @@ Hermetically simulates:
 
 import asyncio
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -820,3 +820,115 @@ async def test_13_node_concurrent_swarm_germination_and_mesh_cross_adoption(
 
     finally:
         await asyncio.gather(*(r.stop() for r in relays))
+
+
+@pytest.mark.unit
+async def test_mesh_cluster_boredom_work_sharing(tmp_path: Path, db_session: AsyncSession) -> None:
+    """Verify that when Node 1 experiences boredom, newly audited attestations are gossiped to peers at 0 tokens."""
+    from credence.feeds.boredom import run_boredom_cycle
+    from credence.identity import sign_audit_report
+    from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
+
+    # 1. Initialize 3 mesh nodes
+    id1 = load_or_create_node_identity(tmp_path / "bored_n1.key")
+    id2 = load_or_create_node_identity(tmp_path / "bored_n2.key")
+    id3 = load_or_create_node_identity(tmp_path / "bored_n3.key")
+
+    port_base = 9310
+    relay1 = MeshGossipRelay(
+        port=port_base,
+        node_identity=id1,
+        peer_seeds=[f"ws://127.0.0.1:{port_base + 1}", f"ws://127.0.0.1:{port_base + 2}"],
+    )
+    relay2 = MeshGossipRelay(port=port_base + 1, node_identity=id2, peer_seeds=[f"ws://127.0.0.1:{port_base}"])
+    relay3 = MeshGossipRelay(port=port_base + 2, node_identity=id3, peer_seeds=[f"ws://127.0.0.1:{port_base}"])
+
+    sub = FeedSubscriptionRecord(
+        feed_url="https://civicwire.org/rss", title="Civic Wire", priority_tier=1, is_active=True
+    )
+    db_session.add(sub)
+    await db_session.commit()
+    await db_session.refresh(sub)
+
+    item1 = FeedItemRecord(
+        item_url="https://civicwire.org/article-water-rights",
+        feed_id=sub.id,
+        title="Colorado River Water Rights Compact",
+        processing_status="pending",
+        discovered_at=utc_now(),
+    )
+    db_session.add(item1)
+    await db_session.commit()
+
+    try:
+        await relay1.start()
+        await relay2.start()
+        await relay3.start()
+        await asyncio.sleep(0.3)
+
+        mock_report = AuditReport(
+            url="https://civicwire.org/article-water-rights",
+            content_sha256="sha256:7777888899990000111122223333444455556666777788889999000011112222",
+            simhash_64="0x1122334455667788",
+            suspicion_score=4.2,
+            suspicion_density=0.042,
+            confidence_score=0.96,
+            classification="CLEAN",
+        )
+        signed_report = sign_audit_report(mock_report, id1)
+
+        with (
+            patch("credence.pipeline.evaluator.audit_url", new=AsyncMock(return_value=signed_report)),
+            patch(
+                "credence.feeds.boredom.expand_roots",
+                new=AsyncMock(return_value=AsyncMock(new_feeds_subscribed=0, initial_items_harvested=0, details=[])),
+            ),
+        ):
+            summary = await run_boredom_cycle(
+                session=db_session,
+                audit_burst=1,
+                expand_roots_enabled=False,
+                mesh_relay=relay1,
+            )
+
+            assert summary.pending_items_audited == 1
+
+            # Allow gossip propagation through mesh
+            await asyncio.sleep(0.3)
+
+            # Node 2 and Node 3 must have received and registered the attestation message
+            assert len(relay2.deduplicator._seen) > 0
+            assert len(relay3.deduplicator._seen) > 0
+
+    finally:
+        await relay1.stop()
+        await relay2.stop()
+        await relay3.stop()
+
+
+@pytest.mark.unit
+def test_mesh_cluster_boredom_root_partitioning() -> None:
+    """Verify that nodes use HRW affinity to partition root expansion candidates across the swarm."""
+    from credence.feeds.worker import compute_feed_affinity
+
+    node1_pubkey = "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0"
+    node2_pubkey = "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1"
+
+    feed_url_a = "https://nature.com/nature.rss"
+    feed_url_b = "https://krebsonsecurity.com/feed/"
+
+    aff_1a = compute_feed_affinity(node1_pubkey, feed_url_a)
+    aff_2a = compute_feed_affinity(node2_pubkey, feed_url_a)
+
+    aff_1b = compute_feed_affinity(node1_pubkey, feed_url_b)
+    aff_2b = compute_feed_affinity(node2_pubkey, feed_url_b)
+
+    # Affinities are deterministic floats between 0.0 and 1.0
+    assert 0.0 <= aff_1a <= 1.0
+    assert 0.0 <= aff_2a <= 1.0
+    assert 0.0 <= aff_1b <= 1.0
+    assert 0.0 <= aff_2b <= 1.0
+
+    # Determinism check
+    assert aff_1a == compute_feed_affinity(node1_pubkey, feed_url_a)
+    assert aff_2b == compute_feed_affinity(node2_pubkey, feed_url_b)

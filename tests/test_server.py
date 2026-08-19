@@ -2,10 +2,12 @@
 
 import json
 from typing import Any
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from credence.identity import load_or_create_node_identity, sign_audit_report
+from credence.models import utc_now
 from credence.pipeline.schemas import AuditReport
 from credence.server.app import create_mcp_server
 
@@ -277,6 +279,47 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
         assert res_germ.status_code == 200
         germ_data = res_germ.json()
         assert germ_data["status"] == "germinated"
+
+        # 6. Roots tree and candidates endpoints
+        res_tree = await client.get("/api/roots/tree")
+        assert res_tree.status_code == 200
+        tree_data = res_tree.json()
+        assert "total_active_roots" in tree_data
+
+        res_cands = await client.get("/api/roots/candidates")
+        assert res_cands.status_code == 200
+        cands_data = res_cands.json()
+        assert "candidates" in cands_data
+
+        # 7. Boredom status and cycle endpoints
+        from credence.feeds.boredom import BoredomCycleSummary
+
+        res_boredom_status = await client.get("/api/boredom/status")
+        assert res_boredom_status.status_code == 200
+        b_status = res_boredom_status.json()
+        assert "token_headroom" in b_status
+        assert "queue" in b_status
+
+        mock_summary = BoredomCycleSummary(
+            timestamp=utc_now(),
+            headroom_daily_pct=100.0,
+            headroom_hourly_pct=100.0,
+            circuit_breaker_tripped=False,
+            pending_items_scanned=0,
+            pending_items_audited=0,
+            mesh_attestations_adopted=0,
+            items_deferred_budget=0,
+            tokens_saved_mesh=0,
+            new_roots_subscribed=0,
+            initial_items_harvested=0,
+            details=[],
+        )
+
+        with patch("credence.feeds.boredom.run_boredom_cycle", new=AsyncMock(return_value=mock_summary)):
+            res_b_cycle = await client.post("/api/boredom/cycle", json={"burst": 1, "expand_roots": False})
+            assert res_b_cycle.status_code == 200
+            cycle_data = res_b_cycle.json()
+            assert "headroom_daily_pct" in cycle_data
 
 
 @pytest.mark.unit

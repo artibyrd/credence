@@ -252,12 +252,53 @@ async def test_cli_germinate(db_session: Any) -> None:
 def test_cli_health_and_alerts() -> None:
     """Verify cli_health and cli_alerts render panels cleanly."""
     from credence.cli.main import cli_health
-    from credence.server.app import global_telemetry
-
-    global_telemetry.reset()
-    global_telemetry.record_request(200, "/health", 5.0)
-    global_telemetry.record_request(500, "/api/audit", 50.0, "Test Error")
 
     # In-process fallback path
     cli_health(url="")
     cli_health(url="http://localhost:8000")
+
+
+@pytest.mark.unit
+async def test_cli_roots_and_boredom(db_session: Any) -> None:
+    """Verify expand-roots, roots tree, and boredom CLI commands."""
+    from unittest.mock import AsyncMock, patch
+
+    from credence.cli.main import cli_boredom, cli_expand_roots, cli_roots
+    from credence.feeds.roots import RootExpansionSummary
+
+    # Test roots tree and candidates
+    await cli_roots(action="tree", format_type="human")
+    await cli_roots(action="tree", format_type="json")
+    await cli_roots(action="candidates", format_type="human")
+    await cli_roots(action="candidates", format_type="json")
+
+    # Test expand-roots with mock
+    mock_summary = RootExpansionSummary(
+        candidates_scanned=2,
+        candidate_domains_evaluated=2,
+        new_feeds_discovered=1,
+        new_feeds_subscribed=1,
+        initial_items_harvested=3,
+        details=[{"domain": "sciencewire.org", "status": "subscribed", "items_harvested": 3}],
+    )
+    with patch("credence.feeds.roots.expand_roots", new=AsyncMock(return_value=mock_summary)):
+        await cli_expand_roots(max_sources=2, dry_run=True, format_type="human")
+        await cli_expand_roots(max_sources=2, dry_run=False, format_type="json")
+
+    # Test boredom single pass
+    with patch(
+        "credence.feeds.boredom.run_boredom_cycle",
+        new=AsyncMock(
+            return_value=AsyncMock(
+                pending_items_scanned=1,
+                pending_items_audited=1,
+                mesh_attestations_adopted=0,
+                tokens_saved_mesh=0,
+                new_roots_subscribed=1,
+                initial_items_harvested=2,
+                headroom_daily_pct=95.0,
+                circuit_breaker_tripped=False,
+            )
+        ),
+    ):
+        await cli_boredom(burst=1, expand_roots_enabled=True, continuous=False)

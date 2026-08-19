@@ -566,8 +566,8 @@ def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
     assert "SimHash-64 Bitwise Visualizer" in sitemap_text
     assert "Live Namespaced Taxonomy Rule Explorer" in sitemap_text
 
-    # 3. Verify 38 Core System Invariants are covered
-    assert "38 Core System Invariants" in sitemap_text or "38" in sitemap_text
+    # 3. Verify The Invariant Bible is covered
+    assert "The Invariant Bible" in sitemap_text or "38 Core System Invariants" in sitemap_text
 
     # 4. Extract all hash links (#docs/..., #blog/...) and ensure their backing files exist
     hash_links = re.findall(r"\(#(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)

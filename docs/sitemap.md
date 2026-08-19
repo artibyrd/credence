@@ -4,7 +4,7 @@ description: Comprehensive visual and structural sitemap covering all 5 sovereig
   domains, 12 interactive playgrounds, 38 system invariants, 17 investigative essays,
   and 72 documentation guides across the Credence network.
 since_version: v1.13.0
-verified_version: v1.15.0
+verified_version: v1.16.0
 last_verified: '2026-08-19'
 ---
 
@@ -74,15 +74,15 @@ All playgrounds run **100% client-side** inside your browser using W3C WebCrypto
 
 ---
 
-## 3. 🏛️ Core Architectural & Epistemic Invariants
+## 3. 🏛️ The Invariant Bible: Living Canon of System-Wide Invariants & Protocols
 
 Complete canonical specifications and mathematical guarantees enforced across the network.
 
-* 📘 **[38 Core System Invariants](#docs/invariants)**:
-  * **Engineering & Safety**: Decoupled Workspaces (Inv 1), Async SQLite/aiosqlite (Inv 2), Semantic Versioning (Inv 3), Hermetic Tests (Inv 4), Scoped Docs Verification (Inv 5), Human Review / Mk1 Eyeball (Inv 6), 4-Tier Knowledge Taxonomy (Inv 7), Multi-Model Sovereignty & Token Governor (Inv 8), SSRF Loopback Defense (Inv 9), Red Team Protocol Defense (Inv 10), XML Traversal Safety (Inv 11), Ground Truth Reference Engine (Inv 12), FastMCP 2.0 Security (Inv 13), Zero-Build Static Assets (Inv 14), Edge Origin Header Translation (Inv 15), Text Evaluation Parity (Inv 16), Stratified Live Web Mutation (Inv 17), Zero-Touch Germination (Inv 18), HRW Rendezvous Partitioning (Inv 19), 3-Plane Deployment (Inv 20).
-  * **Epistemic Scoring**: Topic Entropy Astroturfing Defense (Inv 21), Poe's Law & Satire Safeguards (Inv 22), Order-Agnostic Metadata (Inv 23), Namespaced Fixed Taxonomies (Inv 24), Whitespace-Insensitive Grounding (Inv 25), Heuristic Disclosure (Inv 26).
-  * **Cryptographic Mesh**: RFC 8785 Canonical JSON (Inv 27), Anti-Tampering Contract (Inv 28), 5-Factor Node Quality $Q_i$ (Inv 29), Empirical Expertise $E_i$ (Inv 30), The Galileo Rule (Inv 31), BitTorrent Work-Sharing (Inv 32).
-  * **Presentation & Web**: 4-Way Universal Feature Parity (Inv 33), Human-First Report Inspection (Inv 34), Multi-Display Mode & Stream Discovery (Inv 35), Zero-Build Zero-npm Invariant (Inv 36), Zero-Build Inline HTML & Nested Math Integrity (Inv 37), Anti-Scrollbox & Natural Flow Presentation (Inv 38).
+* 📘 **[The Invariant Bible](#docs/invariants)**:
+  * **Engineering & Safety**: Decoupled Workspaces (Inv 1), Async SQLite/aiosqlite (Inv 2), Semantic Versioning (Inv 3), Hermetic Tests (Inv 4), Scoped Docs Verification (Inv 5), Human Review / Mk1 Eyeball (Inv 6), Multi-Model Sovereignty & Token Governor (Inv 7), SSRF Loopback Defense (Inv 8), Red Team Protocol Defense (Inv 9), XML Traversal Safety (Inv 10), Ground Truth Reference Engine (Inv 11), FastMCP 2.0 Security (Inv 12), Zero-Build Static Assets (Inv 13), Edge Origin Header Translation (Inv 14), 4k Thinking Sweet Spot (Inv 15), FastMCP Nested Datetime Serialization (Inv 16), Content Decoupling & Hermetic CI (Inv 17), Context Governance & Progressive Disclosure (Inv 18).
+  * **Epistemic Scoring**: Topic Entropy Astroturfing Defense (Inv 19), Poe's Law & Satire Safeguards (Inv 20), Namespaced Fixed Taxonomies (Inv 21), Whitespace-Insensitive Grounding (Inv 22), Transparent Heuristic Disclosure (Inv 23).
+  * **Cryptographic Mesh & Authority**: RFC 8785 Canonical JSON (Inv 24), 5-Factor Node Quality $Q_i$ (Inv 25), Empirical Expertise $E_i$ & Anti-Diploma (Inv 26), The Galileo Rule (Inv 27), BitTorrent Work-Sharing (Inv 28), Byzantine Cartel Resistance $3f+1$ (Inv 29).
+  * **Presentation & Web**: 4-Way Universal Feature Parity (Inv 30), Zero-Build Zero-npm Invariant (Inv 31), Zero-Build Math & Currency (Inv 32), Edge Subdirectory Canonicalization (Inv 33), Universal Mermaid Syntax Safety (Inv 34), Visual Density & Anti-Wall-of-Text (Inv 35), Automated Live Rendering Tests (Inv 36), Inline HTML & Nested Math Integrity (Inv 37), Anti-Scrollbox & Natural Flow (Inv 38), Opportunistic Boredom Ingestion & Epistemic Root Expansion (Inv 39).
 
 ---
 
@@ -90,6 +90,7 @@ Complete canonical specifications and mathematical guarantees enforced across th
 
 Forensic investigations, economic proofs, and real-world case studies published on the sovereign blog.
 
+* 🌱 **[The Boredom Engine & Expanding Roots](#blog/the-boredom-engine-and-expanding-roots)** (How autonomous nodes self-direct epistemic discovery from idle token headroom and clean citation soil)
 * 🚀 **[From 860MB to 2MB: Engineering a Sub-40s CI/CD Pipeline](#blog/from-860mb-to-2mb-sub-40s-cicd-pipeline)** (Slashing build uploads by 99.7%, multi-core Pytest, and pipefail stream safety)
 * 🏛️ **[The 3-Plane Architecture: Zero-npm Edge & Scale-to-Zero](#blog/the-three-plane-architecture)** (Decoupling Cloudflare Edge, Cloud Run Compute, and Terraform for $0.00 idle cost)
 * 📰 **[Conflict of Pun-terest: Auditing InMaricopa.com](#blog/conflict-of-pun-terest)** (Forensic audit of publisher-politician conflicts, advertorial camouflage, and policy reform)
@@ -167,6 +168,7 @@ Forensic investigations, economic proofs, and real-world case studies published 
 * **[Air-Gapped Sneakernet Protocol](#docs/mesh-engineering/airgapped-sneakernets)**: Offline verification and bundle exchange.
 * **[DNS SRV Dynamic Peer Discovery](#docs/mesh-engineering/dns-srv-discovery)**: RFC 2782 DNS SRV peer discovery without central trackers.
 * **[Token Safety Governor Specification](#docs/protocols/token-governor)**: Spending profiles, budget caps, and 30% headroom breaker.
+* **[Protocol Specification: Boredom Engine & Root Expansion (EPEP-16)](#docs/protocols/boredom-and-root-expansion)**: Technical specification for opportunistic queue digestion, token governor gating, and autonomous feed discovery.
 * **[P2P Mesh & Consensus Protocol](#docs/protocols/mesh-protocol)**: RFC 8785 canonical JSON, Ed25519 signatures, and gossip routing.
 * **[Zero-Touch Node Germination & Swarm Ignition](#docs/protocols/zero-touch-germination-and-swarm-ignition)**: Autonomous cryptographic identity minting and genesis inoculation in <5s.
 * **[Scoring & Saturation Math Specification](#docs/protocols/scoring)**: Exponential saturation curve and density index formulas.
@@ -188,4 +190,3 @@ Forensic investigations, economic proofs, and real-world case studies published 
 * **[Master Topic Index & Cheat Sheet](#docs/topic-index)**: The "Marbles in the Oatmeal" comprehensive keyword index across all concepts.
 * **[Release Changelog](#docs/changelog)**: Complete semantic version history, milestones, and release notes.
 * **[Ecosystem Master Sitemap](#docs/sitemap)**: This document.
-

@@ -1,9 +1,9 @@
 ---
-title: Core Architectural & Agent Invariants
+title: 'The Invariant Bible: Living Canon of System-Wide Invariants & Protocols'
 description: Canonical reference for all mathematical rules, runtime safety guardrails,
   cryptographic protocols, and presentation invariants governing Credence.
 since_version: v1.0.0
-verified_version: v1.15.0
+verified_version: v1.16.0
 last_verified: '2026-08-19'
 tags:
 - invariants
@@ -18,60 +18,23 @@ interfaces:
 - Python SDK
 - Zero-Build Web UI
 - Textual TUI
-invariants:
-- 1
-- 2
-- 3
-- 4
-- 5
-- 6
-- 7
-- 8
-- 9
-- 10
-- 11
-- 12
-- 13
-- 14
-- 15
-- 16
-- 17
-- 18
-- 19
-- 20
-- 21
-- 22
-- 23
-- 24
-- 25
-- 26
-- 27
-- 28
-- 29
-- 30
-- 31
-- 32
-- 33
-- 34
-- 35
-- 36
 difficulty: Specification
-read_time: 12 min
+read_time: 14 min
 ---
 
-# Core Architectural & Agent Invariants
+# The Invariant Bible: Living Canon of System-Wide Invariants & Protocols
 
 Mandatory invariants, mathematical formulas, and runtime guardrails governing human contributors, AI pair programmers, and autonomous agents across the Credence network.
 
-| Pillar Domain | Invariant Range | Primary Verification Gate | Core Engineering Guarantees |
+| Pillar Domain | Scope & Focus | Primary Verification Gate | Core Engineering Guarantees |
 | :--- | :--- | :--- | :--- |
-| **1. Core Engineering & Runtime Safety** | Invariants 1–18 | `just test` (Hermetic in-memory SQLite) | Python 3.12 async, SSRF defense, 4k Pareto token budget |
-| **2. Epistemic Ingestion & Scoring** | Invariants 19–23 | `pytest tests/test_scoring.py` | Topic entropy astroturfing defense, $G=1.0$ grounding, satire cloaking overrides |
-| **3. Cryptographic Mesh & Authority** | Invariants 24–29 | `pytest tests/test_mesh.py` | RFC 8785 Ed25519 envelopes, 5-factor quality $Q_i$, Galileo Rule protection |
-| **4. Universal Presentation & Zero-Build** | Invariants 30–36 | `pytest tests/test_docs_rendering.py` | Zero npm / zero build, synchronous 4-way parity, framed accessible UX |
+| **1. Core Engineering & Runtime Safety** | Workspaces, async DB, token budgets, SSRF | `just test` (Hermetic in-memory SQLite) | Python 3.12 async, SSRF defense, 4k Pareto token budget |
+| **2. Epistemic Ingestion & Scoring** | Information theory, Grounding, Satire | `pytest tests/test_scoring.py` | Topic entropy astroturfing defense, $G=1.0$ grounding, satire cloaking overrides |
+| **3. Cryptographic Mesh & Authority** | P2P gossip, Ed25519 envelopes, Consensus | `pytest tests/test_mesh.py` | RFC 8785 Ed25519 envelopes, 5-factor quality $Q_i$, Galileo Rule protection |
+| **4. Universal Presentation & Zero-Build** | Zero-npm, 4-way parity, accessible layouts | `pytest tests/test_docs_rendering.py` | Zero npm / zero build, synchronous 4-way parity, framed accessible UX |
 
 > [!IMPORTANT]
-> **Continuous Verification Invariant**: Every code change must pass automated static verification (`pytest tests/test_docs_integrity.py`), Playwright live rendering suites (`tests/test_docs_rendering.py`), and version parity checks before presenting for human review (**"Mk1 Eyeball"**).
+> **Continuous Verification Invariant**: Every code change must pass automated static verification (`pytest tests/test_docs_integrity.py`), Playwright live rendering suites (`tests/test_docs_rendering.py`), and version parity checks before presenting for human review (**"Mk1 Eyeball"**). Invariants are a living, expanding canon of verifiable constraints.
 
 ---
 
@@ -335,6 +298,11 @@ flowchart TD
 <p>Document reading surfaces and forensic inspectors must never constrain content with fixed nested vertical scrollbars; article previews must expand naturally (<code>height: auto; overflow: visible;</code>) and dense technical payloads must be encapsulated in native <code>&lt;details&gt;</code> accordions with auto-height <code>&lt;pre&gt;</code> blocks.</p>
 </div>
 
+<div class="invariant-card" id="invariant-39">
+<h3><a href="#docs/invariants#invariant-39">Invariant 39: Opportunistic Boredom Ingestion & Epistemic Root Expansion</a></h3>
+<p>When nodes detect idle compute with rolling daily token headroom $\ge 30\%$ and clear circuit breakers, they must autonomously execute prioritized FIFO queue digestion, extract cited outbound domains from verified clean articles ($G=1.00, \text{Score} \le 25.0$), probe and auto-subscribe to candidate RSS/Atom feeds, and gossip signed Ed25519 attestations across the P2P mesh to enable zero-token peer adoption.</p>
+</div>
+
 ---
 
 ## Invariant Reference Index Matrix
@@ -363,3 +331,4 @@ flowchart TD
 | **[Invariant 36](#invariant-36)** | Presentation | Live Playwright Tests | SVG geometry & 0 HTML leaks |
 | **[Invariant 37](#invariant-37)** | Presentation | Inline HTML & Math | Balanced-brace LaTeX & safe tag masking |
 | **[Invariant 38](#invariant-38)** | Presentation | Anti-Scrollbox Flow | Natural auto-height & details accordion |
+| **[Invariant 39](#invariant-39)** | Mesh / Ingestion | Boredom & Root Expansion | Autonomous opportunistic digestion & feed discovery |

@@ -813,6 +813,58 @@ def _register_feed_management_tools(server: MCPServer) -> None:
         return "{}"
 
     @server.tool(
+        name="credence_expand_roots",
+        description="Extract cited external domains from verified clean articles, discover RSS/Atom feed endpoints, and autonomously subscribe to new roots.",
+    )
+    async def expand_roots_tool(max_new_sources: int = 5, min_citation_count: int = 1, dry_run: bool = False) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.feeds.roots import expand_roots
+
+        await init_db()
+        async for session in get_session():
+            summary = await expand_roots(
+                session, max_new_sources=max_new_sources, min_citation_count=min_citation_count, dry_run=dry_run
+            )
+            return json.dumps(asdict(summary), indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_trigger_boredom_cycle",
+        description="Trigger an opportunistic boredom cycle to digest pending feed items and autonomously expand subscription roots when token headroom allows.",
+    )
+    async def trigger_boredom_cycle_tool(audit_burst: int = 3, expand_roots: bool = True) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.feeds.boredom import run_boredom_cycle
+
+        await init_db()
+        async for session in get_session():
+            summary = await run_boredom_cycle(session, audit_burst=audit_burst, expand_roots_enabled=expand_roots)
+            res = asdict(summary)
+            res["timestamp"] = summary.timestamp.isoformat()
+            return json.dumps(res, indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_get_root_candidates",
+        description="Retrieve un-subscribed candidate source domains cited by audited high-integrity articles.",
+    )
+    async def get_root_candidates_tool(limit: int = 10) -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.feeds.roots import extract_root_candidates
+
+        await init_db()
+        async for session in get_session():
+            candidates = await extract_root_candidates(session, limit=limit)
+            return json.dumps([asdict(c) for c in candidates], indent=2)
+        return "[]"
+
+    @server.tool(
         name="credence_remove_feed_subscription",
         description="Unsubscribe and remove a syndicated feed by URL.",
     )
@@ -985,6 +1037,64 @@ def _register_subject_resources(server: MCPServer) -> None:
                     "total_articles_discovered": len(items),
                     "zero_token_adoptions_count": len([i for i in items if i.processing_status == "mesh_adopted"]),
                     "total_tokens_saved": sum(i.tokens_saved for i in items),
+                },
+                indent=2,
+            )
+        return "{}"
+
+    @server.resource("credence://roots/tree")
+    async def get_roots_tree_resource() -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.roots import get_root_tree
+
+        await init_db()
+        async for session in get_session():
+            tree = await get_root_tree(session)
+            return json.dumps(tree, indent=2)
+        return "{}"
+
+    @server.resource("credence://roots/candidates")
+    async def get_roots_candidates_resource() -> str:
+        from dataclasses import asdict
+
+        from credence.db import get_session, init_db
+        from credence.feeds.roots import extract_root_candidates
+
+        await init_db()
+        async for session in get_session():
+            cands = await extract_root_candidates(session, limit=20)
+            return json.dumps([asdict(c) for c in cands], indent=2)
+        return "[]"
+
+    @server.resource("credence://boredom/status")
+    async def get_boredom_status_resource() -> str:
+        from sqlmodel import col, func, select
+
+        from credence.db import get_session, init_db
+        from credence.models import FeedItemRecord, FeedSubscriptionRecord
+        from credence.pipeline.governor import get_token_headroom_status
+
+        await init_db()
+        async for s in get_session():
+            headroom = await get_token_headroom_status(s)
+            stmt_pending = select(func.count(col(FeedItemRecord.id))).where(
+                FeedItemRecord.processing_status == "pending"
+            )
+            pending_count = (await s.exec(stmt_pending)).first() or 0
+            stmt_roots = select(func.count(col(FeedSubscriptionRecord.id))).where(
+                col(FeedSubscriptionRecord.is_active).is_(True)
+            )
+            roots_count = (await s.exec(stmt_roots)).first() or 0
+
+            return json.dumps(
+                {
+                    "status": "idle" if pending_count == 0 else "opportunistic_ready",
+                    "daily_headroom_pct": headroom.daily_headroom_pct,
+                    "hourly_headroom_pct": headroom.hourly_headroom_pct,
+                    "pending_items": pending_count,
+                    "active_roots_count": roots_count,
+                    "circuit_breaker_tripped": headroom.circuit_breaker_tripped,
+                    "boredom_eligible": (not headroom.circuit_breaker_tripped and headroom.daily_headroom_pct >= 30.0),
                 },
                 indent=2,
             )
@@ -1964,12 +2074,143 @@ async def api_publisher_analytics(request: Any) -> Any:
     return JSONResponse({"error": "Database session unavailable"}, status_code=500)
 
 
+async def api_roots_expand(request: Any) -> Any:
+    """REST API: Trigger autonomous root expansion from cited domains."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.roots import expand_roots
+
+    body = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+    max_sources = int(body.get("max_sources", request.query_params.get("max_sources", 5)))
+    dry_run = bool(body.get("dry_run", request.query_params.get("dry_run", False)))
+
+    await init_db()
+    async for s in get_session():
+        summary = await expand_roots(s, max_new_sources=max_sources, dry_run=dry_run)
+        return JSONResponse(asdict(summary))
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_roots_tree(request: Any) -> Any:
+    """REST API: Retrieve hierarchical root and subscription tree."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.roots import get_root_tree
+
+    await init_db()
+    async for s in get_session():
+        tree = await get_root_tree(s)
+        return JSONResponse(tree)
+    return JSONResponse({"active_roots": [], "total_active_roots": 0})
+
+
+async def api_roots_candidates(request: Any) -> Any:
+    """REST API: Retrieve candidate domains cited by audited articles."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.roots import extract_root_candidates
+
+    limit = min(int(request.query_params.get("limit", 20)), 50)
+    await init_db()
+    async for s in get_session():
+        cands = await extract_root_candidates(s, limit=limit)
+        return JSONResponse({"total": len(cands), "candidates": [asdict(c) for c in cands]})
+    return JSONResponse({"total": 0, "candidates": []})
+
+
+async def api_boredom_cycle(request: Any) -> Any:
+    """REST API: Trigger an immediate opportunistic boredom cycle."""
+    from dataclasses import asdict
+
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.boredom import run_boredom_cycle
+
+    body = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+    burst = int(body.get("burst", request.query_params.get("burst", 3)))
+    expand_roots_enabled = bool(body.get("expand_roots", request.query_params.get("expand_roots", True)))
+
+    await init_db()
+    async for s in get_session():
+        summary = await run_boredom_cycle(s, audit_burst=burst, expand_roots_enabled=expand_roots_enabled)
+        res = asdict(summary)
+        res["timestamp"] = summary.timestamp.isoformat()
+        return JSONResponse(res)
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_boredom_status(request: Any) -> Any:
+    """REST API: Get real-time boredom engine and token headroom telemetry."""
+    from sqlmodel import col, func, select
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.models import FeedItemRecord, FeedSubscriptionRecord
+    from credence.pipeline.governor import get_token_headroom_status
+
+    await init_db()
+    async for s in get_session():
+        headroom = await get_token_headroom_status(s)
+        stmt_pending = select(func.count(col(FeedItemRecord.id))).where(FeedItemRecord.processing_status == "pending")
+        pending_count = (await s.exec(stmt_pending)).first() or 0
+        stmt_audited = select(func.count(col(FeedItemRecord.id))).where(FeedItemRecord.processing_status == "audited")
+        audited_count = (await s.exec(stmt_audited)).first() or 0
+        stmt_adopted = select(func.count(col(FeedItemRecord.id))).where(
+            FeedItemRecord.processing_status == "mesh_adopted"
+        )
+        adopted_count = (await s.exec(stmt_adopted)).first() or 0
+        stmt_roots = select(func.count(col(FeedSubscriptionRecord.id))).where(
+            col(FeedSubscriptionRecord.is_active).is_(True)
+        )
+        roots_count = (await s.exec(stmt_roots)).first() or 0
+
+        return JSONResponse(
+            {
+                "status": "idle" if pending_count == 0 else "opportunistic_ready",
+                "token_headroom": {
+                    "daily_pct": headroom.daily_headroom_pct,
+                    "hourly_pct": headroom.hourly_headroom_pct,
+                    "daily_spend_usd": headroom.daily_spend_usd,
+                    "circuit_breaker_tripped": headroom.circuit_breaker_tripped,
+                },
+                "queue": {
+                    "pending_items": pending_count,
+                    "audited_items": audited_count,
+                    "mesh_adopted_items": adopted_count,
+                    "active_roots_count": roots_count,
+                },
+                "boredom_trigger_eligible": (
+                    not headroom.circuit_breaker_tripped and headroom.daily_headroom_pct >= 30.0
+                ),
+            }
+        )
+    return JSONResponse({"status": "unavailable"}, status_code=500)
+
+
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
         name="credence",
         instructions="Autonomous Epistemic Evaluation Engine, FastMCP Server, and Trust Network.",
-        version="0.1.0",
+        version="1.16.0",
     )
     _register_eval_tools(server)
     _register_query_tools(server)
@@ -1991,8 +2232,9 @@ mcp_server = create_mcp_server()
 def create_server_app(
     transport_security: Optional[Any] = None,
     enable_sifter: bool = False,
+    enable_boredom: bool = False,
 ) -> Any:
-    """Create a unified Starlette application hosting FastMCP SSE, REST API, and Sifter."""
+    """Create a unified Starlette application hosting FastMCP SSE, REST API, Sifter, and Boredom Engine."""
     import os
     from contextlib import asynccontextmanager
 
@@ -2025,6 +2267,11 @@ def create_server_app(
         Route("/api/germinate", endpoint=api_germinate, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/sifter/status", endpoint=api_sifter_status, methods=["GET", "OPTIONS"]),
         Route("/api/sifter/cycle", endpoint=api_sifter_cycle, methods=["POST", "OPTIONS"]),
+        Route("/api/roots/expand", endpoint=api_roots_expand, methods=["POST", "GET", "OPTIONS"]),
+        Route("/api/roots/tree", endpoint=api_roots_tree, methods=["GET", "OPTIONS"]),
+        Route("/api/roots/candidates", endpoint=api_roots_candidates, methods=["GET", "OPTIONS"]),
+        Route("/api/boredom/cycle", endpoint=api_boredom_cycle, methods=["POST", "GET", "OPTIONS"]),
+        Route("/api/boredom/status", endpoint=api_boredom_status, methods=["GET", "OPTIONS"]),
         Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
         Route("/api/leaderboard", endpoint=api_leaderboard, methods=["GET", "OPTIONS"]),
         Route("/api/merit", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
@@ -2071,8 +2318,9 @@ def create_server_app(
 
     app.add_middleware(TelemetryMiddleware)
 
-    # Lifespan task for Sifter Daemon & Auto-Germination
+    # Lifespan task for Sifter Daemon, Boredom Daemon & Auto-Germination
     should_sift = enable_sifter or os.environ.get("CREDENCE_SIFTER_ENABLED", "").lower() in ("1", "true")
+    should_boredom = enable_boredom or os.environ.get("CREDENCE_BOREDOM_ENABLED", "").lower() in ("1", "true")
     original_lifespan = app.router.lifespan_context
 
     @asynccontextmanager
@@ -2080,6 +2328,7 @@ def create_server_app(
         from sqlmodel import col, func, select
 
         from credence.db import get_async_session, init_db
+        from credence.feeds.boredom import BoredomDaemon
         from credence.feeds.sifter import SifterDaemon
         from credence.germinate import germinate_node
         from credence.models import AuditRecord, FeedSubscriptionRecord
@@ -2111,6 +2360,12 @@ def create_server_app(
             sifter_daemon = SifterDaemon(poll_interval_seconds=300, auto_audit=True)
             sifter_task = asyncio.create_task(sifter_daemon.start())
 
+        boredom_daemon = None
+        boredom_task = None
+        if should_boredom:
+            boredom_daemon = BoredomDaemon(idle_interval_seconds=120, audit_burst=3, expand_roots_enabled=True)
+            boredom_task = asyncio.create_task(boredom_daemon.start())
+
         try:
             if original_lifespan:
                 async with original_lifespan(app_instance) as state:
@@ -2124,6 +2379,12 @@ def create_server_app(
                 sifter_daemon.stop()
                 try:
                     await asyncio.wait_for(sifter_task, timeout=2.0)
+                except (asyncio.TimeoutError, asyncio.CancelledError):
+                    pass
+            if boredom_daemon and boredom_task:
+                boredom_daemon.stop()
+                try:
+                    await asyncio.wait_for(boredom_task, timeout=2.0)
                 except (asyncio.TimeoutError, asyncio.CancelledError):
                     pass
 

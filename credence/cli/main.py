@@ -2010,6 +2010,33 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(cli_db_clean(retention_days=args.retention_days))
     elif cmd in ("feeds", "feed"):
         asyncio.run(_dispatch_feeds_cli(args))
+    elif cmd == "expand-roots":
+        asyncio.run(
+            cli_expand_roots(
+                max_sources=getattr(args, "max_sources", 5),
+                min_citation_count=getattr(args, "min_citations", 1),
+                dry_run=getattr(args, "dry_run", False),
+                format_type=getattr(args, "format", "human"),
+            )
+        )
+    elif cmd == "boredom":
+        asyncio.run(
+            cli_boredom(
+                burst=getattr(args, "burst", 3),
+                expand_roots_enabled=not getattr(args, "no_expand_roots", False),
+                continuous=getattr(args, "continuous", False),
+                interval=getattr(args, "interval", 120),
+                profile=getattr(args, "profile", "balanced"),
+            )
+        )
+    elif cmd == "roots":
+        asyncio.run(
+            cli_roots(
+                action=getattr(args, "action", "tree"),
+                limit=getattr(args, "limit", 20),
+                format_type=getattr(args, "format", "human"),
+            )
+        )
     elif cmd == "sifter":
         from credence.config import CostProfile
         from credence.feeds.sifter import SifterDaemon
@@ -2050,6 +2077,179 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(_run_digest())
     elif cmd == "subjects":
         _dispatch_subjects_cli(args)
+
+
+async def cli_expand_roots(
+    max_sources: int = 5,
+    min_citation_count: int = 1,
+    dry_run: bool = False,
+    format_type: str = "human",
+) -> None:
+    """CLI: Extract cited domains and expand subscription roots."""
+    from dataclasses import asdict
+
+    from rich.table import Table
+
+    from credence.db import get_session, init_db
+    from credence.feeds.roots import expand_roots
+
+    await init_db()
+    async for s in get_session():
+        summary = await expand_roots(
+            s, max_new_sources=max_sources, min_citation_count=min_citation_count, dry_run=dry_run
+        )
+        if format_type == "json":
+            print(json.dumps(asdict(summary), indent=2))
+            return
+
+        table = Table(
+            title="[bold]Epistemic Root Expansion Results[/bold]", show_header=True, header_style="bold green"
+        )
+        table.add_column("Domain", style="cyan")
+        table.add_column("Feed Title / Endpoint", style="white")
+        table.add_column("Status", justify="center")
+        table.add_column("Items Queued", justify="right", style="magenta")
+
+        for d in summary.details:
+            table.add_row(
+                d.get("domain", "—"),
+                d.get("title") or d.get("feed_url") or "—",
+                f"[green]{d.get('status')}[/green]"
+                if d.get("status") == "subscribed"
+                else f"[dim]{d.get('status')}[/dim]",
+                str(d.get("items_harvested", 0)),
+            )
+
+        console.print(table)
+        console.print(
+            Panel(
+                f"[bold]Root Expansion Summary:[/bold]\n"
+                f"• Candidates Scanned:      {summary.candidates_scanned}\n"
+                f"• Domains Evaluated:       {summary.candidate_domains_evaluated}\n"
+                f"• New Feeds Discovered:    {summary.new_feeds_discovered}\n"
+                f"• New Roots Subscribed:    [bold green]{summary.new_feeds_subscribed}[/bold green]\n"
+                f"• Initial Items Queued:    [bold magenta]{summary.initial_items_harvested}[/bold magenta]\n"
+                f"• Mode:                    {'[yellow]Dry Run[/yellow]' if dry_run else '[green]Live Subscribed[/green]'}",
+                title="[bold]Ecosystem Roots[/bold]",
+                border_style="green",
+            )
+        )
+        return
+
+
+async def cli_roots(
+    action: str = "tree",
+    limit: int = 20,
+    format_type: str = "human",
+) -> None:
+    """CLI: Inspect root tree, citation candidates, and subscription health."""
+    from dataclasses import asdict
+
+    from rich.table import Table
+    from rich.tree import Tree
+
+    from credence.db import get_session, init_db
+    from credence.feeds.roots import extract_root_candidates, get_root_tree
+
+    await init_db()
+    async for s in get_session():
+        if action == "candidates":
+            cands = await extract_root_candidates(s, limit=limit)
+            if format_type == "json":
+                print(json.dumps([asdict(c) for c in cands], indent=2))
+                return
+            table = Table(
+                title="[bold]Pending Citation Root Candidates[/bold]", show_header=True, header_style="bold cyan"
+            )
+            table.add_column("Rank", justify="center", width=5)
+            table.add_column("Candidate Domain", style="cyan")
+            table.add_column("Citations", justify="right", style="magenta")
+            table.add_column("Parent Trust", justify="right", style="green")
+            table.add_column("Primary Subject", style="dim")
+
+            for idx, c in enumerate(cands, 1):
+                table.add_row(
+                    str(idx),
+                    c.domain,
+                    str(c.citation_count),
+                    f"{c.avg_parent_trust:.1f}/100",
+                    c.primary_subject,
+                )
+            console.print(table)
+            return
+
+        # Default action: "tree"
+        tree_data = await get_root_tree(s)
+        if format_type == "json":
+            print(json.dumps(tree_data, indent=2))
+            return
+
+        root_tree = Tree("[bold green]🌳 Credence Epistemic Root Network[/bold green]")
+        active_branch = root_tree.add(f"[bold]Active Subscribed Roots ({tree_data['total_active_roots']})[/bold]")
+        for r in tree_data["active_roots"]:
+            active_branch.add(
+                f"[cyan]{r['title']}[/cyan] [dim]({r['domain']})[/dim] - [magenta]{r['items_count']} items[/magenta] (Tier {r['priority_tier']})"
+            )
+
+        cand_branch = root_tree.add(
+            f"[bold yellow]🌱 Unsubscribed Citation Soil ({len(tree_data['pending_citation_candidates'])})[/bold yellow]"
+        )
+        for c in tree_data["pending_citation_candidates"]:
+            cand_branch.add(
+                f"[yellow]{c['domain']}[/yellow] [dim]({c['citation_count']} citations, trust: {c['avg_parent_trust']:.1f})[/dim]"
+            )
+
+        console.print(root_tree)
+        return
+
+
+async def cli_boredom(
+    burst: int = 3,
+    expand_roots_enabled: bool = True,
+    continuous: bool = False,
+    interval: int = 120,
+    profile: str = "balanced",
+) -> None:
+    """CLI: Execute single boredom pass or launch background boredom daemon."""
+    from credence.config import CostProfile
+    from credence.db import get_session, init_db
+    from credence.feeds.boredom import BoredomDaemon, run_boredom_cycle
+
+    prof = CostProfile(profile.lower())
+    if continuous:
+        daemon = BoredomDaemon(
+            idle_interval_seconds=interval,
+            audit_burst=burst,
+            expand_roots_enabled=expand_roots_enabled,
+            cost_profile=prof,
+        )
+        await daemon.start(once=False)
+        return
+
+    await init_db()
+    async for s in get_session():
+        summary = await run_boredom_cycle(
+            s,
+            audit_burst=burst,
+            expand_roots_enabled=expand_roots_enabled,
+            cost_profile=prof,
+        )
+        console.print(
+            Panel(
+                f"[bold]Autonomous Boredom Ingestion Summary:[/bold]\n"
+                f"• Pending Queue Scanned:     {summary.pending_items_scanned}\n"
+                f"• Items Audited Novel:       [bold green]{summary.pending_items_audited}[/bold green]\n"
+                f"• Mesh Adopted (0 tokens):   [bold cyan]{summary.mesh_attestations_adopted}[/bold cyan]\n"
+                f"• Tokens Saved via Mesh:     [bold yellow]{summary.tokens_saved_mesh:,}[/bold yellow]\n"
+                f"• New Roots Subscribed:      [bold magenta]{summary.new_roots_subscribed}[/bold magenta]\n"
+                f"• Initial Items Harvested:   {summary.initial_items_harvested}\n"
+                f"• Daily Token Headroom:      {summary.headroom_daily_pct:.1f}%\n"
+                f"• Circuit Breaker Status:    {'[red]TRIPPED[/red]' if summary.circuit_breaker_tripped else '[green]CLEAR[/green]'}",
+                title="[bold]Autonomous Exploration[/bold]",
+                border_style="cyan",
+            )
+        )
+        return
 
 
 async def cli_feeds(
@@ -2762,6 +2962,61 @@ def main() -> None:
         "--no-auto-audit", action="store_true", help="Discover items without running live LLM evaluations."
     )
     sifter_parser.add_argument("--once", action="store_true", help="Execute a single sifting pass and exit.")
+
+    # expand-roots command
+    expand_roots_parser = subparsers.add_parser(
+        "expand-roots",
+        help="Extract cited external domains from verified clean articles and autonomously subscribe to new roots.",
+    )
+    expand_roots_parser.add_argument(
+        "--max-sources", "-m", type=int, default=5, help="Maximum new root sources to subscribe to (default: 5)."
+    )
+    expand_roots_parser.add_argument(
+        "--min-citations", "-c", type=int, default=1, help="Minimum parent article citations required (default: 1)."
+    )
+    expand_roots_parser.add_argument(
+        "--dry-run", action="store_true", help="Discover candidate feeds without modifying subscription database."
+    )
+    expand_roots_parser.add_argument(
+        "--format", choices=["human", "json"], default="human", help="Output format (default: human)."
+    )
+
+    # boredom command
+    boredom_parser = subparsers.add_parser(
+        "boredom",
+        help="Execute opportunistic boredom cycle: digest pending queues and expand roots with available token overhead.",
+    )
+    boredom_parser.add_argument(
+        "--burst", "-b", type=int, default=3, help="Max pending queue items to audit in this cycle (default: 3)."
+    )
+    boredom_parser.add_argument(
+        "--continuous", action="store_true", help="Run continuously as background daemon during idle intervals."
+    )
+    boredom_parser.add_argument(
+        "--interval",
+        "-i",
+        type=int,
+        default=120,
+        help="Idle polling interval in seconds for continuous mode (default: 120).",
+    )
+    boredom_parser.add_argument("--no-expand-roots", action="store_true", help="Skip autonomous root expansion stage.")
+    boredom_parser.add_argument(
+        "--profile", choices=["free", "balanced", "ultra"], default="balanced", help="Operational cost profile."
+    )
+
+    # roots command
+    roots_parser = subparsers.add_parser(
+        "roots", help="Inspect hierarchical root discovery tree, active subscriptions, and pending citation candidates."
+    )
+    roots_parser.add_argument(
+        "action", choices=["tree", "candidates"], default="tree", nargs="?", help="Action: tree, candidates"
+    )
+    roots_parser.add_argument(
+        "--limit", "-l", type=int, default=20, help="Max candidate records to display (default: 20)."
+    )
+    roots_parser.add_argument(
+        "--format", choices=["human", "json"], default="human", help="Output format (default: human)."
+    )
 
     # export-catalog command
     export_cat_parser = subparsers.add_parser(

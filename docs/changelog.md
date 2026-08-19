@@ -3,13 +3,47 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.15.0
+verified_version: v1.16.0
 last_verified: '2026-08-19'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.16.0] - 2026-08-19
+
+### Autonomous Boredom Engine & Epistemic Root Expansion
+- **Autonomous Boredom Engine (`credence/feeds/boredom.py`)**:
+  - Introduced the `BoredomEngine` and `BoredomDaemon` that convert idle node compute and token headroom into autonomous epistemic discovery.
+  - Implemented `run_boredom_cycle` with Token Safety Governor gating (enforcing rolling 24-hour headroom $\ge 30\%$ and circuit breaker integrity).
+  - Built opportunistic prioritized FIFO pending queue digestion with Mesh Effort Avoidance: checks local database and peer mesh attestations first to adopt signed reports at **0 tokens ($0.00)** before executing novel LLM audits.
+  - Broadcasts signed Ed25519 `AuditRecord` attestations across the 13-node Watts-Strogatz P2P mesh relay upon completing novel audits.
+- **Epistemic Root Expansion & Citation Soil (`credence/feeds/roots.py`)**:
+  - Implemented `extract_root_candidates` to extract cited outbound domains from verified clean articles ($\text{Suspicion Score} \le 25.0, G = 1.00$).
+  - Added strict SSRF and network security containment (`is_safe_url`), rejecting loopback, RFC 1918 private subnets, cloud metadata (`169.254.169.254`), and social network noise.
+  - Implemented `expand_roots` to autonomously probe candidate domains for RSS/Atom/JSON feeds, auto-register new `FeedSubscriptionRecord` roots, and harvest initial `FeedItemRecord` items.
+  - Built `get_root_tree` providing hierarchical JSON trees of active roots and citation soil.
+- **Universal 4-Way Feature Parity**:
+  - **FastMCP 2.0 (`credence/server/app.py`)**:
+    - Tools: `credence_expand_roots`, `credence_trigger_boredom_cycle`, `credence_get_root_candidates`.
+    - Resources: `credence://roots/tree`, `credence://roots/candidates`, `credence://boredom/status`.
+    - REST API: `POST /api/roots/expand`, `GET /api/roots/tree`, `GET /api/roots/candidates`, `POST /api/boredom/cycle`, `GET /api/boredom/status`.
+    - Starlette lifespan integration: launches `BoredomDaemon` in background when enabled.
+  - **CLI (`credence/cli/main.py`)**:
+    - Added commands: `credence expand-roots`, `credence boredom`, `credence roots [tree|candidates]`.
+  - **Zero-Build Web UI (`web/credence.report/index.html` & `web/credence.run/index.html`)**:
+    - Added live Epistemic Root Network & Boredom Engine telemetry section and spotlight cards.
+- **The Invariant Bible Canonization**:
+  - Retitled canonical invariants to **"The Invariant Bible: Living Canon of System-Wide Invariants & Protocols"**, eliminating static fixed count references across all documentation and web surfaces.
+  - Formalized Invariant 39: *Opportunistic Boredom Ingestion & Epistemic Root Expansion Invariant*.
+- **Documentation & Sovereign Blog**:
+  - Published sovereign blog essay: [`The Boredom Engine & Expanding Roots`](#blog/the-boredom-engine-and-expanding-roots).
+  - Published formal protocol specification: [`Epistemic Protocol Specification: Boredom Engine & Root Expansion (EPEP-16)`](#docs/protocols/boredom-and-root-expansion).
+- **Hermetic Test Suites & Mesh Cluster Verification**:
+  - Added `tests/test_roots.py` (candidate extraction, SSRF rejection, feed discovery, root trees).
+  - Added `tests/test_boredom.py` (boredom cycle execution, token governor gating, background daemon).
+  - Added `test_mesh_cluster_boredom_work_sharing` and `test_mesh_cluster_boredom_root_partitioning` in `tests/test_mesh_cluster.py`.
 
 ## [1.15.3] - 2026-08-19
 

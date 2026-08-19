@@ -3,7 +3,7 @@ title: Topic Index & Quick Reference
 description: Comprehensive concept index, cheat sheet, and fast-lookup directory for
   the Credence ecosystem.
 since_version: v1.11.0
-verified_version: v1.15.0
+verified_version: v1.16.0
 last_verified: '2026-08-19'
 ---
 
@@ -27,7 +27,7 @@ last_verified: '2026-08-19'
 | [🕸️ P2P Mesh Network & Consensus](#7-p2p-mesh-network-consensus) | 3-node quickstart, 13-node chaos lab, seed nodes, DNS SRV |
 | [📐 Mathematical Proofs & Theory](#8-mathematical-foundations-proofs) | Weighted medians, Galileo Rule proof, SimHash-64, BitTorrent model |
 | [☁️ Self-Hosting & Operations](#9-self-hosting-operations) | Raspberry Pi, GCP Cloud Run, Tailscale, SQLite WAL maintenance |
-| [🏛️ 38 System Invariants](#10-the-38-core-system-invariants) | Complete index of architectural, epistemic, and security rules |
+| [🏛️ The Invariant Bible](#the-invariant-bible) | Complete living canon of architectural, epistemic, and security rules |
 | [🌐 External Standards & Specifications](#11-external-standards-authoritative-specifications) | IETF RFCs, W3C WebCrypto, Model Context Protocol, SPJ Ethics |
 
 ---
@@ -157,17 +157,12 @@ last_verified: '2026-08-19'
 
 ---
 
-## 🏛️ 10. The 38 Core System Invariants
+<a id="the-invariant-bible"></a>
+## 🏛️ 10. The Invariant Bible: Living Canon of System-Wide Invariants & Protocols
 
 For complete engineering invariants, safety constraints, and mathematical guarantees, see the master reference:
 
-* 📘 **[The 38 Core System Invariants](invariants.md)**
-  * *Invariants 1–5*: Grounding, Poe's Law, Canonical JSON, 5-Factor Node Quality, The Galileo Rule.
-  * *Invariants 6–10*: FastMCP 2.0, Headroom Circuit Breakers, SSRF Ingestion Guards, 4-Way Parity.
-  * *Invariants 11–15*: Topic Entropy ($H < 0.30$), SimHash Deduplication, Byzantine Cartel Defense ($N \ge 3f+1$).
-  * *Invariants 16–20*: DNS SRV Peering, Air-Gapped Sneakernets, Zero-npm Web Standards, Node Germination.
-  * *Invariants 21–36*: Epistemic Merits, Traffic Shaping, Telemetry Loopbacks, Multi-Cloud Portability.
-  * *Invariants 37–38*: Zero-Build Inline HTML Tag & Nested Math Integrity, Anti-Scrollbox Natural Flow Presentation.
+* 📘 **[The Invariant Bible: Living Canon of System-Wide Invariants & Protocols](invariants.md)**: The evolving, living canon of mathematical rules, runtime safety guardrails, cryptographic protocols, and presentation standards governing the entire Credence ecosystem.
 * 🏛️ **[Invariant Scalability & Knowledge Governance Blueprint](blueprints/invariant-scalability-and-knowledge-governance.md)**: 3-tier governance architecture preventing prompt bloat and attention dilution.
 * 📰 **[Scaling Invariants Without Prompt Bloat Essay](../blog/scaling-system-invariants-without-prompt-bloat.md)**: Engineering essay on shift-left automated test gates and progressive skills.
 
