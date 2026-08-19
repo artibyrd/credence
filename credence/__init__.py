@@ -1,3 +1,3 @@
 """Credence: Epistemic evaluation and consensus engine."""
 
-__version__ = "1.12.2"
+__version__ = "1.12.3"
