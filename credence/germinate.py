@@ -310,14 +310,34 @@ async def export_catalog_to_disk(
         )
 
         item = {
-            "id": audit.id,
+            "id": snap.url if snap and snap.url else audit.content_sha256,
             "url": snap.url if snap else "",
-            "title": snap.title if snap else "",
+            "title": snap.title if snap and snap.title else (audit.content_sha256[:24] + "..."),
+            "byline": snap.byline if snap else "",
             "category": cat,
+            "content_sha256": audit.content_sha256,
+            "simhash_64": snap.simhash_64 if snap else "",
             "suspicion_score": audit.suspicion_score,
+            "suspicion_density": audit.suspicion_density,
+            "confidence_score": audit.confidence_score,
             "classification": audit.classification,
             "is_satire": audit.is_satire,
             "audited_at": audit.audited_at.isoformat() if audit.audited_at else None,
+            "article_text": "",
+            "violations": [
+                {
+                    "rule_id": v.rule_id,
+                    "rule_uri": v.rule_uri,
+                    "domain": v.domain,
+                    "cluster_id": v.cluster_id,
+                    "severity": v.severity,
+                    "confidence": v.confidence,
+                    "quote_or_element": v.quote_or_element,
+                    "reasoning": v.reasoning,
+                    "line_or_selector": v.line_or_selector,
+                }
+                for v in violations
+            ],
             "node_pubkey": audit.node_pubkey,
             "node_signature": audit.node_signature,
             "violations_count": len(violations),

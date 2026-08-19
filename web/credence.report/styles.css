@@ -82,8 +82,8 @@ header { margin-bottom: 2rem; }
 .signal-fail { background: rgba(244, 63, 94, 0.12); color: var(--accent-rose); }
 
 /* Interactive Tabs */
-.tabs-nav { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; scrollbar-width: none; }
-.tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.75rem 1.25rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; }
+.tabs-nav { display: flex; gap: 0.35rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; padding-bottom: 2px; }
+.tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.65rem 0.95rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0; }
 .tab-btn:hover { color: var(--text-main); }
 .tab-btn.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); }
 .tab-count { background: var(--bg-highlight); color: var(--text-muted); font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-pill); font-weight: 700; }
@@ -111,7 +111,7 @@ header { margin-bottom: 2rem; }
 .meta-table tr:last-child { border-bottom: none; }
 .meta-table td { padding: 0.6rem 0; }
 .meta-table td.label { color: var(--text-muted); width: 40%; font-weight: 500; }
-.meta-table td.val { font-family: var(--font-mono); color: #fff; word-break: break-all; }
+.meta-table td.val { font-family: var(--font-mono); color: #fff; font-size: 0.82rem; line-height: 1.45; word-break: break-all; overflow-wrap: anywhere; }
 
 /* In-Context Reading Mode */
 .reader-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }

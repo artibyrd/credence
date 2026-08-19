@@ -128,3 +128,72 @@ def test_web_foundation_taxonomies_and_keys(web_dir: Path) -> None:
         data = json.loads(cat_file.read_text(encoding="utf-8"))
         assert "catalog_id" in data
         assert "clusters" in data
+
+
+@pytest.mark.unit
+def test_web_reports_json_schema_completeness(web_dir: Path) -> None:
+    """Verify web/credence.report/reports.json contains rich fields for all catalog records."""
+    reports_file = web_dir / "credence.report" / "reports.json"
+    assert reports_file.exists(), "reports.json must exist"
+
+    data = json.loads(reports_file.read_text(encoding="utf-8"))
+    assert data.get("status") == "ready"
+    assert "reports" in data
+    assert isinstance(data["reports"], list)
+    assert len(data["reports"]) >= 5
+
+    for r in data["reports"]:
+        assert "id" in r
+        assert "url" in r
+        assert "title" in r
+        assert "category" in r
+        assert "content_sha256" in r
+        assert len(r["content_sha256"]) > 0
+        assert "simhash_64" in r
+        assert "suspicion_score" in r
+        assert "classification" in r
+        assert "audited_at" in r
+        assert "violations" in r
+        assert isinstance(r["violations"], list)
+
+        if len(r["violations"]) > 0:
+            for v in r["violations"]:
+                assert "rule_id" in v
+                assert "domain" in v
+                assert "severity" in v
+                assert "reasoning" in v
+
+
+@pytest.mark.unit
+def test_web_viewer_heuristic_suspicion_safeguards(web_dir: Path) -> None:
+    """Verify viewer.html enforces dimension score capping, template grammar checks, and zero false green tags on high suspicion."""
+    viewer_file = web_dir / "credence.report" / "viewer.html"
+    content = viewer_file.read_text(encoding="utf-8")
+
+    # Guard against broken executive summary template gap "identified . Readers"
+    assert "elevated heuristic suspicion" in content, "Viewer must include descriptive fallback for summary audits"
+    assert "High Deception Risk" in content, "Viewer must flag high deception risk signals"
+
+    # Guard against 100/100 trust dimensions on high suspicion
+    assert "decScore = Math.min(decScore" in content or "Math.max(0, Math.round(100 - suspScore))" in content, (
+        "Viewer must discount trust dimensions when suspicion score is high"
+    )
+
+    # Informative fallback in findings list for summary audits
+    assert "Heuristic Deception Signals Detected" in content, (
+        "Findings list must explain summary audits with elevated suspicion"
+    )
+
+
+@pytest.mark.unit
+def test_web_viewer_css_tab_and_hash_integrity(web_dir: Path) -> None:
+    """Verify styles.css enforces responsive tabs and clean monospace hash wrapping."""
+    css_file = web_dir / "credence.report" / "styles.css"
+    content = css_file.read_text(encoding="utf-8")
+
+    # Responsive tab bar & scrollbar
+    assert "scrollbar-width: thin" in content
+    assert "flex-shrink: 0" in content
+
+    # Clean monospace hash wrapping
+    assert "overflow-wrap: anywhere" in content

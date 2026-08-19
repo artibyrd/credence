@@ -781,7 +781,7 @@ City council members expressed optimism regarding the new administration's forei
         const res = await fetch(`${apiBase}/api/reports?limit=50`);
         if (res.ok) {
           const data = await res.json();
-          if (data && data.reports && data.reports.length > 0) {
+          if (data && Array.isArray(data.reports) && data.reports.length > 0) {
             dynamicCorpus = data.reports;
             return;
           }
@@ -796,6 +796,8 @@ City council members expressed optimism regarding the new administration's forei
           const dataStatic = await resStatic.json();
           if (Array.isArray(dataStatic) && dataStatic.length > 0) {
             dynamicCorpus = dataStatic;
+          } else if (dataStatic && Array.isArray(dataStatic.reports) && dataStatic.reports.length > 0) {
+            dynamicCorpus = dataStatic.reports;
           }
         }
       } catch (err) {
@@ -869,7 +871,7 @@ City council members expressed optimism regarding the new administration's forei
               <span class="badge ${scoreClass}">${badgeLabel}</span>
               <span class="drawer-score ${scoreClass}">${score.toFixed(1)}</span>
             </div>
-            <div class="drawer-title-text">${escapeHtml(item.title || sha.slice(0, 30))}</div>
+            <div class="drawer-title-text">${escapeHtml(item.title || String(sha).slice(0, 30))}</div>
             <div class="drawer-url">${escapeHtml(item.url || "")}</div>
           </div>
         `;
@@ -893,8 +895,9 @@ City council members expressed optimism regarding the new administration's forei
 
     window.loadReportByHash = async function(hash) {
       window.closeDiscoveryDrawer();
-      const match = dynamicCorpus.find(c => c.content_sha256 === hash || c.url === hash || c.id === hash) ||
-                    MOCK_CORPUS.find(c => c.content_sha256 === hash || c.url === hash || c.id === hash);
+      const hashStr = String(hash || "").trim();
+      const match = dynamicCorpus.find(c => c.content_sha256 === hashStr || c.url === hashStr || String(c.id) === hashStr) ||
+                    MOCK_CORPUS.find(c => c.content_sha256 === hashStr || c.url === hashStr || String(c.id) === hashStr);
       
       if (match && match.violations && (match.article_text || match.violations.length > 0)) {
         document.getElementById("header-query").value = match.content_sha256 || match.id;
@@ -908,14 +911,14 @@ City council members expressed optimism regarding the new administration's forei
       // Query REST API for full reconstituted report
       const apiBase = getApiBaseUrl();
       try {
-        const res = await fetch(`${apiBase}/api/reports/${encodeURIComponent(hash)}`);
+        const res = await fetch(`${apiBase}/api/reports/${encodeURIComponent(hashStr)}`);
         if (res.ok) {
           const fullReport = await res.json();
-          if (fullReport && fullReport.content_sha256) {
-            document.getElementById("header-query").value = fullReport.content_sha256;
+          if (fullReport && (fullReport.content_sha256 || fullReport.url)) {
+            document.getElementById("header-query").value = fullReport.content_sha256 || fullReport.id;
             renderReport(fullReport);
             const url = new URL(window.location);
-            url.searchParams.set("q", fullReport.content_sha256);
+            url.searchParams.set("q", fullReport.content_sha256 || fullReport.id);
             window.history.replaceState({}, "", url);
             return;
           }
@@ -928,7 +931,7 @@ City council members expressed optimism regarding the new administration's forei
         document.getElementById("header-query").value = match.content_sha256 || match.id;
         renderReport(match);
       } else {
-        showToast(`Report not found: ${hash.slice(0, 30)}`);
+        showToast(`Report not found: ${hashStr.slice(0, 30)}`);
       }
     };
 
@@ -975,11 +978,17 @@ City council members expressed optimism regarding the new administration's forei
       activeReport = report;
 
       // Update OpenGraph Title
-      document.title = `${report.title} — Credence Epistemic Audit`;
+      document.title = `${report.title || 'Epistemic Audit Report'} — Credence Epistemic Audit`;
+
+      const suspScore = typeof report.suspicion_score === "number" ? report.suspicion_score : 0.0;
+      const density = typeof report.suspicion_density === "number" ? report.suspicion_density : 0.0;
+      const conf = typeof report.confidence_score === "number" ? report.confidence_score : 0.95;
+      const sha = report.content_sha256 || (report.id ? (String(report.id).startsWith("sha256:") ? String(report.id) : `sha256:${report.id}`) : "--");
+      const simhash = report.simhash_64 || (report.content_sha256 ? "0x" + report.content_sha256.replace(/^sha256:/, "").slice(0, 16) : "0x0000000000000000");
 
       // 1. Render Human View
       document.getElementById("page-title").textContent = report.title || "Epistemic Audit Report";
-      document.getElementById("target-url").textContent = report.url;
+      document.getElementById("target-url").textContent = report.url || "N/A";
 
       const scoreEl = document.getElementById("suspicion-score");
       const badgeEl = document.getElementById("classification-badge");
@@ -993,13 +1002,13 @@ City council members expressed optimism regarding the new administration's forei
       if (report.is_satire) {
         scoreClass = "satire";
         verdictLabel = "SATIRE / PARODY";
-      } else if (report.suspicion_score <= 15.0) {
+      } else if (suspScore <= 15.0) {
         scoreClass = "clean";
         verdictLabel = "CLEAN";
-      } else if (report.suspicion_score <= 40.0) {
+      } else if (suspScore <= 40.0) {
         scoreClass = "low_suspicion";
         verdictLabel = "LOW SUSPICION";
-      } else if (report.suspicion_score <= 70.0) {
+      } else if (suspScore <= 70.0) {
         scoreClass = "suspicious";
         verdictLabel = "SUSPICIOUS";
       } else {
@@ -1010,11 +1019,11 @@ City council members expressed optimism regarding the new administration's forei
       scoreEl.classList.add(scoreClass);
       badgeEl.classList.add(scoreClass);
 
-      scoreEl.textContent = report.suspicion_score.toFixed(1);
+      scoreEl.textContent = suspScore.toFixed(1);
       badgeEl.textContent = verdictLabel;
 
-      document.getElementById("density-index").textContent = `Density: ${report.suspicion_density.toFixed(1)} / 1k words`;
-      document.getElementById("eval-method-badge").textContent = `Evaluated via ${report.evaluation_method || 'LLM Multi-Agent Pipeline'} • ${Math.round((report.confidence_score || 0.95) * 100)}% Confidence`;
+      document.getElementById("density-index").textContent = `Density: ${density.toFixed(1)} / 1k words`;
+      document.getElementById("eval-method-badge").textContent = `Evaluated via ${report.evaluation_method || 'LLM Multi-Agent Pipeline'} • ${Math.round(conf * 100)}% Confidence`;
 
       // Executive Briefing Generation
       generateExecutiveSummary(report);
@@ -1023,8 +1032,8 @@ City council members expressed optimism regarding the new administration's forei
       renderTrustDimensions(report);
 
       // Provenance Meta
-      document.getElementById("meta-sha256").textContent = report.content_sha256;
-      document.getElementById("meta-simhash").textContent = report.simhash_64;
+      document.getElementById("meta-sha256").textContent = sha;
+      document.getElementById("meta-simhash").textContent = simhash;
       document.getElementById("meta-node-pubkey").textContent = report.node_pubkey ? `${report.node_pubkey.slice(0, 16)}...${report.node_pubkey.slice(-8)}` : "--";
       document.getElementById("meta-timestamp").textContent = report.audited_at || new Date().toISOString();
 
@@ -1040,18 +1049,22 @@ City council members expressed optimism regarding the new administration's forei
 
       // 2. Render Compact View
       document.getElementById("compact-title").textContent = report.title || "Epistemic Audit";
-      document.getElementById("compact-url").textContent = report.url;
+      document.getElementById("compact-url").textContent = report.url || "N/A";
       document.getElementById("compact-verdict-pill").className = `sig-pill ${scoreClass}`;
-      document.getElementById("compact-verdict-pill").textContent = `${verdictLabel} (${report.suspicion_score.toFixed(1)})`;
-      document.getElementById("compact-score").textContent = `${report.suspicion_score.toFixed(1)} / 100.0`;
-      document.getElementById("compact-density").textContent = `${report.suspicion_density.toFixed(1)} / 1k words`;
-      document.getElementById("compact-conf").textContent = `${Math.round((report.confidence_score || 0.95) * 100)}%`;
-      document.getElementById("compact-sha").textContent = report.content_sha256.slice(0, 24) + "...";
+      document.getElementById("compact-verdict-pill").textContent = `${verdictLabel} (${suspScore.toFixed(1)})`;
+      document.getElementById("compact-score").textContent = `${suspScore.toFixed(1)} / 100.0`;
+      document.getElementById("compact-density").textContent = `${density.toFixed(1)} / 1k words`;
+      document.getElementById("compact-conf").textContent = `${Math.round(conf * 100)}%`;
+      document.getElementById("compact-sha").textContent = sha.length > 28 ? sha.slice(0, 24) + "..." : sha;
       document.getElementById("compact-exec-text").textContent = document.getElementById("exec-summary-text").textContent;
 
       const compactBody = document.getElementById("compact-findings-body");
       if (!report.violations || report.violations.length === 0) {
-        compactBody.innerHTML = `<tr><td colspan="5" style="color: var(--accent-green); padding: 1rem; text-align: center;">✓ No grounded violations detected on this page. High epistemic integrity.</td></tr>`;
+        if (suspScore > 15.0 && !report.is_satire) {
+          compactBody.innerHTML = `<tr><td colspan="5" style="color: var(--accent-amber); padding: 1rem; text-align: center;">⚠️ Elevated heuristic suspicion (${suspScore.toFixed(1)} / 100). Summary catalog view.</td></tr>`;
+        } else {
+          compactBody.innerHTML = `<tr><td colspan="5" style="color: var(--accent-green); padding: 1rem; text-align: center;">✓ No grounded violations detected on this page. High epistemic integrity.</td></tr>`;
+        }
       } else {
         compactBody.innerHTML = report.violations.map(v => `
           <tr>
@@ -1067,7 +1080,7 @@ City council members expressed optimism regarding the new administration's forei
       // 3. Render Machine Raw View
       const rawJson = JSON.stringify(report, null, isJsonMinified ? 0 : 2);
       document.getElementById("raw-json-display").textContent = rawJson;
-      document.getElementById("api-curl-snippet").textContent = `curl -s "https://credence.report/viewer.html?q=${report.content_sha256}&view=raw"`;
+      document.getElementById("api-curl-snippet").textContent = `curl -s "https://credence.report/viewer.html?q=${encodeURIComponent(sha)}&view=raw"`;
 
       // 4. Inject Schema.org ClaimReview LD+JSON for Automated Machine Ingestion
       const schemaScript = document.getElementById("schema-claim-review");
@@ -1089,7 +1102,7 @@ City council members expressed optimism regarding the new administration's forei
           },
           "reviewRating": {
             "@type": "Rating",
-            "ratingValue": String(report.suspicion_score.toFixed(1)),
+            "ratingValue": String(suspScore.toFixed(1)),
             "bestRating": "100.0",
             "worstRating": "0.0",
             "alternateName": verdictLabel
@@ -1112,7 +1125,9 @@ City council members expressed optimism regarding the new administration's forei
         return;
       }
 
-      if (report.suspicion_score <= 15.0) {
+      const suspScore = typeof report.suspicion_score === "number" ? report.suspicion_score : 0.0;
+
+      if (suspScore <= 15.0) {
         summaryEl.innerHTML = `<strong>High Epistemic Integrity:</strong> This content demonstrates sound logical reasoning, verified factual sourcing, and transparent authorship with zero deceptive design patterns.`;
         signalsEl.innerHTML = `
           <span class="signal-tag signal-pass">✓ High Journalistic Sourcing</span>
@@ -1122,38 +1137,97 @@ City council members expressed optimism regarding the new administration's forei
         return;
       }
 
-      const fallacies = (report.violations || []).filter(v => v.domain === "LOGICAL_FALLACY");
-      const ethics = (report.violations || []).filter(v => v.domain === "JOURNALISTIC_ETHICS");
-      const deceptive = (report.violations || []).filter(v => v.domain === "DECEPTIVE_PATTERN");
+      const violations = report.violations || [];
+      const fallacies = violations.filter(v => v.domain === "LOGICAL_FALLACY");
+      const ethics = violations.filter(v => v.domain === "JOURNALISTIC_ETHICS");
+      const deceptive = violations.filter(v => v.domain === "DECEPTIVE_PATTERN");
 
       const findings = [];
       if (deceptive.length) findings.push(`<strong>${deceptive.length} deceptive pattern(s)</strong> (${deceptive.map(d => d.rule_id).join(", ")})`);
       if (fallacies.length) findings.push(`<strong>${fallacies.length} logical fallacy(ies)</strong> (${fallacies.map(f => f.rule_id).join(", ")})`);
       if (ethics.length) findings.push(`<strong>${ethics.length} journalistic sourcing issue(s)</strong> (${ethics.map(e => e.rule_id).join(", ")})`);
 
-      summaryEl.innerHTML = `Credence multi-agent auditors evaluated this snapshot and identified ${findings.join(" and ")}. Readers should exercise caution before citing or sharing these claims without independent secondary verification.`;
+      if (findings.length > 0) {
+        summaryEl.innerHTML = `Credence multi-agent auditors evaluated this snapshot and identified ${findings.join(" and ")}. Readers should exercise caution before citing or sharing these claims without independent secondary verification.`;
 
-      let signalPills = "";
-      if (ethics.length) signalPills += `<span class="signal-tag signal-warn">⚠️ ${ethics.length} Ethics Violations</span>`;
-      else signalPills += `<span class="signal-tag signal-pass">✓ Clean Sourcing</span>`;
+        let signalPills = "";
+        if (ethics.length) signalPills += `<span class="signal-tag signal-warn">⚠️ ${ethics.length} Ethics Violations</span>`;
+        else signalPills += `<span class="signal-tag signal-pass">✓ Clean Sourcing</span>`;
 
-      if (fallacies.length) signalPills += `<span class="signal-tag signal-warn">⚠️ ${fallacies.length} Logical Fallacies</span>`;
-      else signalPills += `<span class="signal-tag signal-pass">✓ Valid Logic</span>`;
+        if (fallacies.length) signalPills += `<span class="signal-tag signal-warn">⚠️ ${fallacies.length} Logical Fallacies</span>`;
+        else signalPills += `<span class="signal-tag signal-pass">✓ Valid Logic</span>`;
 
-      if (deceptive.length) signalPills += `<span class="signal-tag signal-fail">🛑 ${deceptive.length} Deceptive Patterns</span>`;
-      else signalPills += `<span class="signal-tag signal-pass">✓ Clean Design</span>`;
+        if (deceptive.length) signalPills += `<span class="signal-tag signal-fail">🛑 ${deceptive.length} Deceptive Patterns</span>`;
+        else signalPills += `<span class="signal-tag signal-pass">✓ Clean Design</span>`;
 
-      signalsEl.innerHTML = signalPills;
+        signalsEl.innerHTML = signalPills;
+      } else {
+        // Fallback when itemized violations array is omitted or empty but suspicion score is elevated
+        const scoreVal = suspScore.toFixed(1);
+        const verdict = report.classification || (suspScore >= 70.0 ? "HIGH DECEPTION" : "SUSPICIOUS");
+        
+        summaryEl.innerHTML = `Credence multi-agent auditors evaluated this snapshot and identified <strong>elevated heuristic suspicion (${scoreVal} / 100)</strong> with <strong>${verdict}</strong> risk indicators. Readers should exercise caution before citing or sharing these claims without independent secondary verification.`;
+
+        let signalPills = "";
+        if (suspScore >= 60.0 || verdict.includes("DECEPT")) {
+          signalPills += `<span class="signal-tag signal-fail">🛑 High Deception Risk</span>`;
+          signalPills += `<span class="signal-tag signal-warn">⚠️ Elevated Heuristic Penalty</span>`;
+          signalPills += `<span class="signal-tag signal-warn">⚠️ Sourcing Scrutiny Required</span>`;
+        } else {
+          signalPills += `<span class="signal-tag signal-warn">⚠️ Elevated Suspicion (${scoreVal})</span>`;
+          signalPills += `<span class="signal-tag signal-warn">⚠️ Unverified Claims</span>`;
+          signalPills += `<span class="signal-tag signal-pass">✓ Interface Clear</span>`;
+        }
+        signalsEl.innerHTML = signalPills;
+      }
     }
 
     function renderTrustDimensions(report) {
-      const ethicsCount = (report.violations || []).filter(v => v.domain === "JOURNALISTIC_ETHICS").length;
-      const fallacyCount = (report.violations || []).filter(v => v.domain === "LOGICAL_FALLACY").length;
-      const deceptiveCount = (report.violations || []).filter(v => v.domain === "DECEPTIVE_PATTERN").length;
+      const violations = report.violations || [];
+      const ethicsCount = violations.filter(v => v.domain === "JOURNALISTIC_ETHICS").length;
+      const fallacyCount = violations.filter(v => v.domain === "LOGICAL_FALLACY").length;
+      const deceptiveCount = violations.filter(v => v.domain === "DECEPTIVE_PATTERN").length;
+      const suspScore = typeof report.suspicion_score === "number" ? report.suspicion_score : 0.0;
 
-      const ethScore = Math.max(0, 100 - ethicsCount * 25);
-      const falScore = Math.max(0, 100 - fallacyCount * 20);
-      const decScore = Math.max(0, 100 - deceptiveCount * 35);
+      let ethScore, falScore, decScore;
+
+      if (violations.length > 0) {
+        ethScore = Math.max(0, 100 - ethicsCount * 25);
+        falScore = Math.max(0, 100 - fallacyCount * 20);
+        decScore = Math.max(0, 100 - deceptiveCount * 35);
+
+        // Cross-check: If overall suspicion score is high, ensure the relevant dimension reflects it
+        if (suspScore >= 60.0) {
+          if (report.classification === "DECEPTIVE" || deceptiveCount > 0) {
+            decScore = Math.min(decScore, Math.max(0, Math.round(100 - suspScore)));
+          }
+          if (report.classification === "SUSPICIOUS" || (ethicsCount > 0 || fallacyCount > 0)) {
+            falScore = Math.min(falScore, Math.max(0, Math.round(100 - suspScore * 0.8)));
+            ethScore = Math.min(ethScore, Math.max(0, Math.round(100 - suspScore * 0.7)));
+          }
+        }
+      } else if (suspScore > 15.0 && !report.is_satire) {
+        // Derived trust dimensions for summary/heuristic audits without itemized violation records
+        if (report.classification === "DECEPTIVE" || suspScore >= 70.0) {
+          decScore = Math.max(0, Math.round(100 - suspScore));
+          ethScore = Math.max(20, Math.round(100 - suspScore * 0.5));
+          falScore = Math.max(20, Math.round(100 - suspScore * 0.5));
+        } else if (report.classification === "SUSPICIOUS" || suspScore >= 40.0) {
+          falScore = Math.max(15, Math.round(100 - suspScore * 0.9));
+          ethScore = Math.max(20, Math.round(100 - suspScore * 0.8));
+          decScore = Math.max(40, Math.round(100 - suspScore * 0.4));
+        } else {
+          const base = Math.max(0, Math.round(100 - suspScore));
+          ethScore = base;
+          falScore = base;
+          decScore = base;
+        }
+      } else {
+        // High epistemic integrity / satire
+        ethScore = 100;
+        falScore = 100;
+        decScore = 100;
+      }
 
       document.getElementById("dim-ethics-score").textContent = `${ethScore} / 100`;
       document.getElementById("dim-fallacy-score").textContent = `${falScore} / 100`;
@@ -1215,16 +1289,32 @@ City council members expressed optimism regarding the new administration's forei
       const countEl = document.getElementById("tab-findings-count");
       
       const violations = report.violations || [];
-      countEl.textContent = violations.length;
+      const suspScore = typeof report.suspicion_score === "number" ? report.suspicion_score : 0.0;
+      const hasElevatedSuspicion = suspScore > 15.0 && !report.is_satire;
+      
+      countEl.textContent = violations.length || (report.violations_count !== undefined ? String(report.violations_count) : (hasElevatedSuspicion ? "⚠️" : "0"));
 
       if (violations.length === 0) {
-        container.innerHTML = `
-          <li class="panel-card" style="text-align: center; padding: 2rem;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛡️</div>
-            <h3 style="color: var(--accent-green); margin-bottom: 0.25rem;">No Violations Detected</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">This article adheres to SPJ ethical standards, demonstrates valid logical structures, and contains zero deceptive dark patterns.</p>
-          </li>
-        `;
+        if (hasElevatedSuspicion) {
+          container.innerHTML = `
+            <li class="panel-card" style="text-align: center; padding: 2rem;">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚠️</div>
+              <h3 style="color: var(--accent-amber); margin-bottom: 0.25rem;">Heuristic Deception Signals Detected</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 580px; margin: 0 auto; line-height: 1.6;">
+                This audit holds an elevated suspicion score of <strong>${suspScore.toFixed(1)} / 100</strong> (${report.classification || 'HIGH DECEPTION'}).
+                Summary catalog view loaded. Trigger a live on-demand re-audit above to inspect granular DOM-grounded violation markers.
+              </p>
+            </li>
+          `;
+        } else {
+          container.innerHTML = `
+            <li class="panel-card" style="text-align: center; padding: 2rem;">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛡️</div>
+              <h3 style="color: var(--accent-green); margin-bottom: 0.25rem;">No Violations Detected</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">This article adheres to SPJ ethical standards, demonstrates valid logical structures, and contains zero deceptive dark patterns.</p>
+            </li>
+          `;
+        }
         return;
       }
 
@@ -1287,23 +1377,37 @@ City council members expressed optimism regarding the new administration's forei
     };
 
     function generateExportPreviews(report) {
+      const suspScore = typeof report.suspicion_score === "number" ? report.suspicion_score : 0.0;
+      const sha = report.content_sha256 || (report.id ? String(report.id) : "");
+      const violations = report.violations || [];
+      const hasElevatedSuspicion = suspScore > 15.0 && !report.is_satire;
+
+      let summaryContent = "";
+      if (violations.length > 0) {
+        summaryContent = violations.map((v, i) => `${i + 1}. **[${v.rule_id}]** (Sev ${v.severity}/5): "${v.quote_or_element}" — *${v.reasoning}*`).join('\n');
+      } else if (hasElevatedSuspicion) {
+        summaryContent = `⚠️ Elevated heuristic suspicion (\`${suspScore.toFixed(1)} / 100.0\`). Summary catalog snapshot.`;
+      } else {
+        summaryContent = `✓ High epistemic integrity. No grounded violations detected.`;
+      }
+
       const md = `# Credence Epistemic Audit Report
 
 - **Target URL:** \`${report.url}\`
-- **Verdict:** **${report.is_satire ? 'SATIRE / PARODY' : report.classification}** (\`${report.suspicion_score.toFixed(1)} / 100.0\`)
-- **Evaluation Method:** ${report.evaluation_method || 'LLM Multi-Agent Pipeline'} (${Math.round((report.confidence_score || 0.95) * 100)}% Confidence)
-- **Content SHA-256:** \`${report.content_sha256}\`
+- **Verdict:** **${report.is_satire ? 'SATIRE / PARODY' : (report.classification || 'AUDITED')}** (\`${suspScore.toFixed(1)} / 100.0\`)
+- **Evaluation Method:** ${report.evaluation_method || 'LLM Multi-Agent Pipeline'} (${Math.round(((typeof report.confidence_score === 'number' ? report.confidence_score : 0.95)) * 100)}% Confidence)
+- **Content SHA-256:** \`${sha}\`
 - **Node PubKey:** \`${report.node_pubkey || 'Unsigned'}\`
 
 ## Summary & Findings
-${(report.violations || []).length === 0 ? '✓ High epistemic integrity. No grounded violations detected.' : (report.violations || []).map((v, i) => `${i + 1}. **[${v.rule_id}]** (Sev ${v.severity}/5): "${v.quote_or_element}" — *${v.reasoning}*`).join('\n')}
+${summaryContent}
 
 *Verified via Credence Decentralized Trust Network (RFC 8785 Ed25519)*`;
 
       document.getElementById("export-md-preview").textContent = md;
       document.getElementById("export-json-preview").textContent = JSON.stringify(report, null, 2);
 
-      const badgeHtml = `<a href="https://credence.report/viewer.html?q=${report.content_sha256}" target="_blank" rel="noopener"><img src="https://credence.report/badge.svg?score=${report.suspicion_score.toFixed(0)}&verdict=${encodeURIComponent(report.is_satire ? 'SATIRE' : report.classification)}" alt="Credence Epistemic Audit" /></a>`;
+      const badgeHtml = `<a href="https://credence.report/viewer.html?q=${encodeURIComponent(sha)}" target="_blank" rel="noopener"><img src="https://credence.report/badge.svg?score=${suspScore.toFixed(0)}&verdict=${encodeURIComponent(report.is_satire ? 'SATIRE' : (report.classification || 'AUDITED'))}" alt="Credence Epistemic Audit" /></a>`;
       document.getElementById("export-badge-preview").textContent = badgeHtml;
     }
 

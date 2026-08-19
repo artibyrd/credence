@@ -13,6 +13,21 @@ All notable changes to the **Credence** network and documentation are documented
 
 ## [1.15.1] - 2026-08-19
 
+### Epistemic Audit Viewer & Catalog Integrity Fixes
+- **Epistemic Trust Dimension & Signal Consistency (`web/credence.report/viewer.html`)**:
+  - Resolved logic contradictions where summary-level or shallow audit items without itemized violation records incorrectly rendered 100/100 trust dimensions and false green `✓ Clean Sourcing`, `✓ Valid Logic`, `✓ Clean Design` badges beneath elevated suspicion scores (e.g. 92.5 High Deception).
+  - Derived dimension scores and risk signal pills directly from aggregate suspicion score ($S$) and classification band when itemized violations are omitted or in summary view.
+  - Added proportionate dimension penalties on high deception scores so primary trust dimensions reflect the severity of the verdict.
+- **Executive Summary Grammar Bug Fix (`viewer.html`)**:
+  - Repaired broken template string gap (`"identified . Readers"`) by introducing descriptive heuristic suspicion fallbacks when `findings` array is empty on an elevated suspicion score.
+- **Itemized Findings Fallback & Zero-Count Defense**:
+  - Replaced false "✓ No Violations Detected" status on elevated suspicion reports with an informative card explaining heuristic and aggregate signal derivation.
+- **UI & Layout Integrity (`web/credence.report/styles.css` & `viewer.html`)**:
+  - Replaced rigid tab padding and hidden overflow in `.tabs-nav` with responsive spacing, `flex-shrink: 0`, and styled thin scrollbars, eliminating clipping on the `🔐 Cryptographic Proof` tab.
+  - Fixed multi-line monospace wrapping for `Content SHA-256` in `.meta-table td.val` with `overflow-wrap: anywhere; word-break: break-all;` and ensured complete fallbacks for `SimHash-64`.
+- **Enriched Web Catalog Export (`credence/germinate.py` & `reports.json`)**:
+  - Updated `export_web_catalog()` to export complete record structures (including `content_sha256`, `simhash_64`, `suspicion_density`, `confidence_score`, `article_text`, and itemized `violations: [...]`), ensuring static hydration has zero data gaps.
+
 ### Documentation & Routing Fixes
 - **Unified Master Documentation & Sovereign Blog Registry**:
   - Merged all 4 blog categories into the master `DOCS_REGISTRY` array in `app.js`, resolving an edge case where standalone `BLOG_REGISTRY` entries failed to resolve in `loadDocument()`.
@@ -21,6 +36,7 @@ All notable changes to the **Credence** network and documentation are documented
   - Repaired 27 relative image paths to vector assets (`assets/tui/*.svg`) across tutorials, walkthroughs, and integrations.
 - **Shift-Left Automated Integrity Tests**:
   - Enhanced `test_docs_registry_parity` in `tests/test_docs_integrity.py` to assert that all 109 document and blog IDs in `DOCS_REGISTRY` map to distinct paths and resolve cleanly.
+  - Added `test_web_reports_json_schema_completeness`, `test_web_viewer_heuristic_suspicion_safeguards`, and `test_web_viewer_css_tab_and_hash_integrity` to `tests/test_web.py`.
 
 ## [1.15.0] - 2026-08-19
 
