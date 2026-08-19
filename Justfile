@@ -331,12 +331,12 @@ gcp action="status" arg="": (preflight "gcloud")
                         t0 = time.perf_counter()
                         try:
                             if method == 'STREAM':
-                                with client.stream('GET', BASE + path, timeout=6.0) as r:
+                                with client.stream('GET', BASE + path, timeout=15.0) as r:
                                     dt = (time.perf_counter() - t0) * 1000
                                     icon = '🟢' if r.status_code == 200 else '🔴'
                                     print(icon + ' ' + str(r.status_code) + ' [' + method + '] ' + path.ljust(28) + ' (' + str(round(dt, 1)) + 'ms)')
                             else:
-                                r = client.request(method, BASE + path, timeout=8.0)
+                                r = client.request(method, BASE + path, timeout=15.0)
                                 dt = (time.perf_counter() - t0) * 1000
                                 icon = '🟢' if r.status_code == 200 else ('🟡' if r.status_code < 500 else '🔴')
                                 print(icon + ' ' + str(r.status_code) + ' [' + method + '] ' + path.ljust(28) + ' (' + str(round(dt, 1)) + 'ms)')
