@@ -5,6 +5,22 @@ All notable changes to the **Credence** network and documentation are documented
 ## [1.11.0] - 2026-08-18
 
 ### Added
+- **Interactive Zero-Build Playground Overhaul (12 Live Simulators)**:
+  - Expanded in-browser zero-build simulator suite to 12 fully interactive tools running 100% client-side with zero backend dependencies:
+    - **4 New Interactive Simulators**:
+      - *The Galileo Rule Consensus Engine Simulator*: Interactive Sybil cartel defense demonstrating how domain-weighted medians and $G=1.00$ grounded evidence protect consensus truth against ungrounded bot swarms.
+      - *In-Browser Epistemic Heuristic Text Scanner*: Live headline and copy parser that detects clickbait hooks, ungrounded superlatives, fake urgency, and weasel attributions in real time with color-coded highlighted spans.
+      - *Schema.org `ClaimReview` & RFC 8785 Receipt Generator*: Live form outputting Google Search-ready ClaimReview JSON-LD and signed `.credence.json` canonical envelopes with 1-click clipboard copy and file download.
+      - *Token Governor & 30% Headroom Circuit Breaker*: Interactive quota gauge simulating token burn and visual state transitions into `$0.00` offline heuristic preservation mode.
+    - **Upgraded & Polished Existing Widgets (1–8)**:
+      - *13-Node Mesh Gossip*: Clickable nodes with real-time **Node Inspector Card** ($Q_i$, peer link topology).
+      - *SimHash-64 & Bit-Diff Matrix*: Graphical **64-Bit Differential Grid** rendering 64 color-coded tiles (green for match, red for flip) with 3 scenario presets.
+      - *Verbatim Grounding Tester ($G=1.00$)*: Live DOM text preview highlighting matching substrings in glowing cyan, with an "Inject Paraphrase" test button.
+      - *Saturation Curve Calculator*: Interactive **SVG Calibration Curve Plot** ($y = 100(1-e^{-x/12})$) with crosshairs dynamically tracking slider adjustments.
+      - *WebCrypto Verifier*: Added "Tamper Payload" button to demonstrate instant cryptographic signature rejection.
+      - *Taxonomy Explorer*: Added domain filter chips (`All`, `SPJ Journalism`, `IEP Fallacies`, `Deceptive UI`, `Domain Specific`).
+      - *Multi-Model Comparator*: Added adjustable Thinking Token Budget slider (0 to 16,384 tokens).
+      - *Feed Sifter Simulator*: Added "Investigative Feed" vs "Astroturfing Pivot ($H < 0.30$)" presets with immediate quarantine alerts.
 - **Documentation Progressive Disclosure & Anti-Firehose Architecture**:
   - Completely redesigned `credence.run` web landing page and `credence/README.md` to eliminate cognitive overload, Greek formula firehoses ($Q_i, E_i$), and internal enum constants on first-contact surfaces.
   - Introduced human-first value propositions, 30-second interactive terminal quickstarts, and plain-English explanations of the 4 Pillars of Grounded Truth.
