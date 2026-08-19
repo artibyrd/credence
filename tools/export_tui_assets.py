@@ -8,15 +8,15 @@ and exports high-resolution vector SVGs to credence-docs/assets/tui/.
 import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
+
 from sqlmodel import select
 
-from credence.db import get_session, init_db
+from credence.db import get_session
 from credence.models import (
     AuditRecord,
     FeedItemRecord,
     FeedSubscriptionRecord,
     SnapshotRecord,
-    SubjectRecord,
     TokenUsageRecord,
     ViolationRecord,
 )
@@ -261,7 +261,7 @@ async def seed_tui_fixtures() -> None:
             session.add(item)
 
         # 6. Seed Token Usage for Governor
-        for k in range(5):
+        for _k in range(5):
             tok = TokenUsageRecord(
                 timestamp=utc_now(),
                 model_name="gemini-3.7-flash",

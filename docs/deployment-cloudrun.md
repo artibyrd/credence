@@ -96,10 +96,57 @@ Add the remote endpoint to your `mcp_config.json`:
 
 ---
 
-## 5. Automated CI/CD via Cloud Build (`cloudbuild.yaml`)
+## 5. Parameterized Operator Workflows (`Justfile`)
 
-Trigger automated testing, image builds, and zero-downtime deployment on git push:
+The repository provides a single canonical parameterized operator command family (`just gcp [action] [arg]`) with automated preflight validation:
 
+| Command | Action | Description |
+| :--- | :--- | :--- |
+| `just preflight gcloud` | Preflight Gate | Verifies `gcloud` binary installation and active authenticated account. |
+| `just gcp status` | Inspection | Displays active Cloud Run revision, image tag, CPU/memory, and traffic split. |
+| `just gcp logs [limit]` | Forensics | Queries structured Cloud Run logs via `gcloud logging read` (default: 30 lines). |
+| `just gcp tail` | Live Stream | Streams real-time container logs via `gcloud beta run services logs tail`. |
+| `just gcp revisions` | History | Lists all historical revisions with author, deploy timestamp, and traffic split. |
+| `just gcp describe` | Deep Inspect | Dumps full JSON/YAML service specification. |
+| `just gcp probe` | Multi-Probe | Probes `/health`, `/api/health`, `/sse`, `/api/reports`, and `/api/sifter/status`. |
+| `just gcp germinate [burst]` | Remote Sifting | Invokes remote `/api/germinate` endpoint to trigger Miracle-Gro ignition. |
+| `just gcp rollback <revision>` | Safe Revert | Rolls back 100% traffic allocation to a previous healthy revision. |
+| `just deploy backend` | Safe Deploy | Submits container build via Cloud Build, deploys to Cloud Run, and executes health probe. |
+
+---
+
+## 6. GitHub Actions Automated Deployment (`.github/workflows/deploy-backend.yml`)
+
+Cloud Run deployments can be automated on release tags (`v*.*.*`) or via manual trigger (`workflow_dispatch`).
+
+### Step 1: Configure Workload Identity Federation (Recommended)
 ```bash
-gcloud builds submit --config=cloudbuild.yaml .
+# 1. Create Workload Identity Pool
+gcloud iam workload-identity-pools create "github-pool" \
+    --project="YOUR_PROJECT_ID" \
+    --location="global" \
+    --display-name="GitHub Actions Pool"
+
+# 2. Create Workload Identity Provider for GitHub Repository
+gcloud iam workload-identity-pools providers create-oidc "github-provider" \
+    --project="YOUR_PROJECT_ID" \
+    --location="global" \
+    --workload-identity-pool="github-pool" \
+    --display-name="GitHub Provider" \
+    --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+    --issuer-uri="https://token.actions.githubusercontent.com"
+
+# 3. Grant Service Account Access
+gcloud iam service-accounts add-iam-policy-binding "credence-cloud-run-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+    --project="YOUR_PROJECT_ID" \
+    --role="roles/iam.workloadIdentityUser" \
+    --member="principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/artibyrd/credence"
 ```
+
+### Step 2: Configure GitHub Repository Secrets
+Add the following secrets to `artibyrd/credence` via `gh secret set`:
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`: `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider`
+- `GCP_SERVICE_ACCOUNT`: `credence-cloud-run-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com`
+
+When secrets are omitted, the workflow cleanly skips automated deployment and provides instructions for operator deployment via `just deploy backend`.
+

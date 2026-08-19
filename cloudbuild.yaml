@@ -29,20 +29,20 @@ steps:
     args:
       - 'build'
       - '-t'
-      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/${_IMAGE}:$COMMIT_SHA'
       - '-t'
-      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest'
+      - 'gcr.io/$PROJECT_ID/${_IMAGE}:latest'
       - '--cache-from'
-      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest'
+      - 'gcr.io/$PROJECT_ID/${_IMAGE}:latest'
       - '.'
 
-  # Step 4: Push to Google Artifact Registry
+  # Step 4: Push to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     id: 'docker-push'
     args:
       - 'push'
       - '--all-tags'
-      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}'
+      - 'gcr.io/$PROJECT_ID/${_IMAGE}'
 
   # Step 5: Zero-Downtime Deployment to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -52,14 +52,25 @@ steps:
       - 'run'
       - 'deploy'
       - '${_SERVICE_NAME}'
-      - '--image=${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA'
+      - '--image=gcr.io/$PROJECT_ID/${_IMAGE}:$COMMIT_SHA'
       - '--region=${_LOCATION}'
       - '--platform=managed'
       - '--allow-unauthenticated'
 
+  # Step 6: Post-Deployment Health Check Probe
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'health-check-probe'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        SERVICE_URL=$(gcloud run services describe "${_SERVICE_NAME}" --region="${_LOCATION}" --format="value(status.url)")
+        echo "Probing service health at: $SERVICE_URL"
+        curl -f -s "$SERVICE_URL/health" || curl -f -s "$SERVICE_URL/api/health" || exit 1
+        echo "✅ Post-deployment health check passed!"
+
 substitutions:
   _LOCATION: 'us-central1'
-  _REPOSITORY: 'credence'
   _IMAGE: 'credence-server'
   _SERVICE_NAME: 'credence-server'
 

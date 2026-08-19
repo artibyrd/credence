@@ -335,11 +335,10 @@ def test_tui_vector_assets_integrity(docs_root: Path) -> None:
     tui_ref_count = 0
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
-        tui_matches = re.findall(r'!\[[^\]]*\]\((?:assets/tui/|/assets/tui/|../assets/tui/)([^)]+\.svg)\)', text)
+        tui_matches = re.findall(r"!\[[^\]]*\]\((?:assets/tui/|/assets/tui/|../assets/tui/)([^)]+\.svg)\)", text)
         for match in tui_matches:
             tui_ref_count += 1
             ref_path = tui_assets_dir / match
             assert ref_path.exists(), f"Broken TUI image reference '{match}' in {md_file.name}"
 
     assert tui_ref_count >= 10, f"Expected at least 10 TUI SVG image references across docs, found {tui_ref_count}"
-

@@ -1412,19 +1412,24 @@ def create_server_app(
 
         await init_db()
 
-        # Check for zero-touch auto-germination on blank databases
-        try:
-            async with get_async_session() as session:
-                stmt_a = select(func.count(col(AuditRecord.id)))
-                total_a = (await session.exec(stmt_a)).first() or 0
-                stmt_f = select(func.count(col(FeedSubscriptionRecord.id)))
-                total_f = (await session.exec(stmt_f)).first() or 0
+        # Check for zero-touch auto-germination on blank databases (in background)
+        async def _run_background_germination() -> None:
+            try:
+                async with get_async_session() as session:
+                    stmt_a = select(func.count(col(AuditRecord.id)))
+                    total_a = (await session.exec(stmt_a)).first() or 0
+                    stmt_f = select(func.count(col(FeedSubscriptionRecord.id)))
+                    total_f = (await session.exec(stmt_f)).first() or 0
 
-                if total_a == 0 and total_f == 0:
-                    logger.info("🌱 Blank node detected — auto-germinating identity, mesh attestations, and feeds...")
-                    await germinate_node(session=session, burst_items=3, sync_mesh=True, verbose=True)
-        except Exception as e:
-            logger.warning("Auto-germination background check encountered error: %s", e)
+                    if total_a == 0 and total_f == 0:
+                        logger.info(
+                            "🌱 Blank node detected — auto-germinating identity, mesh attestations, and feeds in background..."
+                        )
+                        await germinate_node(session=session, burst_items=3, sync_mesh=True, verbose=True)
+            except Exception as e:
+                logger.warning("Auto-germination background task encountered error: %s", e)
+
+        _germinate_task = asyncio.create_task(_run_background_germination())
 
         sifter_daemon = None
         sifter_task = None
@@ -1432,19 +1437,21 @@ def create_server_app(
             sifter_daemon = SifterDaemon(poll_interval_seconds=300, auto_audit=True)
             sifter_task = asyncio.create_task(sifter_daemon.start())
 
-        if original_lifespan:
-            async with original_lifespan(app_instance) as state:
-                yield state
-        else:
-            yield {}
-
-        if sifter_daemon and sifter_task:
-            sifter_daemon.stop()
-            sifter_task.cancel()
-            try:
-                await sifter_task
-            except asyncio.CancelledError:
-                pass
+        try:
+            if original_lifespan:
+                async with original_lifespan(app_instance) as state:
+                    yield state
+            else:
+                yield {}
+        finally:
+            if _germinate_task and not _germinate_task.done():
+                _germinate_task.cancel()
+            if sifter_daemon and sifter_task:
+                sifter_daemon.stop()
+                try:
+                    await asyncio.wait_for(sifter_task, timeout=2.0)
+                except (asyncio.TimeoutError, asyncio.CancelledError):
+                    pass
 
     app.router.lifespan_context = combined_lifespan
     return app

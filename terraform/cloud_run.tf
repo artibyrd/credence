@@ -2,17 +2,17 @@ locals {
   profile_resources = {
     free = {
       cpu           = "1.0"
-      memory        = "384Mi"
+      memory        = "512Mi"
       max_instances = 1
     }
     balanced = {
       cpu           = "1.0"
-      memory        = "512Mi"
+      memory        = "1024Mi"
       max_instances = 2
     }
     ultra = {
       cpu           = "2.0"
-      memory        = "1024Mi"
+      memory        = "2048Mi"
       max_instances = 5
     }
   }

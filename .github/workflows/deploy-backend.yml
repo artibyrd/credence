@@ -1,0 +1,111 @@
+name: Deploy Backend to Google Cloud Run
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "Google Cloud Project ID"
+        required: true
+        default: "credence-prod-505902"
+      region:
+        description: "Google Cloud Region"
+        required: true
+        default: "us-central1"
+      service_name:
+        description: "Cloud Run Service Name"
+        required: true
+        default: "credence-server"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-cloud-run:
+    name: Build & Deploy Cloud Run Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        if: env.GCP_WIF_PROVIDER != ''
+        uses: google-github-actions/auth@v2
+        env:
+          GCP_WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Authenticate to Google Cloud (Service Account Key)
+        if: env.GCP_WIF_PROVIDER == '' && env.GCP_SA_KEY != ''
+        uses: google-github-actions/auth@v2
+        env:
+          GCP_WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        if: env.GCP_CONFIGURED == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+
+      - name: Build and Submit Container Image
+        if: env.GCP_CONFIGURED == 'true'
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+        run: |
+          gcloud builds submit \
+            --project="${PROJECT_ID}" \
+            --tag="gcr.io/${PROJECT_ID}/credence-server:${{ github.ref_name || github.sha }}" \
+            --tag="gcr.io/${PROJECT_ID}/credence-server:latest"
+
+      - name: Deploy to Cloud Run
+        if: env.GCP_CONFIGURED == 'true'
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          REGION: ${{ inputs.region || 'us-central1' }}
+          SERVICE: ${{ inputs.service_name || 'credence-server' }}
+        run: |
+          gcloud run deploy "${SERVICE}" \
+            --image="gcr.io/${PROJECT_ID}/credence-server:latest" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --memory="1Gi" \
+            --cpu="1" \
+            --allow-unauthenticated
+
+      - name: Verify Live Service Health
+        if: env.GCP_CONFIGURED == 'true'
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          REGION: ${{ inputs.region || 'us-central1' }}
+          SERVICE: ${{ inputs.service_name || 'credence-server' }}
+        run: |
+          SERVICE_URL=$(gcloud run services describe "${SERVICE}" --region="${REGION}" --project="${PROJECT_ID}" --format="value(status.url)")
+          echo "Probing deployed service at: ${SERVICE_URL}"
+          curl -f -s "${SERVICE_URL}/health" || curl -f -s "${SERVICE_URL}/api/health" || exit 1
+          echo "✅ Cloud Run health check passed!"
+
+      - name: Skip Notice (No GCP Secret Configured in GitHub)
+        if: env.GCP_CONFIGURED != 'true'
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+        run: |
+          echo "=========================================================================="
+          echo "ℹ️  Notice: Google Cloud secrets not configured in GitHub repository secrets."
+          echo "   To enable automated GitHub Actions deployment to Cloud Run, configure:"
+          echo "     - GCP_WORKLOAD_IDENTITY_PROVIDER (recommended) OR GCP_SA_KEY"
+          echo "     - GCP_SERVICE_ACCOUNT"
+          echo ""
+          echo "   Deployments can be executed immediately by operators using:"
+          echo "     just deploy backend"
+          echo "=========================================================================="

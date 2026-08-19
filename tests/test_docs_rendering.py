@@ -341,6 +341,3 @@ async def test_tui_vector_svg_rendering(page: Page, docs_server: str) -> None:
                 assert box is not None, f"Visible TUI image #{idx} on route {route} has no bounding box"
                 assert box["width"] > 100, f"TUI image #{idx} bounding box width too small: {box['width']}"
                 assert box["height"] > 50, f"TUI image #{idx} bounding box height too small: {box['height']}"
-
-
-

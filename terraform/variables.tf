@@ -17,8 +17,8 @@ variable "service_name" {
 
 variable "container_image" {
   type        = string
-  description = "The full container image URI in Artifact Registry or GCR."
-  default     = "us-central1-docker.pkg.dev/sample-project/credence/credence-server:latest"
+  description = "The full container image URI in GCR or Artifact Registry."
+  default     = "gcr.io/sample-project/credence-server:latest"
 }
 
 variable "credence_profile" {
