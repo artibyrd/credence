@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "credence"
-version = "1.12.0"
+version = "1.12.1"
 description = "Autonomous epistemic evaluation engine, FastMCP server, and decentralized trust network (Credence Mesh)."
 authors = ["Credence Network Contributors"]
 license = "Apache-2.0"
