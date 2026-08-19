@@ -300,3 +300,46 @@ def test_all_invariant_link_anchors_exist(docs_root: Path) -> None:
             )
 
     assert total_inv_links >= 15, f"Expected at least 15 invariant links across catalog, found {total_inv_links}"
+
+
+@pytest.mark.unit
+def test_tui_vector_assets_integrity(docs_root: Path) -> None:
+    """Verify all TUI vector SVG assets exist, have valid rich-terminal markup, and resolve in docs."""
+    tui_assets_dir = docs_root / "assets" / "tui"
+    assert tui_assets_dir.exists(), "credence-docs/assets/tui directory must exist"
+
+    expected_assets = [
+        "01-inspector-rich.svg",
+        "02-inspector-compact.svg",
+        "03-inspector-raw-json.svg",
+        "04-inspector-satire.svg",
+        "05-taxonomies-tree.svg",
+        "06-domain-subjects.svg",
+        "07-feeds-stream.svg",
+        "08-morning-digest.svg",
+        "09-token-quota.svg",
+        "10-node-identity.svg",
+        "11-audit-modal.svg",
+    ]
+
+    for asset_name in expected_assets:
+        asset_path = tui_assets_dir / asset_name
+        assert asset_path.exists(), f"Missing TUI vector asset: {asset_name}"
+        assert asset_path.stat().st_size > 1000, f"TUI vector asset {asset_name} is too small / empty"
+        content = asset_path.read_text(encoding="utf-8")
+        assert "<svg" in content, f"TUI asset {asset_name} does not contain <svg tag"
+        assert 'class="rich-terminal"' in content, f"TUI asset {asset_name} missing rich-terminal class"
+
+    # Scan all documentation files to ensure any referenced assets/tui/*.svg exists
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    tui_ref_count = 0
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        tui_matches = re.findall(r'!\[[^\]]*\]\((?:assets/tui/|/assets/tui/|../assets/tui/)([^)]+\.svg)\)', text)
+        for match in tui_matches:
+            tui_ref_count += 1
+            ref_path = tui_assets_dir / match
+            assert ref_path.exists(), f"Broken TUI image reference '{match}' in {md_file.name}"
+
+    assert tui_ref_count >= 10, f"Expected at least 10 TUI SVG image references across docs, found {tui_ref_count}"
+

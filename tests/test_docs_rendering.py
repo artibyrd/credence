@@ -86,6 +86,13 @@ async def test_mermaid_diagrams_render_to_svg(page: Page, docs_server: str) -> N
         raw_blocks = await page.query_selector_all(".mermaid-code pre code.language-mermaid")
         assert len(raw_blocks) == 0, f"Found unrendered raw mermaid blocks on route {route}"
 
+        # Ensure framed window containers exist with accessibility role
+        windows = await page.query_selector_all(".mermaid-window")
+        assert len(windows) >= 1, f"Expected .mermaid-window container on route {route}, found {len(windows)}"
+
+        headers = await page.query_selector_all(".mermaid-window-header")
+        assert len(headers) >= 1, f"Expected .mermaid-window-header on route {route}, found {len(headers)}"
+
         # Ensure rendered SVGs exist and have non-zero bounding box
         rendered_svgs = await page.query_selector_all(".mermaid-rendered svg")
         assert len(rendered_svgs) >= 1, f"Expected rendered SVG on route {route}, found {len(rendered_svgs)}"
@@ -289,3 +296,51 @@ async def test_invariant_deep_linking_and_scrolling(page: Page, docs_server: str
     box = await target_card.bounding_box()
     assert box is not None
     assert box["y"] < 900, f"Invariant card was not scrolled into view: y={box['y']}"
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_tui_vector_svg_rendering(page: Page, docs_server: str) -> None:
+    """Verify all embedded TUI vector SVGs render with valid geometry and natural dimensions."""
+    test_pages = [
+        "docs/quickstart",
+        "docs/integrations/tui-workstation",
+        "docs/walkthroughs/01-auditing-webpages-and-text",
+        "docs/feature-parity",
+    ]
+
+    for route in test_pages:
+        await page.goto(f"{docs_server}/#{route}", wait_until="networkidle")
+        await page.wait_for_timeout(500)
+
+        # Activate any TUI tab buttons in tab groups on the page
+        tab_groups = await page.query_selector_all(".tab-group")
+        for group in tab_groups:
+            tui_btn = await group.query_selector('.tab-btn[data-tab-name*="TUI"], .tab-btn[data-tab-name*="Textual"]')
+            if tui_btn:
+                await tui_btn.click()
+                await page.wait_for_timeout(150)
+
+        # Query all TUI images
+        tui_imgs = await page.query_selector_all('img[src*="assets/tui/"]')
+        assert len(tui_imgs) >= 1, f"Expected at least 1 TUI image on route {route}, found {len(tui_imgs)}"
+
+        for idx, img in enumerate(tui_imgs):
+            # Verify image loaded successfully
+            is_loaded = await img.evaluate("(el) => el.complete && el.naturalWidth > 0")
+            assert is_loaded, f"TUI image #{idx} on route {route} failed to load or has 0 naturalWidth"
+
+            natural_w = await img.evaluate("(el) => el.naturalWidth")
+            natural_h = await img.evaluate("(el) => el.naturalHeight")
+            assert natural_w >= 100, f"TUI image #{idx} on route {route} naturalWidth too small: {natural_w}"
+            assert natural_h >= 50, f"TUI image #{idx} on route {route} naturalHeight too small: {natural_h}"
+
+            # If visible, verify non-zero bounding box
+            if await img.is_visible():
+                box = await img.bounding_box()
+                assert box is not None, f"Visible TUI image #{idx} on route {route} has no bounding box"
+                assert box["width"] > 100, f"TUI image #{idx} bounding box width too small: {box['width']}"
+                assert box["height"] > 50, f"TUI image #{idx} bounding box height too small: {box['height']}"
+
+
+

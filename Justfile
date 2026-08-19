@@ -53,6 +53,10 @@ docker-test:
 tui:
     poetry run credence tui
 
+# Regenerate all documentation TUI vector SVG screenshots
+generate-tui-assets:
+    poetry run python tools/export_tui_assets.py
+
 # Run FastMCP server
 serve-stdio:
     poetry run credence serve --transport stdio
