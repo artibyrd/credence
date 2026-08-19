@@ -197,3 +197,37 @@ def test_web_viewer_css_tab_and_hash_integrity(web_dir: Path) -> None:
 
     # Clean monospace hash wrapping
     assert "overflow-wrap: anywhere" in content
+
+    # Sub-view toggle styling
+    assert ".findings-subnav-toggle" in content
+    assert ".view-toggle-btn" in content
+
+
+@pytest.mark.unit
+def test_web_viewer_randomized_default_selection_and_4_tab_layout(web_dir: Path) -> None:
+    """Verify viewer.html randomizes default report selection on load and provides 4 streamlined workspaces."""
+    viewer_file = web_dir / "credence.report" / "viewer.html"
+    content = viewer_file.read_text(encoding="utf-8")
+
+    # Randomized default report selection
+    assert "Math.random() * dynamicCorpus.length" in content
+    assert "Math.random() * MOCK_CORPUS.length" in content
+
+    # 4-Tab consolidated navigation
+    assert "tab-overview" in content
+    assert "tab-findings" in content
+    assert "tab-publisher" in content
+    assert "tab-crypto" in content
+
+    # Sub-view toggle between Cards and In-Context Reader
+    assert "toggleFindingsView" in content
+    assert "findings-cards-view" in content
+    assert "findings-reader-view" in content
+    assert "findings-toggle-cards" in content
+    assert "findings-toggle-reader" in content
+
+    # Share & Export consolidated in Cryptographic Proof & Export tab
+    assert "export-stack" in content
+    assert "copyMarkdownSummary" in content
+    assert "copyJsonAttestation" in content
+    assert "copyBadgeSnippet" in content

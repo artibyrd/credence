@@ -130,7 +130,7 @@
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <button class="btn-secondary" onclick="switchTab('tab-reader')">📖 Read In-Context</button>
+            <button class="btn-secondary" onclick="switchTab('tab-findings', 'reader')">📖 Read In-Context</button>
             <button class="btn-primary" onclick="copyMarkdownSummary()">📋 Copy Summary</button>
           </div>
         </div>
@@ -149,25 +149,19 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
+      <!-- Navigation Tabs (Streamlined 4-Workspace Layout) -->
       <nav class="tabs-nav">
         <button class="tab-btn active" onclick="switchTab('tab-overview')">
-          📊 Overview &amp; Metrics
-        </button>
-        <button class="tab-btn" onclick="switchTab('tab-reader')">
-          📖 In-Context Reading Mode
+          📊 Audit Overview
         </button>
         <button class="tab-btn" onclick="switchTab('tab-findings')">
-          🚨 Itemized Findings <span id="tab-findings-count" class="tab-count">0</span>
+          🚨 Findings &amp; Reader <span id="tab-findings-count" class="tab-count">0</span>
         </button>
         <button class="tab-btn" onclick="switchTab('tab-publisher')">
-          📰 Publisher Analytics &amp; Trends
+          📰 Publisher Trends
         </button>
         <button class="tab-btn" onclick="switchTab('tab-crypto')">
-          🔐 Cryptographic Proof
-        </button>
-        <button class="tab-btn" onclick="switchTab('tab-export')">
-          📤 Share &amp; Export
+          🔐 Proof &amp; Export
         </button>
       </nav>
 
@@ -248,43 +242,58 @@
         </div>
       </div>
 
-      <!-- Tab 2: In-Context Reading Mode -->
-      <div id="tab-reader" class="tab-pane">
-        <div class="reader-layout">
-          <div class="reader-article" id="reader-article-body">
-            <!-- Article prose with highlighted spans injected here -->
+      <!-- Tab 2: Findings & In-Context Reader -->
+      <div id="tab-findings" class="tab-pane">
+        <!-- Findings Sub-View Toggle (Segmented Switch) -->
+        <div class="findings-view-header">
+          <div class="findings-subnav-toggle">
+            <button id="findings-toggle-cards" class="view-toggle-btn active" onclick="toggleFindingsView('cards')">
+              📋 Itemized Cards
+            </button>
+            <button id="findings-toggle-reader" class="view-toggle-btn" onclick="toggleFindingsView('reader')">
+              📖 In-Context Article Reader
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub-view 1: Itemized Cards List -->
+        <div id="findings-cards-view" class="findings-subview active">
+          <div class="findings-controls">
+            <div class="filter-group">
+              <button class="filter-chip active" onclick="filterFindings('ALL', this)">All Violations</button>
+              <button class="filter-chip" onclick="filterFindings('ETHICS', this)">Journalistic Ethics</button>
+              <button class="filter-chip" onclick="filterFindings('FALLACY', this)">Logical Fallacies</button>
+              <button class="filter-chip" onclick="filterFindings('DECEPTIVE', this)">Deceptive Patterns</button>
+              <button class="filter-chip" onclick="filterFindings('CRITICAL', this)">Critical Only (&ge;4)</button>
+            </div>
+            <input type="text" id="findings-search" class="filter-search" placeholder="Search findings..." oninput="searchFindings(this.value)">
           </div>
 
-          <div class="reader-sidebar">
-            <div class="sidebar-title">🔎 Highlighted Finding Detail</div>
-            <div id="reader-active-card" class="active-finding-card">
-              <p style="color: var(--text-muted); font-size: 0.9rem;">
-                Click on any highlighted phrase in the article text to inspect the violated ethical rule, severity rating, and auditor reasoning.
-              </p>
+          <ul id="violations-container" class="violations-list">
+            <!-- Findings injected via JS -->
+          </ul>
+        </div>
+
+        <!-- Sub-view 2: In-Context Reading Mode -->
+        <div id="findings-reader-view" class="findings-subview">
+          <div class="reader-layout">
+            <div class="reader-article" id="reader-article-body">
+              <!-- Article prose with highlighted spans injected here -->
+            </div>
+
+            <div class="reader-sidebar">
+              <div class="sidebar-title">🔎 Highlighted Finding Detail</div>
+              <div id="reader-active-card" class="active-finding-card">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                  Click on any highlighted phrase in the article text to inspect the violated ethical rule, severity rating, and auditor reasoning.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Tab 3: Itemized Findings -->
-      <div id="tab-findings" class="tab-pane">
-        <div class="findings-controls">
-          <div class="filter-group">
-            <button class="filter-chip active" onclick="filterFindings('ALL', this)">All Violations</button>
-            <button class="filter-chip" onclick="filterFindings('ETHICS', this)">Journalistic Ethics</button>
-            <button class="filter-chip" onclick="filterFindings('FALLACY', this)">Logical Fallacies</button>
-            <button class="filter-chip" onclick="filterFindings('DECEPTIVE', this)">Deceptive Patterns</button>
-            <button class="filter-chip" onclick="filterFindings('CRITICAL', this)">Critical Only (&ge;4)</button>
-          </div>
-          <input type="text" id="findings-search" class="filter-search" placeholder="Search findings..." oninput="searchFindings(this.value)">
-        </div>
-
-        <ul id="violations-container" class="violations-list">
-          <!-- Findings injected via JS -->
-        </ul>
-      </div>
-
-      <!-- Tab: Publisher Analytics & Longitudinal Trends -->
+      <!-- Tab 3: Publisher Analytics & Longitudinal Trends -->
       <div id="tab-publisher" class="tab-pane">
         <div class="panel-card" style="margin-bottom: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
@@ -385,7 +394,7 @@
         </div>
       </div>
 
-      <!-- Tab 4: Cryptographic Proof -->
+      <!-- Tab 4: Cryptographic Proof & Export -->
       <div id="tab-crypto" class="tab-pane">
         <div class="panel-card" style="margin-bottom: 1.5rem;">
           <div class="panel-title">
@@ -420,7 +429,7 @@
           </table>
         </div>
 
-        <div class="panel-card">
+        <div class="panel-card" style="margin-bottom: 1.5rem;">
           <div class="panel-title">
             <span>🌐 Decentralized Mesh Consensus Status</span>
           </div>
@@ -432,45 +441,47 @@
             <div class="badge">⚖️ Outlier Detection: Concordance Verified</div>
           </div>
         </div>
-      </div>
 
-      <!-- Tab 5: Share & Export (Stacked Full-Width Layout) -->
-      <div id="tab-export" class="tab-pane">
-        <div class="export-stack">
-          <!-- 1. Markdown Summary -->
-          <div class="export-card-stacked">
-            <div class="export-card-header">
-              <div class="export-card-info">
-                <h3>📋 Markdown Summary</h3>
-                <p>Formatted plain-English briefing suitable for pull requests, research documentation, and chat sharing.</p>
-              </div>
-              <button class="btn-primary" onclick="copyMarkdownSummary()">Copy Markdown</button>
-            </div>
-            <div id="export-md-preview" class="code-preview">Loading Markdown preview...</div>
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>📤 Share &amp; Export Attestations</span>
           </div>
-
-          <!-- 2. Signed JSON Attestation -->
-          <div class="export-card-stacked">
-            <div class="export-card-header">
-              <div class="export-card-info">
-                <h3>📦 Signed JSON Attestation (RFC 8785)</h3>
-                <p>Raw cryptographically signed attestation envelope for automated CI/CD validation pipelines, smart contracts, and FastMCP tools.</p>
+          <div class="export-stack">
+            <!-- 1. Markdown Summary -->
+            <div class="export-card-stacked">
+              <div class="export-card-header">
+                <div class="export-card-info">
+                  <h3>📋 Markdown Summary</h3>
+                  <p>Formatted plain-English briefing suitable for pull requests, research documentation, and chat sharing.</p>
+                </div>
+                <button class="btn-primary" onclick="copyMarkdownSummary()">Copy Markdown</button>
               </div>
-              <button class="btn-secondary" onclick="copyJsonAttestation()">Copy JSON Attestation</button>
+              <div id="export-md-preview" class="code-preview">Loading Markdown preview...</div>
             </div>
-            <div id="export-json-preview" class="code-preview">Loading JSON preview...</div>
-          </div>
 
-          <!-- 3. Web Verification Badge -->
-          <div class="export-card-stacked">
-            <div class="export-card-header">
-              <div class="export-card-info">
-                <h3>🏷️ Web Verification Badge</h3>
-                <p>HTML snippet to embed a live verification badge directly on your blog, publication, or documentation portal.</p>
+            <!-- 2. Signed JSON Attestation -->
+            <div class="export-card-stacked">
+              <div class="export-card-header">
+                <div class="export-card-info">
+                  <h3>📦 Signed JSON Attestation (RFC 8785)</h3>
+                  <p>Raw cryptographically signed attestation envelope for automated CI/CD validation pipelines, smart contracts, and FastMCP tools.</p>
+                </div>
+                <button class="btn-secondary" onclick="copyJsonAttestation()">Copy JSON Attestation</button>
               </div>
-              <button class="btn-secondary" onclick="copyBadgeSnippet()">Copy HTML Badge</button>
+              <div id="export-json-preview" class="code-preview">Loading JSON preview...</div>
             </div>
-            <div id="export-badge-preview" class="code-preview">&lt;a href="https://credence.report/viewer.html?q=..." target="_blank"&gt;&lt;img src="https://credence.report/badge.svg" alt="Credence Epistemic Audit" /&gt;&lt;/a&gt;</div>
+
+            <!-- 3. Web Verification Badge -->
+            <div class="export-card-stacked">
+              <div class="export-card-header">
+                <div class="export-card-info">
+                  <h3>🏷️ Web Verification Badge</h3>
+                  <p>HTML snippet to embed a live verification badge directly on your blog, publication, or documentation portal.</p>
+                </div>
+                <button class="btn-secondary" onclick="copyBadgeSnippet()">Copy HTML Badge</button>
+              </div>
+              <div id="export-badge-preview" class="code-preview">&lt;a href="https://credence.report/viewer.html?q=..." target="_blank"&gt;&lt;img src="https://credence.report/badge.svg" alt="Credence Epistemic Audit" /&gt;&lt;/a&gt;</div>
+            </div>
           </div>
         </div>
       </div>
@@ -821,14 +832,48 @@ City council members expressed optimism regarding the new administration's forei
       window.history.replaceState({}, "", url);
     };
 
-    window.switchTab = function(tabId) {
+    window.toggleFindingsView = function(mode) {
+      const cardsView = document.getElementById("findings-cards-view");
+      const readerView = document.getElementById("findings-reader-view");
+      const btnCards = document.getElementById("findings-toggle-cards");
+      const btnReader = document.getElementById("findings-toggle-reader");
+
+      if (mode === "reader") {
+        if (cardsView) cardsView.classList.remove("active");
+        if (readerView) readerView.classList.add("active");
+        if (btnCards) btnCards.classList.remove("active");
+        if (btnReader) btnReader.classList.add("active");
+      } else {
+        if (cardsView) cardsView.classList.add("active");
+        if (readerView) readerView.classList.remove("active");
+        if (btnCards) btnCards.classList.add("active");
+        if (btnReader) btnReader.classList.remove("active");
+      }
+    };
+
+    window.switchTab = function(tabId, subView) {
+      let targetTabId = tabId;
+      if (tabId === "tab-reader") {
+        targetTabId = "tab-findings";
+        window.toggleFindingsView("reader");
+      } else if (tabId === "tab-export") {
+        targetTabId = "tab-crypto";
+      } else if (tabId === "tab-findings" && subView === "reader") {
+        window.toggleFindingsView("reader");
+      } else if (tabId === "tab-findings" && !subView) {
+        window.toggleFindingsView("cards");
+      }
+
       document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("active"));
       document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
 
-      const target = document.getElementById(tabId);
+      const target = document.getElementById(targetTabId);
       if (target) target.classList.add("active");
 
-      const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("onclick") && b.getAttribute("onclick").includes(tabId));
+      const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => {
+        const oc = b.getAttribute("onclick") || "";
+        return oc.includes(`'${targetTabId}'`) || oc.includes(`"${targetTabId}"`);
+      });
       if (btn) btn.classList.add("active");
     };
 
@@ -1774,8 +1819,15 @@ ${summaryContent}
         return;
       }
 
-      // Default selection from dynamic or mock corpus
-      let selected = dynamicCorpus.length > 0 ? dynamicCorpus[0] : MOCK_CORPUS[2];
+      // Default selection: Pick a random report from corpus on initial load
+      let selected;
+      if (dynamicCorpus.length > 0) {
+        const randIdx = Math.floor(Math.random() * dynamicCorpus.length);
+        selected = dynamicCorpus[randIdx];
+      } else if (MOCK_CORPUS.length > 0) {
+        const randIdx = Math.floor(Math.random() * MOCK_CORPUS.length);
+        selected = MOCK_CORPUS[randIdx];
+      }
       if (selected) {
         document.getElementById("header-query").value = selected.content_sha256 || selected.id || "";
         renderReport(selected);

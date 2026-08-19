@@ -11,6 +11,21 @@ last_verified: '2026-08-19'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.15.3] - 2026-08-19
+
+### Epistemic Report Viewer: Default Load Randomization & 4-Workspace Layout Redesign
+- **Default Load Randomization (`web/credence.report/viewer.html`)**:
+  - Replaced static deterministic selection (`dynamicCorpus[0]`) on default initial loads with uniform corpus randomization (`Math.random() * dynamicCorpus.length`), ensuring readers encounter a fresh, diverse forensic audit upon every fresh page load while preserving explicit query parameters (`?q=...`) and hash payloads (`#data=...`).
+- **4-Workspace Streamlined Navigation Architecture (`viewer.html` & `styles.css`)**:
+  - Eliminated horizontal tab overflow and scrolling by consolidating 6 verbose horizontal tabs into 4 focused, high-density workspaces:
+    1. **`📊 Audit Overview`**: Executive Briefing, Epistemic Trust Dimensions (SPJ, IEP, Deceptive UI), and Snapshot & Provenance Metadata.
+    2. **`🚨 Findings & Reader`**: Unified investigative workspace featuring an interactive segmented switch (`toggleFindingsView`) between `[ 📋 Itemized Cards ]` (category filters & search) and `[ 📖 In-Context Article Reader ]` (interactive highlight markers & inspector sidebar).
+    3. **`📰 Publisher Trends`**: Domain Epistemic Index (DEI), Forensic Sourcing Ratios, Longitudinal SVG trend timeline, and Top Violated Rules table.
+    4. **`🔐 Proof & Export`**: W3C WebCrypto Verification (RFC 8785 Ed25519 signatures & mesh status) combined with full Share & Export stack (Markdown summaries, JSON attestations, and web embed badges).
+  - Maintained complete backwards compatibility in `switchTab()` for legacy tab IDs (`tab-reader`, `tab-export`).
+- **Automated Web Regression Gate (`tests/test_web.py`)**:
+  - Added `test_web_viewer_randomized_default_selection_and_4_tab_layout` verifying default randomization, 4-tab DOM structure, sub-view toggling, and attestation export capabilities.
+
 ## [1.15.2] - 2026-08-19
 
 ### CI/CD Hardening & Workflow Resilience
