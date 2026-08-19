@@ -25,6 +25,9 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Node Germination & Zero-Touch Ignition Invariant**: Fresh, unseeded nodes starting up must execute autonomous germination (`credence germinate` / `germinate_node`) as a non-blocking background task during lifespan startup—minting Ed25519 identity, inoculating Genesis peer attestations at $0.00 token cost, sowing 24 preset feeds, and auditing initial novel articles.
 - **Swarm Rendezvous Partitioning & Atomic Inoculation**: Swarm feed sifting must partition candidate feeds using Highest Random Weight (HRW) Rendezvous Hashing (`compute_feed_affinity`) and wrap seed insertions in atomic commit/rollback sub-transactions.
 - **3-Plane Deployment Governance**: Ecosystem pipelines operate across 3 decoupled planes: **Edge Plane** (`web/` and `credence-docs` via Cloudflare & `just deploy edge`), **Compute Plane** (`credence-server` on Cloud Run via `just deploy backend`), and **Infra Plane** (Terraform via `just tf apply`).
+- **Target Semantic Version Tag Verification Invariant**: Never guess or assume version sequence numbers. Always query existing repository tags (`git tag -l | sort -V | tail`) across all ecosystem repositories prior to drafting changelogs, syncing manifests, or proposing release versions.
+- **Build Context & Cloud Build Exclusion Invariant**: All containerized repositories must maintain synchronized `.dockerignore` and `.gcloudignore` exclusion manifests (`.venv/`, `terraform/`, `data/`, caches, tests, web) ensuring build context uploads remain < 5 MB.
+- **Shell Pipefail Stream Safety**: In bash scripts running under `set -euo pipefail`, avoid `head -n 1` on command pipelines that may continue outputting (which triggers SIGPIPE exit code 141); use `sed -n '1p'` or pipe-draining constructs.
 
 ---
 

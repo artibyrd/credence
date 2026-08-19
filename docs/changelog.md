@@ -1,18 +1,38 @@
+---
+title: "Release Changelog"
+description: "Version history, release notes, and milestone accomplishments across the Credence network."
+---
+
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.14.1] - 2026-08-19
+
+### Added
+- **New Showcase Articles & Operational Handbooks**:
+  - **CI/CD Acceleration Post-Mortem (`blog/from-860mb-to-2mb-sub-40s-cicd-pipeline.md`)**: Forensic breakdown of unmocked socket timeouts, 99.7% build upload reduction, and `pytest-xdist` parallelization.
+  - **Pipeline & Build Optimization Handbook (`docs/operations/pipeline-and-build-optimization.md`)**: Comprehensive operational reference for workstation tuning, Docker BuildKit caching, and Cloud Build concurrency.
+  - **The 3-Plane Sovereign Architecture (`blog/the-three-plane-architecture.md`)**: In-depth essay on decoupling Cloudflare Edge (zero-npm), Cloud Run Compute (scale-to-zero), and Terraform Infrastructure for $0.00 idle cost.
+  - **Swarm Rendezvous Hashing (`docs/mesh-engineering/rendezvous-hashing-feed-partitioning.md`)**: Mathematical and protocol guide to Highest Random Weight (HRW) Rendezvous Hashing (`compute_feed_affinity`) and 92.3% compute savings.
+  - **Zero-Touch Node Germination (`docs/protocols/zero-touch-germination-and-swarm-ignition.md`)**: Autonomous node lifecycle, Ed25519 identity minting, genesis inoculation at $0.00 token cost, and burst auditing.
+  - **DEI & Sourcing Forensics Blueprint (`docs/blueprints/domain-epistemic-index-and-sourcing-forensics.md`)**: Mathematical formulas for composite $DEI$, 5 standardized Trust Bands, and 4 Forensic Sourcing Ratios ($R_{\text{byline}}$, $R_{\text{single}}$, $R_{\text{COI}}$, $ASI$).
+- **Search Registry & Topic Index Synchronization**:
+  - Registered all new guides in `DOCS_REGISTRY` and `BLOG_REGISTRY` in `app.js` with comprehensive keyword arrays for instant `/` search.
+  - Synchronized master `docs/topic-index.md` and `docs/sitemap.md` across the ecosystem.
+- **Knowledge Governance & System Invariants**:
+  - Added semantic version tag verification invariant, build context payload exclusion invariant (<5MB), and shell pipefail stream safety invariants to `AGENTS.md` and `.agents/skills/cloudrun-ops/SKILL.md`.
+
 ## [1.14.0] - 2026-08-19
 
 ### Optimized & Accelerated
-- **Ecosystem CI/CD & Test Pipeline Acceleration (Lint ➔ Test ➔ Build ➔ Deploy)**:
-  - **Pytest Parallelization with `pytest-xdist`**: Integrated `pytest-xdist` (`-n auto`) across all available CPU cores, slashing hermetic unit test execution time from **81.1s down to ~28s** (a **65% reduction**).
-  - **Feed Pre-Flight Network Timeout Elimination**: Mocked `fetch_and_parse_feed` in `tests/test_cli.py::test_cli_feeds_and_subjects`, eliminating an unmocked 10.7-second live socket timeout.
-  - **Concurrent Mesh Cluster Teardown**: Replaced sequential socket lifecycle loops with `asyncio.gather` for parallel startup/teardown across multi-node test topologies, saving ~15 seconds of idle socket wait time.
-  - **Build Context & Upload Reduction (99.4% lighter)**: Implemented `.dockerignore` and `.gcloudignore` exclusion manifests (`.venv`, `terraform/`, `data/`, caches), dropping container build context and Cloud Build upload payload from **861 MB down to 2.1 MB**.
-  - **Lean Production Docker Images**: Configured `Dockerfile` to build runtime images with `poetry install --without dev` and BuildKit cache mounts (`--mount=type=cache,target=/root/.cache/pypoetry`), excluding development dependencies and speeding up rebuilds.
-  - **Cloud Build & CI/CD Concurrency**: Parallelized `quality-gate` (Ruff & Mypy) and `test-gate` (Pytest) in `cloudbuild.yaml` using `waitFor: ['-']`, pruned unnecessary Playwright browser binary downloads from unit CI jobs in GitHub Actions (`ci.yml`, `release.yml`), and optimized `just tf validate` with cached `.terraform` state inspection.
-  - **Local QA Gate (`just check`)**: Reduced total pre-commit verification time across all 5 planes from **~88s down to ~39s**.
+- **Ecosystem CI/CD & Pipeline Acceleration (Lint ➔ Test ➔ Build ➔ Deploy)**:
+  - **Pytest Parallelization (`pytest-xdist`)**: Integrated `pytest -n auto` to execute hermetic unit tests concurrently across CPU cores, reducing test suite duration by **65%** (from 81s down to 28s).
+  - **Feed Pre-Flight Network Timeout Elimination**: Mocked `fetch_and_parse_feed` in CLI test suites to remove an unmocked 10.7-second live HTTP socket timeout.
+  - **Concurrent Mesh Cluster Lifecycle**: Replaced sequential relay lifecycle loops with `asyncio.gather` for parallel WebSocket server startup and teardown.
+  - **Build Context & Upload Reduction (99.4% lighter)**: Configured `.dockerignore` and `.gcloudignore` to drop upload payload and Docker build context from **861 MB down to 2.1 MB**.
+  - **Lean Production Containers**: Configured `Dockerfile` to build runtime containers using `poetry install --without dev` and BuildKit cache mounts.
+  - **Concurrent Cloud Build & CI/CD**: Parallelized quality and test gates in `cloudbuild.yaml` with `waitFor: ['-']`, pruned unneeded Playwright browser downloads from unit CI jobs, and optimized `just tf validate` with cached `.terraform` state inspection.
 
 ## [1.13.0] - 2026-08-19
 
@@ -23,7 +43,65 @@ All notable changes to the **Credence** network and documentation are documented
 - **Cross-Domain Unified Header Navigation (`.credence-nav`)**:
   - Harmonized navigation header across all 5 domains with instant links to Home, Docs, Playgrounds, Blog, Reports, Nexus, Foundation, Sitemap, and GitHub.
 - **Rich 4-Column Ecosystem Footer (`.credence-footer`)**:
-  - Implemented 4-column structured footer layout (Sovereign Domains, Interactive & Tools, Knowledge & Proofs, Governance & Source) across all 5 domain web entrypoints.
+  - Implemented 4-column structured footer layout (Sovereign Domains, Interactive & Tools, Knowledge & Proofs, Governance & Source) across all 5 domain web entrypoints and dynamically appended to documentation articles.
+- **Automated Regression Prevention Suites**:
+  - Added `test_sitemap_integrity_and_route_coverage` in `test_docs_integrity.py` to assert 100% sitemap route coverage.
+  - Added `test_cross_domain_consistent_navigation_and_footers` in `test_docs_rendering.py` to audit live header navigation, footer structure, and static domain templates.
+
+## [1.12.5] - 2026-08-19
+
+### Changed
+- **Taxonomy Rule Explorer Redesign & Complete Rule Catalog**:
+  - Replaced the cramped, dual-scrolling table in Widget 6 of `docs/playground.md` with an expansive, responsive **Rule Card List** adhering to Invariant 38 (Zero Scrollbars & Natural Document Flow).
+  - Expanded the rule database from 9 mock samples to all **46 authentic taxonomy rules** across SPJ Journalistic Ethics (12), IEP Logical Fallacies (21), Deceptive UI Patterns (9), Financial Disclosures (1), Medical Claims (1), Election Integrity (1), and Governance Conflicts (1).
+  - Added multi-dimensional filtering (Catalog Chips + Severity Dropdown + Real-Time Search) with 8-card pagination and 1-click canonical URI copying.
+  - Replaced `<textarea readonly>` in Widget 11 (ClaimReview Generator) with an auto-height preformatted `<pre>` container.
+
+## [1.12.4] - 2026-08-19
+
+### Fixed
+- **Inline HTML Tag Preservation in Markdown Parser**:
+  - Enhanced `formatInline` in `app.js` to mask and preserve valid inline HTML tags (`<a>`, `<span>`, `<code>`, `<mark>`, etc.) before HTML entity escaping, preventing literal tag leaks in custom callout boxes (e.g. `<a href="...">` and `<code>` in the live verification channels card).
+  - Formatted live verification link channels in `blog/conflict-of-pun-terest.md` as clean single-line blocks.
+  - Added regression test `test_no_raw_html_tag_leaks` targeting `blog/conflict-of-pun-terest` and verifying zero leaked `&lt;a href` tags.
+
+## [1.12.3] - 2026-08-18
+
+### Fixed
+- **Balanced-Brace LaTeX Parser & Full Symbol Expansion**:
+  - Replaced regular expression-based fraction matching in `formatMath` (`app.js`) with an iterative balanced-brace recursive parser, properly handling nested subscripts (e.g. `\frac{N_{named}}{N_{total}}` $\to$ `(N₍named₎ / N₍total₎)`).
+  - Added support for `\mathbb{R}` ($\to \mathbb{R}$), `\mathbb{I}` ($\to \mathbb{I}$), `\min`, `\max`, `\tau`, `\leftarrow`, `\rightarrow`, `\leftrightarrow`, `\parallel` ($\to \parallel$), `\overline`, and `\pmod`.
+  - Added escaped curly set braces (`\{...\} ` $\to$ `{...}`) and graceful fallback filtering for any unknown raw LaTeX backslashes.
+  - Verified site-wide zero math errors across all 98 documentation pages in headless Chromium via Playwright.
+- **Zero Scrollbars on Attestation Receipts**:
+  - Replaced the scrollable `<textarea>` with an auto-height preformatted `<pre>` element for canonical RFC 8785 attestation JSON receipts.
+
+## [1.12.2] - 2026-08-18
+
+### Changed
+- **Eliminated Nested Vertical Scrollbars & Enhanced Document Layout**:
+  - Restructured `blog/conflict-of-pun-terest.md` to follow a clean, human-first progression from high-level civic context and aggregate DEI profile up front down to deep-dive forensic pillar evidence and interactive simulators.
+  - Removed cramped `max-height: 560px` and inner vertical scrolling from `.article-preview-pane` in `styles.css` so DOM article previews expand naturally.
+  - Replaced the fixed raw attestation receipt textarea with an expandable `<details>` accordion section, preventing multi-scrollbar clutter in the forensic workbench.
+- **Enhanced Zero-Build Mathematical Typography & LaTeX Parser**:
+  - Expanded `formatMath` in `app.js` with operators and formatting cleanups (`\cdot`, `\land`, `\lor`, `\implies`, `\iff`, `\quad`, `\qquad`, `\sqrt`, `\bar`, `\hat`, `\mathbf`, `\mathrm`, `\subset`, `\subseteq`, `\forall`, `\exists`, `\infty`).
+  - Simplified and standardized mathematical formulas for the Domain Epistemic Index ($DEI$) and Sourcing Ratios ($R_{\text{byline}}$, $R_{\text{COI}}$, $ASI$, $R_{\text{single}}$) with full variable definitions.
+
+## [1.12.1] - 2026-08-18
+
+### Added
+- **Rich Interactive Publisher Analytics Dashboard**:
+  - Replaced static ASCII formatting with a high-contrast, responsive glassmorphic publisher profile card on `blog.credence.run` and `docs.credence.run`.
+  - Added dual-mode tab switcher toggling seamlessly between **Visual Dashboard** and **Raw Canonical ASCII / JSON** views.
+  - Added visual Domain Epistemic Index (DEI) score meter with interactive 4-zone spectrum track and real-time position marker.
+  - Added interactive progress meters for the 4 primary forensic ratios: Byline Transparency ($R_{\text{byline}}$), Single-Source Blotter Reliance ($R_{\text{single}}$), Conflict of Interest Exposure ($R_{\text{COI}}$), and Advertorial Separation Index ($ASI$).
+  - Added interactive codified rule violation rows for `SPJ-3.3`, `AST-1.1`, `SPJ-3.1`, `DEC-1.4`, and `SPJ-1.1` with frequency badges and direct catalog links.
+- **Exhaustive Epistemic Data Interpretation Guide**:
+  - Added comprehensive educational section *"How to Read & Interpret Credence Epistemic Data"* explaining structural journalistic ethics vs. binary fact-checking.
+  - Detailed mathematical derivations and real-world interpretations of the Domain Epistemic Index (DEI), trust bands, and forensic sourcing ratios.
+  - Clarified Suspicion Score calibration ($S \in [0, 100]$) and the Zero-Hallucination Grounding Invariant ($G=1.00$) with exact DOM quotation proofs.
+- **Live Continuous Monitoring & Anti-Cherry-Picking Channels**:
+  - Added live real-time verification section with links to live publisher analytics on `credence.report`, production REST API endpoints (`GET /api/analytics/publisher/inmaricopa.com`), FastMCP dynamic resources (`credence://analytics/publisher/inmaricopa.com`), and CLI verification commands.
 
 ## [1.12.0] - 2026-08-18
 
@@ -174,7 +252,7 @@ All notable changes to the **Credence** network and documentation are documented
     - **Phase 2: Peer Mesh Inoculation**: Imports signed Genesis seed attestations (`genesis_attestations.json`) with Ed25519 signature and taxonomy verification at **$0.00 token cost**.
     - **Phase 3: Soil Preparation**: Sows 24 preset categorized feed subscriptions across 4 tiers with Rendezvous hashing affinity.
     - **Phase 4: Miracle-Gro Sifting Burst**: Evaluates novel articles and produces signed local attestations within governor headroom limits.
-    - **Phase 5: Web Hydration**: Auto-exports `reports.json` for immediate Zero-Build Web UI parity.
+    - Phase 5: Web Hydration: Auto-exports `reports.json` for immediate Zero-Build Web UI parity.
   - Added dedicated CLI command with botanical Rich progress tree rendering (`🌱`, `🔑`, `🌐`, `💧`, `⚡`, `🌳`) and telemetry summary table.
   - Added Starlette `POST /api/germinate` REST API endpoint and zero-touch background auto-germination on blank node startup.
   - Added Genesis Attestation Pack (`web/credence.nexus/genesis_attestations.json`).
@@ -203,7 +281,14 @@ All notable changes to the **Credence** network and documentation are documented
     - Wired novel article discovery directly to `audit_url` evaluation pipeline, creating `SnapshotRecord`, `AuditRecord`, and `ViolationRecord` entities in SQLite upon discovery.
     - Added auto-bootstrapping of preset feed subscriptions if subscription catalog is empty.
   - **Unified Starlette Server with REST API Gateway (`credence/server/app.py` & `credence/cli/main.py`)**:
-    - Expanded server runtime to combine FastMCP 2.0 SSE transport with Starlette REST API endpoints (`/health`, `/api/health`, `/api/reports`, `/api/reports/{id}`, `/api/audit`, `/api/sifter/status`, `/api/sifter/cycle`, `/api/feeds/stream`).
+    - Expanded server runtime to combine FastMCP 2.0 SSE transport with Starlette REST API endpoints:
+      - `GET /health` & `GET /api/health`: Service health and version status.
+      - `GET /api/reports`: Paginated, categorized query endpoint (`recent`, `best`, `worst`, `satire`, `random`).
+      - `GET /api/reports/{identifier}`: Reconstitutes full `AuditReport` entity with snapshot metadata and itemized violations from SQLite.
+      - `POST /api/audit`: Live on-demand evaluation endpoint for arbitrary target URLs.
+      - `GET /api/sifter/status`: Real-time telemetry on active feed subscriptions, discovered articles, audited counts, and token savings.
+      - `POST /api/sifter/cycle`: Trigger immediate sifting pass.
+      - `GET /api/feeds/stream`: Stream recent discovered feed items.
     - Added `--sifter` flag to `credence serve` and ASGI lifespan management for background `SifterDaemon`.
     - Added `--once` flag to `credence sifter` for single-cycle execution in cron or batch environments.
     - Added `credence export-catalog` CLI subcommand exporting SQLite database state to static `reports.json` catalog.
@@ -212,6 +297,8 @@ All notable changes to the **Credence** network and documentation are documented
   - **Zero-Build Web UI Dynamic Auto-Discovery (`credence.report/viewer.html` & `index.html`)**:
     - Implemented dynamic API base detection auto-switching between local `http://localhost:8000` during local development and `/api` on production.
     - Added async dynamic corpus fetching from `/api/reports`, falling back gracefully to static `reports.json` and embedded scenarios.
+    - Connected live on-demand URL auditing directly in search/inspect inputs with animated status feedback.
+    - Added live feed audits stream container to `index.html`.
   - **Zero-GCP Portability & Seed Automation**:
     - Added `just seed-reports`, `just serve-sifter`, `just sifter-once`, and `just export-catalog` recipes.
     - Documented 100% self-hosted, air-gapped local execution without commercial cloud lock-in in `docs/portability/multi-cloud-deployment.md`.
@@ -220,65 +307,218 @@ All notable changes to the **Credence** network and documentation are documented
 
 ### Added
 - **Multi-Display Mode Switcher & Machine-Ingestible Options across 4 Interfaces**:
-  - **Zero-Build Web UI (`credence.report/viewer.html`)**: 3-way Display Mode Switcher (`[🧠 Human]`, `[⚡ Compact]`, `[🤖 Machine (JSON)]`) with URL query parameter sync (`?view=human|compact|raw`). Dynamic Schema.org `ClaimReview` JSON-LD in DOM `<head>`.
-  - **Rich Terminal CLI (`credence/cli/main.py`)**: Universal `--format {human,compact,json,ndjson,tsv}` flag across `credence audit`, `credence lookup`, and `credence report`.
-  - **FastMCP 2.0 Server (`credence/server/app.py`)**: `credence://reports/{identifier}/compact` and `credence://reports/{identifier}/raw` resources.
-  - **Textual TUI Workstation (`credence/tui/app.py`)**: `v` keyboard shortcut cycling live inspector view modes between Rich Human, Compact Dense, and Raw JSON.
+  - **Zero-Build Web UI (`credence.report/viewer.html`)**:
+    - Implemented 3-way Display Mode Switcher (`[🧠 Human]`, `[⚡ Compact]`, `[🤖 Machine (JSON)]`) with URL query parameter sync (`?view=human|compact|raw`).
+    - Added `[⚡ Compact]` view: dense single-screen epistemic breakdown with quick-scan verdict and tabular findings.
+    - Added `[🤖 Machine (JSON)]` view: full-width canonical RFC 8785 JSON inspector with pretty/minified formatting toggle and 1-click cURL API snippet.
+    - Embedded dynamic Schema.org `ClaimReview` JSON-LD into DOM `<head>` on every report render for autonomous AI agent scraping and search engine crawler ingestion.
+  - **Rich Terminal CLI (`credence/cli/main.py`)**:
+    - Added universal `--format {human,compact,json,ndjson,tsv}` flag across `credence audit`, `credence lookup`, and `credence report`.
+    - Compact format outputs concise score, density, confidence, and single-line findings; NDJSON outputs newline-delimited JSON stream; TSV outputs tab-separated tabular data for pipeline scripting.
+  - **FastMCP 2.0 Server (`credence/server/app.py`)**:
+    - Added `credence://reports/{identifier}/compact` resource providing token-efficient LLM briefings.
+    - Added `credence://reports/{identifier}/raw` resource returning raw signed RFC 8785 JSON attestations.
+    - Enhanced `credence_get_audit` tool with `format` parameter supporting `human`, `compact`, `json`, `ndjson`, and `tsv`.
+  - **Textual TUI Workstation (`credence/tui/app.py`)**:
+    - Added `v` keyboard shortcut to cycle live inspector view modes between Rich Human Executive Briefing, Compact Dense Summary, and Raw JSON Attestation.
 - **Categorical Epistemic Audit Discovery & Stream Explorer**:
-  - Quick Discovery Toolbar on Web UI, `credence report browse` CLI subcommand, `credence_browse_audits` tool, and `r` shortcut in TUI.
+  - **Zero-Build Web UI (`credence.report/index.html` & `viewer.html`)**:
+    - Added Quick Discovery Toolbar with filter pills (`Recent`, `Surprise Me (Random)`, `Top Clean 0–15`, `Most Flagged 70+`, `Satire Showcase`).
+    - Built slide-down Discovery Drawer (`#discovery-drawer`) rendering category cards for 1-click loading without needing a known URL or hash.
+  - **Rich Terminal CLI (`credence/cli/main.py`)**:
+    - Added `credence report browse [--category {recent,best,worst,satire,random}] [--limit N] [--format FMT] [--open]` subcommand.
+    - Added discovery convenience flags to `credence lookup` (`--best`, `--worst`, `--satire`, `--random`).
+  - **FastMCP 2.0 Server (`credence/server/app.py`)**:
+    - Registered `credence_browse_audits` tool querying SQLite by category with configurable limits and formats.
+    - Registered `credence://reports/explore/{category}` streaming resource.
+  - **Textual TUI Workstation (`credence/tui/app.py`)**:
+    - Added `r` keyboard shortcut to select and load a random audit report from local database history.
+
+### Changed
+- **Stacked Share & Export Layout (`credence.report/viewer.html`)**:
+  - Replaced cramped 3-column horizontal export grid with full-width vertically stacked cards (`.export-stack`, `.export-card-stacked`) featuring horizontal action headers, 1-click copy buttons, and full-width syntax-highlighted previews for Markdown, RFC 8785 JSON, and SVG Trust Badges.
+
+---
 
 ## [1.5.0] - 2026-08-18
 
 ### Added
 - **Human-Centered Epistemic Report Viewer across 4 Interfaces**:
-  - **Zero-Build Web UI (`credence.report/viewer.html`)**: In-context reading mode with color-coded highlight markers, Executive Epistemic Briefing, and 5 interactive tabs.
-  - **Textual TUI Workstation (`credence/tui/app.py`)**: Dual-Pane Inspector Split with live search filter and keyboard shortcuts (`o`, `e`, `f`).
-  - **Rich Terminal CLI (`credence/cli/main.py`)**: Executive Briefing panel and Epistemic Trust Dimensions meters.
-  - **FastMCP 2.0 Server (`credence/server/app.py`)**: `format: str = "json"` on `credence_get_audit`, `credence://reports/{id}/human` resource, and `explain_audit_report_prompt`.
-  - **FastMCP Text Evaluation Persistence**: SQLite persistence with `text://inline` pseudo-URLs for all standalone text evaluations.
+  - **Zero-Build Web UI (`credence.report/viewer.html`)**:
+    - Built interactive in-context reading mode rendering snapshot article prose with color-coded highlight markers (`.hl-ethics`, `.hl-fallacy`, `.hl-deceptive`) and tooltip citations.
+    - Added Executive Epistemic Briefing card with plain-English human takeaways and 3-signal indicators (Ethics, Logic, Deceptive Design).
+    - Added 5 interactive tabs: Overview & Metrics, In-Context Reading Mode, Itemized Findings (with real-time search & domain filter chips), Cryptographic Proof (W3C WebCrypto Ed25519 validation), and Share & Export (1-click Markdown copier, JSON download, SVG trust badge).
+    - Preserved 100% Zero-Build standard (vanilla HTML5, CSS Custom Properties, native ES Modules, zero npm dependencies).
+  - **Textual TUI Workstation (`credence/tui/app.py`)**:
+    - Built Dual-Pane Inspector Split: left pane for filterable specialist findings table and right pane for in-context cited excerpts, severity badges, and reasoning.
+    - Added Executive Summary panel at the top of the inspector with human takeaways.
+    - Added live search filter input updating findings dynamically on keystrokes.
+    - Added keyboard shortcuts: `o` (open in web browser), `e` (export Markdown report to disk), and `f` (focus filter input).
+  - **Rich Terminal CLI (`credence/cli/main.py`)**:
+    - Prepend Executive Epistemic Briefing panel and visual Epistemic Trust Dimensions breakdown meters (`[████████████████████] Clean`).
+    - Added `--open` browser flag to `credence audit` and `credence lookup` subcommands.
+    - Added `credence report view <identifier> [--format {terminal,markdown,json}] [--open]` subcommand.
+  - **FastMCP 2.0 Server (`credence/server/app.py`)**:
+    - Added `format: str = "json"` (`json`, `markdown`, `human`) parameter to `credence_get_audit`.
+    - Registered `credence://reports/{identifier}/human` resource returning conversational Markdown briefings.
+    - Registered `explain_audit_report_prompt` prompt template instructing AI agents how to explain audit reports in plain English.
+  - **FastMCP Text Evaluation Persistence**:
+    - Persisted `SnapshotRecord`, `AuditRecord`, and `ViolationRecord` to SQLite with `text://inline` pseudo-URLs for all text evaluations to ensure cache lookup parity with live URL audits.
+  - **Universal Invariant Codification**:
+    - Codified *FastMCP Text Evaluation Persistence Invariant* and *Human-First In-Context Report Presentation Invariant* in `AGENTS.md`.
+
+---
 
 ## [1.4.0] - 2026-08-18
 
 ### Added
-- **Reusable Live Rotating & Mutating E2E Test Suite (`just test-live`)**: Stratified Master Corpus with deterministic daily seed rotation (`YYYY-MM-DD`).
-- **6-Tier Testing Strategy & Verification Architecture**: Comprehensive testing guide (`docs/protocols/testing-strategy.md`).
-- **Tutorial 10 & Verification Pyramid Essay**: `docs/tutorials/10-reusable-live-e2e-and-mesh-gauntlet.md` and `blog/the-six-tier-pyramid-of-decentralized-truth.md`.
+- **Reusable Live Rotating & Mutating E2E Test Suite (`just test-live`)**:
+  - Implemented `tests/e2e/live_corpus.py` Stratified Master Corpus with deterministic daily seed rotation (`YYYY-MM-DD` / `CREDENCE_LIVE_SEED`) across 5 epistemic categories (Reference, Satire, Wire News, Tech Media, Syndicated RSS).
+  - Implemented `tests/e2e/test_live_rotating_suite.py` gauntlet testing CLI live audits, RSS feed quality ($F_j$), real-time dynamic article extraction, FastMCP 2.0 remote SSE tool invocation, and 13-node Watts-Strogatz P2P mesh BitTorrent work-sharing (92.3% compute savings) with Byzantine ungrounded smear slashing.
+- **6-Tier Testing Strategy & Verification Architecture Documentation**:
+  - Published comprehensive testing guide (`docs/protocols/testing-strategy.md` and `docs/testing-strategy.md`) detailing the 6 verification tiers, isolation guarantees, and operational test recipes.
+- **Hands-On Tutorial 10: Running the Reusable Live Rotating E2E & Byzantine Mesh Gauntlet**:
+  - Created step-by-step developer tutorial (`docs/tutorials/10-reusable-live-e2e-and-mesh-gauntlet.md`) for operating live seed mutation, dynamic feed sifting, and P2P mesh chaos testing.
+- **Editorial Blog Essay: The 6-Tier Verification Pyramid**:
+  - Published high-assurance testing essay (`blog/the-six-tier-pyramid-of-decentralized-truth.md`) exploring why static benchmarks fail in AI verification, how deterministic hashing prevents overfitting, and how zero-npm Playwright guarantees multi-decade stability.
+- **Anti-Tampering & FastMCP SSE Resilience**:
+  - Added anti-tampering assertions ensuring modifying signed audit fields causes Ed25519 verification rejection.
+  - Added error-handling verification for invalid tool calls over remote FastMCP 2.0 SSE session streams.
+
+- **Sovereign In-Repo Roadmap & Known Issues Backlog**:
+  - Authored `docs/roadmap.md` and published to docs portal (`docs/roadmap.md`), establishing a local, in-tree Markdown source of truth for observed edge cases, live mitigations, and thematic future backlog items for autonomous AI agents.
+- **Crawler Resilience & Syndicated Date Parsing**:
+  - Added multi-format epoch timestamp fallback (seconds & milliseconds) to `credence/feeds/parser.py` date extraction.
+  - Hardened Playwright browser context in `credence/ingestion/snapshot.py` with standard locale and transient network retry fallback.
+
+### Fixed
+- **Engine Resilience & Bug Fixes**:
+  - Persisted `evaluation_method` in `AuditRecord` SQLModel and added SQLite automatic schema migration in `init_db()`.
+  - Refined XML entity expansion regex in `safe_parse_xml` to strictly match `<!DOCTYPE` and `<!ENTITY>` declarations without false-flagging text containing "system".
+  - Added `NullPool` and active event loop binding to async SQLite engine to eliminate event loop closure leaks across sequential tests.
+  - Converted Playwright live rendering test suite to native `async_playwright` with zero event loop thread pollution.
+  - Improved satire detection regexes in `credence/ingestion/extractor.py` to be attribute-order agnostic for modern hydration DOMs.
+
+---
 
 ## [1.3.0] - 2026-08-18
 
 ### Added
-- **36 Invariants Reference Catalog & Deep Linking**: Expanded `docs/invariants.md` with individual DOM IDs (`#invariant-1` to `#invariant-36`).
-- **Rich Frontmatter Metadata & Zero-Build Faceted Search**: Interactive metadata badge rows and search filter pills.
-- **Dedicated Agentic Engineering Documentation Category**: 5 comprehensive guides and architectural essay.
+- **36 Invariants Reference Catalog & Deep Linking**:
+  - Expanded `docs/invariants.md` to 36 machine-verifiable invariants across 4 pillars with individual DOM IDs (`#invariant-1` to `#invariant-36`) and pillar architecture flowcharts.
+  - Implemented sub-anchor routing in `app.js` with smooth auto-scrolling and glowing cyan highlighting.
+  - Systematically linked all invariant mentions across all 74 catalog documents.
+  - Added automated static integrity tests (`test_all_invariant_link_anchors_exist`) and Playwright browser tests (`test_invariant_deep_linking_and_scrolling`).
+- **Rich Frontmatter Metadata & Zero-Build Faceted Search Engine**:
+  - Standardized frontmatter metadata schema (`tags`, `interfaces`, `invariants`, `difficulty`, `read_time`).
+  - Added interactive top-of-article metadata badge rows for rapid jumping to related interfaces and invariants.
+  - Added keyboard search shortcuts (`/` or `Ctrl+K` to focus, `Esc` to clear) and interactive sidebar filter pills (**All**, **Invariants**, **Agentic**, **FastMCP**, **Tutorials**).
+- **Dedicated "Agentic Engineering & Antigravity Workflows" Documentation Category**:
+  - **[01. Antigravity Pair-Programming](agentic/01-antigravity-pair-programming-paradigm.md)**: Research phase, Planning Mode, background task orchestration, reactive messaging, and "Mk1 Eyeball" human gating.
+  - **[02. /learn & Invariant Synthesis](agentic/02-continuous-learning-and-invariant-synthesis.md)**: Codifying post-mortems and edge-case discoveries into machine-verifiable rules in `AGENTS.md` and automated tests.
+  - **[03. Hermetic Testing & Zero-npm](agentic/03-hermetic-testing-and-zero-npm-guardrails.md)**: In-memory SQLite fixtures, Playwright DOM/SVG geometry contracts, and Zero-npm longevity.
+  - **[04. Multi-Model Pareto & Token Governor](agentic/04-multi-model-pareto-and-token-governance.md)**: Gemini 3.7 Flash 4k thinking token sweet spot ($0.075/1M), 30% offline circuit breakers, and prompt boundary defense.
+  - **[05. FastMCP & 4-Way Parity](agentic/05-fastmcp-dual-transport-and-four-way-parity.md)**: Dual stdio/SSE FastMCP 2.0 transports, reverse proxy security, and 4-way synchronous interface parity.
+  - **[Blog Essay: Architecting Sovereign AI with Google Antigravity](../blog/architecting-sovereign-ai-with-google-antigravity.md)**: High-assurance agentic engineering narrative.
+- **Formalized Milestone Completion & Multi-Repo Git Push Lifecycle**:
+  - Codified the 5-step milestone completion protocol: Present Walkthrough $\to$ Request "Mk1 Eyeball" Approval $\to$ Changelog & Version Sync $\to$ Multi-Repo Push (`just push-all`) $\to$ `/learn` Retrospective.
+
+---
 
 ## [1.2.0] - 2026-08-18
 
 ### Added
-- **GCP-Style Tabbed Interface Switching (`:::tabs` / `=== Tab Name`)**: Accessible dark glassmorphism tabbed containers.
-- **Global Cross-Document Preference Persistence (`localStorage`)**: Persists interface modality across docs.
-- **4 Feature Walkthrough Articles**: End-to-end multi-surface guides.
+- **GCP-Style Tabbed Interface Switching (`:::tabs` / `=== Tab Name`)**:
+  - Implemented zero-build, accessible, dark glassmorphism tabbed container components in `app.js` and `styles.css` matching Google Cloud Platform documentation ergonomics.
+  - Added semantic WAI-ARIA tab contracts (`role="tablist"`, `role="tab"`, `role="tabpanel"`) and animated active cyan indicator styling.
+  - Retained clipboard copy button integration inside individual tabbed code blocks.
+- **Global Cross-Document Preference Persistence (`localStorage`)**:
+  - Automatically persists user-selected interface modality (**CLI**, **FastMCP 2.0**, **Python SDK**, **Zero-Build Web UI**, or **Textual TUI**) to `localStorage`.
+  - As users navigate across documentation and walkthrough pages, matching tab groups automatically switch to the preferred interface with smart fuzzy matching.
+- **4 New Comprehensive Feature Walkthrough Articles**:
+  - **[Feature Walkthrough 01: Webpage & Prose Epistemic Auditing](walkthroughs/01-auditing-webpages-and-text.md)**: Multi-interface guide for auditing URLs and raw text against SPJ, IEP fallacies, and deceptive UI patterns.
+  - **[Feature Walkthrough 02: Zero-Trust Feed Autodiscovery & Sifting](walkthroughs/02-zero-trust-feed-sifting.md)**: End-to-end guide for dynamic feed discovery, pre-flight topic entropy audits, and background sifter daemons.
+  - **[Feature Walkthrough 03: P2P Mesh Gossip & Bayesian Consensus](walkthroughs/03-p2p-mesh-consensus.md)**: Complete guide to node identity generation, Watts-Strogatz peering, and Galileo Rule weighted medians.
+  - **[Feature Walkthrough 04: Daily Morning Epistemic Briefings](walkthroughs/04-morning-digest-briefings.md)**: Compiling 24-hour executive intelligence briefings, Markdown newsletters, and FastMCP dynamic streams.
+- **Documentation-Wide Visual Density & Anti-Wall-of-Text Overhaul**:
+  - Added 22 new Mermaid architecture and sequence flowcharts, 18 comparison tables, and 25 styled callouts across 28 articles.
+  - 100% of all 68 documentation and blog articles now satisfy the $\ge 2.0$ visuals per 500 words invariant.
+- **Automated Tab Persistence & Navigation Regression Tests**:
+  - Added `test_tabbed_interface_switching_and_persistence` in `tests/test_docs_rendering.py` validating tab switching, active panel swaps, `localStorage` saves, and multi-page persistence.
+
+---
 
 ## [1.1.1] - 2026-08-18
 
 ### Added
-- **Zero-Build Mermaid.js Engine Integration**: Vendored Mermaid v10.9.1 engine (`assets/mermaid.min.js`).
-- **Automated Live Rendering Test Suite**: Playwright Chromium test suite verifying 0 rendering errors.
+- **Zero-Build Mermaid.js Engine Integration**: Vendored standalone zero-build Mermaid v10.9.1 engine (`assets/mermaid.min.js`) into `credence-docs/` and `credence/web/assets/`, enabling native SVG rendering for all 24+ architecture, protocol sequence, and mesh topology diagrams.
+- **Dark Aesthetic Diagram Theme**: Configured dark palette (`#0d121f` container, `#38bdf8` cyan glow borders, `#f8fafc` typography) matching the Credence design system.
+- **Copy to Clipboard Buttons**: Added animated one-click copy buttons and uppercase language tags (`BASH`, `PYTHON`, `YAML`, `JSON`, `TEXT`) across all fenced code blocks.
+- **GitHub Alert Callouts Styling**: Added distinctive dark glassmorphism containers and icons for `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, and `> [!CAUTION]`.
+- **Automated Live Rendering Test Suite**: Created `tests/test_docs_rendering.py` with Playwright + headless Chromium verifying zero unrendered Mermaid diagrams, zero raw HTML tag leaks, full interactivity across all 8 playground widgets, and 0 console errors across all documentation pages.
+- **Extended Static Integrity Suite**: Updated `tests/test_docs_integrity.py` with static Mermaid syntax validation and complete DOM element coverage for all 8 playground widgets.
+
+### Fixed
+- **Markdown Block Parsing Precedence**: Overhauled `parseMarkdown` in `app.js` to prioritize code block fences before HTML tag inspection, eliminating raw HTML tag leaks (`&lt;/div&gt;`, `&lt;textarea&gt;`) inside code samples and interactive widgets.
+- **LaTeX Math & Currency Formatting**: Corrected regex evaluation ordering in `formatMath` to prevent operator prefix collisions (`\left` transforming to `≤ft`) and unescaped currency strings (`\$18,291.00`).
+- **Interactive Playground Layouts**: Enhanced `.interactive-widget` container styling in `styles.css` with responsive flexbox layouts and real-time state feedback across all 8 simulator widgets.
+- **Content Security Policy Alignment**: Updated `index.html` CSP `connect-src` to permit Cloudflare Web Analytics beacons (`cloudflareinsights.com`).
+
+---
 
 ## [1.1.0] - 2026-08-18
 
 ### Added
-- **Zero-Trust Dynamic Feed Discovery & Quality Scoring ($F_j$)**: HTML autodiscovery, Shannon topic entropy ($H_{\text{topic}}$), and eviction quarantine.
-- **Real-Time Feed Sifter Daemon & Morning Epistemic Digest**: Background sifter daemon with HRW Rendezvous Hashing.
-- **Cloudflare Multi-Domain Edge Hardening**: HTTP/3 (QUIC), Early Hints, and 0-RTT connection resumption.
+- **Zero-Trust Dynamic Feed Discovery**: Zero-dependency HTML `<link rel="alternate">` parser and well-known endpoint prober (`discover_feed_endpoints`) for autonomous RSS 2.0, Atom 1.0, and JSON Feed discovery without brittle static whitelists.
+- **Pre-Flight Forensic Audit & Shannon Topic Entropy ($H_{\text{topic}}$)**: Pre-ingestion forensic auditor calculating Shannon entropy penalized by top-token concentration ratio ($C_{\text{top3}}$) to mathematically detect commercial takeovers, sponsored native ads, and astroturfing pivots (The "Pizza Hut Problem").
+- **Dynamic Feed Quality Scoring ($F_j$) & Autonomous Eviction**: 4-factor composite feed health index ($F_j = 0.35(1 - \bar{S}/100) + 0.25G + 0.20H + 0.20T$) with automated probation ($<0.70$) and mesh-wide eviction quarantine ($<0.40$).
+- **Real-Time Feed Sifter Daemon**: Background async sifter daemon with jitter scheduling, conditional HTTP 304 caching, and Rendezvous Hashing (HRW) P2P mesh work-sharing yielding 92.3% compute savings at $0.00 token cost.
+- **Morning Epistemic Digest Briefing Engine**: Automated daily briefings aggregating the past 24 hours of evaluated coverage into Clean Journalism, Rhetorical Fallacies, Deceptive Flags, Satire Alerts, and Compute Savings metrics.
+- **Universal 4-Interface Synchronous Parity**:
+  - **CLI**: Added `feed discover`, `feed inspect`, `feed health`, `feed bootstrap-presets`, `sifter`, and `digest`.
+  - **FastMCP 2.0**: Added `credence_discover_feeds`, `credence_inspect_feed_health`, `credence_generate_digest` tools and `credence://digest/morning` resource.
+  - **Textual TUI**: Added Morning Digest tab (`tab_digest`) and live dynamic quality ranking table columns.
+  - **Zero-Build Web UI**: Added Section 8 interactive Feed Quality & Astroturfing Simulator in `docs/playground.md`.
+- **Tutorial 09 & Sovereign Blog Essay**: Published [Tutorial 09: Zero-Trust Feed Sifter & Morning Digest](tutorials/09-zero-trust-feed-sifter-digest.md) and [The Pizza Hut Problem & Topic Entropy](../blog/the-pizza-hut-problem.md).
+- **Cloudflare Multi-Domain Edge Hardening & Performance**:
+  - Provisioned **HTTP/3 (QUIC)**, **Early Hints (103)**, and **0-RTT connection resumption** across all 4 production zones (`credence.run`, `credence.nexus`, `credence.foundation`, `credence.report`).
+  - Strict SSL/TLS enforcement, automatic HTTPS rewrites, and zero-latency P2P SRV routing via Terraform IaC ([`terraform/cloudflare.tf`](https://github.com/artibyrd/credence/blob/main/terraform/cloudflare.tf)).
+  - AI Crawler policy governance with unhindered coding assistant access (Claude Desktop, Cursor, Antigravity) and zero-build edge routing.
+- **Architectural Boundary Blueprint & Municipal Governance Catalog**:
+  - Published [Managing Customizations vs. Core Upstream](operations/customizations-and-upstream-sovereignty.md) establishing strict 4-tier boundaries between Upstream Core, Gitignored Database State, Local Overlays, and Sovereign Deployments.
+  - Added universal [Local News & Municipal Governance](https://github.com/artibyrd/credence/blob/main/credence/subjects/catalogs/municipal_governance.yaml) semantic subject catalog (`journalism.news.municipal_governance`) with conflict-of-interest detection rubrics.
+
+---
 
 ## [1.0.1] - 2026-08-17
 
 ### Added
-- Multi-cloud production deployment on GCP Cloud Run and Cloudflare Workers.
-- FastMCP 2.0 SSE endpoint on `https://mcp.credence.run/sse`.
-- Air-gapped Genesis root key ceremony.
+- **Multi-Cloud Production Deployment**: Provisioned and live-verified GCP Cloud Run v2 (`credence-server`) and Cloudflare multi-domain edge routing.
+- **FastMCP 2.0 Live SSE Endpoint**: Real-time Server-Sent Events streaming on `https://mcp.credence.run/sse` with session assignment and CORS preflight handling.
+- **Zero-Build Multi-Domain Edge Router**: Cloudflare Worker (`_worker.js`) routing across `credence.run`, `credence.nexus`, `credence.foundation`, and `credence.report` with 0 npm dependencies.
+- **Air-Gapped Genesis Root Key Ceremony**: Generated network root Ed25519 keypair and published canonical RFC 8785 signed `peers.json` and pinned `root.pub`.
+- **Streamlined Operator Justfile Recipes**: Added `just gcp-build`, `just tf-plan`, `just tf-apply`, and `just seed-sync` for one-command deployment.
+- **Hermetic Documentation Integrity Test Suite**: Added `tests/test_docs_integrity.py` validating 47 docs, 7 interactive widgets, and zero-npm compliance in <0.1s.
+- **Platform Portability Specifications**: 5 comprehensive specifications for multi-model adapters (Claude 3.7 Sonnet, GPT-4o, DeepSeek-R1, local Ollama) and multi-cloud deployment (AWS, Azure, Hetzner, K8s).
+- **Interactive Model Cost Comparator**: Section 7 in `docs/playground.md` for real-time model cost, latency, and sovereignty trade-off analysis.
+
+### Changed
+- **Hostname-Aware Dynamic Routing**: Decoupled `docs.credence.run` (technical documentation portal) and `blog.credence.run` (sovereign editorial publication) within a unified zero-build engine.
+- **Token Safety Governor**: Updated model tiering to pin `gemini-3.7-flash` as primary reasoning engine across `BALANCED` and `ULTRA` profiles with thinking token budgets ($1,024 \dots 16,384$).
+
+### Fixed
+- **Transport Security Host Header Validation**: Configured `TransportSecuritySettings` on FastMCP SSE app to allow public domain proxies and Cloudflare CDN headers without `Invalid Host` rejections.
+- **Asset Boundary Protection**: Configured `.assetsignore` and `binding = "ASSETS"` in `web/wrangler.toml` to prevent Cloudflare Worker build errors.
+
+---
 
 ## [1.0.0] - 2026-08-17
 
 ### Added
-- Initial release of Credence: Core Ingestion, Epistemic Scoring, Verbatim Grounding Validator, P2P Mesh Consensus, Textual TUI, and Zero-Build Web UI.
+- **Core Ingestion & Dual Capture**: Playwright Chromium headless engine and Trafilatura content extraction with memory-safe concurrency gates and SSRF defense.
+- **Epistemic Scoring & Saturation Math**: 4-specialist evaluation pipeline (Truth, Harm, Fallacies, Deceptive Patterns) with exponential saturation scoring.
+- **Verbatim Grounding Validator**: Whitespace-insensitive character-offset citation verification ($G=1.0$) with 50% slash penalty on hallucinated quotes.
+- **P2P Mesh Network Engine**: 13-node Watts-Strogatz small-world gossip diffusion, Bayesian consensus aggregator, and Byzantine fault tolerance ($3f+1$).
+- **The Galileo Rule**: Asymmetric evidence weighting preventing Sybil cartels from overriding verified domain authorities.
+- **Zero-Build Web UI & Textual TUI**: Vanilla HTML5/ES modules web suite and interactive terminal workstation (`credence tui`).
+- **Golden 12 Benchmark Suite**: Multi-profile cross-entropy and accuracy evaluation suite (`just benchmark`).
