@@ -71,7 +71,7 @@ See how the same epistemic audit report is presented across all four surfaces:
 
 :::tabs
 === 📟 Textual TUI Workstation
-![TUI Inspector](assets/tui/01-inspector-rich.svg)
+![TUI Inspector](../assets/tui/01-inspector-rich.svg)
 *Full-screen terminal workstation with split-pane finding navigation, live filtering (`f`), and in-context evidence.*
 
 === 🌐 Zero-Build Web UI

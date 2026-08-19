@@ -111,11 +111,31 @@ def test_docs_registry_parity(docs_root: Path) -> None:
     assert app_js.exists(), "app.js must exist"
 
     content = app_js.read_text(encoding="utf-8")
-    # Match all path: "..." in app.js
-    paths = re.findall(r'path:\s*["\']([^"\']+)["\']', content)
-    assert len(paths) >= 40, f"Expected at least 40 registered docs, found {len(paths)}"
 
-    for rel_path in paths:
+    # 1. Verify DOCS_REGISTRY contains both docs/ and blog/ categories
+    assert 'id: "blog/conflict-of-pun-terest"' in content, "blog/conflict-of-pun-terest must be in DOCS_REGISTRY"
+    assert 'path: "blog/conflict-of-pun-terest.md"' in content, (
+        "blog/conflict-of-pun-terest.md must be in DOCS_REGISTRY"
+    )
+    assert "export const DOCS_REGISTRY = [" in content, "DOCS_REGISTRY export must exist"
+
+    # Extract the DOCS_REGISTRY array definition
+    reg_match = re.search(r"export const DOCS_REGISTRY = \[([\s\S]*?)\n\];", content)
+    assert reg_match is not None, "DOCS_REGISTRY array definition not found"
+    registry_block = reg_match.group(1)
+
+    # 2. Match all { id: "...", title: "...", path: "..." } in DOCS_REGISTRY definition
+    items = re.findall(
+        r'\{\s*id:\s*["\']([^"\']+)["\'],\s*title:\s*["\']([^"\']+)["\'],\s*path:\s*["\']([^"\']+)["\']',
+        registry_block,
+    )
+    assert len(items) >= 80, f"Expected at least 80 registered docs/blogs in DOCS_REGISTRY, found {len(items)}"
+
+    doc_ids = set()
+    for doc_id, _title, rel_path in items:
+        assert doc_id not in doc_ids, f"Duplicate doc_id '{doc_id}' found in DOCS_REGISTRY"
+        doc_ids.add(doc_id)
+
         file_path = docs_root / rel_path
         assert file_path.exists(), f"Registered path '{rel_path}' does not exist on disk"
         text = file_path.read_text(encoding="utf-8")
@@ -123,6 +143,12 @@ def test_docs_registry_parity(docs_root: Path) -> None:
         assert text.startswith("---"), f"Document '{rel_path}' is missing YAML frontmatter"
         assert "title:" in text, f"Document '{rel_path}' is missing title in frontmatter"
         assert "description:" in text, f"Document '{rel_path}' is missing description in frontmatter"
+
+        # Verify prefix consistency
+        if doc_id.startswith("blog/"):
+            assert rel_path.startswith("blog/"), f"doc_id {doc_id} must have blog/ path, found {rel_path}"
+        elif doc_id.startswith("docs/"):
+            assert rel_path.startswith("docs/"), f"doc_id {doc_id} must have docs/ path, found {rel_path}"
 
 
 @pytest.mark.unit
@@ -408,7 +434,7 @@ def test_tui_vector_assets_integrity(docs_root: Path) -> None:
     tui_ref_count = 0
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
-        tui_matches = re.findall(r"!\[[^\]]*\]\((?:assets/tui/|/assets/tui/|../assets/tui/)([^)]+\.svg)\)", text)
+        tui_matches = re.findall(r"!\[[^\]]*\]\((?:\.\./|/)*assets/tui/([^)]+\.svg)\)", text)
         for match in tui_matches:
             tui_ref_count += 1
             ref_path = tui_assets_dir / match

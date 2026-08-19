@@ -114,7 +114,7 @@ Launch the full-screen terminal IDE to inspect live citation highlights, browse 
 credence tui
 ```
 
-![Credence TUI Workstation](assets/tui/01-inspector-rich.svg)
+![Credence TUI Workstation](../assets/tui/01-inspector-rich.svg)
 
 * Press **`/`** to audit a new URL.
 * Use **`j` / `k`** or **`↑` / `↓`** to navigate violations and view exact highlighted quotes.

@@ -1,6 +1,6 @@
 {
   "status": "ready",
-  "generated_at": "2026-08-19T19:48:37.844577+00:00",
+  "generated_at": "2026-08-19T20:03:04.166211+00:00",
   "total_reports": 10,
   "reports": [
     {
@@ -11,7 +11,7 @@
       "suspicion_score": 92.5,
       "classification": "DECEPTIVE",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.739988",
+      "audited_at": "2026-08-19T20:03:04.063313",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567",
       "violations_count": 2
@@ -24,7 +24,7 @@
       "suspicion_score": 92.5,
       "classification": "DECEPTIVE",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.739503",
+      "audited_at": "2026-08-19T20:03:04.062686",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567",
       "violations_count": 2
@@ -37,7 +37,7 @@
       "suspicion_score": 12.1,
       "classification": "CLEAN",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.729054",
+      "audited_at": "2026-08-19T20:03:04.052217",
       "node_pubkey": "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1",
       "node_signature": "d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345",
       "violations_count": 0
@@ -50,7 +50,7 @@
       "suspicion_score": 12.1,
       "classification": "CLEAN",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.728243",
+      "audited_at": "2026-08-19T20:03:04.051530",
       "node_pubkey": "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1",
       "node_signature": "d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345",
       "violations_count": 0
@@ -63,7 +63,7 @@
       "suspicion_score": 0.0,
       "classification": "SATIRE_PARODY",
       "is_satire": true,
-      "audited_at": "2026-08-19T19:48:37.717516",
+      "audited_at": "2026-08-19T20:03:04.038735",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123",
       "violations_count": 0
@@ -76,7 +76,7 @@
       "suspicion_score": 0.0,
       "classification": "SATIRE_PARODY",
       "is_satire": true,
-      "audited_at": "2026-08-19T19:48:37.716451",
+      "audited_at": "2026-08-19T20:03:04.036044",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123",
       "violations_count": 0
@@ -89,7 +89,7 @@
       "suspicion_score": 3.8,
       "classification": "CLEAN",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.699416",
+      "audited_at": "2026-08-19T20:03:04.016448",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01",
       "violations_count": 0
@@ -102,7 +102,7 @@
       "suspicion_score": 3.8,
       "classification": "CLEAN",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.698820",
+      "audited_at": "2026-08-19T20:03:04.015098",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01",
       "violations_count": 0
@@ -115,7 +115,7 @@
       "suspicion_score": 2.4,
       "classification": "CLEAN",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.685264",
+      "audited_at": "2026-08-19T20:03:03.980852",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0",
       "violations_count": 0
@@ -128,7 +128,7 @@
       "suspicion_score": 2.4,
       "classification": "CLEAN",
       "is_satire": false,
-      "audited_at": "2026-08-19T19:48:37.684264",
+      "audited_at": "2026-08-19T20:03:03.974729",
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
       "node_signature": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0",
       "violations_count": 0

@@ -77,7 +77,7 @@ credence tui
 
 Press `/`, submit the URL, and examine the dual-pane inspector:
 
-![Credence TUI Workstation](assets/tui/01-inspector-rich.svg)
+![Credence TUI Workstation](../../assets/tui/01-inspector-rich.svg)
 
 * **Left Panel**: Filter violations by severity or domain (e.g. `SPJ-1.1`, `MED-1.2`, `DP-1.1`).
 * **Right Panel**: Full verbatim grounded quotes and specialist justifications.

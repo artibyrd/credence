@@ -11,6 +11,17 @@ last_verified: '2026-08-19'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [1.15.1] - 2026-08-19
+
+### Documentation & Routing Fixes
+- **Unified Master Documentation & Sovereign Blog Registry**:
+  - Merged all 4 blog categories into the master `DOCS_REGISTRY` array in `app.js`, resolving an edge case where standalone `BLOG_REGISTRY` entries failed to resolve in `loadDocument()`.
+  - Fixed blog routing fallback in `loadDocument` so unresolved routes default to the flagship case study (`blog/conflict-of-pun-terest.md`) instead of falling back to the last technical reference specification (`docs/invariants.md`).
+- **Relative Asset Links Audit**:
+  - Repaired 27 relative image paths to vector assets (`assets/tui/*.svg`) across tutorials, walkthroughs, and integrations.
+- **Shift-Left Automated Integrity Tests**:
+  - Enhanced `test_docs_registry_parity` in `tests/test_docs_integrity.py` to assert that all 109 document and blog IDs in `DOCS_REGISTRY` map to distinct paths and resolve cleanly.
+
 ## [1.15.0] - 2026-08-19
 
 ### Observability & Operator Workstation
