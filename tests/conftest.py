@@ -81,3 +81,14 @@ async def db_session(async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, 
     )
     async with session_factory() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+async def auto_isolated_db(async_engine: AsyncEngine) -> AsyncGenerator[None, None]:
+    """Ensure credence.db._engine points to the isolated in-memory test engine for all tests."""
+    import credence.db
+
+    old_engine = credence.db._engine
+    credence.db._engine = async_engine
+    yield
+    credence.db._engine = old_engine
