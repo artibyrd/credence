@@ -636,8 +636,8 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
 audit-invariants:
     @echo "=== Credence Living Invariant & Governance Audit ==="
     @just agent-check
-    @poetry run pytest tests/test_docs_integrity.py -k "learning_lifecycle or ecosystem_version_parity or zero_npm or code_fences"
-    @poetry run pytest tests/test_ci_cd_workflows.py
+    @poetry run pytest tests/governance/test_docs_integrity.py -k "learning_lifecycle or ecosystem_version_parity or zero_npm or code_fences"
+    @poetry run pytest tests/integration/test_ci_cd_workflows.py
     @echo -e "\033[1;32m✅ All Ecosystem Invariants & Lifecycle Governance Contracts Passed Cleanly!\033[0m"
 
 # Comprehensive multi-plane diagnostic health check across Edge, Compute, Infra, and Agents
@@ -677,7 +677,7 @@ sync-version version: (preflight "poetry")
     @sed -i -E 's/Credence <span class="badge">v[^<]+<\/span>/Credence <span class="badge">v{{version}}<\/span>/g' ../credence-docs/index.html web/credence.run/index.html web/credence.nexus/index.html web/credence.nexus/dashboard.html web/credence.nexus/mesh.html web/credence.nexus/cost.html web/credence.report/index.html web/credence.report/viewer.html web/credence.foundation/index.html
     @sed -i -E 's/v[0-9]+\.[0-9]+\.[0-9]+ Stable/v{{version}} Stable/' web/credence.run/index.html
     @sed -i -E 's/"version": "[^"]+"/"version": "{{version}}"/' ../credence-agent/plugin.json
-    @poetry run pytest tests/test_docs_integrity.py -k test_ecosystem_version_parity
+    @poetry run pytest tests/governance/test_docs_integrity.py -k test_ecosystem_version_parity
     @echo "✅ All ecosystem version badges and manifests synchronized to {{version}}."
 
 # Coordinate multi-repository git operations (status, commit, tag, push)
