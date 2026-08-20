@@ -16,13 +16,13 @@ from typing import Any, List, Optional
 from rich.console import Console
 from rich.table import Table
 
-from credence.identity import load_or_create_node_identity, sign_audit_report
+from credence.identity import canonical_json_bytes, load_or_create_node_identity
 from credence.ingestion.hasher import compute_content_sha256, compute_simhash, normalize_text
-from credence.pipeline.schemas import AuditReport
 
 console = Console()
 
-CURRENT_VERSION = "v2.1.0"
+CURRENT_VERSION = "v2.1.1"
+_HARDCODED_INVARIANT_COUNT_PATTERN = re.compile(r"\b(36|38|39|40)\s+core\s+invariants\b", re.IGNORECASE)
 
 
 def parse_markdown_frontmatter(content: str) -> tuple[dict, str]:
@@ -107,41 +107,43 @@ def audit_single_doc(
     simhash = compute_simhash(clean_text)
 
     # Documentation Self-Evaluation Heuristics
-    issues = []
-
-    # Check title and description
+    issues: list[str] = []
     title = fm.get("title") or file_path.stem.replace("-", " ").title()
-    description = fm.get("description", "")
-    if not description:
-        issues.append("Missing description frontmatter")
 
-    # Dynamic Invariant Canon naming check (Anti-Hardcoding Invariant)
-    if re.search(r"\b(36|38|39|40)\s+core\s+invariants\b", body, re.IGNORECASE):
-        issues.append("Found hardcoded invariant count; should reference 'The Invariant Bible'")
+    # 1. Verification of Dynamic Invariant Canon Naming
+    for match in _HARDCODED_INVARIANT_COUNT_PATTERN.finditer(body):
+        matched_str = match.group(0)
+        issues.append(f"Hardcoded invariant count violation: '{matched_str}'. Must reference 'The Invariant Bible'.")
 
-    # Epistemic score calculation
-    suspicion_score = 0.0 if not issues else min(100.0, len(issues) * 10.0)
-    classification = "PRISTINE" if suspicion_score == 0.0 else "NOTABLE_FLAGS"
+    # 2. Check for missing required frontmatter
+    if not fm.get("title"):
+        issues.append("Missing required 'title' in frontmatter.")
+    if not fm.get("description"):
+        issues.append("Missing required 'description' in frontmatter.")
+
+    # 3. Calculate metrics
+    content_sha = compute_content_sha256(body)
+    simhash = compute_simhash(body)
+
+    suspicion_score = 0.0 if not issues else min(len(issues) * 25.0, 100.0)
+    classification = (
+        "PRISTINE" if suspicion_score == 0.0 else ("NOTABLE_FLAGS" if suspicion_score <= 50.0 else "SUSPICIOUS")
+    )
 
     doc_url = f"https://docs.credence.run#{file_path.stem}"
 
-    report = AuditReport(
-        url=doc_url,
-        content_sha256=content_sha,
-        simhash_64=simhash,
-        audited_at=datetime.datetime.now(datetime.timezone.utc),
-        suspicion_score=suspicion_score,
-        suspicion_density=0.0,
-        confidence_score=1.0,
-        classification=classification,
-        is_satire=False,
-        content_type="DOCUMENTATION",
-        satire_notes=None,
-        violations=[],
-        taxonomies_used={"documentation_standard": "v2.1.0"},
-    )
+    audited_at_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
-    signed_report = sign_audit_report(report, identity)
+    receipt_signable = {
+        "origin_url": doc_url,
+        "content_sha256": content_sha,
+        "simhash_64": simhash,
+        "audited_at": audited_at_iso,
+        "suspicion_score": suspicion_score,
+        "classification": classification,
+    }
+    canonical_bytes = canonical_json_bytes(receipt_signable)
+    sig_bytes = identity.private_key.sign(canonical_bytes)
 
     if update_frontmatter:
         new_content = update_markdown_frontmatter(content, {"verified_version": CURRENT_VERSION})
@@ -160,11 +162,11 @@ def audit_single_doc(
             "origin_url": doc_url,
             "content_sha256": content_sha,
             "simhash_64": simhash,
-            "audited_at": signed_report.audited_at.isoformat(),
-            "suspicion_score": signed_report.suspicion_score,
-            "classification": signed_report.classification,
-            "node_pubkey": signed_report.node_pubkey,
-            "node_signature": signed_report.node_signature,
+            "audited_at": audited_at_iso,
+            "suspicion_score": suspicion_score,
+            "classification": classification,
+            "node_pubkey": identity.public_key_hex,
+            "node_signature": sig_bytes.hex(),
             "verified_version": CURRENT_VERSION,
         },
     }
