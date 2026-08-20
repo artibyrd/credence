@@ -2,19 +2,25 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from rich.console import Console
 from rich.panel import Panel
 
-from credence.db import get_async_session
+from credence.db import get_async_session, init_db
 from credence.pipeline.governor import get_token_headroom_status
 
 console = Console()
 
 
-async def run_quota_command() -> int:
+async def run_quota_command(session: Any = None) -> int:
     """Display real-time token consumption, daily spend, and circuit breaker status."""
-    async with get_async_session() as session:
+    if session is not None:
         status = await get_token_headroom_status(session)
+    else:
+        await init_db()
+        async with get_async_session() as s:
+            status = await get_token_headroom_status(s)
 
     console.print(
         Panel(

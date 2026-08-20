@@ -72,7 +72,7 @@ async def test_cli_quota(db_session: Any) -> None:
     """Verify quota command outputs headroom metrics without errors."""
     from credence.cli.main import cli_quota
 
-    await cli_quota()
+    await cli_quota(session=db_session)
 
 
 @pytest.mark.integration

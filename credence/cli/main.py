@@ -73,8 +73,9 @@ def cli_taxonomy(*args: Any, **kwargs: Any) -> Any:
     return {}
 
 
-async def cli_quota(*args: Any, **kwargs: Any) -> Any:
-    await run_quota_command()
+async def cli_quota(session: Any = None, *args: Any, **kwargs: Any) -> Any:
+    sess = session or kwargs.get("session") or (args[0] if args else None)
+    await run_quota_command(session=sess)
     return {}
 
 
