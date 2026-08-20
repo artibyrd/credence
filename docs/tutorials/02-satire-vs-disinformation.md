@@ -50,11 +50,11 @@ credence audit https://deceptive-site.test/fake-vaccine-claim
 - The `SPJ-1.6` (Cloaked Disinformation) specialist rule triggers.
 - Satire immunity is **immediately stripped**.
 - The suspicion score is penalized to **`90.0+ / 100`**, and the finding is flagged:
-  ```text
+```text
   [SPJ-1.6] Satire Cloaking Hard-Override Triggered
   Finding: Unsubstantiated lethal medical allegation cannot be cloaked as satire.
   Satire Protection: DISABLED
-  ```
+```
 
 ---
 

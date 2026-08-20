@@ -615,7 +615,7 @@ def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
     assert "Live Namespaced Taxonomy Rule Explorer" in sitemap_text
 
     # 3. Verify The Invariant Bible is covered
-    assert "The Invariant Bible" in sitemap_text or "38 Core System Invariants" in sitemap_text
+    assert "The Invariant Bible" in sitemap_text
 
     # 4. Extract all hash links (#docs/..., #blog/...) and ensure their backing files exist
     hash_links = re.findall(r"\(#(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)
@@ -694,3 +694,52 @@ def test_hermetic_unit_test_markers_invariant() -> None:
                                 f"Invariant Violation: {py_file.name}::{node.name} is marked as @pytest.mark.unit "
                                 f"but imports Playwright. Browser tests must be marked @pytest.mark.integration."
                             )
+
+
+@pytest.mark.unit
+def test_all_markdown_code_fences_and_syntax(docs_root: Path) -> None:
+    """Verify that all markdown files across the ecosystem have balanced and valid code fences.
+
+    Ensures that no code fence has leading whitespace indentation (which can corrupt zero-build AST
+    parsers) and that every opened code fence is properly closed.
+    """
+    ecosystem_root = docs_root.parent
+    check_dirs = [
+        docs_root / "docs",
+        docs_root / "blog",
+        ecosystem_root / "credence" / "docs",
+    ]
+
+    invalid_fences = []
+    unclosed_fences = []
+
+    for check_dir in check_dirs:
+        if not check_dir.exists():
+            continue
+        for md_file in check_dir.rglob("*.md"):
+            content = md_file.read_text(encoding="utf-8")
+            lines = content.splitlines()
+            fence_count = 0
+
+            for line_no, line in enumerate(lines, start=1):
+                trimmed = line.strip()
+                if trimmed.startswith("```"):
+                    # Check for unwanted indentation
+                    if line.startswith(" ") or line.startswith("\t"):
+                        invalid_fences.append(
+                            f"{md_file.relative_to(ecosystem_root)}:{line_no} -> Indented code fence: '{line}'"
+                        )
+                    fence_count += 1
+
+            if fence_count % 2 != 0:
+                unclosed_fences.append(
+                    f"{md_file.relative_to(ecosystem_root)} -> Odd number of code fences ({fence_count})"
+                )
+
+    assert not invalid_fences, (
+        f"Found {len(invalid_fences)} markdown files with indented code fences:\n" + "\n".join(invalid_fences)
+    )
+    assert not unclosed_fences, (
+        f"Found {len(unclosed_fences)} markdown files with unclosed code fences:\n" + "\n".join(unclosed_fences)
+    )
+

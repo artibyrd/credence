@@ -39,14 +39,14 @@ graph TD
 ## 2. Prerequisites
 
 1. **Google Cloud SDK (`gcloud`)** installed and authenticated:
-   ```bash
+```bash
    gcloud auth login
    gcloud auth application-default login
-   ```
+```
 2. **Terraform (`>= 1.5.0`)** installed:
-   ```bash
+```bash
    terraform version
-   ```
+```
 3. **Cloudflare Account & Scoped API Token**:
    - Create a token with `Zone:DNS:Edit`, `Zone:Zone:Read`, `Account:R2:Edit`, `Zone:Cache Rules:Edit`, `Zone:WAF:Edit`.
 4. **Namecheap (or Registrar) DNS Delegation**:

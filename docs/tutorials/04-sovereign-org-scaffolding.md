@@ -42,17 +42,17 @@ veritas-federation/
 ## 2. Deploying Your Sovereign Mesh
 
 1. Generate your air-gapped root Ed25519 signing keypair:
-   ```bash
+```bash
    cd veritas-federation
    credence identity generate --out keys/veritas-root.pem
-   ```
+```
 2. Apply Terraform to provision Cloud Run and Cloudflare:
-   ```bash
+```bash
    cd terraform
    terraform init
    terraform apply -var="org_domain=veritas.media"
-   ```
+```
 3. Boot your initial seed node:
-   ```bash
+```bash
    credence mesh start --port 8765 --org-manifest ../credence.org.yaml
-   ```
+```

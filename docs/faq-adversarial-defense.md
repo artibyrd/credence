@@ -30,12 +30,12 @@
    - In Credence consensus math (`credence/mesh/consensus.py`), **absence of evidence is not evidence of absence**.
    - An uncredentialed generalist node reporting zero violations has provided no counter-evidence. A specialist node ($E_i \ge 0.70$) providing an itemized violation backed by a 100% grounded verbatim citation ($G=1.0$) possesses **asymmetric evidentiary weight**.
 2. **Mathematical Protection**:
-   ```python
+```python
    # The Galileo Rule (credence/mesh/consensus.py)
    if is_verified_authority and has_grounded_violations:
        p["is_outlier"] = False
        valid_peers.append(p)
-   ```
+```
    The verified authority is explicitly exempted from outlier rejection, and its domain weight ($W_i = 0.20 Q_i + 0.80 E_i$) anchors the consensus verdict above clean.
 
 ---

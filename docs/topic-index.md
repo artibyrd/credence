@@ -43,7 +43,6 @@ last_verified: '2026-08-19'
 * **Node Germination ("Miracle-Gro" Bootstrap)**: Instant key generation, seed inoculation, and initial burst &rarr; [Node Germination Protocol](protocols/node-germination-lifecycle.md)
 * **First Web Audit**: Running your very first URL audit in under 5 seconds &rarr; [Auditing Webpages & Text](walkthroughs/01-auditing-webpages-and-text.md)
 * **Zero-Build Web UI**: Browsing reports in the vanilla HTML5 web app &rarr; [Zero-Build Web Architecture](frontend-architecture.md)
-* **Community Outreach & Reddit Templates**: Ready-to-use hooks and article distribution matrix &rarr; [Community Templates](social-launch-templates.md)
 
 ---
 

@@ -147,27 +147,27 @@ Credence is completely self-contained and does not require Google Cloud Platform
 ### Running 100% Locally
 
 1. **Bootstrap Feed Subscriptions & Run Single Pass**:
-   ```bash
+```bash
    just seed-reports
    # Equivalent to:
    # poetry run credence feeds bootstrap-presets
    # poetry run credence sifter --once
    # poetry run credence export-catalog
-   ```
+```
 
 2. **Launch Unified Server (FastMCP SSE + REST Gateway + Feed Sifter)**:
-   ```bash
+```bash
    just serve-sifter
    # Launches Starlette server on http://localhost:8000
    # Exposes /sse (FastMCP 2.0), /api/reports, /api/audit, and background sifter
-   ```
+```
 
 3. **Explore Locally in Web UI**:
-   ```bash
+```bash
    just serve-web
    # Open http://localhost:8080/viewer.html
    # Web UI automatically detects local REST API on port 8000 and displays live audits
-   ```
+```
 
 > [!TIP]
 > All audit snapshots, attestation records, and token consumption ledgers are stored in local SQLite WAL (`credence.db`) with zero network dependencies. Signed Ed25519 attestations are produced with your node's local keypair (`node_identity.json`).

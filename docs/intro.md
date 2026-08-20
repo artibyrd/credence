@@ -91,6 +91,8 @@ When you're ready to explore under the hood:
 
 * 🧭 **[Topic Index & Concept Directory](topic-index.md)**: Searchable directory of all commands, settings, and invariants.
 * 🎓 **[Hands-On Tutorials](tutorials/01-clickbait-teardown.md)**: Step-by-step forensic teardowns and chaos labs.
-* 🏛️ **[36 Core System Invariants](invariants.md)**: Master architectural, mathematical, and safety guarantees.
+* 🏛️ **[The Invariant Bible](invariants.md)**: Master architectural, mathematical, and safety guarantees.
+* 🗺️ **[Roadmap & Horizons](roadmap.md)**: Current development roadmap, completed milestones, and upcoming horizons.
+* 📜 **[Release Changelog](changelog.md)**: Version history, updates, and release notes across releases.
 * 📐 **[Mathematics of Robust Consensus](mathematics/robust-consensus-proofs.md)**: Formal proofs for weighted medians and the Galileo Rule.
 * ☁️ **[GCP Cloud Run Deployment](deployment-cloudrun.md)**: Production Terraform templates with $15/mo budget cap.

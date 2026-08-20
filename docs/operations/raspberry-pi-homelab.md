@@ -78,9 +78,9 @@ If hosting a public seed peer behind a residential ISP:
 1. **Port Forwarding**: Forward TCP port `8765` from your router to your Raspberry Pi local IP.
 2. **Dynamic DNS (DuckDNS / Cloudflare DDNS)**: Keep `pi-node.yourdomain.com` pointed to your residential IPv4/IPv6.
 3. **Check Logs**:
-   ```bash
+```bash
    journalctl -u credence-node -f -n 50
-   ```
+```
 
 ---
 

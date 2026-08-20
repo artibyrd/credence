@@ -285,11 +285,11 @@ All Credence web properties share the master stylesheet hosted at `https://crede
 ### Setting up the Sovereign Blog Repository (`credence-network/blog`)
 
 1. **Create the Decoupled Repository**:
-   ```bash
+```bash
    gh repo create credence-network/blog --public
-   ```
+```
 2. **Repository File Tree**:
-   ```text
+```text
    credence-network/blog/
    ├── .github/workflows/deploy.yml   # Cloudflare Pages deployment workflow
    ├── src/
@@ -297,7 +297,7 @@ All Credence web properties share the master stylesheet hosted at `https://crede
    │   └── pages/                     # Astro/HTML templates consuming credence-ui.css
    ├── public/images/                 # Hero diagrams and screenshots
    └── README.md
-   ```
+```
 3. **Connecting to Cloudflare Pages**:
    - Project Name: `credence-blog`
    - Custom Domain: `blog.credence.run`

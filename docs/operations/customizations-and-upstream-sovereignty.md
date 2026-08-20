@@ -85,17 +85,17 @@ graph TD
 Every Credence node maintains its own local SQLite / AsyncSession database in `data/credence.db`, which is strictly excluded from version control via `.gitignore`.
 
 * **Adding Local Feeds:**
-  ```bash
+```bash
   # Subscribe your local node to your town's local paper
   credence feed add https://inmaricopa.com/feed/ \
     --title "InMaricopa Local News" \
     --subject "journalism.news.municipal_governance" \
     --priority 1
-  ```
+```
 * **Inspecting Local Subscriptions:**
-  ```bash
+```bash
   credence feed list
-  ```
+```
 * All audit records, local cache entries, and syndicated subscriptions stay strictly isolated on your local workstation without touching Git.
 
 ---

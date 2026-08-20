@@ -3,13 +3,32 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.1
-last_verified: '2026-08-19'
+verified_version: v1.21.2
+last_verified: '2026-08-20'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.21.2] - 2026-08-20
+
+### Ecosystem UI Streamlining, Invariant Canon Decoupling & Markdown Rendering Hardening
+- **Universal Navigation & Footer Streamlining**:
+  - Standardized cross-domain 6-link header navigation (`Home`, `Docs`, `Playgrounds`, `Blog`, `Reports`, `GitHub`) across all 5 sovereign web surfaces (`credence.run`, `docs.credence.run`, `credence.nexus`, `credence.report`, `credence.foundation`).
+  - Streamlined global 4-column footer to 4 balanced links per column, eliminating multi-line column wrapping across all viewport breakpoints.
+- **Invariant Bible Canon Decoupling**:
+  - Removed hardcoded invariant count references ("36/38 Invariants") across all web surfaces, sitemaps, footers, and documentation in favor of the canonical living designation **The Invariant Bible**.
+- **Markdown Parsing & Rendering Hardening**:
+  - Hardened `app.js` markdown parser state machine to detect and unindent code fences with leading whitespace.
+  - Normalized all indented code blocks across documentation guides and forensic blog essays.
+  - Reorganized the Universal Feature Parity Matrix into 4 categorized 4-column tables to eliminate horizontal scrolling.
+  - Refactored Morning Epistemic Digest walkthrough tabs into 4 concise interface panes (`🖥️ CLI Terminal`, `⚡ FastMCP 2.0`, `📟 Textual TUI`, `📄 Export & JSON`) with `nowrap` horizontal scrolling.
+- **Automated Docs Rendering & Fence Integrity Tests**:
+  - Expanded `tests/test_docs_integrity.py` with `test_all_markdown_code_fences_and_syntax` to statically verify delimiter hygiene and zero indented fences across all documentation files.
+  - Expanded `tests/test_docs_rendering.py` with comprehensive iteration over all `DOCS_REGISTRY` routes and updated cross-domain navigation consistency assertions.
+- **7-Manifest Parity Sync**:
+  - Synchronized canonical semantic version `v1.21.2` across all 7 ecosystem manifests.
 
 ## [1.21.1] - 2026-08-19
 

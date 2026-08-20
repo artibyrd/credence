@@ -65,9 +65,9 @@ We use `just` recipes to standardize development and CI execution:
 1. **Fork and Branch**: Create a feature branch with a descriptive name (e.g. `feat/sybil-mitigation` or `fix/feed-date-parsing`).
 2. **Write Hermetic Tests**: Add comprehensive unit tests in `tests/` covering positive and negative cases.
 3. **Verify Locally**: Ensure all tests and linters pass:
-   ```bash
+```bash
    just format && just lint && just test && just tf-validate
-   ```
+```
 4. **Open a PR**: Submit a pull request against the `main` branch using our [PR Template](.github/PULL_REQUEST_TEMPLATE.md). Our automated GitHub Actions CI will run lint and test gates on your PR.
 
 ---

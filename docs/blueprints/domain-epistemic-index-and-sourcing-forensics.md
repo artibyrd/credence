@@ -89,16 +89,16 @@ Credence groups publisher audits into monthly longitudinal buckets (`period_labe
 ## 4. 4-Way Interface Parity for Analytics
 
 - **CLI Workstation**:
-  ```bash
+```bash
   credence rankings outlet inmaricopa.com
   credence export-analytics inmaricopa.com --format json -o analytics.json
-  ```
+```
 - **FastMCP 2.0 Tools & Resources**:
   - Tool: `credence_get_publisher_analytics(domain="inmaricopa.com")`
   - Dynamic Resource: `credence://analytics/publisher/inmaricopa.com`
 - **Starlette REST API**:
-  ```http
+```http
   GET /api/analytics/publisher/inmaricopa.com
-  ```
+```
 - **Zero-Build Web UI**:
   - Interactive **Publisher Analytics & Trends** tab on `credence.report/viewer.html` rendering inline SVG trend charts with zero npm dependencies.

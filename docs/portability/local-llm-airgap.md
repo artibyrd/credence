@@ -28,26 +28,26 @@ Credence supports **100% Zero-Cloud, Air-Gapped Local Inference** using open-wei
 ## 2. Setting Up Ollama with Open-Weights Models
 
 1. **Install Ollama**:
-   ```bash
+```bash
    curl -fsSL https://ollama.com/install.sh | sh
-   ```
+```
 
 2. **Pull the Epistemic Audit Model**:
-   ```bash
+```bash
    # Llama 3.3 70B Instruct (Recommended for high nuance)
    ollama pull llama3.3:70b-instruct-q4_K_M
    
    # Or Qwen 2.5 32B for lower VRAM environments
    ollama pull qwen2.5:32b
-   ```
+```
 
 3. **Verify Local Inference**:
-   ```bash
+```bash
    curl http://localhost:11434/api/generate -d '{
      "model": "llama3.3:70b-instruct-q4_K_M",
      "prompt": "Explain the difference between formal and informal fallacies."
    }'
-   ```
+```
 
 ---
 

@@ -41,27 +41,27 @@ graph LR
 ## 2. Setting Up Peering Over Tailscale
 
 1. **Install Tailscale on all peer hosts**:
-   ```bash
+```bash
    curl -fsSL https://tailscale.com/install.sh | sh
    sudo tailscale up
-   ```
+```
 
 2. **Retrieve Peer Tailscale IPs**:
-   ```bash
+```bash
    tailscale ip -4
    # Example: 100.64.0.10 (Node Alpha)
    # Example: 100.64.0.20 (Node Beta)
-   ```
+```
 
 3. **Start Node Alpha (London)**:
-   ```bash
+```bash
    credence mesh start --port 8765 --host 100.64.0.10 --node-id "london-newsroom"
-   ```
+```
 
 4. **Start Node Beta (Berlin) with Peer Connection**:
-   ```bash
+```bash
    credence mesh start --port 8765 --host 100.64.0.20 --peer "ws://100.64.0.10:8765" --node-id "berlin-lab"
-   ```
+```
 
 ---
 

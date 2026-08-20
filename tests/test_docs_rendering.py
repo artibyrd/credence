@@ -113,6 +113,12 @@ async def test_no_raw_html_tag_leaks(page: Page, docs_server: str) -> None:
         "docs/playground",
         "docs/tutorials/01-clickbait-teardown",
         "docs/integrations/browser-extension-mv3",
+        "docs/portability/local-llm-airgap",
+        "docs/feature-parity",
+        "docs/walkthroughs/04-morning-digest-briefings",
+        "docs/roadmap",
+        "docs/changelog",
+        "docs/invariants",
         "blog/conflict-of-pun-terest",
         "blog/the-pizza-hut-problem",
         "blog/the-pareto-frontier-of-truth",
@@ -592,7 +598,7 @@ async def test_cross_domain_consistent_navigation_and_footers(page: Page, docs_s
     assert "credence.nexus" in content_text
     assert "credence.foundation" in content_text
     assert "12 Zero-Build Interactive Playgrounds" in content_text or "12 Zero-Build Playgrounds" in content_text
-    assert "The Invariant Bible" in content_text or "38 Core System Invariants" in content_text
+    assert "The Invariant Bible" in content_text
 
     # 2. Check header navigation links in live docs portal
     nav_links = await page.eval_on_selector_all(
@@ -600,7 +606,7 @@ async def test_cross_domain_consistent_navigation_and_footers(page: Page, docs_s
         "elements => elements.map(e => ({ text: e.innerText.trim(), href: e.getAttribute('href') }))",
     )
     link_texts = [item["text"] for item in nav_links]
-    for required_item in ["Home", "Docs", "Playgrounds", "Blog", "Reports", "Nexus", "Foundation", "Sitemap", "GitHub"]:
+    for required_item in ["Home", "Docs", "Playgrounds", "Blog", "Reports", "GitHub"]:
         assert any(required_item.lower() in t.lower() for t in link_texts), f"Missing nav item: {required_item}"
 
     # 3. Check 4-column ecosystem footer rendered in article view

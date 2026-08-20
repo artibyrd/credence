@@ -70,7 +70,7 @@ credence digest
 | **🕸️ P2P Mesh & Consensus**| [3-Node Quickstart](docs/tutorials/05-mesh-quickstart.md) &bull; [13-Node Chaos Lab](docs/tutorials/06-thirteen-node-chaos-lab.md) &bull; [Seed Nodes](docs/bootstrap-seeds.md) &bull; [DNS SRV Discovery](docs/mesh-engineering/dns-srv-discovery.md) |
 | **📐 Mathematical Proofs**| [Weighted Medians Proof](docs/mathematics/robust-consensus-proofs.md) &bull; [The Galileo Rule](docs/mathematics/robust-consensus-proofs.md) &bull; [SimHash-64](docs/mathematics/simhash-mirror-detection.md) |
 | **☁️ Operations & Hosting**| [Raspberry Pi Node](docs/operations/raspberry-pi-homelab.md) &bull; [Cloud Run ($15/mo Cap)](docs/deployment-cloudrun.md) &bull; [Tailscale Mesh](docs/operations/tailscale-wireguard-mesh.md) &bull; [WAL Maintenance](docs/operations/database-pruning-wal.md) |
-| **🏛️ 36 Core Invariants** | [Complete 36 Invariants Reference](docs/agent-invariants.md) |
+| **🏛️ The Invariant Bible** | [Living Canon of System Invariants](docs/agent-invariants.md) |
 
 ---
 
@@ -165,7 +165,7 @@ just mesh-cluster-up
 
 - 📘 **[Documentation Portal](https://docs.credence.run)**: Interactive docs with zero npm build requirements.
 - 📘 **[Topic Index & Cheat Sheet](docs/topic-index.md)**: Categorized fast lookup for all commands and concepts.
-- 📘 **[The 36 Core System Invariants](docs/agent-invariants.md)**: Master architectural, mathematical, and security invariants.
+- 📘 **[The Invariant Bible](docs/agent-invariants.md)**: Living canon of architectural, mathematical, and security invariants.
 - 📘 **[Adversarial Threat Model FAQ](docs/faq-adversarial-defense.md)**: Red team analysis, prompt injection defense, and SSRF guards.
 - 📘 **[Mathematics of Robust Consensus](docs/mathematics/robust-consensus-proofs.md)**: Weighted medians and Galileo Rule proofs.
 - 📘 **[Cloud Run Deployment Guide](docs/deployment-cloudrun.md)**: Terraform production setup with $15/mo budget cap.

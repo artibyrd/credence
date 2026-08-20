@@ -54,13 +54,13 @@ credence mesh start --port 8767 --peer "ws://127.0.0.1:8765" --node-id "peer-gam
 ## 3. Auditing on Node 1 & Adopting on Nodes 2 & 3
 
 1. **Trigger Audit on Node 1**:
-   ```bash
+```bash
    credence audit https://example.com/breaking-story --profile BALANCED
-   ```
+```
 2. **Observe Zero-Token Adoption on Node 2**:
-   ```bash
+```bash
    credence lookup https://example.com/breaking-story
    # Output: [CACHE_HIT / MESH_ADOPTION] Tokens Burned: 0 ($0.00)
-   ```
+```
 
 Both nodes now hold cryptographically identical, Ed25519-verified truth records without paying double inference fees.

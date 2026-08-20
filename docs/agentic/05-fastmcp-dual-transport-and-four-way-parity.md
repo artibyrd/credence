@@ -71,14 +71,14 @@ When deploying FastMCP servers behind Cloudflare and Google Cloud Run, default D
 
 To ensure seamless production routing:
 1. **Configure Transport Security Settings**:
-   ```python
+```python
    # In credence/mcp/server.py
    TransportSecuritySettings(
        enable_dns_rebinding_protection=False,
        allowed_hosts=["*"],
        allowed_origins=["*"]
    )
-   ```
+```
 2. **[Invariant 14: Edge Routing Origin Header Translation](../invariants.md#invariant-14)**: Cloudflare Worker edge routers rewrite `Host` headers to native Cloud Run URLs (`<service>.run.app`) to preserve live Server-Sent Events (SSE) streaming and global CORS headers.
 
 ---
