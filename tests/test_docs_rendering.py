@@ -606,8 +606,9 @@ async def test_cross_domain_consistent_navigation_and_footers(page: Page, docs_s
         "elements => elements.map(e => ({ text: e.innerText.trim(), href: e.getAttribute('href') }))",
     )
     link_texts = [item["text"] for item in nav_links]
-    for required_item in ["Home", "Docs", "Playgrounds", "Blog", "Reports", "GitHub"]:
-        assert any(required_item.lower() in t.lower() for t in link_texts), f"Missing nav item: {required_item}"
+    assert len(link_texts) == 5, f"Expected exactly 5 header nav items, found {len(link_texts)}: {link_texts}"
+    for required_item in ["Home", "Docs", "Reports", "Nexus", "Foundation"]:
+        assert any(required_item.lower() == t.lower() for t in link_texts), f"Missing nav item: {required_item} in {link_texts}"
 
     # 3. Check 4-column ecosystem footer rendered in article view
     footer_cols = await page.eval_on_selector_all(

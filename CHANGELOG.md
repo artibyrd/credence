@@ -3,13 +3,31 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.2
+verified_version: v1.21.3
 last_verified: '2026-08-20'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.21.3] - 2026-08-20
+
+### 5-Link Canonical Header Standardization & Symmetric Footer Harmonization
+- **Universal 5-Link Header Navigation**:
+  - Standardized the primary header navigation across all 5 sovereign web surfaces (`credence.run`, `docs.credence.run`, `credence.report`, `credence.nexus`, `credence.foundation`) to strictly contain the 5 canonical root surfaces:
+    1. **Home** (`https://credence.run`)
+    2. **Docs** (`https://docs.credence.run`)
+    3. **Reports** (`https://credence.report`)
+    4. **Nexus** (`https://credence.nexus`)
+    5. **Foundation** (`https://credence.foundation`)
+- **Harmonized 4-Column Footer Navigation**:
+  - Relocated secondary header links (`Playgrounds`, `Blog`, `GitHub`) to the global 4-column footer alongside `The Invariant Bible`, `Master Sitemap`, `Changelog`, and `Roadmap`.
+  - Enforced CSS container queries (`@container (max-width: 820px)`) and dedicated 2x2 grid layout inside documentation reading containers (`.docs-main .footer-grid`) to prevent column wrapping.
+- **Automated Cross-Domain Navigation Test Gates**:
+  - Updated `test_cross_domain_consistent_navigation_and_footers` in `tests/test_docs_rendering.py` to assert exact 5-link header navigation across all domains.
+- **7-Manifest Parity Sync**:
+  - Synchronized canonical semantic version `v1.21.3` across all 7 ecosystem manifests.
 
 ## [1.21.2] - 2026-08-20
 
