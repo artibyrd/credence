@@ -3,13 +3,23 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.3
+verified_version: v1.21.4
 last_verified: '2026-08-20'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.21.4] - 2026-08-20
+
+### Redundant Footer Bottom Nav Removal & Automated Cloudflare Edge Cache Invalidation
+- **Redundant Secondary Footer Cleanup**:
+  - Removed secondary duplicate footer links (`.footer-bottom-links`) across all 5 sovereign web surfaces and documentation runtime, preserving a clean, uncrowded copyright baseline.
+- **Automated Cloudflare Edge Cache Purging**:
+  - Integrated automated Cloudflare zone cache purging (`purge_everything: true`) directly into the CI/CD edge deployment workflow (`deploy-edge.yml`) to guarantee immediate cache invalidation and eliminate stale CDN responses on `docs.credence.run`.
+- **7-Manifest Parity Sync**:
+  - Synchronized canonical semantic version `v1.21.4` across all 7 ecosystem manifests.
 
 ## [1.21.3] - 2026-08-20
 
