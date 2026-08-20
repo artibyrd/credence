@@ -735,10 +735,9 @@ def test_all_markdown_code_fences_and_syntax(docs_root: Path) -> None:
                     f"{md_file.relative_to(ecosystem_root)} -> Odd number of code fences ({fence_count})"
                 )
 
-    assert not invalid_fences, (
-        f"Found {len(invalid_fences)} markdown files with indented code fences:\n" + "\n".join(invalid_fences)
+    assert not invalid_fences, f"Found {len(invalid_fences)} markdown files with indented code fences:\n" + "\n".join(
+        invalid_fences
     )
-    assert not unclosed_fences, (
-        f"Found {len(unclosed_fences)} markdown files with unclosed code fences:\n" + "\n".join(unclosed_fences)
+    assert not unclosed_fences, f"Found {len(unclosed_fences)} markdown files with unclosed code fences:\n" + "\n".join(
+        unclosed_fences
     )
-

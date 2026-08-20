@@ -665,9 +665,9 @@ sync-version version: (preflight "poetry")
     @echo "Syncing ecosystem version to {{version}}..."
     @poetry version {{version}}
     @sed -i -E 's/__version__ = "[^"]+"/__version__ = "{{version}}"/' credence/__init__.py
-    @sed -i -E 's/Credence <span class="badge">v[^<]+<\/span>/Credence <span class="badge">v{{version}}<\/span>/' ../credence-docs/index.html web/credence.run/index.html
+    @sed -i -E "s/export const CURRENT_ECOSYSTEM_VERSION = 'v[^']+';/export const CURRENT_ECOSYSTEM_VERSION = 'v{{version}}';/" ../credence-docs/app.js
+    @sed -i -E 's/Credence <span class="badge">v[^<]+<\/span>/Credence <span class="badge">v{{version}}<\/span>/g' ../credence-docs/index.html web/credence.run/index.html web/credence.nexus/index.html web/credence.nexus/dashboard.html web/credence.nexus/mesh.html web/credence.nexus/cost.html web/credence.report/index.html web/credence.report/viewer.html web/credence.foundation/index.html
     @sed -i -E 's/v[0-9]+\.[0-9]+\.[0-9]+ Stable/v{{version}} Stable/' web/credence.run/index.html
-    @sed -i -E "s/brandBadge\.textContent = isBlog \? 'Editorial' : 'v[^']+'/brandBadge.textContent = isBlog ? 'Editorial' : 'v{{version}}'/" ../credence-docs/app.js
     @sed -i -E 's/"version": "[^"]+"/"version": "{{version}}"/' ../credence-agent/plugin.json
     @poetry run pytest tests/test_docs_integrity.py -k test_ecosystem_version_parity
     @echo "✅ All ecosystem version badges and manifests synchronized to {{version}}."

@@ -137,3 +137,88 @@ async def test_fastmcp_feed_discovery_and_digest_tools(db_session: Any) -> None:
     res_text = res_list[0].content if hasattr(res_list[0], "content") else str(res_list[0])
     res_dict = json.loads(res_text)
     assert "total_articles_evaluated" in res_dict
+
+
+@pytest.mark.unit
+async def test_complete_4_way_feature_parity_matrix() -> None:
+    """Explicitly verify 4-way parity across CLI, FastMCP 2.0, Textual TUI, and Zero-Build Web."""
+    from credence.tui.app import CredenceApp
+
+    # 1. FastMCP 2.0 Parity Gate
+    server = create_mcp_server()
+    tools = await server.list_tools()
+    tool_names = {t.name for t in tools}
+
+    expected_tools = {
+        "credence_check_url",
+        "credence_evaluate_text",
+        "credence_get_audit",
+        "credence_verify_attestation",
+        "credence_get_consensus",
+        "credence_discover_feeds",
+        "credence_inspect_feed_health",
+        "credence_generate_digest",
+        "credence_get_quota_status",
+        "credence_get_leaderboard",
+        "credence_get_node_merit",
+        "credence_get_domain_rankings",
+        "credence_get_taxonomy_analytics",
+        "credence_get_epistemic_weather",
+        "credence_get_mesh_stats",
+        "credence_get_mesh_network_health",
+        "credence_get_seed_nodes",
+    }
+    missing_tools = expected_tools - tool_names
+    assert not missing_tools, f"Missing FastMCP tools in parity matrix: {missing_tools}"
+
+    resources = await server.list_resources()
+    resource_uris = {str(r.uri) for r in resources}
+
+    expected_resources = {
+        "credence://feeds/status",
+        "credence://digest/morning",
+        "credence://profiles",
+        "credence://taxonomies",
+        "credence://node/identity",
+        "credence://mesh/seeds",
+        "credence://mesh/stats",
+        "credence://mesh/network-health",
+        "credence://subjects/registry",
+        "credence://merit/badges",
+    }
+    missing_resources = expected_resources - resource_uris
+    assert not missing_resources, f"Missing FastMCP resources in parity matrix: {missing_resources}"
+
+    # 2. Textual TUI Parity Gate
+    app = CredenceApp()
+    tui_binding_keys = {b[0] if isinstance(b, tuple) else b.key for b in app.BINDINGS}
+    assert {"1", "2", "3", "4", "5", "6", "7", "8", "9", "m", "slash", "v", "o", "e", "f", "s"}.issubset(
+        tui_binding_keys
+    ), "All core actions must have mapped TUI keybindings"
+
+    # 3. Zero-Build Web UI Parity Gate
+    web_dir = Path(__file__).parent.parent / "web"
+    expected_web_pages = [
+        web_dir / "credence.run" / "index.html",
+        web_dir / "credence.report" / "index.html",
+        web_dir / "credence.report" / "viewer.html",
+        web_dir / "credence.nexus" / "index.html",
+        web_dir / "credence.nexus" / "dashboard.html",
+        web_dir / "credence.nexus" / "mesh.html",
+        web_dir / "credence.nexus" / "cost.html",
+        web_dir / "credence.foundation" / "index.html",
+    ]
+
+    for page in expected_web_pages:
+        assert page.exists(), f"Missing required web portal surface: {page}"
+        html = page.read_text(encoding="utf-8")
+        assert "<!DOCTYPE html>" in html
+        # Zero npm invariant
+        assert "package.json" not in html
+        assert "node_modules" not in html
+        # 5 Invariant header links
+        assert "https://credence.run" in html
+        assert "https://docs.credence.run" in html
+        assert "https://credence.report" in html
+        assert "https://credence.nexus" in html
+        assert "https://credence.foundation" in html

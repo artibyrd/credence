@@ -213,8 +213,117 @@ def test_dashboard_web_asset_integrity() -> None:
     assert "tab-categories" in content
     assert "tab-mesh" in content
     assert "tab-sre" in content
+    assert "mesh.html" in content
 
     # Zero-npm invariant check
-    assert "npm" not in content.lower() or "zero-npm" in content.lower()
+    assert "npm" not in content.lower() or "zero npm" in content.lower() or "zero-npm" in content.lower()
+    assert "package.json" not in content
+    assert "node_modules" not in content
+
+
+@pytest.mark.asyncio
+async def test_calculate_network_mesh_health_topology() -> None:
+    """Test calculate_network_mesh_health computes 13-node Watts-Strogatz topology and Byzantine metrics."""
+    from credence.mesh.stats import calculate_network_mesh_health
+
+    health = await calculate_network_mesh_health(None)
+
+    assert health["service"] == "credence"
+    assert "cluster_topology" in health
+    topo = health["cluster_topology"]
+    assert topo["model_parameters"]["nodes_count"] == 13
+    assert topo["model_parameters"]["degree_k"] == 4
+    assert topo["byzantine_resilience"]["formula"] == "N >= 3f + 1"
+    assert topo["byzantine_resilience"]["max_byzantine_faults"] == 4
+    assert topo["epistemic_consensus"]["grounding_quotient"] == 1.00
+
+    # Verify 13 Nodes
+    nodes = health["nodes"]
+    assert len(nodes) == 13
+    aliases = [n["alias"] for n in nodes]
+    assert "anchor-us-central1" in aliases
+    assert "bridge-europe-west1" in aliases
+    assert "anchor-ap-northeast1" in aliases
+
+    # Verify Ring and Chord Edges
+    edges = health["edges"]
+    assert len(edges) >= 16
+    chord_edges = [e for e in edges if e["type"] == "CHORD_SHORTCUT"]
+    assert len(chord_edges) >= 3
+
+
+def test_rest_mesh_network_health_endpoint() -> None:
+    """Test REST API GET /api/v1/mesh/network-health and /api/mesh/network-health."""
+    app = create_server_app()
+    with TestClient(app) as client:
+        res1 = client.get("/api/v1/mesh/network-health")
+        assert res1.status_code == 200
+        data = res1.json()
+        assert data["service"] == "credence"
+        assert "cluster_topology" in data
+        assert len(data["nodes"]) == 13
+        assert len(data["edges"]) >= 16
+
+        # Test alias /api/mesh/network-health
+        res2 = client.get("/api/mesh/network-health")
+        assert res2.status_code == 200
+
+        # Test /api/v1/mesh/health
+        res3 = client.get("/api/v1/mesh/health")
+        assert res3.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_fastmcp_mesh_network_health_tool_and_resource() -> None:
+    """Test FastMCP 2.0 tool and resource registration for mesh network health."""
+    from credence.server.app import create_mcp_server
+
+    server = create_mcp_server()
+    tools = await server.list_tools()
+    tool_names = [t.name for t in tools]
+    assert "credence_get_mesh_network_health" in tool_names
+
+    resources = await server.list_resources()
+    resource_uris = [str(r.uri) for r in resources]
+    assert "credence://mesh/network-health" in resource_uris
+
+
+def test_cli_stats_mesh_json_output(capsys: pytest.CaptureFixture[str]) -> None:
+    """Test cli_stats with mesh flag producing valid machine-readable JSON."""
+    from credence.cli.main import cli_stats
+
+    cli_stats(mesh=True, json_output=True)
+    captured = capsys.readouterr()
+    assert len(captured.out) > 0
+    parsed = json.loads(captured.out)
+    assert parsed["service"] == "credence"
+    assert "cluster_topology" in parsed
+    assert len(parsed["nodes"]) == 13
+
+
+def test_mesh_html_web_asset_integrity() -> None:
+    """Test mesh.html exists and obeys zero-npm, 5-link nav, and WCAG accessibility invariants."""
+    mesh_path = Path(__file__).parent.parent / "web" / "credence.nexus" / "mesh.html"
+    assert mesh_path.exists(), "mesh.html must exist under web/credence.nexus/"
+
+    content = mesh_path.read_text(encoding="utf-8")
+    assert "<!DOCTYPE html>" in content
+    assert "Whole-Mesh Network" in content
+    assert "mesh-canvas" in content
+    assert "node-inspector" in content
+    assert "btn-scen-normal" in content
+    assert "btn-scen-partition" in content
+    assert "btn-scen-sybil" in content
+    assert "btn-scen-failover" in content
+    assert "btn-scen-burst" in content
+
+    # 5 Invariant Links in Header Navbar
+    assert "https://credence.run" in content
+    assert "https://docs.credence.run" in content
+    assert "https://credence.report" in content
+    assert "https://credence.nexus" in content
+    assert "https://credence.foundation" in content
+
+    # Zero-npm invariant check
     assert "package.json" not in content
     assert "node_modules" not in content

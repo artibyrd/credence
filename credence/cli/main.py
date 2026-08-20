@@ -806,6 +806,7 @@ def cli_stats(
     url: str = "http://localhost:8000",
     watch: bool = False,
     breakdown: bool = False,
+    mesh: bool = False,
     json_output: bool = False,
 ) -> None:
     from typing import Any
@@ -815,10 +816,25 @@ def cli_stats(
     from rich.table import Table
 
     from credence.db import get_session, init_db
-    from credence.mesh.stats import calculate_mesh_stats
+    from credence.mesh.stats import calculate_mesh_stats, calculate_network_mesh_health
     from credence.server.app import global_telemetry
 
     async def _fetch_data() -> dict[str, Any]:
+        if mesh:
+            try:
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    r = await client.get(f"{url.rstrip('/')}/api/v1/mesh/network-health")
+                    if r.status_code == 200:
+                        data = r.json()
+                        if isinstance(data, dict):
+                            return data
+            except Exception:
+                pass
+            await init_db()
+            async for s in get_session():
+                return await calculate_network_mesh_health(s)
+            return await calculate_network_mesh_health(None)
+
         try:
             async with httpx.AsyncClient(timeout=2.0) as client:
                 r = await client.get(f"{url.rstrip('/')}/api/v1/mesh/stats")
@@ -836,11 +852,98 @@ def cli_stats(
             return await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
         return {}
 
+    def _render_mesh_display(data: dict) -> None:
+        topo = data.get("cluster_topology", {})
+        params = topo.get("model_parameters", {})
+        byz = topo.get("byzantine_resilience", {})
+        econ = topo.get("global_compute_savings", {})
+        nodes = data.get("nodes", [])
+        edges = data.get("edges", [])
+
+        # Hero Panel
+        hero_text = (
+            f"[bold green]● WHOLE-MESH NETWORK TOPOLOGY: {topo.get('name', 'Watts-Strogatz Lattice')}[/bold green]\n"
+            f"[bold cyan]Parameters:[/bold cyan] [white]N = {params.get('nodes_count', 13)} Nodes[/white]  |  "
+            f"[white]Degree d = {params.get('degree_k', 4)}[/white]  |  "
+            f"[white]Rewiring β = {params.get('rewiring_beta', 0.20)}[/white]  |  "
+            f"[white]Diameter = {params.get('diameter', 3)} hops[/white]\n\n"
+            f"[bold]1. BYZANTINE FAULT TOLERANCE (3f+1)[/bold]\n"
+            f"   • Quorum State:     [bold green]{byz.get('quorum_health', 'OPTIMAL')}[/bold green] ([green]{byz.get('active_honest_nodes', 13)}/{byz.get('total_nodes', 13)} active honest nodes[/green])\n"
+            f"   • Byzantine Margin: [bold cyan]{byz.get('formula', 'N >= 3f+1')}[/bold cyan] (Max tolerable adversaries f = [bold]{byz.get('max_byzantine_faults', 4)}[/bold])\n"
+            f"   • Sybil Cartels:    [green]{topo.get('epistemic_consensus', {}).get('sybil_cartels_isolated', 0)} isolated[/green]  |  Grounding Quotient: [bold green]G = {topo.get('epistemic_consensus', {}).get('grounding_quotient', 1.00):.2f}[/bold green]\n\n"
+            f"[bold]2. GLOBAL WORK-SHARING & COMPUTE PHILANTHROPY[/bold]\n"
+            f"   • Tokens Saved:     [bold green]{econ.get('tokens_saved_estimate', 0):,} tokens[/bold green] ([green]${econ.get('usd_saved_estimate', 0.0):.2f}[/green] avoided at $0.00 spend)\n"
+            f"   • Efficiency:       [bold cyan]{econ.get('work_sharing_efficiency_pct', 92.3)}% mesh adoption rate[/bold cyan] ({econ.get('adopted_from_mesh_count', 0):,} adopted queries)"
+        )
+        console.print(
+            Panel(hero_text, title="[bold]🕸️ Credence Whole-Mesh Network Health Dashboard[/bold]", border_style="cyan")
+        )
+
+        # Nodes Table
+        nodes_table = Table(title="13-Node Heterogeneous Swarm Roster", box=box.ROUNDED)
+        nodes_table.add_column("Node ID", style="bold cyan")
+        nodes_table.add_column("Node Alias")
+        nodes_table.add_column("Region", style="dim")
+        nodes_table.add_column("Role", style="bold")
+        nodes_table.add_column("Profile")
+        nodes_table.add_column("Quality (Q_i)", justify="right")
+        nodes_table.add_column("Uptime", justify="right")
+        nodes_table.add_column("Grounding", justify="right")
+        nodes_table.add_column("Memory", justify="right")
+        nodes_table.add_column("Status", justify="center")
+
+        for n in nodes:
+            status_c = "green" if n.get("status") == "HEALTHY" else "yellow"
+            prof_c = (
+                "bold magenta"
+                if n.get("profile") == "ULTRA"
+                else ("bold cyan" if n.get("profile") == "BALANCED" else "dim")
+            )
+            nodes_table.add_row(
+                n.get("node_id", ""),
+                f"`{n.get('alias', '')}`",
+                n.get("region", ""),
+                n.get("role", ""),
+                f"[{prof_c}]{n.get('profile', '')}[/{prof_c}]",
+                f"<b>{n.get('quality_score', 0.0):.4f}</b>",
+                f"{n.get('uptime_pct', 0.0):.2f}%",
+                f"G={n.get('grounding_quotient', 1.0):.2f}",
+                f"{n.get('memory_mb', 0):.1f} MB",
+                f"[{status_c}]{n.get('status', 'HEALTHY')}[/{status_c}]",
+            )
+        console.print(nodes_table)
+
+        # Edges & Latency Sample
+        if breakdown:
+            edges_table = Table(title="Mesh Edges & Inter-Node Latencies", box=box.SIMPLE)
+            edges_table.add_column("Source Node", style="cyan")
+            edges_table.add_column("Target Node", style="cyan")
+            edges_table.add_column("Edge Type", style="bold")
+            edges_table.add_column("Latency (RTT)", justify="right")
+            edges_table.add_column("Protocol")
+            edges_table.add_column("Status", justify="center")
+
+            for e in edges:
+                e_type_c = "magenta" if "CHORD" in e.get("type", "") else "blue"
+                edges_table.add_row(
+                    e.get("source", ""),
+                    e.get("target", ""),
+                    f"[{e_type_c}]{e.get('type', '')}[/{e_type_c}]",
+                    f"{e.get('latency_ms', 0)}ms",
+                    e.get("protocol", "WSS-GOSSIP/1.0"),
+                    f"[green]{e.get('status', 'ACTIVE')}[/green]",
+                )
+            console.print(edges_table)
+
     def _render_display(data: dict) -> None:
+        if mesh or "cluster_topology" in data:
+            _render_mesh_display(data)
+            return
+
         my = data.get("my_node", {})
         sre = data.get("sre_telemetry", {})
-        mesh = data.get("mesh_dynamics", {})
-        savings = mesh.get("compute_savings", {})
+        mesh_dyn = data.get("mesh_dynamics", {})
+        savings = mesh_dyn.get("compute_savings", {})
 
         status = my.get("status", "healthy")
         status_style = "bold green" if status == "healthy" else ("bold yellow" if status == "degraded" else "bold red")
@@ -865,9 +968,9 @@ def cli_stats(
             f"   • Total Audited:    [bold green]{total_a:,}[/bold green] lifetime ([cyan]{my.get('total_audited_today', 0)} today[/cyan])  |  Avg Suspicion: [bold]{my.get('avg_suspicion_score', 0.0)}[/bold]  |  Grounding: [green]G = {my.get('avg_grounding_quotient', 1.0):.2f}[/green]\n"
             f"   • Verdicts:         [green]{clean_c} Clean[/green] | [yellow]{low_c} Low Suspicion[/yellow] | [dark_orange]{susp_c} Suspicious[/dark_orange] | [red]{decep_c} High Deception[/red] | [cyan]{sat_c} Satire[/cyan]\n\n"
             f"[bold]3. WHAT CONNECTIONS DO I HAVE IN THE MESH?[/bold]\n"
-            f"   • P2P Connections:  [bold cyan]{mesh.get('connected_peers_count', 0)} active peer nodes[/bold cyan]  |  Bootstrap Seeds: [green]CONNECTED[/green] ({mesh.get('seeds_status', {}).get('canonical_domain', 'seeds.credence.nexus')})\n"
+            f"   • P2P Connections:  [bold cyan]{mesh_dyn.get('connected_peers_count', 0)} active peer nodes[/bold cyan]  |  Bootstrap Seeds: [green]CONNECTED[/green] ({mesh_dyn.get('seeds_status', {}).get('canonical_domain', 'seeds.credence.nexus')})\n"
             f"   • Work-Sharing:     [bold green]{savings.get('tokens_saved_estimate', 0):,} tokens saved[/bold green] ([green]${savings.get('usd_saved_estimate', 0.0):.2f}[/green] avoided at $0.00 spend via [bold]{savings.get('adopted_from_mesh_count', 0)}[/bold] mesh adoptions)\n"
-            f"   • Safety Margin:    [dim]{mesh.get('byzantine_safety_margin', '3f+1 Verified')}[/dim]"
+            f"   • Safety Margin:    [dim]{mesh_dyn.get('byzantine_safety_margin', '3f+1 Verified')}[/dim]"
         )
         console.print(
             Panel(hero_text, title="[bold]🛡️ Credence Node & Mesh Health Dashboard[/bold]", border_style="cyan")
@@ -898,6 +1001,7 @@ def cli_stats(
         # 3. If breakdown requested: Source & Category tables
         if breakdown:
             sources = data.get("sources_breakdown", [])
+
             if sources:
                 src_table = Table(title="Audited Sources & Domain Epistemic Index", box=box.ROUNDED)
                 src_table.add_column("Domain / Publisher", style="bold")
@@ -1447,6 +1551,7 @@ def _dispatch_service_commands(args: argparse.Namespace) -> bool:
             url=getattr(args, "url", "http://localhost:8000"),
             watch=getattr(args, "watch", False),
             breakdown=getattr(args, "breakdown", False),
+            mesh=getattr(args, "mesh", False),
             json_output=getattr(args, "json", False),
         )
         return True
@@ -3359,6 +3464,9 @@ def main() -> None:
     )
     stats_parser.add_argument(
         "--breakdown", "-b", action="store_true", help="Display detailed source domain and category tables."
+    )
+    stats_parser.add_argument(
+        "--mesh", "-m", action="store_true", help="Display whole-mesh 13-node cluster topology and Byzantine health."
     )
     stats_parser.add_argument(
         "--watch", "-w", action="store_true", help="Continuously refresh the dashboard in real-time."

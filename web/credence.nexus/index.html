@@ -63,7 +63,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v1.21.7</span>
+      🛡️ Credence <span class="badge">v1.22.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -81,19 +81,32 @@
       <p class="lead">Peer-to-peer gossip network topology, live bootstrap seed directory (<code>peers.json</code>), compute philanthropy odometers, and 5-factor node quality rankings (Qᵢ).</p>
     </header>
 
+    <!-- Nexus Subnav Bar -->
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; border-bottom:1px solid #1e293b; padding-bottom:0.75rem;">
+      <a href="index.html" style="background:#0284c7; color:#fff; border:1px solid #38bdf8; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">🏆 Epistemic Leaderboard</a>
+      <a href="dashboard.html" style="background:#111827; color:#94a3b8; border:1px solid #1e293b; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">👤 My Node Dashboard</a>
+      <a href="mesh.html" style="background:#111827; color:#94a3b8; border:1px solid #1e293b; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">🕸️ Whole-Mesh Network Health</a>
+      <a href="cost.html" style="background:#111827; color:#94a3b8; border:1px solid #1e293b; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">⚖️ Cost & Token Budget</a>
+    </div>
+
+    <!-- Whole-Mesh Network Health Card -->
     <div class="card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 138, 0.4)); border: 1px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
       <div>
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-          <span style="font-size: 1.25rem;">📊</span>
-          <h2 style="margin: 0; font-size: 1.2rem; color: #fff;">Live Node & Mesh Health Dashboard</h2>
-          <span class="badge" style="margin: 0; background: rgba(74, 222, 128, 0.2); color: #4ade80; border-color: rgba(74, 222, 128, 0.4);">NEW in v1.15.1</span>
+          <span style="font-size: 1.25rem;">🕸️</span>
+          <h2 style="margin: 0; font-size: 1.2rem; color: #fff;">Whole-Mesh Network Health & Watts-Strogatz Topology</h2>
+          <span class="badge" style="margin: 0; background: rgba(74, 222, 128, 0.2); color: #4ade80; border-color: rgba(74, 222, 128, 0.4);">13-Node Cluster Active</span>
         </div>
         <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
-          First-person node operator vitals, BitTorrent compute savings ($0.00 spend), and scored pages breakdown across sources and categories.
+          Interactive 13-node Watts-Strogatz small-world lattice, Byzantine resilience ($3f+1, f=4$), multi-region latency matrix, and live gossip attestation stream.
         </p>
       </div>
-      <a href="dashboard.html" style="display: inline-block; background: #0284c7; color: #fff; padding: 0.65rem 1.25rem; border-radius: 6px; font-weight: 700; text-decoration: none; border: 1px solid #38bdf8; white-space: nowrap;">⚡ Open Live Dashboard &rarr;</a>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <a href="mesh.html" style="display: inline-block; background: #0284c7; color: #fff; padding: 0.65rem 1.25rem; border-radius: 6px; font-weight: 700; text-decoration: none; border: 1px solid #38bdf8; white-space: nowrap;">🕸️ View Whole Mesh &rarr;</a>
+        <a href="dashboard.html" style="display: inline-block; background: #1e293b; color: #f1f5f9; padding: 0.65rem 1.25rem; border-radius: 6px; font-weight: 600; text-decoration: none; border: 1px solid #334155; white-space: nowrap;">👤 My Node &rarr;</a>
+      </div>
     </div>
+
 
     <div class="card">
       <h2>Bootstrap Seed Manifest & Node Ignition</h2>

@@ -527,6 +527,21 @@ def _register_query_tools(server: MCPServer) -> None:
             return json.dumps(stats, indent=2)
         return "{}"
 
+    @server.tool(
+        name="credence_get_mesh_network_health",
+        description="Retrieve comprehensive Whole-Mesh Network Health, 13-node Watts-Strogatz topology, and Byzantine quorum metrics.",
+    )
+    async def get_mesh_network_health() -> str:
+        from credence.db import get_session, init_db
+        from credence.mesh.stats import calculate_network_mesh_health
+
+        await init_db()
+        async for s in get_session():
+            health = await calculate_network_mesh_health(s)
+            return json.dumps(health, indent=2)
+        health = await calculate_network_mesh_health(None)
+        return json.dumps(health, indent=2)
+
 
 def _register_consensus_tools(server: MCPServer) -> None:
     """Register attestation verification and consensus tools."""
@@ -1034,6 +1049,19 @@ def _register_taxonomy_resources(server: MCPServer) -> None:
             stats = await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
             return json.dumps(stats, indent=2)
         return "{}"
+
+    @server.resource("credence://mesh/network-health")
+    async def get_mesh_network_health_resource() -> str:
+        """Whole-Mesh Network Health, 13-node Watts-Strogatz topology, and Byzantine quorum metrics."""
+        from credence.db import get_session, init_db
+        from credence.mesh.stats import calculate_network_mesh_health
+
+        await init_db()
+        async for s in get_session():
+            health = await calculate_network_mesh_health(s)
+            return json.dumps(health, indent=2)
+        health = await calculate_network_mesh_health(None)
+        return json.dumps(health, indent=2)
 
 
 def _register_subject_resources(server: MCPServer) -> None:
@@ -1815,6 +1843,21 @@ async def api_mesh_stats(request: Any) -> Any:
         stats = await calculate_mesh_stats(s, telemetry_snapshot=snapshot)
         return JSONResponse(stats)
     return JSONResponse({})
+
+
+async def api_mesh_network_health(request: Any) -> Any:
+    """REST API: Retrieve Whole-Mesh Network Health, 13-node Watts-Strogatz topology, and Byzantine quorum metrics."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.mesh.stats import calculate_network_mesh_health
+
+    await init_db()
+    async for s in get_session():
+        health = await calculate_network_mesh_health(s)
+        return JSONResponse(health)
+    health = await calculate_network_mesh_health(None)
+    return JSONResponse(health)
 
 
 async def api_reports(request: Any) -> Any:
@@ -2639,6 +2682,9 @@ def create_server_app(
         Route("/api/health", endpoint=api_health, methods=["GET"]),
         Route("/api/v1/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
         Route("/api/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
+        Route("/api/v1/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
+        Route("/api/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
+        Route("/api/v1/mesh/health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
         Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
         Route("/api/cost/telemetry", endpoint=api_cost_telemetry, methods=["GET", "OPTIONS"]),

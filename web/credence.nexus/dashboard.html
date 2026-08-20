@@ -24,6 +24,36 @@
       padding: 1.5rem 1rem 4rem;
     }
 
+    /* Subnav Switcher Bar */
+    .nexus-subnav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+    }
+    .subnav-btn {
+      background: #111827;
+      color: var(--text-muted);
+      border: 1px solid #1e293b;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .subnav-btn:hover, .subnav-btn.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+
+
     /* Controls Bar */
     .controls-bar {
       display: flex;
@@ -270,26 +300,29 @@
 </head>
 <body>
 
-  <!-- Ecosystem Navigation -->
+  <!-- Unified Ecosystem Navigation Bar (5 Invariant Links) -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence Nexus <span class="badge">v1.21.0</span>
+      🛡️ Credence <span class="badge">v1.22.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
-      <li><a href="https://docs.credence.run#docs/intro">Docs</a></li>
-      <li><a href="https://docs.credence.run#docs/playground">Playgrounds</a></li>
-      <li><a href="https://blog.credence.run#blog/conflict-of-pun-terest">Blog</a></li>
-      <li><a href="https://credence.report/viewer.html">Reports</a></li>
-      <li><a href="index.html">Nexus</a></li>
-      <li><a href="dashboard.html" class="active">⚡ Live Dashboard</a></li>
-      <li><a href="cost.html">⚖️ Cost & Budget</a></li>
+      <li><a href="https://docs.credence.run">Docs</a></li>
+      <li><a href="https://credence.report">Reports</a></li>
+      <li><a href="https://credence.nexus" class="active">Nexus</a></li>
       <li><a href="https://credence.foundation">Foundation</a></li>
-      <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
   </nav>
 
   <div class="dashboard-container">
+
+    <!-- Nexus Subnav Bar -->
+    <div class="nexus-subnav">
+      <a href="index.html" class="subnav-btn">🏆 Epistemic Leaderboard</a>
+      <a href="dashboard.html" class="subnav-btn active">👤 My Node Dashboard</a>
+      <a href="mesh.html" class="subnav-btn">🕸️ Whole-Mesh Network Health</a>
+      <a href="cost.html" class="subnav-btn">⚖️ Cost & Token Budget</a>
+    </div>
     
     <!-- Controls Header -->
     <div class="controls-bar">
@@ -576,18 +609,53 @@
 
   </div>
 
-  <!-- Unified Footer -->
+  <!-- Unified Cross-Domain Ecosystem Footer (4 Balanced Pillars) -->
   <footer class="credence-footer">
-    <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:1.5rem;">
-      <div>
-        <strong>Credence Decentralized Epistemic Network</strong><br>
-        <small style="color:var(--text-muted);">Sovereign, mathematical, multi-model evaluation without gatekeepers.</small>
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>🌐 Sovereign Network</h4>
+          <ul>
+            <li><a href="https://credence.run">Platform Home</a></li>
+            <li><a href="https://credence.report">Audit Explorer</a></li>
+            <li><a href="https://credence.nexus">Mesh Directory</a></li>
+            <li><a href="https://credence.foundation">Root Key Custody</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>🎮 Interactive & Tools</h4>
+          <ul>
+            <li><a href="https://docs.credence.run#docs/playground">Zero-Build Playgrounds</a></li>
+            <li><a href="https://credence.report/viewer.html">Multi-Mode Report Viewer</a></li>
+            <li><a href="https://docs.credence.run#docs/tutorials/03-claude-cursor-fastmcp">FastMCP Server Integration</a></li>
+            <li><a href="https://seeds.credence.nexus/peers.json">P2P Seed Manifest</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>📘 Knowledge & Canon</h4>
+          <ul>
+            <li><a href="https://docs.credence.run#docs/invariants">The Invariant Bible</a></li>
+            <li><a href="https://blog.credence.run">Sovereign Blog & Essays</a></li>
+            <li><a href="https://docs.credence.run#docs/topic-index">Topic Index & Directory</a></li>
+            <li><a href="https://docs.credence.run#docs/roadmap">Roadmap & Horizons</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>⚖️ Governance & Source</h4>
+          <ul>
+            <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub Repository</a></li>
+            <li><a href="https://docs.credence.run#docs/changelog">Release Changelog</a></li>
+            <li><a href="https://keys.credence.foundation/root.pub">Root Public Key (root.pub)</a></li>
+            <li><a href="https://github.com/artibyrd/credence/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0 License</a></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <small style="color:var(--text-muted);">RFC 8785 Canonical JSON | Ed25519 Custody | G=1.00 Verbatim Grounding</small>
+      <div class="footer-bottom">
+        <div>&copy; 2026 Credence Network &bull; Zero npm dependencies &bull; 100% Zero-Build Sovereign Web</div>
       </div>
     </div>
   </footer>
+
 
   <!-- Vanilla Dashboard Controller Script -->
   <script type="module">

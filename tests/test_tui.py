@@ -20,6 +20,8 @@ async def test_credence_tui_app_lifecycle() -> None:
         assert app.query_one("#feeds_table") is not None
         assert app.query_one("#identity_panel") is not None
         assert app.query_one("#quota_panel") is not None
+        assert app.query_one("#ops_panel") is not None
+        assert app.query_one("#mesh_panel") is not None
 
         # Test switching tabs via action handlers
         app.action_switch_to_inspector()
@@ -34,13 +36,22 @@ async def test_credence_tui_app_lifecycle() -> None:
         app.action_switch_to_feeds()
         await pilot.pause()
 
+        app.action_switch_to_leaderboard()
+        await pilot.pause()
+
         app.action_switch_to_quota()
         await pilot.pause()
 
         app.action_switch_to_identity()
         await pilot.pause()
 
-        # Test keybindings 1-6
+        app.action_switch_to_ops()
+        await pilot.pause()
+
+        app.action_switch_to_mesh()
+        await pilot.pause()
+
+        # Test keybindings 1-9 and m
         await pilot.press("1")
         await pilot.pause()
         await pilot.press("2")
@@ -52,6 +63,14 @@ async def test_credence_tui_app_lifecycle() -> None:
         await pilot.press("5")
         await pilot.pause()
         await pilot.press("6")
+        await pilot.pause()
+        await pilot.press("7")
+        await pilot.pause()
+        await pilot.press("8")
+        await pilot.pause()
+        await pilot.press("9")
+        await pilot.pause()
+        await pilot.press("m")
         await pilot.pause()
 
         # Test view mode cycling (v)
