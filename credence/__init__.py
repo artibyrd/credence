@@ -1,3 +1,3 @@
 """Credence - Epistemic Evaluation Engine and Verification Framework."""
 
-__version__ = "1.21.4"
+__version__ = "1.21.5"

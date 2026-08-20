@@ -3,13 +3,28 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.4
+verified_version: v1.21.5
 last_verified: '2026-08-20'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.21.5] - 2026-08-20
+
+### Symmetric 4-Pillar Footer Architecture & Centered Visual Balance
+- **Redundancy Elimination & 4-Pillar Alignment**:
+  - Re-architected global footer navigation into 4 balanced pillars with exactly 4 purposeful, non-redundant links per column:
+    1. **🌐 Sovereign Network**: `Platform Home` (`credence.run`), `Audit Explorer` (`credence.report`), `Mesh Directory` (`credence.nexus`), `Root Key Custody` (`credence.foundation`).
+    2. **🎮 Interactive & Tools**: `Zero-Build Playgrounds`, `Multi-Mode Report Viewer`, `FastMCP Server Integration`, `P2P Seed Manifest`.
+    3. **📘 Knowledge & Canon**: `The Invariant Bible`, `Sovereign Blog & Essays`, `Topic Index & Directory`, `Roadmap & Horizons`.
+    4. **⚖️ Governance & Source**: `GitHub Repository`, `Release Changelog`, `Root Public Key (root.pub)`, `Apache-2.0 License`.
+- **Docs 2x2 Grid Centering & Card Containment**:
+  - Encapsulated `.docs-main .footer-col` in balanced card containment panels with subtle borders and centered `.footer-grid` container (`max-width: 760px; margin: 0 auto;`).
+  - Symmetrically centered `.footer-bottom` copyright anchor.
+- **7-Manifest Parity Sync**:
+  - Synchronized canonical semantic version `v1.21.5` across all 7 ecosystem manifests.
 
 ## [1.21.4] - 2026-08-20
 
