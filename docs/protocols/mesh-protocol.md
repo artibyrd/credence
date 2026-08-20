@@ -29,23 +29,35 @@ Centralized truth or fact-checking APIs have fundamental flaws:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant NodeA as Node Alpha (ws://8761)
-    participant NodeB as Node Beta (ws://8762)
-    participant NodeC as Node Gamma (ws://8763)
+    participant NodeA as 🛡️ Node Alpha (ws://8761)
+    participant NodeB as 🛡️ Node Beta (ws://8762)
+    participant NodeC as 🛡️ Node Gamma (ws://8763)
 
-    Note over NodeA,NodeB: 1. Handshake Phase
-    NodeA->>NodeB: PEER_HELLO (Node PubKey, Catalog Hashes, Vector)
-    NodeB->>NodeA: PEER_HELLO (Node PubKey, Catalog Hashes, Vector)
+    Note over NodeA,NodeB: 1. Bidirectional P2P Handshake
+    activate NodeA
+    NodeA->>NodeB: PEER_HELLO (Ed25519 PubKey, Catalog Hashes, Protocol v1.21.1)
+    activate NodeB
+    NodeB->>NodeA: PEER_HELLO (Ed25519 PubKey, Catalog Hashes, Protocol v1.21.1)
+    deactivate NodeA
+    deactivate NodeB
 
-    Note over NodeA,NodeC: 2. Evaluation & Broadcast
-    NodeA->>NodeA: Audits URL & Signs AuditReport (Ed25519)
-    NodeA->>NodeB: ANNOUNCE_ATTESTATION (Signed Envelope, TTL=3)
-    NodeA->>NodeC: ANNOUNCE_ATTESTATION (Signed Envelope, TTL=3)
+    Note over NodeA,NodeC: 2. Autonomous Epistemic Audit & Broadcast
+    activate NodeA
+    NodeA->>NodeA: Audits Ingress URL with Gemini 3.7 Flash ($0.0003 spend)
+    NodeA->>NodeA: Validates G=1.00 & signs RFC 8785 Ed25519 envelope
+    NodeA->>NodeB: ANNOUNCE_ATTESTATION (Signed Envelope, TTL=3, Hop=1)
+    NodeA->>NodeC: ANNOUNCE_ATTESTATION (Signed Envelope, TTL=3, Hop=1)
+    deactivate NodeA
 
-    Note over NodeB,NodeC: 3. Verification & Storm Suppression
-    NodeB->>NodeB: Rate Limit, Deduplicate, Verify Ed25519 & Grounding
-    NodeB->>NodeC: Rebroadcast ANNOUNCE_ATTESTATION (TTL=2)
-    NodeC->>NodeC: Drop Rebroadcast (Already Seen)
+    Note over NodeB,NodeC: 3. Zero-Token Verification & Storm Suppression
+    activate NodeB
+    NodeB->>NodeB: Verifies Ed25519 signature & DOM offset in <1ms ($0.00 tokens)
+    NodeB->>NodeB: Inserts AttestationRecord to local SQLite WAL
+    NodeB->>NodeC: Epidemic Rebroadcast ANNOUNCE_ATTESTATION (TTL=2, Hop=2)
+    deactivate NodeB
+    activate NodeC
+    NodeC->>NodeC: Suppresses Duplicate Attestation (Bloom Filter / Seen Cache)
+    deactivate NodeC
 ```
 
 ---

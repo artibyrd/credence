@@ -42,14 +42,10 @@ Mandatory invariants, mathematical formulas, and runtime guardrails governing hu
 
 ```mermaid
 flowchart LR
-    Dev["AI / Human Developer"] --> Plan["1. Planning Mode
-(Invariant 6 · Mk1 Eyeball)"]
-    Plan --> Hermetic["2. Hermetic CI & Tests
-(Invariant 4 · In-Memory SQLite)"]
-    Hermetic --> Model["3. Multi-Model Adapter
-(Invariant 7 & 15 · Gemini 4k Pareto)"]
-    Model --> Defense["4. Protocol & SSRF Defense
-(Invariant 8 & 9 · Billion Laughs & Container)"]
+    Dev["AI / Human Developer"] --> Plan["1. Planning Mode<br/>(Invariant 6 · Mk1 Eyeball)"]
+    Plan --> Hermetic["2. Hermetic CI & Tests<br/>(Invariant 4 · In-Memory SQLite)"]
+    Hermetic --> Model["3. Multi-Model Adapter<br/>(Invariant 7 & 15 · Gemini 4k Pareto)"]
+    Model --> Defense["4. Protocol & SSRF Defense<br/>(Invariant 8 & 9 · Billion Laughs & Container)"]
 ```
 
 <div class="invariant-card" id="invariant-1">
@@ -148,14 +144,10 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    RawDoc["Raw Web Text / Document"] --> AST["1. Whitespace-Collapsed DOM Parser
-(Invariant 22 · G=1.0 Grounding)"]
-    AST --> Entropy["2. Shannon Topic Entropy & Concentration
-(Invariant 19 · Pizza Hut Astroturfing Defense)"]
-    Entropy --> Satire["3. Poe's Law Classifier & SPJ-1.6
-(Invariant 20 · Satire Cloaking Override)"]
-    Satire --> Namespaces["4. Fixed Taxonomy Catalog
-(Invariant 21 · SHA-256 Pinned URIs)"]
+    RawDoc["Raw Web Text / Document"] --> AST["1. Whitespace-Collapsed DOM Parser<br/>(Invariant 22 · G=1.0 Grounding)"]
+    AST --> Entropy["2. Shannon Topic Entropy & Concentration<br/>(Invariant 19 · Pizza Hut Astroturfing Defense)"]
+    Entropy --> Satire["3. Poe's Law Classifier & SPJ-1.6<br/>(Invariant 20 · Satire Cloaking Override)"]
+    Satire --> Namespaces["4. Fixed Taxonomy Catalog<br/>(Invariant 21 · SHA-256 Pinned URIs)"]
     Namespaces --> Score["5. Weighted Mathematical Aggregate"]
 ```
 
@@ -191,16 +183,11 @@ $$H_{\text{penalized}} = H \times (1.0 - C_{\text{top3}})$$
 
 ```mermaid
 flowchart LR
-    Node["Peer Node Attestation"] --> Sig["1. RFC 8785 Ed25519 Custody
-(Invariant 24)"]
-    Sig --> Qual["2. 5-Factor Node Quality Q_i
-(Invariant 25)"]
-    Qual --> Exp["3. Empirical Expertise E_i
-(Invariant 26 · Anti-Diploma)"]
-    Exp --> Consensus["4. Bayesian Weighted Consensus
-(Invariant 27 · Galileo Rule Override)"]
-    Consensus --> Mesh["5. BitTorrent Work-Sharing
-(Invariant 28 & 29 · 3f+1 Cartel Defense)"]
+    Node["Peer Node Attestation"] --> Sig["1. RFC 8785 Ed25519 Custody<br/>(Invariant 24)"]
+    Sig --> Qual["2. 5-Factor Node Quality Q_i<br/>(Invariant 25)"]
+    Qual --> Exp["3. Empirical Expertise E_i<br/>(Invariant 26 · Anti-Diploma)"]
+    Exp --> Consensus["4. Bayesian Weighted Consensus<br/>(Invariant 27 · Galileo Rule Override)"]
+    Consensus --> Mesh["5. BitTorrent Work-Sharing<br/>(Invariant 28 & 29 · 3f+1 Cartel Defense)"]
 ```
 
 <div class="invariant-card" id="invariant-24">
@@ -239,18 +226,14 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Core["Unified Business Core Logic
-(Invariant 30)"] --> CLI["1. Terminal CLI (credence)"]
+    Core["Unified Business Core Logic<br/>(Invariant 30)"] --> CLI["1. Terminal CLI (credence)"]
     Core --> FastMCP["2. FastMCP 2.0 (stdio / SSE)"]
     Core --> TUI["3. Textual TUI (credence tui)"]
     Core --> Web["4. Zero-Build Web (0 npm · Invariant 31)"]
     
-    Web --> Router["Edge Router & Subdirectory Canonical
-(Invariant 33)"]
-    Web --> Math["Unicode Math Parser
-(Invariant 32)"]
-    Web --> Density["Visual Density & Playwright Verification
-(Invariant 34, 35, 36)"]
+    Web --> Router["Edge Router & Subdirectory Canonical<br/>(Invariant 33)"]
+    Web --> Math["Unicode Math Parser<br/>(Invariant 32)"]
+    Web --> Density["Visual Density & Playwright Verification<br/>(Invariant 34, 35, 36)"]
 ```
 
 <div class="invariant-card" id="invariant-30">

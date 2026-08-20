@@ -3,7 +3,7 @@ title: Closed-Loop Routing & P2P Traffic Shaping
 description: Technical specification for connecting epistemic merit to P2P network
   bandwidth, rate limits, /24 subnet clustering, and zero-cost caching.
 since_version: v1.0.0
-verified_version: v1.15.0
+verified_version: v1.21.1
 last_verified: '2026-08-19'
 ---
 
@@ -15,12 +15,43 @@ Credence establishes a **Closed-Loop Feedback Architecture**, where reputation s
 
 ```mermaid
 flowchart TD
-    subgraph FeedbackLoop["Closed-Loop Epistemic Routing"]
-        A["Observed Peer Work &amp; Attestations"] --> B["5-Factor Quality Score (Q_i)"]
-        B --> C["Dynamic Traffic Class Assignment"]
-        C --> D["P2P Rate Limiter &amp; Token Bucket"]
-        D --> E["Mesh Gossip Prioritization"]
+    Peer["📡 Incoming Peer WebSocket Messages"] --> Score["Calculate 5-Factor Quality Score<br/>Q_i = 0.35 G + 0.25 S + 0.20 H + 0.20 T"]
+    
+    Score --> ClassRouter{"Traffic Class Router"}
+
+    subgraph FastLaneBand ["Band 1: FAST_LANE (Q_i &ge; 0.85)"]
+        FL["⚡ 500 msgs/sec Token Bucket<br/>• Unbuffered Fast-Path Relay<br/>• Zero-Latency Gossip Broadcast"]
     end
+
+    subgraph StandardBand ["Band 2: STANDARD (0.50 &le; Q_i &lt; 0.85)"]
+        STD["🔄 50 msgs/sec Token Bucket<br/>• Epidemic Gossip Propagation<br/>• Standard Memory Buffering"]
+    end
+
+    subgraph ChokedBand ["Band 3: CHOKED (0.25 &le; Q_i &lt; 0.50)"]
+        CHK["🐢 1 msg/sec Throttled Queue<br/>• Flaky / High Deviation Penalty<br/>• Preserves Mesh Invariant 16"]
+    end
+
+    subgraph QuarantinedBand ["Band 4: QUARANTINED (Q_i &lt; 0.25)"]
+        QRT["🚫 0 msgs/sec (Severed Link)<br/>• Hallucination Slashed / Sybil Ring<br/>• TCP WebSocket Connection Terminated"]
+    end
+
+    ClassRouter -- "Q_i &ge; 0.85" --> FL
+    ClassRouter -- "0.50 &le; Q_i &lt; 0.85" --> STD
+    ClassRouter -- "0.25 &le; Q_i &lt; 0.50" --> CHK
+    ClassRouter -- "Q_i &lt; 0.25" --> QRT
+
+    FL & STD & CHK --> MeshLattice[("🌐 13-Node Watts-Strogatz Lattice<br/>Highest Random Weight Rendezvous")]
+
+    classDef darkSlate fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef fast fill:#1e293b,stroke:#22c55e,stroke-width:2px,color:#f8fafc;
+    classDef standard fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef choked fill:#1e293b,stroke:#f59e0b,stroke-width:2px,color:#f8fafc;
+    classDef quarantined fill:#1e293b,stroke:#ef4444,stroke-width:2px,color:#f8fafc;
+    class Peer,Score,ClassRouter,MeshLattice darkSlate;
+    class FL,FastLaneBand fast;
+    class STD,StandardBand standard;
+    class CHK,ChokedBand choked;
+    class QRT,QuarantinedBand quarantined;
 ```
 
 ---

@@ -1,15 +1,15 @@
 ---
 title: Cloud Run Deployment & Dual-Tier Monitoring Guide
 description: Deploying to Google Cloud Run with Terraform, $15/mo budget cap, scale-to-zero
-  compute, and automated CI/CD.
+  compute, Workload Identity Federation, and automated CI/CD.
 since_version: v1.8.0
-verified_version: v1.15.0
+verified_version: v1.18.2
 last_verified: '2026-08-19'
 ---
 
 # Cloud Run Deployment & Dual-Tier Monitoring Guide
 
-This guide covers deploying the **Credence FastMCP Server** to **Google Cloud Platform (Cloud Run v2)** with strict cost controls ($15/month budget ceiling, scale-to-zero compute), automated **Cloud Build CI/CD**, and **Dual-Tier SRE Observability** with **Discord & Powercord Alerting**.
+This guide covers deploying the **Credence FastMCP Server** to **Google Cloud Platform (Cloud Run v2)** with strict cost controls ($15/month budget ceiling, scale-to-zero compute), automated **Cloud Build / GitHub Actions CI/CD**, **Workload Identity Federation (WIF)**, and **Dual-Tier SRE Observability** with **Discord & Email Alerting**.
 
 ---
 
@@ -58,59 +58,102 @@ Credence provisions observability according to two operational modes controlled 
 
 ---
 
-## 3. Terraform Deployment Steps
+## 3. Step-by-Step Deployment Runbook
 
-### Step 1: Initialize gcloud & Enable APIs
+### Step 1: Initialize gcloud & Enable Required APIs
 ```bash
 gcloud config set project YOUR_PROJECT_ID
 
 gcloud services enable \
     run.googleapis.com \
-    secretmanager.googleapis.com \
-    artifactregistry.googleapis.com \
     cloudbuild.googleapis.com \
-    billingbudgets.googleapis.com \
-    monitoring.googleapis.com
+    artifactregistry.googleapis.com \
+    secretmanager.googleapis.com \
+    monitoring.googleapis.com \
+    logging.googleapis.com \
+    cloudbilling.googleapis.com
 ```
 
-### Step 2: Configure Terraform Variables
-Create `terraform/terraform.tfvars`:
+### Step 2: Configure Secret Manager Keys
+```bash
+# Add your Gemini API key to Secret Manager
+echo -n "YOUR_GEMINI_API_KEY" | gcloud secrets create credence-gemini-api-key \
+    --data-file=- \
+    --replication-policy="automatic"
+```
+
+### Step 3: Configure Terraform Variables
+Create your git-ignored `terraform/terraform.prod.tfvars`:
 ```hcl
 project_id                  = "YOUR_PROJECT_ID"
 region                      = "us-central1"
 service_name                = "credence-server"
-credence_profile            = "balanced" # or 'free', 'ultra'
+environment                 = "prod"
+credence_profile            = "balanced" # or 'economy', 'ultra'
 monthly_budget_limit_usd    = 15.00
-billing_account_id          = "YOUR_BILLING_ACCOUNT_ID"
-alert_email_addresses       = ["admin@yourdomain.com"]
+min_instance_count          = 0
+max_instance_count          = 2
 
 # Dual-Tier Monitoring & Discord Webhook
-monitoring_tier             = "simple" # or "advanced"
+monitoring_tier             = "advanced" # or "simple"
 discord_webhook_url         = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
 enable_uptime_check         = true
 ```
 
-### Step 3: Initialize and Apply Terraform
+### Step 4: Provision Infrastructure with Terraform
 ```bash
 cd terraform
 terraform init
-terraform plan
-terraform apply
+terraform plan -var-file="terraform.prod.tfvars"
+terraform apply -var-file="terraform.prod.tfvars" -state="terraform.prod.tfstate"
 ```
 
-### Step 4: Add Gemini API Key to Secret Manager
+### Step 5: Build & Deploy the Container (Commit-Before-Deploy)
+Ensure your working tree is clean (`git status -s`), then deploy:
 ```bash
-echo -n "YOUR_GEMINI_API_KEY" | gcloud secrets versions add credence-gemini-api-key --data-file=-
+just deploy backend
 ```
 
 ---
 
-## 4. Connecting Antigravity & Claude Desktop to Cloud Run
+## 4. Workload Identity Federation (WIF) for GitHub Actions CI/CD
 
-Once deployed, retrieve your Cloud Run SSE endpoint from Terraform outputs:
+To automate deployments without managing long-lived service account keys:
+
+### 1. Create Workload Identity Pool and Provider
 ```bash
-terraform output sse_endpoint
-# Output: https://credence-server-xxxxx-uc.a.run.app/sse
+# 1. Create Pool
+gcloud iam workload-identity-pools create "github-pool" \
+    --project="YOUR_PROJECT_ID" \
+    --location="global" \
+    --display-name="GitHub Actions Pool"
+
+# 2. Create Provider
+gcloud iam workload-identity-pools providers create-oidc "github-provider" \
+    --project="YOUR_PROJECT_ID" \
+    --location="global" \
+    --workload-identity-pool="github-pool" \
+    --display-name="GitHub Actions Provider" \
+    --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+    --issuer-uri="https://token.actions.githubusercontent.com"
+```
+
+### 2. Bind IAM Service Account to Repository
+```bash
+gcloud iam service-accounts add-iam-policy-binding "credence-cloud-run-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+    --project="YOUR_PROJECT_ID" \
+    --role="roles/iam.workloadIdentityUser" \
+    --member="principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/YOUR_GITHUB_REPO"
+```
+
+---
+
+## 5. Connecting Antigravity & Claude Desktop to Cloud Run
+
+Once deployed, retrieve your Cloud Run SSE endpoint:
+```bash
+just gcp status
+# Output: https://credence-server-xxxxx-uc.a.run.app
 ```
 
 Add the remote endpoint to your `mcp_config.json`:
@@ -126,7 +169,7 @@ Add the remote endpoint to your `mcp_config.json`:
 
 ---
 
-## 5. Parameterized Operator Workflows (`Justfile`)
+## 6. Parameterized Operator Workflows (`Justfile`)
 
 The repository provides a single canonical parameterized operator command family (`just gcp [action] [arg]`) with automated preflight validation:
 
@@ -145,7 +188,7 @@ The repository provides a single canonical parameterized operator command family
 
 ---
 
-## 6. Scale-to-Zero Cold Start Optimization & SRE Tuning
+## 7. Scale-to-Zero Cold Start Optimization & SRE Tuning
 
 When operating under `min_instance_count = 0` ($0.00 idle compute ceiling), Credence implements a 5-pillar serverless cold start optimization framework:
 
@@ -153,6 +196,6 @@ When operating under `min_instance_count = 0` ($0.00 idle compute ceiling), Cred
 2. **Direct Virtualenv Binary Execution**: Bypasses Poetry's CLI wrapper by executing `/app/.venv/bin/credence serve` directly with `PATH="/app/.venv/bin:$PATH"`, saving ~950ms.
 3. **Build-Time Bytecode Precompilation (`compileall`)**: Docker images precompile `.pyc` files during build, eliminating AST compilation on cold boots.
 4. **Lazy Dependency Deferral**: Heavy modules (`trafilatura`, `dateparser`, `playwright`) are lazy-loaded inside tool handlers, dropping module import latency by >48%.
-5. **Aggressive HTTP Readiness Probing**: Startup probes check `http_get` on `/health` with a 2s period and 1s initial delay, cutting probe detection lag from up to 10s down to ~1.5–2.0s.
+5. **Calibrated Startup Probe Sizing**: Configured with `failure_threshold = 30`, `period_seconds = 2`, `timeout_seconds = 2`, and `initial_delay_seconds = 0`, providing a 60s grace window for initial node germination while detecting HTTP readiness within ~1.5–2.0s once Uvicorn starts listening.
 
 *For complete benchmarks and mathematical breakdown, see the [Cloud Run Cold Start Blueprint](blueprints/cloudrun-scale-to-zero-cold-start-optimization.md) and [Engineering Blog Essay](../blog/taming-the-10-second-cold-start-scale-to-zero.md).*

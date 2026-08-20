@@ -318,7 +318,10 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
 
 @pytest.mark.unit
 def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
-    """Verify all fenced mermaid code blocks in documentation have valid diagram headers."""
+    """Verify all fenced mermaid code blocks in documentation have valid syntax,
+
+    balanced delimiters, proper subgraph nesting, zero raw markdown links, and WCAG contrast standards.
+    """
     md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
     valid_diagram_types = (
         "graph",
@@ -347,12 +350,57 @@ def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
                 if line.strip() and not line.strip().startswith("%%")
             ]
             assert len(lines) > 0, f"Empty Mermaid diagram block #{idx + 1} in {md_file.name}"
+
+            # 1. Valid diagram header
             first_token = lines[0].split()[0].lower()
             assert any(first_token.startswith(t) for t in valid_diagram_types), (
                 f"Invalid Mermaid diagram type '{first_token}' in {md_file.name} block #{idx + 1}"
             )
 
-    assert mermaid_count >= 24, f"Expected at least 24 Mermaid diagrams, found {mermaid_count}"
+            # 2. Rejection of raw markdown links in diagram labels
+            assert not re.search(r"\[[^\]]+\]\([^)]+\)", block), (
+                f"Mermaid Invariant Violation in {md_file.name} block #{idx + 1}: "
+                f"Contains raw Markdown link syntax inside diagram. Use clean descriptive text instead."
+            )
+
+            # 3. Linebreak hygiene: prohibit literal '\\n' in string labels (use <br/>)
+            assert r"\n" not in block, (
+                f"Mermaid Invariant Violation in {md_file.name} block #{idx + 1}: "
+                f"Contains literal '\\n' in label. Use '<br/>' HTML break tags for line breaks."
+            )
+
+            # 4. Balanced subgraphs
+            is_sequence = first_token.startswith("sequencediagram")
+            if not is_sequence:
+                subgraph_count = sum(
+                    1 for line in lines if line.startswith("subgraph") or re.match(r"^subgraph\s+", line)
+                )
+                end_count = sum(
+                    1 for line in lines if line == "end" or line.startswith("end ") or line.endswith(" end")
+                )
+                assert subgraph_count == end_count, (
+                    f"Mismatched subgraphs in {md_file.name} block #{idx + 1}: "
+                    f"{subgraph_count} 'subgraph' blocks vs {end_count} 'end' statements."
+                )
+
+            # 5. Balanced double quotes per line
+            for line_no, line in enumerate(lines, 1):
+                quotes = re.findall(r'(?<!\\)"', line)
+                assert len(quotes) % 2 == 0, (
+                    f"Unbalanced double quotes in {md_file.name} block #{idx + 1}, line {line_no}: '{line}'"
+                )
+
+            # 6. WCAG Dark-Theme Contrast Guard on custom classDef
+            for line in lines:
+                if line.startswith("classDef"):
+                    assert "fill:#" in line or "fill: #" in line, (
+                        f"classDef in {md_file.name} block #{idx + 1} missing explicit fill hex: '{line}'"
+                    )
+                    assert "stroke:#" in line or "stroke: #" in line, (
+                        f"classDef in {md_file.name} block #{idx + 1} missing explicit stroke hex: '{line}'"
+                    )
+
+    assert mermaid_count >= 85, f"Expected at least 85 Mermaid diagrams in catalog, found {mermaid_count}"
 
 
 @pytest.mark.unit

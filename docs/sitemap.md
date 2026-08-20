@@ -4,7 +4,7 @@ description: Comprehensive visual and structural sitemap covering all 5 sovereig
   domains, 12 interactive playgrounds, 38 system invariants, 17 investigative essays,
   and 72 documentation guides across the Credence network.
 since_version: v1.13.0
-verified_version: v1.16.0
+verified_version: v1.15.0
 last_verified: '2026-08-19'
 ---
 
@@ -82,7 +82,7 @@ Complete canonical specifications and mathematical guarantees enforced across th
   * **Engineering & Safety**: Decoupled Workspaces (Inv 1), Async SQLite/aiosqlite (Inv 2), Semantic Versioning (Inv 3), Hermetic Tests (Inv 4), Scoped Docs Verification (Inv 5), Human Review / Mk1 Eyeball (Inv 6), Multi-Model Sovereignty & Token Governor (Inv 7), SSRF Loopback Defense (Inv 8), Red Team Protocol Defense (Inv 9), XML Traversal Safety (Inv 10), Ground Truth Reference Engine (Inv 11), FastMCP 2.0 Security (Inv 12), Zero-Build Static Assets (Inv 13), Edge Origin Header Translation (Inv 14), 4k Thinking Sweet Spot (Inv 15), FastMCP Nested Datetime Serialization (Inv 16), Content Decoupling & Hermetic CI (Inv 17), Context Governance & Progressive Disclosure (Inv 18).
   * **Epistemic Scoring**: Topic Entropy Astroturfing Defense (Inv 19), Poe's Law & Satire Safeguards (Inv 20), Namespaced Fixed Taxonomies (Inv 21), Whitespace-Insensitive Grounding (Inv 22), Transparent Heuristic Disclosure (Inv 23).
   * **Cryptographic Mesh & Authority**: RFC 8785 Canonical JSON (Inv 24), 5-Factor Node Quality $Q_i$ (Inv 25), Empirical Expertise $E_i$ & Anti-Diploma (Inv 26), The Galileo Rule (Inv 27), BitTorrent Work-Sharing (Inv 28), Byzantine Cartel Resistance $3f+1$ (Inv 29).
-  * **Presentation & Web**: 4-Way Universal Feature Parity (Inv 30), Zero-Build Zero-npm Invariant (Inv 31), Zero-Build Math & Currency (Inv 32), Edge Subdirectory Canonicalization (Inv 33), Universal Mermaid Syntax Safety (Inv 34), Visual Density & Anti-Wall-of-Text (Inv 35), Automated Live Rendering Tests (Inv 36), Inline HTML & Nested Math Integrity (Inv 37), Anti-Scrollbox & Natural Flow (Inv 38), Opportunistic Boredom Ingestion & Epistemic Root Expansion (Inv 39).
+  * **Presentation & Web**: 4-Way Universal Feature Parity (Inv 30), Zero-Build Zero-npm Invariant (Inv 31), Zero-Build Math & Currency (Inv 32), Edge Subdirectory Canonicalization (Inv 33), Universal Mermaid Syntax Safety (Inv 34), Visual Density & Anti-Wall-of-Text (Inv 35), Automated Live Rendering Tests (Inv 36), Inline HTML & Nested Math Integrity (Inv 37), Anti-Scrollbox & Natural Flow (Inv 38), Opportunistic Boredom Ingestion & Epistemic Root Expansion (Inv 39), Soft Blacklisting & The BuzzFeed News Doctrine (Inv 40).
 
 ---
 
@@ -90,6 +90,8 @@ Complete canonical specifications and mathematical guarantees enforced across th
 
 Forensic investigations, economic proofs, and real-world case studies published on the sovereign blog.
 
+* 📰 **[The BuzzFeed News Doctrine](#blog/the-buzzfeed-news-doctrine)** (How autonomous trust networks handle redemption without blindspots, exponential backoff, and the 2021 Pulitzer Prize)
+* 🔬 **[Gazing into the Abyss: Hunting Disinformation Without Drowning in Slop](#blog/gazing-into-the-abyss-adversarial-boredom)** (Empirical findings from 13-node mesh simulations, HRW stampede elimination, and the zero-token slop firewall)
 * 🌱 **[The Boredom Engine & Expanding Roots](#blog/the-boredom-engine-and-expanding-roots)** (How autonomous nodes self-direct epistemic discovery from idle token headroom and clean citation soil)
 * 🚀 **[From 860MB to 2MB: Engineering a Sub-40s CI/CD Pipeline](#blog/from-860mb-to-2mb-sub-40s-cicd-pipeline)** (Slashing build uploads by 99.7%, multi-core Pytest, and pipefail stream safety)
 * 🏛️ **[The 3-Plane Architecture: Zero-npm Edge & Scale-to-Zero](#blog/the-three-plane-architecture)** (Decoupling Cloudflare Edge, Cloud Run Compute, and Terraform for $0.00 idle cost)
@@ -187,6 +189,7 @@ Forensic investigations, economic proofs, and real-world case studies published 
 * **[DNS SRV Dynamic Peer Discovery](#docs/mesh-engineering/dns-srv-discovery)**: RFC 2782 DNS SRV peer discovery without central trackers.
 * **[Token Safety Governor Specification](#docs/protocols/token-governor)**: Spending profiles, budget caps, and 30% headroom breaker.
 * **[Protocol Specification: Boredom Engine & Root Expansion (EPEP-16)](#docs/protocols/boredom-and-root-expansion)**: Technical specification for opportunistic queue digestion, token governor gating, and autonomous feed discovery.
+* **[Protocol Specification: Domain Reputation, Soft Quarantine & Redemption (EPEP-17)](#docs/protocols/reputation-quarantine-and-redemption)**: Technical specification for domain reputation tracking, exponential polling backoff, HRW swarm coordination, and the BuzzFeed News Doctrine.
 * **[P2P Mesh & Consensus Protocol](#docs/protocols/mesh-protocol)**: RFC 8785 canonical JSON, Ed25519 signatures, and gossip routing.
 * **[Zero-Touch Node Germination & Swarm Ignition](#docs/protocols/zero-touch-germination-and-swarm-ignition)**: Autonomous cryptographic identity minting and genesis inoculation in <5s.
 * **[Scoring & Saturation Math Specification](#docs/protocols/scoring)**: Exponential saturation curve and density index formulas.
@@ -195,6 +198,13 @@ Forensic investigations, economic proofs, and real-world case studies published 
 * **[Economics of Decentralized Truth](#docs/mathematics/economics-of-truth)**: Mathematical proof of 92.3% compute savings via BitTorrent work-sharing.
 
 ### Operations, Self-Hosting & Deployment
+* **[Master Deployment Prerequisites & Setup Guide](#docs/operations/deployment-prerequisites)**: Complete prerequisite checklists, credential matrices, CLI commands, and decision trees across all topologies.
+* **[Single-Project vs Dual-Project GCP Topologies](#docs/operations/single-vs-dual-project-gcp)**: Comparison and CLI provisioning runbooks for single partitioned vs hard dual-project isolation.
+* **[Multi-Environment Boundaries and Deployments](#docs/operations/multi-environment-boundaries-and-deployments)**: Boundary isolation, CI/CD secret matrices, and sequential launch parity deployment sequence.
+* **[Vendor-Agnostic Self-Hosting and Docker](#docs/operations/vendor-agnostic-self-hosting-and-docker)**: Bare-metal Linux, Hetzner/OVH VPS, systemd services, Caddy reverse proxy, and backup procedures.
+* **[Docker Compose 5-Minute Quickstart](#docs/operations/docker-compose-quickstart)**: Quickstart guide for launching Basic ($0 SQLite) and Planetary (PostgreSQL + MinIO + Valkey) clusters.
+* **[Kubernetes and Container Orchestration](#docs/operations/kubernetes-and-helm-deployment)**: Production manifests, PVC storage classes, ConfigMaps, Secrets, Ingress, and HPA autoscaling.
+* **[Content-Addressable Blob Storage with Cloudflare R2](#docs/operations/blob-storage-r2)**: S3-compatible zero-egress Cloudflare R2 storage configuration for HTML and visual snapshots.
 * **[Multi-Plane Pipeline & Build Optimization Handbook](#docs/operations/pipeline-and-build-optimization)**: Workstation tuning, multi-core pytest parallelization, build context exclusions, and sub-40s QA gates.
 * **[Raspberry Pi & HomeLab Node Guide](#docs/operations/raspberry-pi-homelab)**: Running a $0.00/mo self-hosted node on Raspberry Pi.
 * **[Tailscale & WireGuard Peering](#docs/operations/tailscale-wireguard-mesh)**: Secure private P2P mesh overlays across servers.
@@ -208,3 +218,4 @@ Forensic investigations, economic proofs, and real-world case studies published 
 * **[Master Topic Index & Cheat Sheet](#docs/topic-index)**: The "Marbles in the Oatmeal" comprehensive keyword index across all concepts.
 * **[Release Changelog](#docs/changelog)**: Complete semantic version history, milestones, and release notes.
 * **[Ecosystem Master Sitemap](#docs/sitemap)**: This document.
+

@@ -3,7 +3,7 @@ title: Topic Index & Quick Reference
 description: Comprehensive concept index, cheat sheet, and fast-lookup directory for
   the Credence ecosystem.
 since_version: v1.11.0
-verified_version: v1.16.0
+verified_version: v1.15.0
 last_verified: '2026-08-19'
 ---
 
@@ -141,6 +141,13 @@ last_verified: '2026-08-19'
 
 ## ☁️ 9. Self-Hosting & Operations
 
+* **Master Deployment Prerequisites**: Complete checklists, credential matrices, and CLI setup guides across all topologies &rarr; [Master Deployment Prerequisites](operations/deployment-prerequisites.md)
+* **Single-Project vs Dual-Project GCP**: Comparison and CLI runbooks for partitioned vs hard-isolated GCP topologies &rarr; [Single vs Dual-Project GCP](operations/single-vs-dual-project-gcp.md)
+* **Multi-Environment Boundaries & Parity**: Project, domain, and data boundary isolation with launch parity &rarr; [Multi-Environment Boundaries](operations/multi-environment-boundaries-and-deployments.md)
+* **Vendor-Agnostic Self-Hosting**: Bare-metal Linux, Hetzner/OVH VPS, systemd, and Caddy reverse proxy &rarr; [Vendor-Agnostic Self-Hosting](operations/vendor-agnostic-self-hosting-and-docker.md)
+* **Docker Compose 5-Minute Quickstart**: Launch Basic ($0 SQLite) and Planetary (Postgres + MinIO + Valkey) clusters &rarr; [Docker Compose Quickstart](operations/docker-compose-quickstart.md)
+* **Kubernetes & Container Orchestration**: Declarative Kubernetes manifests, PVC storage, ingress, and HPA &rarr; [Kubernetes & Helm Deployment](operations/kubernetes-and-helm-deployment.md)
+* **Cloudflare R2 Blob Storage**: S3-compatible zero-egress CAS storage for forensic snapshots &rarr; [Cloudflare R2 Blob Storage](operations/blob-storage-r2.md)
 * **Multi-Plane Pipeline & Build Optimization**: Sub-40s pre-commit QA gates, pytest-xdist parallelization, and build context exclusions &rarr; [Pipeline & Build Optimization Handbook](operations/pipeline-and-build-optimization.md)
 * **The 3-Plane Sovereign Architecture**: Decoupling zero-npm Cloudflare edge, scale-to-zero Cloud Run compute, and Terraform infra &rarr; [The 3-Plane Architecture](../blog/the-three-plane-architecture.md)
 * **CI/CD Acceleration Post-Mortem**: Slashing build context upload bloat from 860MB to 2MB &rarr; [From 860MB to 2MB](../blog/from-860mb-to-2mb-sub-40s-cicd-pipeline.md)

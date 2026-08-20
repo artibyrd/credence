@@ -15,12 +15,34 @@ A preemptive guide to frequently challenged design decisions, adversarial attack
 
 ```mermaid
 flowchart TD
-    Raw["Untrusted External Web / Prose"] --> L1["Layer 1: SSRF & Loopback Filter<br>(Rejects 169.254.169.254, RFC 1918)"]
-    L1 --> L2["Layer 2: XML / DTD Sanitizer<br>(Billion Laughs & Entity Block)"]
-    L2 --> L3["Layer 3: Prompt Injection Jail<br>(untrusted_source_text container)"]
-    L3 --> L4["Layer 4: 4-Specialist Audit Pipeline<br>(Namespaced SHA-256 Taxonomies)"]
-    L4 --> L5["Layer 5: Verbatim Grounding Gate<br>(G=1.00 Substring Offset Matching)"]
-    L5 --> L6["Layer 6: P2P Mesh Consensus<br>(Weighted Median & 50% Slashing)"]
+    Raw(["🌐 Untrusted External Web / Prose Ingestion"]) --> L1{"1. Host IP & DNS Filter"}
+    
+    subgraph IngestionDefense ["Plane 1: Network & Ingestion Defense (Invariants 6 & 7)"]
+        L1 -- "Cloud Metadata / RFC 1918" --> Drop1["🚫 SSRF Rejection<br/>(169.254.169.254, 127.0.0.1)"]
+        L1 -- "Valid Public IP" --> L2{"2. XML & DTD Sanitizer"}
+        L2 -- "<!ENTITY / <!DOCTYPE" --> Drop2["🚫 Billion Laughs Block<br/>(Immediate Parse Abort)"]
+        L2 -- "Clean DOM" --> L3["3. Sandbox Container<br/>&lt;untrusted_source_text&gt;"]
+    end
+
+    subgraph EvaluationDefense ["Plane 2: Epistemic Evaluation Defense (Invariants 5, 9, 15)"]
+        L3 --> L4["4. 4-Specialist Pipeline<br/>• SPJ Ethics · Fallacies<br/>• Deceptive UI · Domain Authority"]
+        L4 --> L5{"5. Verbatim Grounding Gate"}
+        L5 -- "Hallucinated Finding (G < 1.00)" --> Slash["⚡ Autonomous 50% Reputation Slash<br/>(Discard Finding)"]
+        L5 -- "Exact Offset Match (G = 1.00)" --> Envelope["6. RFC 8785 Canonical JSON<br/>+ Ed25519 Cryptographic Envelope"]
+    end
+
+    subgraph ConsensusDefense ["Plane 3: P2P Mesh Consensus Defense (Invariants 16, 27, 28)"]
+        Envelope --> L6["7. 13-Node Watts-Strogatz Lattice"]
+        L6 --> Galileo{"8. Galileo Rule Consensus<br/>(Asymmetric Grounded Evidence)"}
+        Galileo --> Final[("🏛️ Immutable Attestation Record<br/>Weighted Median Verified")]
+    end
+
+    classDef darkSlate fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef reject fill:#1e293b,stroke:#ef4444,stroke-width:2px,color:#f8fafc;
+    classDef success fill:#1e293b,stroke:#22c55e,stroke-width:2px,color:#f8fafc;
+    class Raw,L1,L2,L3,L4,L5,Envelope,L6,Galileo darkSlate;
+    class Drop1,Drop2,Slash reject;
+    class Final success;
 ```
 
 ### Protocol Threat Matrix
