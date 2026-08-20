@@ -980,3 +980,74 @@ def test_raw_html_code_entity_escaping(docs_root: Path) -> None:
     assert not unescaped, f"Found {len(unescaped)} unescaped code elements in raw HTML:\n" + "\n".join(
         f"  - {u}" for u in unescaped
     )
+
+
+@pytest.mark.governance
+def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
+    """Execute Node.js runtime smoke test on all documentation files via app.js parseMarkdown()."""
+    import shutil
+    import subprocess
+
+    node_bin = shutil.which("node")
+    if not node_bin:
+        pytest.skip("Node.js runtime not installed in environment")
+
+    docs_dir_str = str(docs_root.resolve()).replace("\\", "/")
+    test_script = f"""
+    import fs from 'fs';
+    import path from 'path';
+
+    const docsDir = '{docs_dir_str}';
+    const appJsPath = path.resolve(docsDir, 'app.js');
+
+    import(`file://${{appJsPath}}`).then(({{ parseMarkdown }}) => {{
+      let count = 0;
+      function scan(dir) {{
+        for (const f of fs.readdirSync(dir, {{ withFileTypes: true }})) {{
+          const full = path.join(dir, f.name);
+          if (f.isDirectory() && f.name !== 'node_modules' && f.name !== '.git') scan(full);
+          else if (f.name.endsWith('.md')) {{
+            const content = fs.readFileSync(full, 'utf-8');
+            try {{
+              const html = parseMarkdown(content);
+              if (typeof html !== 'string' || html.length === 0) {{
+                throw new Error(`Empty HTML output for ${{full}}`);
+              }}
+              count++;
+            }} catch (err) {{
+              console.error(`PARSER ERROR on ${{full}}:`, err);
+              process.exit(1);
+            }}
+          }}
+        }}
+      }}
+      scan(docsDir);
+      console.log(`Successfully verified ${{count}} markdown files.`);
+    }}).catch(err => {{
+      console.error('Import error:', err);
+      process.exit(1);
+    }});
+    """
+
+    res = subprocess.run(
+        [node_bin, "--input-type=module", "-e", test_script],
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    assert res.returncode == 0, f"Node.js parser verification failed: {res.stderr}"
+    assert "Successfully verified" in res.stdout
+
+
+@pytest.mark.governance
+def test_web_component_zero_clone_and_defensive_events(docs_root: Path) -> None:
+    """Verify credence-widget.js adheres to the zero-clone and defensive event binding invariant."""
+    widget_path = docs_root / "assets" / "credence-widget.js"
+    assert widget_path.exists(), "assets/credence-widget.js must exist"
+    content = widget_path.read_text(encoding="utf-8")
+
+    assert "cloneNode(" not in content, (
+        "credence-widget.js must not invoke cloneNode to prevent recursive constructor loops"
+    )
+    assert "customElements.define('credence-badge'" in content, "credence-widget.js must register custom element"
+    assert "attributeChangedCallback" in content, "credence-widget.js must implement attributeChangedCallback"

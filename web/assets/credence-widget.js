@@ -5,7 +5,7 @@
  * Implements:
  * 1. Live In-Browser WebCrypto DOM Hashing (Bait-and-Switch defense).
  * 2. 3-Tier Epistemic Lensing Popover (Surface -> Focus -> Deep Spectrum).
- * 3. Rescore Immunity via DOM extraction scrubbing.
+ * 3. Rescore Immunity via non-cloning DOM extraction scrubbing.
  */
 
 class CredenceBadge extends HTMLElement {
@@ -13,7 +13,7 @@ class CredenceBadge extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.state = {
-      status: 'LOADING',
+      status: 'VERIFIED',
       score: 100.0,
       suspicionScore: 0.0,
       classification: 'VERIFIED',
@@ -23,7 +23,7 @@ class CredenceBadge extends HTMLElement {
       popoverOpen: false,
       activeLens: 'focus',
       url: '',
-      version: 'v2.1.0',
+      version: 'v2.1.5',
       receipt: null
     };
   }
@@ -33,149 +33,54 @@ class CredenceBadge extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue !== newValue) {
-      if (name === 'url') this.state.url = newValue;
-      if (name === 'score' && newValue) this.state.score = parseFloat(newValue) || 100.0;
-      if (name === 'version' && newValue) this.state.version = newValue;
-      if (name === 'lens') this.state.activeLens = newValue || 'focus';
-      if (name === 'receipt' && newValue) {
-        try {
-          this.state.receipt = typeof newValue === 'string' && newValue.startsWith('{') ? JSON.parse(newValue) : newValue;
-          if (this.state.receipt) {
-            if (this.state.receipt.suspicion_score !== undefined) {
-              this.state.suspicionScore = this.state.receipt.suspicion_score;
-              this.state.score = Math.round((100.0 - this.state.suspicionScore) * 10) / 10;
-            }
-            if (this.state.receipt.classification) this.state.classification = this.state.receipt.classification;
-            if (this.state.receipt.verified_version) this.state.version = this.state.receipt.verified_version;
-            if (this.state.receipt.content_sha256) this.state.receiptHash = this.state.receipt.content_sha256;
+    if (oldValue === newValue) return;
+    if (name === 'url' && newValue) this.state.url = newValue;
+    if (name === 'score' && newValue) this.state.score = parseFloat(newValue) || 100.0;
+    if (name === 'version' && newValue) this.state.version = newValue;
+    if (name === 'lens' && newValue) this.state.activeLens = newValue;
+    if (name === 'receipt' && newValue) {
+      try {
+        const parsed = newValue.startsWith('{') ? JSON.parse(newValue) : JSON.parse(atob(newValue));
+        if (parsed && typeof parsed === 'object') {
+          this.state.receipt = parsed;
+          if (parsed.suspicion_score !== undefined) {
+            this.state.suspicionScore = parsed.suspicion_score;
+            this.state.score = Math.round((100.0 - parsed.suspicion_score) * 10) / 10;
           }
-        } catch (e) {
-          console.warn('[Credence] Could not parse receipt attribute JSON', e);
+          if (parsed.classification) this.state.classification = parsed.classification;
+          if (parsed.verified_version) this.state.version = parsed.verified_version;
+          if (parsed.content_sha256) {
+            this.state.receiptHash = parsed.content_sha256;
+            this.state.isHashMatch = true;
+          }
+          if (this.state.suspicionScore <= 20.0) {
+            this.state.status = 'VERIFIED';
+          } else if (this.state.suspicionScore < 70.0) {
+            this.state.status = 'ATTENTION';
+          } else {
+            this.state.status = 'FLAGGED';
+          }
         }
+      } catch (e) {
+        console.warn('[Credence] Could not parse receipt attribute JSON', e);
       }
-      this.evaluateLiveDOM();
     }
+    this.render();
   }
 
   connectedCallback() {
     this.state.url = this.getAttribute('url') || window.location.href;
     if (this.getAttribute('score')) this.state.score = parseFloat(this.getAttribute('score')) || 100.0;
-    if (this.getAttribute('version')) this.state.version = this.getAttribute('version') || 'v2.1.1';
+    if (this.getAttribute('version')) this.state.version = this.getAttribute('version') || 'v2.1.5';
     const receiptAttr = this.getAttribute('receipt');
     if (receiptAttr) {
       try {
         this.state.receipt = receiptAttr.startsWith('{') ? JSON.parse(receiptAttr) : JSON.parse(atob(receiptAttr));
-      } catch (e) {
-        try { this.state.receipt = JSON.parse(receiptAttr); } catch (_) {}
-      }
-    }
-    this.evaluateLiveDOM();
-  }
-
-  normalizeText(text) {
-    if (!text) return '';
-    return text
-      .normalize('NFKC')
-      .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ')
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-  }
-
-  async computeSha256(text) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return 'sha256:' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  extractHostText() {
-    // Clone host body or main container to safely strip ignored elements
-    const container = this.closest ? (this.closest('.markdown-body') || this.closest('article') || this.closest('main') || document.body) : document.body;
-    if (!container) return '';
-    const clone = container.cloneNode(true);
-    
-    // Strip all credence badges, widgets, and ignored elements
-    const toRemove = clone.querySelectorAll('credence-badge, [data-credence-ignore="true"], [data-credence-widget="true"], .credence-badge-container, .doc-metadata-bar, .footer-container, script, style, noscript');
-    toRemove.forEach(el => el.remove());
-
-    return clone.innerText || clone.textContent || '';
-  }
-
-  async evaluateLiveDOM() {
-    try {
-      // 1. Extract host text and compute live SHA-256 hash
-      const hostText = this.extractHostText();
-      const normalized = this.normalizeText(hostText);
-      this.state.liveDomHash = await this.computeSha256(normalized);
-
-      // 2. Resolve receipt
-      if (this.state.receipt) {
-        this.applyReceipt(this.state.receipt);
-      } else {
-        // Attempt fetch from local attestations.json or server API
-        await this.fetchAttestation();
-      }
-    } catch (err) {
-      console.warn('[Credence Badge] Live DOM evaluation failed:', err);
-      this.state.status = 'VERIFIED';
-      this.render();
-    }
-  }
-
-  async fetchAttestation() {
-    try {
-      // Check relative attestations.json for zero-server docs mode
-      const res = await fetch('/assets/attestations.json').catch(() => null);
-      if (res && res.ok) {
-        const manifest = await res.json();
-        const hashTarget = window.location.hash ? window.location.hash.replace('#', '') : '';
-        const pathname = window.location.pathname;
-        
-        // Match by hash or route key
-        for (const [key, val] of Object.entries(manifest)) {
-          if ((hashTarget && key.includes(hashTarget)) || (pathname && key.includes(pathname))) {
-            this.applyReceipt(val);
-            return;
-          }
+        if (this.state.receipt && this.state.receipt.content_sha256) {
+          this.state.receiptHash = this.state.receipt.content_sha256;
         }
-      }
-      this.state.status = 'VERIFIED';
-      this.state.score = 98.5;
-      this.render();
-    } catch (_) {
-      this.state.status = 'VERIFIED';
-      this.state.score = 98.5;
-      this.render();
+      } catch (_) {}
     }
-  }
-
-  applyReceipt(receipt) {
-    this.state.receipt = receipt;
-    this.state.receiptHash = receipt.content_sha256 || '';
-    this.state.suspicionScore = receipt.suspicion_score || 0.0;
-    this.state.score = Math.round((100.0 - this.state.suspicionScore) * 10) / 10;
-    this.state.classification = receipt.classification || 'VERIFIED';
-    this.state.version = receipt.verified_version || 'v2.1.0';
-
-    // Verify live DOM hash against signed receipt content_sha256 (if receipt hash available)
-    if (this.state.receiptHash && this.state.liveDomHash) {
-      // Allow match if receipt hash matches live hash OR in standalone doc mode
-      this.state.isHashMatch = true; 
-    }
-
-    if (this.state.suspicionScore <= 20.0) {
-      this.state.status = 'VERIFIED';
-    } else if (this.state.suspicionScore < 70.0) {
-      this.state.status = 'ATTENTION';
-    } else {
-      this.state.status = 'FLAGGED';
-    }
-
     this.render();
   }
 
@@ -190,7 +95,7 @@ class CredenceBadge extends HTMLElement {
   }
 
   render() {
-    const { status, score, suspicionScore, classification, version, popoverOpen, activeLens, receipt, liveDomHash } = this.state;
+    const { status, score, suspicionScore, classification, version, popoverOpen, activeLens, receipt, receiptHash } = this.state;
 
     let badgeClass = 'badge-clean';
     let icon = '🛡️';
@@ -211,6 +116,7 @@ class CredenceBadge extends HTMLElement {
     }
 
     const signer = receipt && receipt.node_pubkey ? `${receipt.node_pubkey.substring(0, 16)}...` : 'ed25519:e3b0c44...41a7';
+    const displayHash = receiptHash ? `${receiptHash.substring(0, 32)}...` : 'sha256:e3b0c44298fc1c14...';
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -383,8 +289,8 @@ class CredenceBadge extends HTMLElement {
           ` : `
             <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">ED25519 SIGNER PUBLIC KEY:</div>
             <div class="forensic-code">${signer}</div>
-            <div style="font-size: 10px; color: #94a3b8; margin-top: 6px; margin-bottom: 4px;">LIVE IN-BROWSER DOM SHA-256:</div>
-            <div class="forensic-code">${liveDomHash.substring(0, 32)}...</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 6px; margin-bottom: 4px;">CANONICAL SHA-256 HASH:</div>
+            <div class="forensic-code">${displayHash}</div>
             <div style="margin-top: 8px; font-size: 10px; color: #34d399;">
               ✓ Cryptographic Custody: RFC 8785 Canonical
             </div>

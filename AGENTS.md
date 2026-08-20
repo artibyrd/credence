@@ -30,6 +30,10 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 
 ---
 
+- **Web Component Isolation & Zero-Clone Invariant**: Custom elements and embeddable Web Components (`HTMLElement` subclasses) must never invoke `cloneNode(true)` on host DOM trees containing custom element instances to prevent recursive constructor cascades (`Maximum call stack size exceeded`). Attribute observers (`attributeChangedCallback`) must be purely synchronous state transitions with zero asynchronous execution loops. All clientside parsers must guard against null/empty frontmatters and nested directives.
+
+---
+
 ## 2. Tier 1: Progressive Subsystem Skills (`.agents/skills/`)
 *Scoped subsystem rules and operational playbooks loaded dynamically on-demand.*
 
