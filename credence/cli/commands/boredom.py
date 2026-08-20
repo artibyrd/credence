@@ -6,7 +6,7 @@ from typing import Any
 
 from rich.console import Console
 
-from credence.db import get_async_session
+from credence.db import get_async_session, init_db
 from credence.feeds.boredom import run_boredom_cycle
 
 console = Console()
@@ -14,6 +14,7 @@ console = Console()
 
 async def run_boredom_command(force: bool = False, *args: Any, **kwargs: Any) -> int:
     """Inspect local node boredom quotient and idle activity metrics."""
+    await init_db()
     async with get_async_session() as session:
         summary = await run_boredom_cycle(session)
 
