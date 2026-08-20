@@ -957,28 +957,36 @@ class CredenceApp(App):
             health_data = await calculate_network_mesh_health(None)
 
         topo = health_data.get("cluster_topology", {})
-        params = topo.get("model_parameters", {})
         byz = topo.get("byzantine_resilience", {})
         consensus = topo.get("epistemic_consensus", {})
         savings = topo.get("global_compute_savings", {})
         nodes = health_data.get("nodes", [])
         regions = health_data.get("regions_summary", [])
         gossip = health_data.get("recent_gossip_stream", [])
+        mode = health_data.get("mode", "STANDALONE")
+        node_count = len(nodes)
+
+        mode_color = "cyan" if mode == "STANDALONE" else ("yellow" if mode == "PEERED" else "magenta")
 
         lines = [
-            "[bold cyan]🕸️ Credence Whole-Mesh Network Health & Watts-Strogatz Swarm[/bold cyan] [dim](v1.21.7)[/dim]\n",
-            f"[bold]1. SMALL-WORLD TOPOLOGY:[/bold]      [cyan]{params.get('nodes_count', 13)} Nodes[/cyan] (d={params.get('degree_k', 4)}, β={params.get('rewiring_beta', 0.20):.2f}) | Diameter: [green]{params.get('diameter', 3)} hops[/green] | Avg Path: [green]{params.get('average_path_length', 1.78):.2f}[/green]",
-            f"[bold]2. BYZANTINE RESILIENCE ($3f+1$):[/bold] [bold green]{byz.get('quorum_health', 'OPTIMAL')}[/bold green] | Max Adversaries: [green]f = {byz.get('max_byzantine_faults', 4)}[/green] | Honest: [green]{byz.get('active_honest_nodes', 13)}/{byz.get('total_nodes', 13)}[/green] | Sybils: [cyan]{byz.get('quarantined_nodes', 0)}[/cyan]",
-            f"[bold]3. CONSENSUS & GROUNDING:[/bold]      Grounding: [bold green]G = {consensus.get('grounding_quotient', 1.0):.2f}[/bold green] | Inter-Node StdDev: [cyan]σ = {consensus.get('score_delta_stdev', 2.8):.1f}[/cyan] | Convergence: [green]{consensus.get('galileo_convergence_pct', 99.4):.1f}%[/green]",
-            f"[bold]4. COMPUTE PHILANTHROPY:[/bold]       Tokens Saved: [bold green]{savings.get('tokens_saved_estimate', 0):,}[/bold green] | USD Avoided: [bold green]${savings.get('usd_saved_estimate', 0.0):.2f}[/bold green] ({savings.get('work_sharing_efficiency_pct', 92.3):.1f}% adoption rate)\n",
-            "[bold yellow]🛡️ 13-NODE HETEROGENEOUS SWARM ROSTER:[/bold yellow]",
+            "[bold cyan]🕸️ Credence Live P2P Swarm & Peering Health[/bold cyan] [dim](v1.22.0)[/dim]\n",
+            f"[bold]1. SWARM CAPACITY:[/bold]          [cyan]{node_count} Active Node{'s' if node_count > 1 else ''}[/cyan] | Mode: [{mode_color}][bold]{mode}[/bold][/{mode_color}] | Active Peers: [green]{health_data.get('active_peers_count', 0)}[/green] | Relay Links: [green]{len(health_data.get('edges', []))}[/green]",
+            f"[bold]2. BYZANTINE RESILIENCE ($3f+1$):[/bold] [bold green]{byz.get('quorum_health', 'STANDALONE')}[/bold green] | Faults Tolerated: [green]f = {byz.get('max_byzantine_faults', 0)}[/green] | Status: [dim]{byz.get('quorum_description', '')}[/dim]",
+            f"[bold]3. CONSENSUS & GROUNDING:[/bold]      Grounding: [bold green]G = {consensus.get('grounding_quotient', 1.0):.2f}[/bold green] | Inter-Node StdDev: [cyan]σ = {consensus.get('score_delta_stdev', 0.0):.1f}[/cyan] | Invariant: [green]Verified[/green]",
+            f"[bold]4. COMPUTE PHILANTHROPY:[/bold]       Tokens Avoided: [bold green]{savings.get('tokens_saved_estimate', 0):,}[/bold green] | USD Avoided: [bold green]${savings.get('usd_saved_estimate', 0.0):.2f}[/bold green] ({savings.get('work_sharing_efficiency_pct', 0.0):.1f}% adoption rate)\n",
+            f"[bold yellow]🛡️ LIVE SWARM ROSTER ({node_count} ACTIVE NODE{'S' if node_count > 1 else ''}):[/bold yellow]",
         ]
+
+        if mode == "STANDALONE":
+            lines.append(
+                "[dim cyan]ℹ️  Operating in Standalone Mode. Run 'credence mesh' or set PEER_SEEDS to connect to peers.[/dim cyan]\n"
+            )
 
         # Table of nodes
         lines.append(
-            f"{'Node ID':<10} {'Alias':<24} {'Region':<16} {'Role':<22} {'Profile':<10} {'Quality':<9} {'Uptime':<8} {'Status'}"
+            f"{'Node ID':<10} {'Alias':<26} {'Role':<22} {'Profile':<10} {'Quality':<9} {'Uptime':<8} {'Lifetime Audits':<16} {'Status'}"
         )
-        lines.append("-" * 110)
+        lines.append("-" * 115)
         for n in nodes:
             prof_str = (
                 f"[cyan]{n.get('profile')}[/cyan]" if n.get("profile") == "ULTRA" else f"[dim]{n.get('profile')}[/dim]"
@@ -988,12 +996,15 @@ class CredenceApp(App):
                 if n.get("status") == "HEALTHY"
                 else f"[bold red]{n.get('status')}[/bold red]"
             )
+            alias_display = n.get("alias", "")
+            if n.get("is_local"):
+                alias_display += " [dim](Root)[/dim]"
             lines.append(
-                f"{n.get('node_id', ''):<10} {n.get('alias', ''):<24} {n.get('region', ''):<16} {n.get('role', ''):<22} {prof_str:<19} {n.get('quality_score', 0.0):<9.4f} {n.get('uptime_pct', 99.0):<6.2f}% {stat_str}"
+                f"{n.get('node_id', ''):<10} {alias_display:<26} {n.get('role', ''):<22} {prof_str:<19} {n.get('quality_score', 0.0):<9.4f} {n.get('uptime_pct', 99.0):<6.2f}% {n.get('audits_count', 0):<16,} {stat_str}"
             )
 
         if regions:
-            lines.append("\n[bold yellow]🌐 MULTI-REGION COVERAGE & LATENCY MATRIX:[/bold yellow]")
+            lines.append("\n[bold yellow]🌐 REGIONAL PEERING COVERAGE:[/bold yellow]")
             lines.append(f"{'Region':<18} {'Nodes Count':<14} {'Avg Uptime':<14} {'Profiles Distribution'}")
             lines.append("-" * 75)
             for r in regions:
@@ -1003,7 +1014,7 @@ class CredenceApp(App):
                 )
 
         if gossip:
-            lines.append("\n[bold yellow]⚡ LIVE SWARM ATTESTATION PROPAGATION STREAM:[/bold yellow]")
+            lines.append("\n[bold yellow]⚡ LIVE ATTESTATION & AUDIT STREAM:[/bold yellow]")
             for g in gossip[:5]:
                 verdict_color = (
                     "green"
@@ -1011,7 +1022,7 @@ class CredenceApp(App):
                     else ("yellow" if g.get("suspicion_score", 0.0) <= 50 else "red")
                 )
                 lines.append(
-                    f"  • [{g.get('origin_node', 'node')}] ➔ [bold]{g.get('domain', '')}[/bold] | Score: [{verdict_color}]{g.get('suspicion_score', 0.0):.1f} ({g.get('classification', 'CLEAN')})[/{verdict_color}] | {g.get('diffusion_latency_ms', 0.0):.1f}ms ({g.get('hop_count', 1)} hops)"
+                    f"  • [{g.get('origin_node', 'node')}] ➔ [bold]{g.get('domain', '')}[/bold] | Score: [{verdict_color}]{g.get('suspicion_score', 0.0):.1f} ({g.get('classification', 'CLEAN')})[/{verdict_color}] | {g.get('status', 'LOCAL_ATTESTED')}"
                 )
 
         panel.update("\n".join(lines))

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence Nexus — Whole-Mesh Network Health & Watts-Strogatz Topology</title>
-  <meta name="description" content="Real-time 13-node Watts-Strogatz small-world lattice topology, Byzantine fault tolerance (3f+1), multi-region latency matrix, and gossip diffusion telemetry for the Credence P2P mesh network.">
+  <title>Credence Nexus — Live P2P Swarm & Peering Health</title>
+  <meta name="description" content="Real-time live P2P mesh network health, dynamic N-node topology, Byzantine quorum capacity, and peer attestation telemetry for the Credence network.">
   <link rel="stylesheet" href="styles.css">
   <style>
     :root {
@@ -101,7 +101,7 @@
       border: 1px solid #2563eb;
       border-radius: 12px;
       padding: 1.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
     .hero-header {
@@ -124,7 +124,7 @@
     }
     .hero-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1.25rem;
     }
     .hero-card {
@@ -141,7 +141,7 @@
       margin-bottom: 0.5rem;
     }
     .hero-kpi {
-      font-size: 1.5rem;
+      font-size: 1.45rem;
       font-weight: 700;
       color: #fff;
       margin-bottom: 0.25rem;
@@ -151,7 +151,50 @@
       color: var(--text-muted);
     }
 
-    /* Interactive Graph Section */
+    /* Standalone Mode Informative Banner */
+    .standalone-banner {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .standalone-banner strong {
+      color: #38bdf8;
+      font-size: 0.95rem;
+    }
+    .standalone-banner p {
+      margin: 0.25rem 0 0;
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      line-height: 1.4;
+    }
+    .btn-playground-launch {
+      background: #0284c7;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid #38bdf8;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .btn-playground-launch:hover {
+      background: #0369a1;
+    }
+
+    /* Interactive 2D Graph Layout */
     .graph-layout {
       display: grid;
       grid-template-columns: 1fr 340px;
@@ -163,14 +206,13 @@
         grid-template-columns: 1fr;
       }
     }
-
     .graph-container {
-      background: #090d16;
+      background: #0b0f19;
       border: 1px solid #1e293b;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 1rem;
       position: relative;
-      min-height: 480px;
+      min-height: 440px;
       display: flex;
       flex-direction: column;
     }
@@ -179,120 +221,107 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
       border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
-    canvas#mesh-canvas {
+    #mesh-canvas {
       width: 100%;
-      height: 420px;
-      border-radius: 8px;
-      background: radial-gradient(circle at center, #0f172a 0%, #060a12 100%);
+      height: 400px;
+      background: #070a12;
+      border-radius: 6px;
       cursor: crosshair;
     }
 
-    /* Inspector Drawer Panel */
+    /* Node Inspector Drawer */
     .inspector-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .inspector-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      border-bottom: 1px solid #1e293b;
-      padding-bottom: 0.75rem;
-    }
-    .inspector-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      padding: 0.35rem 0;
-      border-bottom: 1px dashed rgba(255,255,255,0.06);
-    }
-    .inspector-row:last-child { border-bottom: none; }
-    .inspector-label { color: var(--text-muted); }
-    .inspector-val { font-weight: 600; color: #fff; font-family: var(--font-mono); font-size: 0.8rem; }
-
-    /* Simulation Scenarios Bar */
-    .scenario-box {
       background: #0f172a;
       border: 1px solid #1e293b;
       border-radius: 10px;
       padding: 1.25rem;
-      margin-bottom: 2rem;
-    }
-    .scenario-buttons {
       display: flex;
+      flex-direction: column;
       gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-top: 0.75rem;
     }
-    .btn-scenario {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #f1f5f9;
-      padding: 0.5rem 0.9rem;
-      border-radius: 6px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .btn-scenario:hover {
-      background: #334155;
-      border-color: #38bdf8;
-    }
-    .btn-scenario.active {
-      background: #0284c7;
-      border-color: #38bdf8;
+    .inspector-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.5rem;
+      font-weight: 700;
       color: #fff;
     }
+    .inspector-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .inspector-label { color: var(--text-muted); }
+    .inspector-val { font-weight: 600; color: #f8fafc; text-align: right; }
 
-    /* Tables & Grids */
-    .data-table-container {
-      overflow-x: auto;
+    /* Playground Bridge Banner */
+    .playground-bridge-card {
+      background: linear-gradient(135deg, #111827 0%, #1e1b4b 100%);
+      border: 1px solid #6366f1;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    /* Data Tables */
+    .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      margin-top: 1rem;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
     }
-    table.stats-table {
+    .card h2 {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    .data-table-container {
+      overflow-x: auto;
+    }
+    .stats-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
     }
-    table.stats-table th {
-      background: #0f172a;
-      color: var(--accent-cyan);
-      padding: 0.8rem 1rem;
+    .stats-table th, .stats-table td {
+      padding: 0.65rem 0.75rem;
       text-align: left;
       border-bottom: 1px solid #1e293b;
     }
-    table.stats-table td {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #1e293b;
-      color: #f1f5f9;
+    .stats-table th {
+      background: #0f172a;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
     }
-    table.stats-table tr:hover td {
-      background: rgba(56, 189, 248, 0.04);
+    .stats-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
     }
 
-    /* Trust Pill Badges */
+    /* Pills & Badges */
     .pill {
       display: inline-block;
       padding: 0.2rem 0.55rem;
-      border-radius: 9999px;
+      border-radius: 4px;
       font-size: 0.75rem;
-      font-weight: 700;
+      font-weight: 600;
     }
     .pill-green { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
     .pill-yellow { background: rgba(250, 204, 21, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3); }
@@ -317,7 +346,7 @@
   <!-- Unified Ecosystem Navigation Bar (5 Invariant Links) -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v1.22.0</span>
+      🛡️ Credence <span class="badge">v1.22.1</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -334,7 +363,7 @@
     <div class="nexus-subnav">
       <a href="index.html" class="subnav-btn">🏆 Epistemic Leaderboard</a>
       <a href="dashboard.html" class="subnav-btn">👤 My Node Dashboard</a>
-      <a href="mesh.html" class="subnav-btn active">🕸️ Whole-Mesh Network Health</a>
+      <a href="mesh.html" class="subnav-btn active">🕸️ Live Swarm & Peering</a>
       <a href="cost.html" class="subnav-btn">⚖️ Cost & Token Budget</a>
     </div>
 
@@ -343,9 +372,8 @@
       <div class="endpoint-group">
         <label for="endpoint-select"><strong>Telemetry Target:</strong></label>
         <select id="endpoint-select">
-          <option value="http://localhost:8000" selected>Local Cluster Gateway (http://localhost:8000)</option>
-          <option value="custom">Custom Node URL...</option>
-          <option value="demo">13-Node Mesh Swarm Simulation</option>
+          <option value="http://localhost:8000" selected>Local Node Gateway (http://localhost:8000)</option>
+          <option value="custom">Custom Node Gateway URL...</option>
         </select>
         <input type="text" id="custom-endpoint-input" placeholder="http://my-node:8000" style="display:none; width: 200px;">
       </div>
@@ -359,8 +387,22 @@
           <option value="5000">5s</option>
           <option value="10000">10s</option>
         </select>
-        <button class="btn-action" id="btn-manual-refresh">⚡ Refresh Mesh</button>
+        <button class="btn-action" id="btn-manual-refresh">⚡ Refresh Telemetry</button>
       </div>
+    </div>
+
+    <!-- Standalone / Peered Context Banner -->
+    <div class="standalone-banner" id="mesh-context-banner">
+      <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+        <div style="font-size: 1.5rem;" id="banner-icon">📡</div>
+        <div>
+          <strong id="banner-title">Standalone Node Active (1 Node Online • 0 Remote Peers Connected)</strong>
+          <p id="banner-desc">
+            Your node is currently operating as a sovereign local root. To connect to bootstrap seed nodes and join the federated P2P mesh, configure <code>PEER_SEEDS</code> or start the relay with <code>credence mesh</code>.
+          </p>
+        </div>
+      </div>
+      <a href="https://docs.credence.run#docs/playground" class="btn-playground-launch">🧪 Open 13-Node Chaos Simulator &rarr;</a>
     </div>
 
     <!-- Macro Mesh Hero Panel -->
@@ -368,62 +410,62 @@
       <div class="hero-header">
         <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
           <div class="status-dot" id="swarm-status-dot"></div>
-          <h2 style="margin:0; font-size:1.35rem; color:#fff;" id="swarm-headline">Whole-Mesh Network: 13/13 Nodes Online</h2>
-          <span class="pill pill-green" id="byz-pill">3f+1 Byzantine Verified</span>
-          <span class="pill pill-cyan">Watts-Strogatz (d=4, β=0.20)</span>
+          <h2 style="margin:0; font-size:1.35rem; color:#fff;" id="swarm-headline">Live Swarm: 1 Node Online (Standalone)</h2>
+          <span class="pill pill-cyan" id="mode-pill">STANDALONE MODE</span>
+          <span class="pill pill-green" id="byz-pill">Local Evaluation Active</span>
         </div>
         <div style="font-size:0.85rem; color:var(--text-muted);" id="last-updated-text">Last Updated: Just now</div>
       </div>
 
       <div class="hero-grid">
         <div class="hero-card">
-          <h3>1. Small-World Topology</h3>
-          <div class="hero-kpi" id="kpi-nodes-count">13 Nodes</div>
-          <div class="hero-sub" id="kpi-topo-sub">Diameter: 3 hops | Path Length: 1.78</div>
-          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-edges-sub">16 Ring & Small-World Chord Edges</div>
+          <h3>1. Active Swarm Capacity</h3>
+          <div class="hero-kpi" id="kpi-nodes-count">1 Node</div>
+          <div class="hero-sub" id="kpi-peers-sub">0 Connected Remote Peers</div>
+          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-edges-sub">0 P2P Relay Links Active</div>
         </div>
 
         <div class="hero-card">
-          <h3>2. Byzantine Quorum ($3f+1$)</h3>
-          <div class="hero-kpi" id="kpi-quorum-health" style="color:var(--accent-green);">100% Quorum</div>
-          <div class="hero-sub" id="kpi-byz-sub">Max Tolerable Adversaries: f = 4</div>
-          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-sybil-sub">0 Sybil Cartels | 13 Active Honest</div>
+          <h3>2. Byzantine Fault Tolerance</h3>
+          <div class="hero-kpi" id="kpi-quorum-health" style="color:var(--accent-cyan);">f = 0 Faults</div>
+          <div class="hero-sub" id="kpi-byz-sub">Quorum requires N &ge; 4 nodes</div>
+          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-sybil-sub">1 Local Honest Primary Root</div>
         </div>
 
         <div class="hero-card">
-          <h3>3. Grounding & Consensus</h3>
+          <h3>3. Grounding & Invariant</h3>
           <div class="hero-kpi" id="kpi-grounding-score">G = 1.00</div>
-          <div class="hero-sub" id="kpi-consensus-sub">Verbatim Grounding Invariant Met</div>
-          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-delta-sub">Inter-Node Score Deviation: σ = 2.8</div>
+          <div class="hero-sub" id="kpi-consensus-sub">Verbatim DOM Grounding Verified</div>
+          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-delta-sub">Zero Hallucination Penalty</div>
         </div>
 
         <div class="hero-card">
-          <h3>4. Global Work-Sharing</h3>
-          <div class="hero-kpi" id="kpi-tokens-saved" style="color:var(--accent-green);">32,634,000</div>
-          <div class="hero-sub" id="kpi-usd-saved">$22.84 compute avoided at $0.00 spend</div>
-          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-eff-sub">92.3% Work-Sharing Adoption Rate</div>
+          <h3>4. Compute Avoidance</h3>
+          <div class="hero-kpi" id="kpi-tokens-saved" style="color:var(--accent-green);">0 tok</div>
+          <div class="hero-sub" id="kpi-usd-saved">$0.00 compute avoided</div>
+          <div class="hero-sub" style="margin-top:0.25rem;" id="kpi-eff-sub">Work-Sharing Active</div>
         </div>
       </div>
     </div>
 
-    <!-- Interactive 2D Graph Layout & Node Inspector -->
+    <!-- Live Dynamic Graph Layout & Node Inspector -->
     <div class="graph-layout">
       
       <!-- Graph Canvas Box -->
       <div class="graph-container">
         <div class="graph-header">
           <div>
-            <strong style="color:#fff; font-size:1rem;">🕸️ 13-Node Watts-Strogatz Topology Graph</strong>
-            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">Click node to inspect vitals</span>
+            <strong style="color:#fff; font-size:1rem;">🕸️ Dynamic P2P Topology Observatory</strong>
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;" id="graph-subtitle">Live connections &amp; latencies</span>
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center; font-size:0.8rem; flex-wrap:wrap;">
-            <span style="color:#38bdf8;">■ Diamond: Anchor</span>
-            <span style="color:#c084fc;">■ Purple: Bridge</span>
-            <span style="color:#4ade80;">● Circle: Sifter/Auditor</span>
+            <span style="color:#38bdf8;">■ Local Primary</span>
+            <span style="color:#4ade80;">● Active Peer</span>
+            <span style="color:#f87171;">▲ Quarantined</span>
           </div>
         </div>
         
-        <canvas id="mesh-canvas" width="800" height="420"></canvas>
+        <canvas id="mesh-canvas" width="800" height="400"></canvas>
       </div>
 
       <!-- Live Node Inspector Drawer -->
@@ -431,8 +473,8 @@
         <div class="inspector-title">
           <span style="font-size:1.2rem;">🔬</span>
           <div>
-            <div id="insp-alias" style="color:#fff;">anchor-us-central1</div>
-            <div style="font-size:0.75rem; color:var(--accent-cyan);" id="insp-role">ROOT_GENESIS_ANCHOR</div>
+            <div id="insp-alias" style="color:#fff;">local-node</div>
+            <div style="font-size:0.75rem; color:var(--accent-cyan);" id="insp-role">LOCAL_PRIMARY_ROOT</div>
           </div>
         </div>
 
@@ -441,16 +483,16 @@
           <span class="inspector-val" id="insp-id">node_1</span>
         </div>
         <div class="inspector-row">
-          <span class="inspector-label">Region</span>
-          <span class="inspector-val" id="insp-region">us-central1 🇺🇸</span>
+          <span class="inspector-label">Public Key (Ed25519)</span>
+          <span class="inspector-val" id="insp-pubkey" style="font-family:monospace; font-size:0.75rem;">...</span>
         </div>
         <div class="inspector-row">
           <span class="inspector-label">Compute Profile</span>
-          <span class="inspector-val" id="insp-profile"><span class="pill pill-purple">ULTRA</span></span>
+          <span class="inspector-val" id="insp-profile"><span class="pill pill-purple">BALANCED</span></span>
         </div>
         <div class="inspector-row">
           <span class="inspector-label">Quality Score (Qᵢ)</span>
-          <span class="inspector-val" id="insp-quality">0.9950</span>
+          <span class="inspector-val" id="insp-quality">1.0000</span>
         </div>
         <div class="inspector-row">
           <span class="inspector-label">Uptime</span>
@@ -462,54 +504,46 @@
         </div>
         <div class="inspector-row">
           <span class="inspector-label">Memory RSS</span>
-          <span class="inspector-val" id="insp-memory">142.5 MB / 128M cgroup</span>
+          <span class="inspector-val" id="insp-memory">128.0 MB</span>
         </div>
         <div class="inspector-row">
-          <span class="inspector-label">Seeded Tokens</span>
-          <span class="inspector-val" id="insp-seeded" style="color:var(--accent-green);">142,000 tok</span>
+          <span class="inspector-label">Lifetime Audits</span>
+          <span class="inspector-val" id="insp-audits">0</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Seeded / Avoided</span>
+          <span class="inspector-val" id="insp-seeded" style="color:var(--accent-green);">0 tok</span>
         </div>
         <div class="inspector-row">
           <span class="inspector-label">Connected Peers</span>
-          <span class="inspector-val" id="insp-peers">node_2, node_5, node_13</span>
-        </div>
-        <div class="inspector-row">
-          <span class="inspector-label">Average Peer Ping</span>
-          <span class="inspector-val" id="insp-ping">35ms (min 12ms, max 115ms)</span>
+          <span class="inspector-val" id="insp-peers">0</span>
         </div>
 
         <div style="margin-top:auto; font-size:0.75rem; color:var(--text-muted); text-align:center;">
-          Ed25519 Verified &bull; Port: <span id="insp-port">8761</span>
+          Ed25519 Verified &bull; Endpoint: <span id="insp-wsurl">ws://127.0.0.1:8765</span>
         </div>
       </div>
 
     </div>
 
-    <!-- Scenario Simulator Playground -->
-    <div class="scenario-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-        <div>
-          <h2 style="margin:0; font-size:1.15rem; color:#fff;">🎮 Quorum & Partition Scenario Simulator</h2>
-          <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">
-            Test and observe real-time topology responses to Byzantine attacks, network partitions, and seed failovers.
-          </p>
-        </div>
-        <div id="scenario-active-badge" class="pill pill-green">Scenario: Normal Watts-Strogatz</div>
+    <!-- Playground Bridge Card -->
+    <div class="playground-bridge-card">
+      <div>
+        <h3 style="margin:0 0 0.25rem; color:#fff; font-size:1.05rem;">🧪 Interactive Multi-Node Chaos Simulator &amp; Testbed</h3>
+        <p style="margin:0; font-size:0.83rem; color:var(--text-muted);">
+          Want to test theoretical small-world routing, 3f+1 Byzantine cartel eclipse, or transatlantic Barbell network splits in a hermetic browser sandbox?
+        </p>
       </div>
-
-      <div class="scenario-buttons">
-        <button class="btn-scenario active" id="btn-scen-normal">🟢 1. Normal Operation (All 13 Nodes)</button>
-        <button class="btn-scenario" id="btn-scen-partition">🟡 2. Barbell Partition (Transatlantic Cut)</button>
-        <button class="btn-scenario" id="btn-scen-sybil">🔴 3. 4-Node Sybil Cartel Eclipse (3f+1 Isolation)</button>
-        <button class="btn-scenario" id="btn-scen-failover">⚡ 4. Genesis Seed Failover</button>
-        <button class="btn-scenario" id="btn-scen-burst">🚀 5. Epidemic Gossip Diffusion Burst</button>
-      </div>
+      <a href="https://docs.credence.run#docs/playground" class="btn-action" style="padding:0.55rem 1.1rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+        Open Interactive Playground 🎮
+      </a>
     </div>
 
-    <!-- Node Swarm Roster Table -->
+    <!-- Dynamic Node Swarm Roster Table -->
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
-        <h2 style="margin:0;">13-Node Heterogeneous Swarm Roster</h2>
-        <input type="text" id="node-filter-input" placeholder="Filter by region / alias..." style="width:220px;">
+        <h2 style="margin:0;" id="roster-title">Live Swarm Roster (1 Node Active)</h2>
+        <input type="text" id="node-filter-input" placeholder="Filter by alias / role..." style="width:220px;">
       </div>
       <div class="data-table-container">
         <table class="stats-table" id="nodes-table">
@@ -517,30 +551,30 @@
             <tr>
               <th>Node ID</th>
               <th>Alias</th>
-              <th>Region</th>
               <th>Role</th>
               <th>Profile</th>
               <th>Quality (Qᵢ)</th>
               <th>Uptime</th>
               <th>Grounding</th>
+              <th>Audits</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody id="nodes-table-body">
-            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading swarm nodes...</td></tr>
+            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading live nodes...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Multi-Region Latency Matrix & Live Gossip Stream -->
+    <!-- Multi-Region Matrix & Live Local/Mesh Attestation Stream -->
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
       
       <!-- Multi-Region Distribution -->
       <div class="card">
-        <h2>🌐 Multi-Region Latency & Coverage Matrix</h2>
+        <h2>🌐 Regional Peering Coverage</h2>
         <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-          Cross-regional latency distribution across the 13 small-world nodes.
+          Geographic presence and uptime across connected federated regions.
         </p>
         <div class="data-table-container">
           <table class="stats-table" id="regions-table">
@@ -559,14 +593,14 @@
         </div>
       </div>
 
-      <!-- Live Gossip Stream -->
+      <!-- Live Attestation Stream -->
       <div class="card">
-        <h2>⚡ Live Swarm Attestation Propagation Stream</h2>
+        <h2>⚡ Live Attestation &amp; Audit Stream</h2>
         <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0.75rem;">
-          Ed25519-signed audit attestations diffusing across the P2P mesh network.
+          Signed Ed25519 audit envelopes recorded locally and exchanged across the mesh.
         </p>
         <div id="gossip-stream-container">
-          <div style="padding:1rem; color:var(--text-muted); text-align:center;">Listening for gossiped attestations...</div>
+          <div style="padding:1rem; color:var(--text-muted); text-align:center;">Listening for recent audits...</div>
         </div>
       </div>
 
@@ -587,74 +621,68 @@
           <div class="hero-sub" style="margin-top:0.4rem; color:var(--accent-green);">✓ Ed25519 Signature Verified</div>
         </div>
         <div class="hero-card">
-          <h3>Active Bootstrap Seed Relays</h3>
-          <div style="font-size:0.88rem; color:#fff; margin-top:0.25rem;">
-            1. <code>wss://relay.credence.nexus:8765</code> (us-central1)<br>
-            2. <code>wss://relay-eu.credence.nexus:8765</code> (europe-west1)
+          <h3>Configured Bootstrap Seeds</h3>
+          <div style="font-size:0.88rem; color:#fff; margin-top:0.25rem;" id="seeds-display">
+            1. <code>wss://relay.credence.nexus:8765</code><br>
+            2. <code>wss://relay-eu.credence.nexus:8765</code>
           </div>
-          <div class="hero-sub" style="margin-top:0.4rem; color:var(--accent-cyan);">● Dual Continental Seed Redundancy</div>
+          <div class="hero-sub" style="margin-top:0.4rem; color:var(--accent-cyan);">● P2P Seed Redundancy Active</div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- Unified Cross-Domain Ecosystem Footer (4 Balanced Pillars) -->
+  <!-- Unified Footer (4 Balanced Pillars) -->
   <footer class="credence-footer">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <h4>🌐 Sovereign Network</h4>
-          <ul>
-            <li><a href="https://credence.run">Platform Home</a></li>
-            <li><a href="https://credence.report">Audit Explorer</a></li>
-            <li><a href="https://credence.nexus">Mesh Directory</a></li>
-            <li><a href="https://credence.foundation">Root Key Custody</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>🎮 Interactive & Tools</h4>
-          <ul>
-            <li><a href="https://docs.credence.run#docs/playground">Zero-Build Playgrounds</a></li>
-            <li><a href="https://credence.report/viewer.html">Multi-Mode Report Viewer</a></li>
-            <li><a href="https://docs.credence.run#docs/tutorials/03-claude-cursor-fastmcp">FastMCP Server Integration</a></li>
-            <li><a href="https://seeds.credence.nexus/peers.json">P2P Seed Manifest</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>📘 Knowledge & Canon</h4>
-          <ul>
-            <li><a href="https://docs.credence.run#docs/invariants">The Invariant Bible</a></li>
-            <li><a href="https://blog.credence.run">Sovereign Blog & Essays</a></li>
-            <li><a href="https://docs.credence.run#docs/topic-index">Topic Index & Directory</a></li>
-            <li><a href="https://docs.credence.run#docs/roadmap">Roadmap & Horizons</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>⚖️ Governance & Source</h4>
-          <ul>
-            <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub Repository</a></li>
-            <li><a href="https://docs.credence.run#docs/changelog">Release Changelog</a></li>
-            <li><a href="https://keys.credence.foundation/root.pub">Root Public Key (root.pub)</a></li>
-            <li><a href="https://github.com/artibyrd/credence/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0 License</a></li>
-          </ul>
-        </div>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Core Protocols</h4>
+        <ul>
+          <li><a href="https://docs.credence.run#docs/intro">Overview &amp; Architecture</a></li>
+          <li><a href="https://docs.credence.run#docs/invariants">Living Invariant Canon</a></li>
+          <li><a href="https://docs.credence.run#docs/mesh-protocol">P2P Mesh Protocol</a></li>
+          <li><a href="https://docs.credence.run#docs/mcp-integration">FastMCP 2.0 Integration</a></li>
+        </ul>
       </div>
-      <div class="footer-bottom">
-        <div>&copy; 2026 Credence Network &bull; Zero npm dependencies &bull; 100% Zero-Build Sovereign Web</div>
+      <div class="footer-col">
+        <h4>Ecosystem</h4>
+        <ul>
+          <li><a href="https://credence.run">Live Evaluator</a></li>
+          <li><a href="https://credence.report">Attestation Reports</a></li>
+          <li><a href="https://credence.nexus">Federation Nexus</a></li>
+          <li><a href="https://credence.foundation">Foundation &amp; Governance</a></li>
+        </ul>
       </div>
+      <div class="footer-col">
+        <h4>Interactive Workstations</h4>
+        <ul>
+          <li><a href="https://docs.credence.run#docs/playground">Zero-Build Playgrounds</a></li>
+          <li><a href="https://credence.nexus/dashboard.html">Node Dashboard</a></li>
+          <li><a href="https://credence.nexus/mesh.html">Mesh Telemetry</a></li>
+          <li><a href="https://credence.nexus/cost.html">Cost Governance</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <ul>
+          <li><a href="https://github.com/artibyrd/credence">GitHub Monorepo</a></li>
+          <li><a href="https://docs.credence.run#docs/quickstart">CLI Quickstart</a></li>
+          <li><a href="https://docs.credence.run#docs/integrations/tui-workstation">Textual TUI Workstation</a></li>
+          <li><a href="https://keys.credence.foundation/root.pub">Root Verification Keys</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Credence Trust Network &bull; Zero npm &bull; RFC 8785 Canonical JSON &bull; Ed25519 Custody
     </div>
   </footer>
 
-  <!-- Vanilla Interactive Graph & Telemetry Script -->
   <script type="module">
     let activeMeshHealth = null;
     let pollTimer = null;
     let selectedNodeId = "node_1";
-    let activeScenario = "normal";
-
-    // Pulses animation state
-    let particles = [];
+    let radarAngle = 0;
     let animationFrameId = null;
 
     const canvas = document.getElementById('mesh-canvas');
@@ -679,19 +707,12 @@
     pollingSelect.addEventListener('change', startPolling);
     btnRefresh.addEventListener('click', fetchMeshHealth);
 
-    // Attach Scenario button event listeners
-    document.getElementById('btn-scen-normal').addEventListener('click', () => applyScenario('normal'));
-    document.getElementById('btn-scen-partition').addEventListener('click', () => applyScenario('partition'));
-    document.getElementById('btn-scen-sybil').addEventListener('click', () => applyScenario('sybil'));
-    document.getElementById('btn-scen-failover').addEventListener('click', () => applyScenario('failover'));
-    document.getElementById('btn-scen-burst').addEventListener('click', () => applyScenario('burst'));
-
     if (nodeFilterInput) {
       nodeFilterInput.addEventListener('input', () => {
         if (!activeMeshHealth) return;
         const q = nodeFilterInput.value.toLowerCase().trim();
         const nodes = activeMeshHealth.nodes || [];
-        const filtered = q ? nodes.filter(n => n.alias.toLowerCase().includes(q) || n.region.toLowerCase().includes(q) || n.role.toLowerCase().includes(q)) : nodes;
+        const filtered = q ? nodes.filter(n => (n.alias || '').toLowerCase().includes(q) || (n.role || '').toLowerCase().includes(q)) : nodes;
         renderNodesTable(filtered);
       });
     }
@@ -706,19 +727,15 @@
 
     async function fetchMeshHealth() {
       const endpoint = getActiveEndpoint();
-      if (endpoint === 'demo') {
-        renderMeshHealth(getDemoMeshHealth());
-        return;
-      }
-
       try {
         const res = await fetch(`${endpoint.replace(/\/$/, '')}/api/v1/mesh/network-health`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         renderMeshHealth(data);
       } catch (err) {
-        console.warn('Live endpoint error, loading fallback simulation data:', err);
-        renderMeshHealth(getDemoMeshHealth());
+        console.warn('Endpoint error:', err);
+        document.getElementById('swarm-headline').textContent = 'Live Swarm: Endpoint Offline';
+        document.getElementById('swarm-status-dot').style.background = '#f87171';
       }
     }
 
@@ -729,153 +746,181 @@
       const byz = topo.byzantine_resilience || {};
       const econ = topo.global_compute_savings || {};
       const consensus = topo.epistemic_consensus || {};
+      const mode = data.mode || 'STANDALONE';
+      const nodeCount = (data.nodes || []).length || 1;
 
-      // 1. Update Hero KPIs
-      document.getElementById('swarm-headline').textContent = `Whole-Mesh Network: ${byz.active_honest_nodes || 13}/${byz.total_nodes || 13} Nodes Online`;
+      // 1. Update Context Banner
+      const banner = document.getElementById('mesh-context-banner');
+      const bannerTitle = document.getElementById('banner-title');
+      const bannerDesc = document.getElementById('banner-desc');
+      const bannerIcon = document.getElementById('banner-icon');
+
+      if (mode === 'STANDALONE' || nodeCount <= 1) {
+        bannerTitle.textContent = 'Standalone Node Mode Active (1 Node Online • 0 Remote Peers Connected)';
+        bannerDesc.textContent = 'Your node is currently operating as a sovereign local root. To connect to bootstrap seed nodes and join the federated P2P mesh, configure PEER_SEEDS or start the relay with credence mesh.';
+        bannerIcon.textContent = '📡';
+        document.getElementById('mode-pill').textContent = 'STANDALONE MODE';
+        document.getElementById('mode-pill').className = 'pill pill-cyan';
+        document.getElementById('byz-pill').textContent = 'Local Evaluation Active';
+        document.getElementById('byz-pill').className = 'pill pill-green';
+        document.getElementById('swarm-headline').textContent = 'Live Swarm: 1 Node Online (Standalone)';
+      } else if (mode === 'PEERED') {
+        bannerTitle.textContent = `Peering Active (${nodeCount} Nodes Connected • 0 Byzantine Faults Tolerated)`;
+        bannerDesc.textContent = `Connected to ${nodeCount - 1} peer node(s). Byzantine consensus quorum activates when 4 or more nodes are peered (N ≥ 3f + 1).`;
+        bannerIcon.textContent = '🔗';
+        document.getElementById('mode-pill').textContent = 'PEERED MODE';
+        document.getElementById('mode-pill').className = 'pill pill-yellow';
+        document.getElementById('byz-pill').textContent = 'Consensus Emerging';
+        document.getElementById('byz-pill').className = 'pill pill-yellow';
+        document.getElementById('swarm-headline').textContent = `Live Swarm: ${nodeCount} Nodes Peered`;
+      } else {
+        bannerTitle.textContent = `Federated Quorum Active (${nodeCount} Nodes Connected • f = ${byz.max_byzantine_faults} Faults Tolerated)`;
+        bannerDesc.textContent = `Full Byzantine consensus verified across ${nodeCount} nodes. Network tolerates up to ${byz.max_byzantine_faults} rogue nodes without consensus drift.`;
+        bannerIcon.textContent = '🛡️';
+        document.getElementById('mode-pill').textContent = 'FEDERATED QUORUM';
+        document.getElementById('mode-pill').className = 'pill pill-purple';
+        document.getElementById('byz-pill').textContent = `3f+1 Quorum (f=${byz.max_byzantine_faults})`;
+        document.getElementById('byz-pill').className = 'pill pill-green';
+        document.getElementById('swarm-headline').textContent = `Live Swarm: ${nodeCount} Nodes Federated`;
+      }
+
       document.getElementById('last-updated-text').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
 
-      document.getElementById('kpi-nodes-count').textContent = `${params.nodes_count || 13} Nodes`;
-      document.getElementById('kpi-topo-sub').textContent = `Diameter: ${params.diameter || 3} hops | Path Length: ${params.average_path_length || 1.78}`;
-      document.getElementById('kpi-edges-sub').textContent = `${(data.edges || []).length} Ring & Small-World Chord Edges`;
+      // 2. KPIs
+      document.getElementById('kpi-nodes-count').textContent = `${nodeCount} Node${nodeCount > 1 ? 's' : ''}`;
+      document.getElementById('kpi-peers-sub').textContent = `${data.active_peers_count || 0} Connected Remote Peers`;
+      document.getElementById('kpi-edges-sub').textContent = `${(data.edges || []).length} P2P Relay Links Active`;
 
-      document.getElementById('kpi-quorum-health').textContent = `${byz.quorum_health === 'OPTIMAL' ? '100% Quorum' : 'Degraded'}`;
-      document.getElementById('kpi-byz-sub').textContent = `Max Tolerable Adversaries: f = ${byz.max_byzantine_faults || 4}`;
-      document.getElementById('kpi-sybil-sub').textContent = `${consensus.sybil_cartels_isolated || 0} Sybil Cartels | ${byz.active_honest_nodes || 13} Active Honest`;
+      document.getElementById('kpi-quorum-health').textContent = `f = ${byz.max_byzantine_faults || 0} Faults`;
+      document.getElementById('kpi-byz-sub').textContent = byz.quorum_description || 'Local Evaluation Only';
+      document.getElementById('kpi-sybil-sub').textContent = `${nodeCount} Active Honest Node${nodeCount > 1 ? 's' : ''}`;
 
       document.getElementById('kpi-grounding-score').textContent = `G = ${(consensus.grounding_quotient || 1.00).toFixed(2)}`;
-      document.getElementById('kpi-delta-sub').textContent = `Inter-Node Score Deviation: σ = ${consensus.score_delta_stdev || 2.8}`;
+      document.getElementById('kpi-tokens-saved').textContent = `${(econ.tokens_saved_estimate || 0).toLocaleString()} tok`;
+      document.getElementById('kpi-usd-saved').textContent = `$${(econ.usd_saved_estimate || 0).toFixed(2)} compute avoided`;
 
-      document.getElementById('kpi-tokens-saved').textContent = (econ.tokens_saved_estimate || 32634000).toLocaleString();
-      document.getElementById('kpi-usd-saved').textContent = `$${(econ.usd_saved_estimate || 22.84).toFixed(2)} compute avoided at $0.00 spend`;
-      document.getElementById('kpi-eff-sub').textContent = `${econ.work_sharing_efficiency_pct || 92.3}% Work-Sharing Adoption Rate`;
+      document.getElementById('roster-title').textContent = `Live Swarm Roster (${nodeCount} Node${nodeCount > 1 ? 's' : ''} Active)`;
 
-      // 2. Render Tables & Tickers
+      // 3. Render Tables
       renderNodesTable(data.nodes || []);
       renderRegionsTable(data.regions_summary || []);
       renderGossipStream(data.recent_gossip_stream || []);
 
-      // 3. Update Inspector
+      // 4. Update Inspector
       const selectedNode = (data.nodes || []).find(n => n.node_id === selectedNodeId) || (data.nodes || [])[0];
       if (selectedNode) updateInspector(selectedNode);
 
-      // 4. Draw Canvas Graph
-      initGraphLayout(data.nodes || [], data.edges || []);
+      // 5. Canvas Animation
+      initCanvasLayout(data.nodes || [], data.edges || []);
     }
 
-    // Graph Positioning Calculations (Watts-Strogatz Circle Layout)
     let nodePositions = {};
 
-    function initGraphLayout(nodes, edges) {
+    function initCanvasLayout(nodes, edges) {
       canvas.width = canvas.parentElement.clientWidth - 32;
-      canvas.height = 420;
+      canvas.height = 400;
 
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const radius = Math.min(centerX, centerY) - 50;
 
       nodePositions = {};
-      const count = nodes.length || 13;
-      nodes.forEach((n, idx) => {
-        const angle = (idx / count) * 2 * Math.PI - Math.PI / 2;
-        nodePositions[n.node_id] = {
-          x: centerX + radius * Math.cos(angle),
-          y: centerY + radius * Math.sin(angle),
-          node: n,
-          radius: n.is_seed || n.profile === 'ULTRA' ? 14 : 11
-        };
-      });
+      const count = nodes.length || 1;
 
-      // Spawn initial gossip particles
-      if (particles.length === 0) {
-        for (let i = 0; i < 6; i++) {
-          spawnRandomParticle(edges);
-        }
+      if (count === 1) {
+        // Single local root in center
+        nodePositions[nodes[0].node_id] = {
+          x: centerX,
+          y: centerY,
+          node: nodes[0],
+          radius: 18,
+        };
+      } else {
+        // Multi-node radial layout: local node at center, peers around circumference
+        nodePositions[nodes[0].node_id] = {
+          x: centerX,
+          y: centerY,
+          node: nodes[0],
+          radius: 16,
+        };
+
+        const radius = Math.min(centerX, centerY) - 55;
+        const peerCount = count - 1;
+        nodes.slice(1).forEach((n, idx) => {
+          const angle = (idx / peerCount) * 2 * Math.PI - Math.PI / 2;
+          nodePositions[n.node_id] = {
+            x: centerX + radius * Math.cos(angle),
+            y: centerY + radius * Math.sin(angle),
+            node: n,
+            radius: 12,
+          };
+        });
       }
 
       if (!animationFrameId) {
-        startCanvasAnimation();
+        startCanvasLoop();
       }
     }
 
-    function spawnRandomParticle(edges) {
-      if (!edges || edges.length === 0) return;
-      const edge = edges[Math.floor(Math.random() * edges.length)];
-      if (edge.status !== 'ACTIVE') return;
-      particles.push({
-        source: edge.source,
-        target: edge.target,
-        progress: 0,
-        speed: 0.015 + Math.random() * 0.02,
-        color: edge.type === 'CHORD_SHORTCUT' ? '#c084fc' : '#38bdf8'
-      });
-    }
-
-    function startCanvasAnimation() {
+    function startCanvasLoop() {
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const edges = activeMeshHealth?.edges || [];
         const nodes = activeMeshHealth?.nodes || [];
+        const isStandalone = nodes.length <= 1;
 
-        // 1. Draw Edges
-        edges.forEach(e => {
-          const p1 = nodePositions[e.source];
-          const p2 = nodePositions[e.target];
-          if (!p1 || !p2) return;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
 
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
+        if (isStandalone) {
+          // Radar scan rings for standalone mode
+          radarAngle += 0.02;
 
-          if (e.status === 'SEVERED') {
-            ctx.strokeStyle = 'rgba(248, 113, 113, 0.4)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-          } else if (e.type === 'CHORD_SHORTCUT') {
-            ctx.strokeStyle = 'rgba(192, 132, 252, 0.6)';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 3]);
-          } else {
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([]);
+          for (let r of [50, 100, 150]) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
           }
-          ctx.stroke();
-          ctx.setLineDash([]);
-        });
 
-        // 2. Draw Gossip Pulse Particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          const p1 = nodePositions[p.source];
-          const p2 = nodePositions[p.target];
-          if (p1 && p2) {
-            const curX = p1.x + (p2.x - p1.x) * p.progress;
-            const curY = p1.y + (p2.y - p1.y) * p.progress;
+          // Radar sweep line
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(centerX + 150 * Math.cos(radarAngle), centerY + 150 * Math.sin(radarAngle));
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Radar subtitle
+          ctx.fillStyle = 'rgba(156, 163, 175, 0.7)';
+          ctx.font = '11px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('Awaiting Peer Connections / Listening on Port 8765', centerX, centerY + 175);
+        } else {
+          // Draw Edges for peered nodes
+          edges.forEach(e => {
+            const p1 = nodePositions[e.source];
+            const p2 = nodePositions[e.target];
+            if (!p1 || !p2) return;
 
             ctx.beginPath();
-            ctx.arc(curX, curY, 3.5, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color;
-            ctx.shadowBlur = 10;
-            ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
-            p.progress += p.speed;
-            if (p.progress >= 1.0) {
-              particles.splice(i, 1);
-            }
-          } else {
-            particles.splice(i, 1);
-          }
+            // Latency label
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2;
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = '10px monospace';
+            ctx.fillText(`${e.latency_ms}ms`, midX, midY - 6);
+          });
         }
 
-        // Keep 4-8 particles traveling
-        if (particles.length < 5 && edges.length > 0) {
-          spawnRandomParticle(edges);
-        }
-
-        // 3. Draw Nodes
+        // Draw Nodes
         Object.values(nodePositions).forEach(pos => {
           const n = pos.node;
           const isSelected = n.node_id === selectedNodeId;
@@ -883,20 +928,11 @@
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, pos.radius + (isSelected ? 4 : 0), 0, Math.PI * 2);
 
-          let fill = '#4ade80';
-          let stroke = '#22c55e';
+          let fill = n.is_local ? '#38bdf8' : '#4ade80';
+          let stroke = n.is_local ? '#0284c7' : '#22c55e';
           if (n.status === 'QUARANTINED') {
             fill = '#f87171';
             stroke = '#ef4444';
-          } else if (n.status === 'PARTITIONED') {
-            fill = '#facc15';
-            stroke = '#eab308';
-          } else if (n.profile === 'ULTRA') {
-            fill = '#38bdf8';
-            stroke = '#0284c7';
-          } else if (n.role.includes('BRIDGE')) {
-            fill = '#c084fc';
-            stroke = '#a855f7';
           }
 
           ctx.fillStyle = fill;
@@ -910,9 +946,9 @@
 
           // Node Label
           ctx.fillStyle = '#ffffff';
-          ctx.font = '10px monospace';
+          ctx.font = '11px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(n.alias.replace('anchor-', '').replace('relay-', '').replace('sifter-', '').replace('bridge-', ''), pos.x, pos.y + pos.radius + 14);
+          ctx.fillText(n.alias, pos.x, pos.y + pos.radius + 15);
         });
 
         animationFrameId = requestAnimationFrame(draw);
@@ -920,7 +956,7 @@
       draw();
     }
 
-    // Canvas Click Handler (Select Node)
+    // Canvas click to select node
     canvas.addEventListener('click', (e) => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -929,7 +965,7 @@
       for (const [nodeId, pos] of Object.entries(nodePositions)) {
         const dx = x - pos.x;
         const dy = y - pos.y;
-        if (Math.sqrt(dx * dx + dy * dy) <= pos.radius + 6) {
+        if (Math.sqrt(dx * dx + dy * dy) <= pos.radius + 8) {
           selectedNodeId = nodeId;
           updateInspector(pos.node);
           break;
@@ -941,7 +977,7 @@
       document.getElementById('insp-alias').textContent = node.alias;
       document.getElementById('insp-role').textContent = node.role;
       document.getElementById('insp-id').textContent = node.node_id;
-      document.getElementById('insp-region').textContent = node.region;
+      document.getElementById('insp-pubkey').textContent = node.pubkey ? `${node.pubkey.substring(0, 16)}...` : '...';
 
       const profColor = node.profile === 'ULTRA' ? 'pill-purple' : (node.profile === 'BALANCED' ? 'pill-cyan' : 'pill-green');
       document.getElementById('insp-profile').innerHTML = `<span class="pill ${profColor}">${node.profile}</span>`;
@@ -949,25 +985,18 @@
       document.getElementById('insp-quality').textContent = node.quality_score.toFixed(4);
       document.getElementById('insp-uptime').textContent = `${node.uptime_pct.toFixed(2)}%`;
       document.getElementById('insp-grounding').textContent = `G = ${node.grounding_quotient.toFixed(2)}`;
-      document.getElementById('insp-memory').textContent = `${node.memory_mb.toFixed(1)} MB / 128M`;
+      document.getElementById('insp-memory').textContent = `${node.memory_mb.toFixed(1)} MB`;
+      document.getElementById('insp-audits').textContent = (node.audits_count || 0).toLocaleString();
       document.getElementById('insp-seeded').textContent = `${(node.tokens_seeded || 0).toLocaleString()} tok`;
-      document.getElementById('insp-peers').textContent = (node.peers || []).join(', ');
-      document.getElementById('insp-port').textContent = node.port || 8765;
-
-      const pings = Object.values(node.latencies_ms || {});
-      if (pings.length > 0) {
-        const avg = Math.round(pings.reduce((a,b)=>a+b,0) / pings.length);
-        const min = Math.min(...pings);
-        const max = Math.max(...pings);
-        document.getElementById('insp-ping').textContent = `${avg}ms (min ${min}ms, max ${max}ms)`;
-      }
+      document.getElementById('insp-peers').textContent = (node.peers || []).length;
+      document.getElementById('insp-wsurl').textContent = node.ws_url || 'ws://127.0.0.1:8765';
     }
 
     function renderNodesTable(nodes) {
       const tbody = document.getElementById('nodes-table-body');
       tbody.innerHTML = '';
       if (!nodes.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">No nodes found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">No nodes active.</td></tr>';
         return;
       }
       nodes.forEach(n => {
@@ -982,13 +1011,13 @@
 
         tr.innerHTML = `
           <td><code>${n.node_id}</code></td>
-          <td><strong>${n.alias}</strong></td>
-          <td>${n.region}</td>
+          <td><strong>${n.alias}</strong> ${n.is_local ? '<span class="pill pill-cyan">PRIMARY ROOT</span>' : ''}</td>
           <td><small style="color:var(--accent-cyan);">${n.role}</small></td>
           <td><span class="pill ${profColor}">${n.profile}</span></td>
           <td><b>${n.quality_score.toFixed(4)}</b></td>
           <td>${n.uptime_pct.toFixed(2)}%</td>
           <td style="color:var(--accent-green);">G=${n.grounding_quotient.toFixed(2)}</td>
+          <td>${(n.audits_count || 0).toLocaleString()}</td>
           <td><span class="pill ${statusColor}">${n.status}</span></td>
         `;
         tbody.appendChild(tr);
@@ -999,7 +1028,7 @@
       const tbody = document.getElementById('regions-table-body');
       tbody.innerHTML = '';
       if (!regions.length) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No regions telemetry.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No regional peering telemetry.</td></tr>';
         return;
       }
       regions.forEach(r => {
@@ -1019,7 +1048,7 @@
       const container = document.getElementById('gossip-stream-container');
       container.innerHTML = '';
       if (!events.length) {
-        container.innerHTML = '<div style="padding:1rem; color:var(--text-muted); text-align:center;">No recent gossip events recorded.</div>';
+        container.innerHTML = '<div style="padding:1rem; color:var(--text-muted); text-align:center;">No recent audit events recorded.</div>';
         return;
       }
       events.slice(0, 6).forEach(ev => {
@@ -1031,71 +1060,16 @@
           <div>
             <strong>${ev.origin_node}</strong> &bull; <code>${ev.domain}</code>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
-              SHA: ${ev.content_sha256 ? ev.content_sha256.substring(0, 18) : 'hash'}... | Latency: ${ev.diffusion_latency_ms}ms (${ev.hop_count} hops)
+              SHA: ${ev.content_sha256 ? ev.content_sha256.substring(0, 18) : 'hash'}... | ${ev.status}
             </div>
           </div>
           <div style="text-align:right;">
             <span class="pill ${pillClass}">Score: ${ev.suspicion_score}</span>
-            <div style="font-size:0.72rem; color:var(--accent-green); margin-top:2px;">DELIVERED</div>
+            <div style="font-size:0.72rem; color:var(--accent-green); margin-top:2px;">VERIFIED</div>
           </div>
         `;
         container.appendChild(item);
       });
-    }
-
-    // Interactive Scenario Simulator Controller
-    function applyScenario(scen) {
-      activeScenario = scen;
-      document.querySelectorAll('.btn-scenario').forEach(btn => btn.classList.remove('active'));
-      const badge = document.getElementById('scenario-active-badge');
-
-      const data = getDemoMeshHealth();
-
-      if (scen === 'normal') {
-        document.getElementById('btn-scen-normal').classList.add('active');
-        badge.className = 'pill pill-green';
-        badge.textContent = 'Scenario: Normal Watts-Strogatz';
-      } else if (scen === 'partition') {
-        document.getElementById('btn-scen-partition').classList.add('active');
-        badge.className = 'pill pill-yellow';
-        badge.textContent = 'Scenario: Transatlantic Netsplit Active';
-        // Sever transatlantic chord and ring links
-        data.edges.forEach(e => {
-          if ((e.source === 'node_1' && e.target === 'node_5') || (e.source === 'node_4' && e.target === 'node_5')) {
-            e.status = 'SEVERED';
-          }
-        });
-        data.nodes[4].status = 'PARTITIONED';
-        data.nodes[5].status = 'PARTITIONED';
-        data.cluster_topology.byzantine_resilience.quorum_health = 'DEGRADED (Self-Healing via Node 13 Pacific Chord)';
-      } else if (scen === 'sybil') {
-        document.getElementById('btn-scen-sybil').classList.add('active');
-        badge.className = 'pill pill-red';
-        badge.textContent = 'Scenario: 4 Sybils Isolated (3f+1 Verified)';
-        // Quarantining 4 rogue nodes (Node 8, 9, 10, 12)
-        [7, 8, 9, 11].forEach(idx => {
-          data.nodes[idx].status = 'QUARANTINED';
-          data.nodes[idx].quality_score = 0.42;
-        });
-        data.cluster_topology.epistemic_consensus.sybil_cartels_isolated = 4;
-        data.cluster_topology.byzantine_resilience.active_honest_nodes = 9;
-        data.cluster_topology.byzantine_resilience.quarantined_nodes = 4;
-      } else if (scen === 'failover') {
-        document.getElementById('btn-scen-failover').classList.add('active');
-        badge.className = 'pill pill-cyan';
-        badge.textContent = 'Scenario: Seed 1 Offline -> Seed 2 Active';
-        data.nodes[0].status = 'FAILOVER_SYNC';
-        data.seed_federation.canonical_domain = 'seed-europe-west1.credence.nexus';
-      } else if (scen === 'burst') {
-        document.getElementById('btn-scen-burst').classList.add('active');
-        badge.className = 'pill pill-purple';
-        badge.textContent = 'Scenario: Epidemic Gossip Burst Active (350 msg/s)';
-        for (let i = 0; i < 20; i++) {
-          spawnRandomParticle(data.edges);
-        }
-      }
-
-      renderMeshHealth(data);
     }
 
     function startPolling() {
@@ -1104,107 +1078,6 @@
       if (interval > 0) {
         pollTimer = setInterval(fetchMeshHealth, interval);
       }
-    }
-
-    function getDemoMeshHealth() {
-      return {
-        service: "credence",
-        version: "1.21.7",
-        timestamp: new Date().toISOString(),
-        cluster_topology: {
-          name: "Watts-Strogatz Small-World Lattice",
-          model_parameters: {
-            nodes_count: 13,
-            degree_k: 4,
-            rewiring_beta: 0.20,
-            diameter: 3,
-            average_path_length: 1.78
-          },
-          byzantine_resilience: {
-            formula: "N >= 3f + 1",
-            total_nodes: 13,
-            max_byzantine_faults: 4,
-            quorum_threshold_pct: 67.0,
-            quorum_health: "OPTIMAL",
-            active_honest_nodes: 13,
-            quarantined_nodes: 0
-          },
-          epistemic_consensus: {
-            grounding_quotient: 1.00,
-            score_delta_stdev: 2.8,
-            galileo_convergence_pct: 99.4,
-            sybil_cartels_isolated: 0
-          },
-          global_compute_savings: {
-            total_queries_resolved: 8420,
-            total_local_evaluations: 650,
-            adopted_from_mesh_count: 7770,
-            work_sharing_efficiency_pct: 92.3,
-            tokens_saved_estimate: 32634000,
-            usd_saved_estimate: 22.84
-          }
-        },
-        nodes: [
-          { node_id: "node_1", alias: "anchor-us-central1", pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0", role: "ROOT_GENESIS_ANCHOR", profile: "ULTRA", region: "us-central1", ws_url: "wss://relay.credence.nexus:8765", port: 8761, quality_score: 0.9950, uptime_pct: 99.98, grounding_quotient: 1.00, memory_mb: 142.5, status: "HEALTHY", is_seed: true, peers: ["node_2", "node_5", "node_13"], latencies_ms: { node_2: 12, node_5: 78, node_13: 115 }, audits_count: 635, tokens_seeded: 142000 },
-          { node_id: "node_2", alias: "relay-us-east1", pubkey: "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1", role: "EDGE_SIFTER", profile: "FREE", region: "us-east1", ws_url: "wss://relay-useast.credence.nexus:8765", port: 8762, quality_score: 0.9720, uptime_pct: 99.85, grounding_quotient: 1.00, memory_mb: 98.2, status: "HEALTHY", is_seed: false, peers: ["node_1", "node_3"], latencies_ms: { node_1: 12, node_3: 18 }, audits_count: 420, tokens_seeded: 48000 },
-          { node_id: "node_3", alias: "sifter-us-west1", pubkey: "7777dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd2", role: "PEER_AUDITOR", profile: "BALANCED", region: "us-west1", ws_url: "wss://relay-uswest.credence.nexus:8765", port: 8763, quality_score: 0.9810, uptime_pct: 99.90, grounding_quotient: 1.00, memory_mb: 112.4, status: "HEALTHY", is_seed: false, peers: ["node_2", "node_4", "node_13"], latencies_ms: { node_2: 18, node_4: 22, node_13: 95 }, audits_count: 510, tokens_seeded: 72000 },
-          { node_id: "node_4", alias: "relay-ca-central1", pubkey: "6666dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd3", role: "EDGE_SIFTER", profile: "FREE", region: "ca-central1", ws_url: "wss://relay-ca.credence.nexus:8765", port: 8764, quality_score: 0.9650, uptime_pct: 99.75, grounding_quotient: 1.00, memory_mb: 95.0, status: "HEALTHY", is_seed: false, peers: ["node_3", "node_5"], latencies_ms: { node_3: 22, node_5: 84 }, audits_count: 310, tokens_seeded: 32000 },
-          { node_id: "node_5", alias: "bridge-europe-west1", pubkey: "5555dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd4", role: "REGIONAL_BRIDGE", profile: "BALANCED", region: "europe-west1", ws_url: "wss://relay-eu.credence.nexus:8765", port: 8765, quality_score: 0.9880, uptime_pct: 99.95, grounding_quotient: 1.00, memory_mb: 128.0, status: "HEALTHY", is_seed: true, peers: ["node_1", "node_4", "node_6"], latencies_ms: { node_1: 78, node_4: 84, node_6: 15 }, audits_count: 580, tokens_seeded: 115000 },
-          { node_id: "node_6", alias: "relay-europe-north1", pubkey: "4444dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd5", role: "EDGE_SIFTER", profile: "FREE", region: "europe-north1", ws_url: "wss://relay-eunorth.credence.nexus:8765", port: 8766, quality_score: 0.9680, uptime_pct: 99.80, grounding_quotient: 1.00, memory_mb: 94.8, status: "HEALTHY", is_seed: false, peers: ["node_5", "node_7"], latencies_ms: { node_5: 15, node_7: 20 }, audits_count: 390, tokens_seeded: 41000 },
-          { node_id: "node_7", alias: "anchor-europe-west3", pubkey: "3333dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd6", role: "CONTINENTAL_ANCHOR", profile: "ULTRA", region: "europe-west3", ws_url: "wss://relay-eu3.credence.nexus:8765", port: 8767, quality_score: 0.9920, uptime_pct: 99.96, grounding_quotient: 1.00, memory_mb: 138.6, status: "HEALTHY", is_seed: false, peers: ["node_6", "node_8", "node_11"], latencies_ms: { node_6: 20, node_8: 62, node_11: 130 }, audits_count: 610, tokens_seeded: 135000 },
-          { node_id: "node_8", alias: "relay-me-central1", pubkey: "2222dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd7", role: "EDGE_SIFTER", profile: "FREE", region: "me-central1", ws_url: "wss://relay-me.credence.nexus:8765", port: 8768, quality_score: 0.9620, uptime_pct: 99.70, grounding_quotient: 1.00, memory_mb: 92.5, status: "HEALTHY", is_seed: false, peers: ["node_7", "node_9"], latencies_ms: { node_7: 62, node_9: 45 }, audits_count: 280, tokens_seeded: 29000 },
-          { node_id: "node_9", alias: "sifter-asia-south1", pubkey: "1111dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd8", role: "PEER_AUDITOR", profile: "BALANCED", region: "asia-south1", ws_url: "wss://relay-asiasouth.credence.nexus:8765", port: 8769, quality_score: 0.9750, uptime_pct: 99.82, grounding_quotient: 1.00, memory_mb: 110.0, status: "HEALTHY", is_seed: false, peers: ["node_8", "node_10"], latencies_ms: { node_8: 45, node_10: 38 }, audits_count: 460, tokens_seeded: 65000 },
-          { node_id: "node_10", alias: "relay-asia-east1", pubkey: "0000dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd9", role: "EDGE_SIFTER", profile: "FREE", region: "asia-east1", ws_url: "wss://relay-asiaeast.credence.nexus:8765", port: 8770, quality_score: 0.9700, uptime_pct: 99.84, grounding_quotient: 1.00, memory_mb: 96.0, status: "HEALTHY", is_seed: false, peers: ["node_9", "node_11"], latencies_ms: { node_9: 38, node_11: 28 }, audits_count: 380, tokens_seeded: 45000 },
-          { node_id: "node_11", alias: "bridge-ap-southeast1", pubkey: "9999dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cda", role: "REGIONAL_BRIDGE", profile: "BALANCED", region: "ap-southeast1", ws_url: "wss://relay-southeast.credence.nexus:8765", port: 8771, quality_score: 0.9850, uptime_pct: 99.92, grounding_quotient: 1.00, memory_mb: 124.5, status: "HEALTHY", is_seed: false, peers: ["node_7", "node_10", "node_12"], latencies_ms: { node_7: 130, node_10: 28, node_12: 145 }, audits_count: 520, tokens_seeded: 98000 },
-          { node_id: "node_12", alias: "relay-sa-east1", pubkey: "aaaa1c91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cdb", role: "EDGE_SIFTER", profile: "FREE", region: "sa-east1", ws_url: "wss://relay-sa.credence.nexus:8765", port: 8772, quality_score: 0.9580, uptime_pct: 99.65, grounding_quotient: 1.00, memory_mb: 91.0, status: "HEALTHY", is_seed: false, peers: ["node_11", "node_13"], latencies_ms: { node_11: 145, node_13: 150 }, audits_count: 250, tokens_seeded: 24000 },
-          { node_id: "node_13", alias: "anchor-ap-northeast1", pubkey: "bbbb2c91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cdc", role: "PACIFIC_ANCHOR", profile: "ULTRA", region: "ap-northeast1", ws_url: "wss://relay-tokyo.credence.nexus:8765", port: 8773, quality_score: 0.9940, uptime_pct: 99.97, grounding_quotient: 1.00, memory_mb: 140.0, status: "HEALTHY", is_seed: false, peers: ["node_1", "node_3", "node_12"], latencies_ms: { node_1: 115, node_3: 95, node_12: 150 }, audits_count: 605, tokens_seeded: 128000 }
-        ],
-        edges: [
-          { source: "node_1", target: "node_2", latency_ms: 12, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_2", target: "node_3", latency_ms: 18, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_3", target: "node_4", latency_ms: 22, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_4", target: "node_5", latency_ms: 84, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_5", target: "node_6", latency_ms: 15, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_6", target: "node_7", latency_ms: 20, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_7", target: "node_8", latency_ms: 62, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_8", target: "node_9", latency_ms: 45, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_9", target: "node_10", latency_ms: 38, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_10", target: "node_11", latency_ms: 28, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_11", target: "node_12", latency_ms: 145, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_12", target: "node_13", latency_ms: 150, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_13", target: "node_1", latency_ms: 115, type: "LATTICE_RING", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_1", target: "node_5", latency_ms: 78, type: "CHORD_SHORTCUT", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_3", target: "node_13", latency_ms: 95, type: "CHORD_SHORTCUT", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" },
-          { source: "node_7", target: "node_11", latency_ms: 130, type: "CHORD_SHORTCUT", status: "ACTIVE", protocol: "WSS-GOSSIP/1.0" }
-        ],
-        regions_summary: [
-          { region: "us-central1", nodes_count: 1, avg_uptime_pct: 99.98, profiles: { ULTRA: 1 } },
-          { region: "us-east1", nodes_count: 1, avg_uptime_pct: 99.85, profiles: { FREE: 1 } },
-          { region: "us-west1", nodes_count: 1, avg_uptime_pct: 99.90, profiles: { BALANCED: 1 } },
-          { region: "ca-central1", nodes_count: 1, avg_uptime_pct: 99.75, profiles: { FREE: 1 } },
-          { region: "europe-west1", nodes_count: 1, avg_uptime_pct: 99.95, profiles: { BALANCED: 1 } },
-          { region: "europe-north1", nodes_count: 1, avg_uptime_pct: 99.80, profiles: { FREE: 1 } },
-          { region: "europe-west3", nodes_count: 1, avg_uptime_pct: 99.96, profiles: { ULTRA: 1 } },
-          { region: "me-central1", nodes_count: 1, avg_uptime_pct: 99.70, profiles: { FREE: 1 } },
-          { region: "asia-south1", nodes_count: 1, avg_uptime_pct: 99.82, profiles: { BALANCED: 1 } },
-          { region: "asia-east1", nodes_count: 1, avg_uptime_pct: 99.84, profiles: { FREE: 1 } },
-          { region: "ap-southeast1", nodes_count: 1, avg_uptime_pct: 99.92, profiles: { BALANCED: 1 } },
-          { region: "sa-east1", nodes_count: 1, avg_uptime_pct: 99.65, profiles: { FREE: 1 } },
-          { region: "ap-northeast1", nodes_count: 1, avg_uptime_pct: 99.97, profiles: { ULTRA: 1 } }
-        ],
-        recent_gossip_stream: [
-          { event_id: "gsp_8f9021a4", timestamp: new Date().toISOString(), origin_node: "anchor-us-central1", domain: "reuters.com", content_sha256: "sha256:25a844519bc01a88c21ef9a099a842f63e72183c613c72b22037996c5688b14e", suspicion_score: 0.0, classification: "CLEAN", hop_count: 2, diffusion_latency_ms: 28.4, status: "DELIVERED" },
-          { event_id: "gsp_7b1942c1", timestamp: new Date().toISOString(), origin_node: "bridge-europe-west1", domain: "nature.com", content_sha256: "sha256:8899aabbccddeeff00112233445566778899aabbccddeeff0011223344556677", suspicion_score: 4.5, classification: "CLEAN", hop_count: 1, diffusion_latency_ms: 15.2, status: "DELIVERED" },
-          { event_id: "gsp_6a0831b8", timestamp: new Date().toISOString(), origin_node: "anchor-ap-northeast1", domain: "inmaricopa.com", content_sha256: "sha256:5c43ae7fa94db3a1b824ff71391217e1a384f67660232490b63390ccbb9a1820", suspicion_score: 54.6, classification: "SUSPICIOUS", hop_count: 3, diffusion_latency_ms: 42.1, status: "DELIVERED" }
-        ],
-        seed_federation: {
-          canonical_domain: "seeds.credence.nexus",
-          manifest_url: "https://seeds.credence.nexus/peers.json",
-          root_pubkey: "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
-          signature_verified: true,
-          seed_nodes_online: 2
-        }
-      };
     }
 
     // Initial load

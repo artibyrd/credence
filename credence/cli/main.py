@@ -854,42 +854,46 @@ def cli_stats(
 
     def _render_mesh_display(data: dict) -> None:
         topo = data.get("cluster_topology", {})
-        params = topo.get("model_parameters", {})
         byz = topo.get("byzantine_resilience", {})
         econ = topo.get("global_compute_savings", {})
         nodes = data.get("nodes", [])
         edges = data.get("edges", [])
+        mode = data.get("mode", "STANDALONE")
+        node_count = len(nodes)
 
         # Hero Panel
+        mode_color = "cyan" if mode == "STANDALONE" else ("yellow" if mode == "PEERED" else "magenta")
         hero_text = (
-            f"[bold green]● WHOLE-MESH NETWORK TOPOLOGY: {topo.get('name', 'Watts-Strogatz Lattice')}[/bold green]\n"
-            f"[bold cyan]Parameters:[/bold cyan] [white]N = {params.get('nodes_count', 13)} Nodes[/white]  |  "
-            f"[white]Degree d = {params.get('degree_k', 4)}[/white]  |  "
-            f"[white]Rewiring β = {params.get('rewiring_beta', 0.20)}[/white]  |  "
-            f"[white]Diameter = {params.get('diameter', 3)} hops[/white]\n\n"
-            f"[bold]1. BYZANTINE FAULT TOLERANCE (3f+1)[/bold]\n"
-            f"   • Quorum State:     [bold green]{byz.get('quorum_health', 'OPTIMAL')}[/bold green] ([green]{byz.get('active_honest_nodes', 13)}/{byz.get('total_nodes', 13)} active honest nodes[/green])\n"
-            f"   • Byzantine Margin: [bold cyan]{byz.get('formula', 'N >= 3f+1')}[/bold cyan] (Max tolerable adversaries f = [bold]{byz.get('max_byzantine_faults', 4)}[/bold])\n"
-            f"   • Sybil Cartels:    [green]{topo.get('epistemic_consensus', {}).get('sybil_cartels_isolated', 0)} isolated[/green]  |  Grounding Quotient: [bold green]G = {topo.get('epistemic_consensus', {}).get('grounding_quotient', 1.00):.2f}[/bold green]\n\n"
+            f"[bold green]● LIVE P2P SWARM TELEMETRY: [{mode_color}]{mode} MODE[/{mode_color}][/bold green]\n"
+            f"[bold cyan]Capacity:[/bold cyan] [white]N = {node_count} Active Node{'s' if node_count > 1 else ''}[/white]  |  "
+            f"[white]Active Peers = {data.get('active_peers_count', 0)}[/white]  |  "
+            f"[white]Relay Links = {len(edges)}[/white]\n\n"
+            f"[bold]1. BYZANTINE FAULT TOLERANCE (N >= 3f+1)[/bold]\n"
+            f"   • Quorum Status:    [bold green]{byz.get('quorum_description', 'Local Evaluation Active')}[/bold green]\n"
+            f"   • Byzantine Margin: [bold cyan]f = {byz.get('max_byzantine_faults', 0)} faults tolerated[/bold cyan] ({node_count} active honest nodes)\n"
+            f"   • Grounding:        [bold green]G = {topo.get('epistemic_consensus', {}).get('grounding_quotient', 1.00):.2f}[/bold green] (Verbatim Invariant Verified)\n\n"
             f"[bold]2. GLOBAL WORK-SHARING & COMPUTE PHILANTHROPY[/bold]\n"
-            f"   • Tokens Saved:     [bold green]{econ.get('tokens_saved_estimate', 0):,} tokens[/bold green] ([green]${econ.get('usd_saved_estimate', 0.0):.2f}[/green] avoided at $0.00 spend)\n"
-            f"   • Efficiency:       [bold cyan]{econ.get('work_sharing_efficiency_pct', 92.3)}% mesh adoption rate[/bold cyan] ({econ.get('adopted_from_mesh_count', 0):,} adopted queries)"
+            f"   • Tokens Avoided:   [bold green]{econ.get('tokens_saved_estimate', 0):,} tokens[/bold green] ([green]${econ.get('usd_saved_estimate', 0.0):.2f}[/green] compute avoided)\n"
+            f"   • Work-Sharing:     [bold cyan]{econ.get('work_sharing_efficiency_pct', 0.0):.1f}% adoption rate[/bold cyan] ({econ.get('adopted_from_mesh_count', 0):,} adopted queries)"
         )
+        if mode == "STANDALONE":
+            hero_text += "\n\n[dim]ℹ️  Node is operating in Standalone Mode. Configure PEER_SEEDS or run 'credence mesh' to peer.[/dim]"
+
         console.print(
-            Panel(hero_text, title="[bold]🕸️ Credence Whole-Mesh Network Health Dashboard[/bold]", border_style="cyan")
+            Panel(hero_text, title="[bold]🕸️ Credence Live Swarm & Peering Health[/bold]", border_style="cyan")
         )
 
         # Nodes Table
-        nodes_table = Table(title="13-Node Heterogeneous Swarm Roster", box=box.ROUNDED)
+        table_title = f"Live Swarm Roster ({node_count} Active Node{'s' if node_count > 1 else ''})"
+        nodes_table = Table(title=table_title, box=box.ROUNDED)
         nodes_table.add_column("Node ID", style="bold cyan")
         nodes_table.add_column("Node Alias")
-        nodes_table.add_column("Region", style="dim")
         nodes_table.add_column("Role", style="bold")
         nodes_table.add_column("Profile")
         nodes_table.add_column("Quality (Q_i)", justify="right")
         nodes_table.add_column("Uptime", justify="right")
         nodes_table.add_column("Grounding", justify="right")
-        nodes_table.add_column("Memory", justify="right")
+        nodes_table.add_column("Lifetime Audits", justify="right")
         nodes_table.add_column("Status", justify="center")
 
         for n in nodes:
@@ -899,16 +903,16 @@ def cli_stats(
                 if n.get("profile") == "ULTRA"
                 else ("bold cyan" if n.get("profile") == "BALANCED" else "dim")
             )
+            local_badge = " [dim cyan](Local Root)[/dim cyan]" if n.get("is_local") else ""
             nodes_table.add_row(
                 n.get("node_id", ""),
-                f"`{n.get('alias', '')}`",
-                n.get("region", ""),
+                f"`{n.get('alias', '')}`{local_badge}",
                 n.get("role", ""),
                 f"[{prof_c}]{n.get('profile', '')}[/{prof_c}]",
                 f"<b>{n.get('quality_score', 0.0):.4f}</b>",
                 f"{n.get('uptime_pct', 0.0):.2f}%",
                 f"G={n.get('grounding_quotient', 1.0):.2f}",
-                f"{n.get('memory_mb', 0):.1f} MB",
+                f"{n.get('audits_count', 0):,}",
                 f"[{status_c}]{n.get('status', 'HEALTHY')}[/{status_c}]",
             )
         console.print(nodes_table)

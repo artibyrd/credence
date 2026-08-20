@@ -223,33 +223,58 @@ def test_dashboard_web_asset_integrity() -> None:
 
 @pytest.mark.asyncio
 async def test_calculate_network_mesh_health_topology() -> None:
-    """Test calculate_network_mesh_health computes 13-node Watts-Strogatz topology and Byzantine metrics."""
+    """Test calculate_network_mesh_health computes dynamic N-node topology and Byzantine metrics."""
+    from credence.db import get_session
     from credence.mesh.stats import calculate_network_mesh_health
+    from credence.models import PeerMetricRecord
 
+    # 1. Standalone mode (0 peers in database)
     health = await calculate_network_mesh_health(None)
 
     assert health["service"] == "credence"
     assert "cluster_topology" in health
+    assert health["mode"] == "STANDALONE"
+    assert health["active_peers_count"] == 0
+    assert len(health["nodes"]) == 1
+    assert health["nodes"][0]["is_local"] is True
+
     topo = health["cluster_topology"]
-    assert topo["model_parameters"]["nodes_count"] == 13
-    assert topo["model_parameters"]["degree_k"] == 4
     assert topo["byzantine_resilience"]["formula"] == "N >= 3f + 1"
-    assert topo["byzantine_resilience"]["max_byzantine_faults"] == 4
+    assert topo["byzantine_resilience"]["max_byzantine_faults"] == 0
     assert topo["epistemic_consensus"]["grounding_quotient"] == 1.00
 
-    # Verify 13 Nodes
-    nodes = health["nodes"]
-    assert len(nodes) == 13
-    aliases = [n["alias"] for n in nodes]
-    assert "anchor-us-central1" in aliases
-    assert "bridge-europe-west1" in aliases
-    assert "anchor-ap-northeast1" in aliases
+    # 2. Dynamic Peering mode (insert peers into session)
+    async for session in get_session():
+        import uuid
 
-    # Verify Ring and Chord Edges
-    edges = health["edges"]
-    assert len(edges) >= 16
-    chord_edges = [e for e in edges if e["type"] == "CHORD_SHORTCUT"]
-    assert len(chord_edges) >= 3
+        inserted_peers = []
+        # Insert 3 peer records with unique keys (total N = 4, f = 1)
+        for _ in range(3):
+            uid = uuid.uuid4().hex
+
+            peer = PeerMetricRecord(
+                node_pubkey=uid * 2,
+                node_alias=f"peer-validator-{uid[:6]}",
+                ws_url=f"wss://peer-{uid[:6]}.credence.run:8765",
+                quality_score=0.98,
+                average_latency_ms=25.0,
+                traffic_class="STANDARD",
+            )
+            session.add(peer)
+            inserted_peers.append(peer)
+        await session.commit()
+
+        try:
+            peered_health = await calculate_network_mesh_health(session)
+            assert peered_health["mode"] == "FEDERATED"
+            assert peered_health["active_peers_count"] >= 3
+            assert len(peered_health["nodes"]) >= 4
+            assert peered_health["cluster_topology"]["byzantine_resilience"]["max_byzantine_faults"] >= 1
+        finally:
+            for p in inserted_peers:
+                await session.delete(p)
+            await session.commit()
+        break
 
 
 def test_rest_mesh_network_health_endpoint() -> None:
@@ -261,8 +286,7 @@ def test_rest_mesh_network_health_endpoint() -> None:
         data = res1.json()
         assert data["service"] == "credence"
         assert "cluster_topology" in data
-        assert len(data["nodes"]) == 13
-        assert len(data["edges"]) >= 16
+        assert len(data["nodes"]) >= 1
 
         # Test alias /api/mesh/network-health
         res2 = client.get("/api/mesh/network-health")
@@ -298,7 +322,7 @@ def test_cli_stats_mesh_json_output(capsys: pytest.CaptureFixture[str]) -> None:
     parsed = json.loads(captured.out)
     assert parsed["service"] == "credence"
     assert "cluster_topology" in parsed
-    assert len(parsed["nodes"]) == 13
+    assert len(parsed["nodes"]) >= 1
 
 
 def test_mesh_html_web_asset_integrity() -> None:
@@ -308,14 +332,10 @@ def test_mesh_html_web_asset_integrity() -> None:
 
     content = mesh_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in content
-    assert "Whole-Mesh Network" in content
+    assert "Live Swarm & Peering" in content or "Live P2P Swarm" in content
     assert "mesh-canvas" in content
     assert "node-inspector" in content
-    assert "btn-scen-normal" in content
-    assert "btn-scen-partition" in content
-    assert "btn-scen-sybil" in content
-    assert "btn-scen-failover" in content
-    assert "btn-scen-burst" in content
+    assert "btn-playground-launch" in content or "docs.credence.run#docs/playground" in content
 
     # 5 Invariant Links in Header Navbar
     assert "https://credence.run" in content

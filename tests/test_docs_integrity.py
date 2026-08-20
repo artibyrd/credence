@@ -204,15 +204,21 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
 
     # Interactive elements hooked in app.js
     interactive_ids = [
+        "btn-scen-normal",
+        "btn-scen-partition",
+        "btn-scen-sybil",
+        "btn-scen-failover",
+        "btn-scen-burst",
         "btn-broadcast-gossip",
-        "btn-simulate-split",
         "btn-reset-mesh",
         "mesh-svg",
         "mesh-event-log",
         "mesh-node-inspector",
         "inspector-node-id",
         "inspector-node-status",
+        "inspector-node-role",
         "inspector-node-qi",
+        "inspector-node-region",
         "inspector-node-links",
         "simhash-text-a",
         "simhash-text-b",
