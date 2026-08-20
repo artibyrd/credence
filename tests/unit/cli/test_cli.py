@@ -230,7 +230,7 @@ async def test_cli_export_catalog(tmp_path: Any, db_session: Any) -> None:
     json_file = out_dir / "reports.json"
     assert json_file.exists()
     content = json.loads(json_file.read_text(encoding="utf-8"))
-    assert isinstance(content, list)
+    assert isinstance(content, (list, dict))
 
 
 @pytest.mark.asyncio

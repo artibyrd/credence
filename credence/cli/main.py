@@ -107,12 +107,25 @@ def cli_subjects(*args: Any, **kwargs: Any) -> Any:
     return []
 
 
-def cli_export_catalog(*args: Any, **kwargs: Any) -> Any:
-    return {}
+async def cli_export_catalog(output_dir: Optional[str] = None, *args: Any, **kwargs: Any) -> Any:
+    from pathlib import Path
+
+    from credence.db import get_async_session, init_db
+    from credence.germinate import export_catalog_to_disk
+
+    await init_db()
+    out = Path(output_dir) if output_dir else None
+    async with get_async_session() as session:
+        return await export_catalog_to_disk(session, output_dir=out)
 
 
-def cli_germinate(*args: Any, **kwargs: Any) -> Any:
-    return {}
+async def cli_germinate(burst: int = 1, no_mesh: bool = False, profile: str = "free", *args: Any, **kwargs: Any) -> Any:
+    from credence.db import get_async_session, init_db
+    from credence.germinate import germinate_node
+
+    await init_db()
+    async with get_async_session() as session:
+        return await germinate_node(session=session, burst_items=burst, sync_mesh=not no_mesh)
 
 
 def cli_health(*args: Any, **kwargs: Any) -> Any:
