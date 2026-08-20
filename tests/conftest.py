@@ -5,6 +5,7 @@ from typing import AsyncGenerator
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.cache.distributed import reset_state_store
@@ -63,6 +64,7 @@ async def async_engine() -> AsyncGenerator[AsyncEngine, None]:
         "sqlite+aiosqlite:///:memory:",
         echo=False,
         future=True,
+        poolclass=StaticPool,
         connect_args={"check_same_thread": False},
     )
     await init_db(engine)
