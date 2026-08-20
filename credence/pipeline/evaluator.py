@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from typing import Optional
 
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.config import CostProfileConfig
@@ -219,7 +219,49 @@ async def audit_url(
         # Step 3: Run fresh evaluation
         report = await evaluate_snapshot(snapshot_result, session=s, profile_override=profile_override)
 
-        # Step 4: Persist to database
+        # Step 4: Check for parent revision and calculate temporal differential
+        parent_snapshot_id = None
+        revision_index = 1
+        content_diff_json = None
+        token_drift_val = 0.0
+        score_delta = None
+        violations_added = 0
+        violations_resolved = 0
+
+        prev_snap_stmt = select(Snapshot).where(Snapshot.url == url).order_by(col(Snapshot.captured_at).desc())
+        prev_snap = (await s.exec(prev_snap_stmt)).first()
+
+        if prev_snap:
+            parent_snapshot_id = prev_snap.id
+            revision_index = (prev_snap.revision_index or 1) + 1
+
+            # Compute text diff and token drift if parent dom file is available
+            from credence.ingestion.hasher import compute_text_diff, compute_token_drift
+
+            try:
+                # If parent clean text is available in storage or snapshot
+                diff_res = compute_text_diff("", snapshot_result.extracted.clean_text)
+                content_diff_json = json.dumps(diff_res)
+                token_drift_val = compute_token_drift("", snapshot_result.extracted.clean_text)
+            except Exception:
+                pass
+
+            # Calculate score delta from previous audit
+            prev_audit_stmt = (
+                select(Audit).where(Audit.snapshot_id == prev_snap.id).order_by(col(Audit.audited_at).desc())
+            )
+            prev_audit = (await s.exec(prev_audit_stmt)).first()
+
+            if prev_audit:
+                score_delta = round(report.suspicion_score - prev_audit.suspicion_score, 2)
+                # Count violation differences
+                prev_v_stmt = select(Violation.rule_id).where(Violation.audit_id == prev_audit.id)
+                prev_rule_ids = set((await s.exec(prev_v_stmt)).all())
+                current_rule_ids = {v.rule_id for v in report.violations}
+                violations_added = len(current_rule_ids - prev_rule_ids)
+                violations_resolved = len(prev_rule_ids - current_rule_ids)
+
+        # Step 5: Persist to database
         snap_record = Snapshot(
             url=url,
             content_sha256=snapshot_result.content_sha256,
@@ -232,6 +274,11 @@ async def audit_url(
             byline=snapshot_result.extracted.byline,
             site_name=snapshot_result.extracted.site_name,
             is_satire_cue=snapshot_result.extracted.is_satire_cue,
+            parent_snapshot_id=parent_snapshot_id,
+            revision_index=revision_index,
+            content_diff=content_diff_json,
+            token_drift=token_drift_val,
+            is_editorial_update=snapshot_result.extracted.is_editorial_update,
         )
         s.add(snap_record)
         await s.commit()
@@ -245,6 +292,9 @@ async def audit_url(
             suspicion_density=report.suspicion_density,
             confidence_score=report.confidence_score,
             classification=report.classification,
+            score_delta=score_delta,
+            violations_added_count=violations_added,
+            violations_resolved_count=violations_resolved,
             is_satire=report.is_satire,
             content_type=report.content_type,
             satire_notes=report.satire_notes,

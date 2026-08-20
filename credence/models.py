@@ -38,6 +38,19 @@ class Snapshot(SQLModel, table=True):
     site_name: Optional[str] = Field(default=None, description="Publisher or site name")
     is_satire_cue: bool = Field(default=False, description="Whether snapshot contained explicit satire metadata cues")
 
+    # Revision Chaining & Temporal Differentials
+    parent_snapshot_id: Optional[int] = Field(
+        default=None, foreign_key="snapshot.id", index=True, description="Parent snapshot ID for revision chaining"
+    )
+    revision_index: int = Field(default=1, description="Sequential revision index for this URL")
+    content_diff: Optional[str] = Field(
+        default=None, description="JSON serialized line/token diff from parent snapshot"
+    )
+    token_drift: float = Field(default=0.0, description="Normalized semantic drift from parent snapshot (0.0-1.0)")
+    is_editorial_update: bool = Field(
+        default=False, description="Whether snapshot contained explicit editorial correction notes"
+    )
+
     # Relationships
     audits: List["Audit"] = Relationship(
         back_populates="snapshot",
@@ -60,6 +73,13 @@ class Audit(SQLModel, table=True):
     classification: str = Field(
         default="CLEAN", description="Verdict classification band (e.g. CLEAN, SUSPICIOUS, DECEPTIVE, SATIRE_PARODY)"
     )
+    score_delta: Optional[float] = Field(
+        default=None, description="Suspicion score delta compared to parent revision (S_t - S_{t-1})"
+    )
+    violations_added_count: int = Field(
+        default=0, description="Number of newly introduced violations compared to parent"
+    )
+    violations_resolved_count: int = Field(default=0, description="Number of resolved violations compared to parent")
 
     # Satire & Poe's Law Safeguards
     is_satire: bool = Field(default=False, index=True, description="True if content is comedic/satirical parody")

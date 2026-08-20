@@ -386,3 +386,12 @@ def _register_subject_resources(server: MCPServer) -> None:
     @server.resource("credence://reports/explore/{category}")
     async def get_explore_category_resource(category: str) -> str:
         return await _execute_browse_audits(category=category, limit=20, format="json")
+
+    @server.resource("credence://history/{identifier}")
+    async def get_history_resource(identifier: str) -> str:
+        from credence.storage.revisions import get_url_revision_history
+
+        await init_db()
+        async with get_async_session() as s:
+            trajectory = await get_url_revision_history(s, identifier)
+            return json.dumps(trajectory.model_dump(mode="json"), indent=2)

@@ -32,6 +32,7 @@ from credence.cli.commands.audit import (
 )
 from credence.cli.commands.boredom import run_boredom_command
 from credence.cli.commands.db import run_db_init_command, run_db_migrate_command
+from credence.cli.commands.docs_audit import cli_audit_docs
 from credence.cli.commands.feeds import run_feeds_list_command, run_sifter_command
 from credence.cli.commands.org import run_init_org_command
 from credence.cli.commands.quota import run_quota_command
@@ -243,6 +244,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_feed = subparsers.add_parser("feeds", help="Manage RSS/Atom feed subscriptions")
     p_feed.add_argument("action", default="list", nargs="?", choices=["list"])
 
+    # audit-docs
+    p_ad = subparsers.add_parser("audit-docs", help="Self-audit documentation and blog articles, minting attestations")
+    p_ad.add_argument("--files", nargs="*", help="Specific markdown files to audit differentially")
+    p_ad.add_argument("--check", action="store_true", help="Fail with exit code 1 if any issues detected (CI mode)")
+    p_ad.add_argument("--update", action="store_true", help="Update verified_version and last_verified frontmatter")
+    p_ad.add_argument(
+        "--lens", default="surface", choices=["surface", "focus", "forensic"], help="Information pyramid lens"
+    )
+
+    # history
+    p_hist = subparsers.add_parser("history", help="Inspect snapshot revision history and score trajectory")
+    p_hist.add_argument("url", help="Target URL or SHA-256 hash")
+    p_hist.add_argument(
+        "--lens", default="surface", choices=["surface", "focus", "forensic"], help="Information pyramid lens"
+    )
+
     # tui
     subparsers.add_parser("tui", help="Launch interactive Textual Terminal Dashboard")
 
@@ -292,6 +309,47 @@ def main() -> None:
         asyncio.run(run_rankings_command(category=args.category))
     elif args.command == "feeds":
         asyncio.run(run_feeds_list_command())
+    elif args.command == "audit-docs":
+        from credence.cli.commands.docs_audit import cli_audit_docs
+
+        code = cli_audit_docs(
+            files=args.files,
+            check_only=args.check,
+            update=args.update,
+            lens=args.lens,
+        )
+        sys.exit(code)
+    elif args.command == "history":
+        from credence.storage.revisions import get_url_revision_history
+
+        async def _run_hist() -> None:
+            from credence.db import get_async_session, init_db
+
+            await init_db()
+            async with get_async_session() as s:
+                trajectory = await get_url_revision_history(s, args.url)
+                if trajectory.total_revisions == 0:
+                    console.print(f"[yellow]No revision history found for {args.url}[/yellow]")
+                    return
+
+                if args.lens == "surface":
+                    console.print(f"[bold cyan]📜 Revision History: {trajectory.url or args.url}[/bold cyan]")
+                    console.print(
+                        f"Total Revisions: {trajectory.total_revisions} | Lifetime ΔS: {trajectory.lifetime_score_delta:+.1f} pts ({trajectory.status})"
+                    )
+                    for r in trajectory.revisions:
+                        v_badge = (
+                            f"[green]Score {100.0 - r.suspicion_score:.1f}[/green]"
+                            if r.suspicion_score < 20.0
+                            else f"[yellow]Score {100.0 - r.suspicion_score:.1f}[/yellow]"
+                        )
+                        console.print(
+                            f"  • Rev {r.revision_index} ({r.captured_at[:10]}): {v_badge} [{r.classification}] - {r.diff_summary or 'Initial snapshot'}"
+                        )
+                else:
+                    console.print(trajectory.model_dump_json(indent=2))
+
+        asyncio.run(_run_hist())
     elif args.command == "tui":
         from credence.tui.app import run_tui
 
@@ -332,7 +390,9 @@ __all__ = [
     "cli_profile",
     "cli_init_org",
     "cli_org_init",
+    "cli_audit_docs",
 ]
+
 
 if __name__ == "__main__":
     main()

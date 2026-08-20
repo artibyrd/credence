@@ -51,6 +51,7 @@ from credence.server.api.feeds import (
 )
 from credence.server.api.mesh import api_mesh_network_health, api_mesh_stats
 from credence.server.api.system import api_germinate, api_health
+from credence.server.api.widget import api_get_badge_data, api_get_history
 from credence.server.lifespan import combined_lifespan
 from credence.server.mcp.server import create_mcp_server
 from credence.server.middleware.rate_limit import ServerRateLimiter
@@ -85,6 +86,10 @@ def create_server_app(enable_sifter: bool = False, enable_boredom: bool = False)
     rest_routes = [
         Route("/health", endpoint=api_health, methods=["GET"]),
         Route("/api/health", endpoint=api_health, methods=["GET"]),
+        Route("/api/v1/badge/{identifier:path}", endpoint=api_get_badge_data, methods=["GET", "OPTIONS"]),
+        Route("/api/badge/data/{identifier:path}", endpoint=api_get_badge_data, methods=["GET", "OPTIONS"]),
+        Route("/api/v1/history/{identifier:path}", endpoint=api_get_history, methods=["GET", "OPTIONS"]),
+        Route("/api/history/{identifier:path}", endpoint=api_get_history, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
         Route("/api/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
@@ -122,6 +127,7 @@ def create_server_app(enable_sifter: bool = False, enable_boredom: bool = False)
         Route("/api/weather", endpoint=api_weather, methods=["GET", "OPTIONS"]),
         Route("/api/bounties", endpoint=api_bounties, methods=["GET", "OPTIONS"]),
     ]
+
     for r in rest_routes:
         app.router.routes.insert(0, r)
 

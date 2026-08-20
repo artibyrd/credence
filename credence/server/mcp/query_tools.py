@@ -248,3 +248,16 @@ def _register_query_tools(server: MCPServer) -> None:
             return json.dumps(health, indent=2)
         health = await compute_network_mesh_health(None)
         return json.dumps(health, indent=2)
+
+    @server.tool(
+        name="credence_get_revision_history",
+        description="Query the complete snapshot revision history, temporal score trajectory, and diffs for a URL.",
+    )
+    async def get_revision_history(url_or_hash: str) -> str:
+        from credence.db import get_async_session, init_db
+        from credence.storage.revisions import get_url_revision_history
+
+        await init_db()
+        async with get_async_session() as s:
+            trajectory = await get_url_revision_history(s, url_or_hash)
+            return json.dumps(trajectory.model_dump(mode="json"), indent=2)

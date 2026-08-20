@@ -238,9 +238,29 @@ leaderboard category="quality": (preflight "poetry")
 merit: (preflight "poetry")
     poetry run credence merit
 
+# Self-audit documentation and blog articles with cryptographic attestations
+audit-docs action="check": (preflight "poetry")
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{action}}" in
+        check)
+            echo "=== Auditing Documentation Integrity & Epistemic Self-Score ==="
+            poetry run credence audit-docs --check
+            ;;
+        update)
+            echo "=== Updating Documentation Verified Frontmatter & Minting Attestations ==="
+            poetry run credence audit-docs --update
+            ;;
+        *)
+            echo "=== Running Documentation Audit ==="
+            poetry run credence audit-docs --lens {{action}}
+            ;;
+    esac
+
 # Display Web Epistemic Analytics and Domain rankings (domains, rules, weather, bounties)
 rankings type="domains" category="best": (preflight "poetry")
     poetry run credence rankings {{type}} --category {{category}}
+
 
 # Display Global Epistemic Weather report
 weather: (preflight "poetry")
