@@ -270,38 +270,62 @@ p.hero-subtitle {
 
 /* Unified Cross-Domain Ecosystem Footer */
 footer.credence-footer {
-  padding: 3.5rem 1.5rem 2rem;
+  padding: 3rem 1.5rem 2rem;
   border-top: 1px solid var(--border, rgba(56, 189, 248, 0.15));
   background: linear-gradient(180deg, rgba(11, 15, 25, 0.95), rgba(5, 8, 15, 0.98));
   color: var(--text-muted, #94a3b8);
   font-size: 0.9rem;
   margin-top: 4rem;
+  border-radius: 8px;
+  container-type: inline-size;
 }
 
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.75rem;
+  gap: 1.5rem;
   margin-bottom: 2.5rem;
   text-align: left;
+}
+
+/* Dedicated Docs Layout: center column renders as spacious, balanced 2x2 grid */
+.docs-main .footer-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem 2.5rem;
+}
+
+@container (max-width: 820px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 2rem;
+  }
+}
+
+@container (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 860px) {
   .footer-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 2rem 2rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 520px) {
+  .docs-main .footer-grid,
   .footer-grid {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 }
 
