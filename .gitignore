@@ -72,3 +72,7 @@ crash.log
 *.pem
 *.key
 root_private.pem
+
+# Cloudflare & Node Artifacts
+node_modules/
+.wrangler/

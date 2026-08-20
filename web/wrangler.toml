@@ -2,10 +2,6 @@ name = "credence"
 compatibility_date = "2026-08-17"
 main = "_worker.js"
 
-[assets]
-directory = "."
-binding = "ASSETS"
-
 routes = [
   { pattern = "credence.run/*", zone_name = "credence.run" },
   { pattern = "mcp.credence.run/*", zone_name = "credence.run" },
@@ -19,6 +15,10 @@ routes = [
   { pattern = "dev.credence.report/*", zone_name = "credence.report" }
 ]
 
+[assets]
+directory = "."
+binding = "ASSETS"
+
 [vars]
 PROD_BACKEND_URL = "https://credence-server-psgqr4nwoq-uc.a.run.app"
 DEV_BACKEND_URL = "https://credence-dev-wukzqiyqbq-uc.a.run.app"
@@ -30,4 +30,3 @@ DEV_BACKEND_URL = "https://credence-dev-wukzqiyqbq-uc.a.run.app"
 [env.dev.vars]
 PROD_BACKEND_URL = "https://credence-server-psgqr4nwoq-uc.a.run.app"
 DEV_BACKEND_URL = "https://credence-dev-wukzqiyqbq-uc.a.run.app"
-
