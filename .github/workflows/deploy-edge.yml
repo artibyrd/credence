@@ -46,7 +46,8 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/artibyrd/credence-docs.git /tmp/credence-docs
           cd /tmp/credence-docs
-          wrangler pages deploy . --project-name=credence-docs --branch=main
+          npx wrangler pages project create credence-docs --production-branch=main || true
+          npx wrangler pages deploy . --project-name=credence-docs --branch=main
 
       - name: Skip Deploy Notice (No Secret Configured)
         if: env.CLOUDFLARE_API_TOKEN == ''
