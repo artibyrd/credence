@@ -68,7 +68,7 @@ def test_cli_taxonomy() -> None:
 
 
 @pytest.mark.unit
-async def test_cli_quota() -> None:
+async def test_cli_quota(db_session: Any) -> None:
     """Verify quota command outputs headroom metrics without errors."""
     from credence.cli.main import cli_quota
 
@@ -127,7 +127,7 @@ async def test_cli_verify_file_and_export(tmp_path: Path) -> None:
 
 
 @pytest.mark.unit
-async def test_cli_db_clean() -> None:
+async def test_cli_db_clean(db_session: Any) -> None:
     """Verify db-clean CLI subcommand."""
     from credence.cli.main import cli_db_clean
 
@@ -135,7 +135,7 @@ async def test_cli_db_clean() -> None:
 
 
 @pytest.mark.unit
-async def test_cli_seeds_and_rank(tmp_path: Path) -> None:
+async def test_cli_seeds_and_rank(tmp_path: Path, db_session: Any) -> None:
     """Verify seeds and rank CLI subcommands."""
     from credence.cli.main import cli_rank, cli_seeds
 
@@ -155,7 +155,7 @@ async def test_cli_seeds_and_rank(tmp_path: Path) -> None:
 
 
 @pytest.mark.unit
-async def test_cli_feeds_and_subjects() -> None:
+async def test_cli_feeds_and_subjects(db_session: Any) -> None:
     """Verify feeds and subjects CLI subcommands."""
     from unittest.mock import AsyncMock, patch
 
