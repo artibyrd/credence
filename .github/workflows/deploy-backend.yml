@@ -72,7 +72,7 @@ jobs:
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || inputs.project_id || 'credence-prod-505902' }}
         run: |
           gcloud builds submit \
             --project="${PROJECT_ID}" \
@@ -83,7 +83,7 @@ jobs:
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || inputs.project_id || 'credence-prod-505902' }}
           REGION: ${{ inputs.region || 'us-central1' }}
           SERVICE: ${{ inputs.service_name || 'credence-server' }}
           TIER: ${{ inputs.tier || 'advanced' }}
@@ -108,7 +108,7 @@ jobs:
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || inputs.project_id || 'credence-prod-505902' }}
           REGION: ${{ inputs.region || 'us-central1' }}
           SERVICE: ${{ inputs.service_name || 'credence-server' }}
         run: |

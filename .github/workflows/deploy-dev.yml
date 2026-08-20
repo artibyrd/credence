@@ -9,7 +9,7 @@ on:
       project_id:
         description: "Dev Google Cloud Project ID"
         required: true
-        default: "credence-dev-505902"
+        default: "credence-dev-495173"
       region:
         description: "Google Cloud Region"
         required: true
@@ -40,31 +40,31 @@ jobs:
         if: env.GCP_WIF_PROVIDER != ''
         uses: google-github-actions/auth@v2
         env:
-          GCP_WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_WIF_PROVIDER: ${{ secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEV_SERVICE_ACCOUNT || secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Authenticate to Google Cloud (Service Account Key)
         if: env.GCP_WIF_PROVIDER == '' && env.GCP_SA_KEY != ''
         uses: google-github-actions/auth@v2
         env:
-          GCP_WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_WIF_PROVIDER: ${{ secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SA_KEY: ${{ secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY }}
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
         if: env.GCP_CONFIGURED == 'true'
         uses: google-github-actions/setup-gcloud@v2
         env:
-          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
 
       - name: Build and Submit Container Image to Dev Project
         if: env.GCP_CONFIGURED == 'true'
         env:
-          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-dev-505902' }}
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
+          PROJECT_ID: ${{ secrets.GCP_DEV_PROJECT_ID || inputs.project_id || 'credence-dev-495173' }}
           SERVICE: ${{ inputs.service_name || 'credence-dev' }}
         run: |
           gcloud builds submit \
@@ -75,8 +75,8 @@ jobs:
       - name: Deploy to Dev Cloud Run (Basic Mode)
         if: env.GCP_CONFIGURED == 'true'
         env:
-          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-dev-505902' }}
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
+          PROJECT_ID: ${{ secrets.GCP_DEV_PROJECT_ID || inputs.project_id || 'credence-dev-495173' }}
           REGION: ${{ inputs.region || 'us-central1' }}
           SERVICE: ${{ inputs.service_name || 'credence-dev' }}
           PROFILE: ${{ inputs.profile || 'economy' }}
@@ -95,8 +95,8 @@ jobs:
       - name: Verify Live Dev Service Health
         if: env.GCP_CONFIGURED == 'true'
         env:
-          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-dev-505902' }}
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
+          PROJECT_ID: ${{ secrets.GCP_DEV_PROJECT_ID || inputs.project_id || 'credence-dev-495173' }}
           REGION: ${{ inputs.region || 'us-central1' }}
           SERVICE: ${{ inputs.service_name || 'credence-dev' }}
         run: |
@@ -104,3 +104,17 @@ jobs:
           echo "Probing deployed dev service at: ${SERVICE_URL}"
           curl -f -s "${SERVICE_URL}/health" || curl -f -s "${SERVICE_URL}/api/health" || exit 1
           echo "✅ Dev Cloud Run health check passed!"
+
+      - name: Skip Notice (No GCP Secret Configured in GitHub)
+        if: env.GCP_CONFIGURED != 'true'
+        env:
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
+        run: |
+          echo "=========================================================================="
+          echo "ℹ️  Notice: Dev Google Cloud secrets not configured in GitHub repository secrets."
+          echo "   To enable automated GitHub Actions deployment to Dev Cloud Run, configure:"
+          echo "     - GCP_DEV_WORKLOAD_IDENTITY_PROVIDER (recommended) OR GCP_DEV_SA_KEY"
+          echo "     - GCP_DEV_SERVICE_ACCOUNT"
+          echo "     - GCP_DEV_PROJECT_ID"
+          echo "=========================================================================="
+
