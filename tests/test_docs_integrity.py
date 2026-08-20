@@ -707,7 +707,6 @@ def test_all_markdown_code_fences_and_syntax(docs_root: Path) -> None:
     check_dirs = [
         docs_root / "docs",
         docs_root / "blog",
-        ecosystem_root / "credence" / "docs",
     ]
 
     invalid_fences = []

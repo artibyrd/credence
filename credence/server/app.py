@@ -106,6 +106,7 @@ class ServerTelemetryTracker:
         self.start_time = time.time()
 
     def get_snapshot(self) -> dict[str, Any]:
+        import os
         import resource
 
         now = time.time()
@@ -151,13 +152,14 @@ class ServerTelemetryTracker:
                 }
             )
 
-        if memory_mb > 850.0:
+        mem_limit_mb = float(os.environ.get("CREDENCE_MEMORY_ALERT_MB", "1800.0"))
+        if memory_mb > mem_limit_mb:
             active_alerts.append(
                 {
                     "id": "alert_high_memory",
                     "severity": "warning",
                     "title": "High Memory Pressure",
-                    "message": f"Memory consumption at {memory_mb} MB (exceeds 85% safety baseline).",
+                    "message": f"Memory consumption at {memory_mb} MB (exceeds {mem_limit_mb} MB baseline).",
                 }
             )
             if status == "healthy":

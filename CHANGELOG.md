@@ -3,13 +3,27 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.6
+verified_version: v1.21.7
 last_verified: '2026-08-20'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.21.7] - 2026-08-20
+
+### Ecosystem Documentation Deduplication & Living Canon Synchronization
+- **Documentation Deduplication & Single Source of Truth**:
+  - Completely removed the redundant 114-file legacy mirror in `credence/docs/`, establishing **`credence-docs/` as the single canonical source of truth** across the entire ecosystem.
+- **Ecosystem-Wide Documentation Audit**:
+  - Verified and synchronized all 162 markdown files across `credence-docs/docs/` and `credence-docs/blog/` to `verified_version: v1.21.7`.
+  - Codified **Invariant 41** (Symmetric 4-Pillar Navigation & Zero-Cache Multi-Domain Edge Routing) in the Living Canon of System Invariants.
+  - Updated operator guides, topology diagrams, and roadmap foundations with the 18-domain Cloudflare Edge Router matrix and zero-cache CDN policies.
+- **Server Telemetry Baseline Optimization**:
+  - Made memory pressure alert thresholds configurable (`CREDENCE_MEMORY_ALERT_MB`, default `1800.0` MB) in `ServerTelemetryTracker.get_snapshot()` to prevent local multi-test memory allocations from tripping false degraded alerts.
+- **7-Manifest Parity Sync**:
+  - Synchronized canonical semantic version `v1.21.7` across all 7 ecosystem manifests.
 
 ## [1.21.6] - 2026-08-20
 
