@@ -81,6 +81,7 @@ jobs:
             --project="${PROJECT_ID}" \
             --tag="gcr.io/${PROJECT_ID}/credence-server:${{ github.ref_name || github.sha }}" \
             --tag="gcr.io/${PROJECT_ID}/credence-server:latest" \
+            --suppress-logs \
             --timeout="10m"
 
       - name: Deploy to Cloud Run
