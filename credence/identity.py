@@ -129,3 +129,4 @@ def verify_audit_signature(report: AuditReport) -> bool:
 
 # Alias for backward compatibility
 verify_audit_report = verify_audit_signature
+verify_attestation_signature = verify_audit_signature

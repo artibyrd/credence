@@ -202,6 +202,34 @@ tui: (preflight "poetry")
 benchmark: (preflight "poetry")
     poetry run credence benchmark
 
+# Automated dual-tier environment configuration verifier (dev vs prod)
+config-verify dev_url="http://localhost:8000" prod_url="https://credence-server-663899237633.us-central1.run.app": (preflight "poetry")
+    poetry run python -m credence.experiments.env_verifier --dev-url="{{dev_url}}" --prod-url="{{prod_url}}"
+
+# Run bicameral experiments and differential benchmarks (shadow-audit, federation-bridge, env-verify)
+experiment name="shadow-audit" arg="": (preflight "poetry")
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{name}}" in
+        shadow-audit)
+            echo "=== Running Bicameral Differential Shadow Audit ==="
+            poetry run python -m credence.experiments.shadow_audit {{arg}}
+            ;;
+        federation-bridge)
+            echo "=== Running Sovereign White-Label Federation Bridge Simulator ==="
+            poetry run python -m credence.experiments.federation_bridge {{arg}}
+            ;;
+        env-verify|verify)
+            echo "=== Verifying Dev vs. Prod Environment Configurations ==="
+            poetry run python -m credence.experiments.env_verifier {{arg}}
+            ;;
+        *)
+            echo "❌ Unknown experiment '{{name}}'. Valid options: shadow-audit, federation-bridge, env-verify."
+            exit 1
+            ;;
+    esac
+
+
 # Display Epistemic Mesh Leaderboard (quality, subjects, philanthropy, galileo, teams)
 leaderboard category="quality": (preflight "poetry")
     poetry run credence leaderboard --category {{category}}

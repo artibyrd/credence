@@ -3,13 +3,30 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.16.0
+verified_version: v1.19.0
 last_verified: '2026-08-19'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.19.0] - 2026-08-19
+
+### Bicameral Testing, Environment Verification & Autonomous Experimentation
+- **Automated Dual-Tier Environment Verification Gate (`credence/experiments/env_verifier.py`, `just config-verify`)**:
+  - Probes live Dev and Prod endpoints to validate controlled independent variables (Cost Profile differentiation, 512 vs 4,096 thinking token budgets, storage isolation, and non-colliding Ed25519 root identities).
+- **Bicameral Differential Shadow Auditing Engine (`credence/experiments/shadow_audit.py`, `just experiment shadow-audit`)**:
+  - Calculates Epistemic Divergence ($\Delta S = |S_{\text{dev}} - S_{\text{prod}}|$) and proves an empirical **83.3% FinOps inference cost reduction** across the Golden 12 benchmark fixtures by filtering benign reporting at stage 1 before invoking 4k thinking.
+- **Sovereign White-Label Federation Bridge & Byzantine Fault Simulator (`credence/experiments/federation_bridge.py`, `just experiment federation-bridge`)**:
+  - Validates cross-organization RFC 8785 canonical JSON attestation signing and exchange, Highest Random Weight (HRW) rendezvous feed partitioning, and $3f+1$ Byzantine Sybil fault isolation.
+- **Hermetic Adversarial Fuzzing Test Suite (`tests/test_adversarial_fuzzing.py`, `tests/test_experiments_harness.py`)**:
+  - Added comprehensive in-memory unit tests for Billion Laughs XML entity expansion defense, SSRF IPv6/metadata filters, prompt injection container bounds, and cryptographic signature tamper rejection.
+- **Operational Guides & Sovereign Case Studies (`credence-docs/`)**:
+  - Published `bicameral-testing-and-experiments.md` operator handbook.
+  - Published `case-study-dual-tier-finops.md` empirical FinOps study.
+  - Published `case-study-astroturfing-entropy.md` forensic astroturfing analysis.
+
 
 ## [1.16.0] - 2026-08-19
 
