@@ -71,18 +71,34 @@ jobs:
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
 
-      - name: Build and Submit Container Image
+      - name: Configure Docker for Google Container Registry
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || inputs.project_id || 'credence-prod-505902' }}
         run: |
-          gcloud builds submit \
-            --project="${PROJECT_ID}" \
-            --tag="gcr.io/${PROJECT_ID}/credence-server:${{ github.ref_name || github.sha }}" \
-            --tag="gcr.io/${PROJECT_ID}/credence-server:latest" \
-            --suppress-logs \
-            --timeout="10m"
+          gcloud auth configure-docker gcr.io --quiet
+
+      - name: Set up Docker Buildx
+        if: env.GCP_CONFIGURED == 'true'
+        uses: docker/setup-buildx-action@v3
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+
+      - name: Build and Push Container Image
+        if: env.GCP_CONFIGURED == 'true'
+        uses: docker/build-push-action@v5
+        env:
+          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || inputs.project_id || 'credence-prod-505902' }}
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            gcr.io/${{ env.PROJECT_ID }}/credence-server:${{ github.ref_name || github.sha }}
+            gcr.io/${{ env.PROJECT_ID }}/credence-server:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy to Cloud Run
         if: env.GCP_CONFIGURED == 'true'
