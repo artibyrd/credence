@@ -4,8 +4,10 @@ main = "_worker.js"
 
 routes = [
   { pattern = "credence.run/*", zone_name = "credence.run" },
+  { pattern = "docs.credence.run/*", zone_name = "credence.run" },
   { pattern = "mcp.credence.run/*", zone_name = "credence.run" },
   { pattern = "dev.credence.run/*", zone_name = "credence.run" },
+  { pattern = "dev.docs.credence.run/*", zone_name = "credence.run" },
   { pattern = "mcp.dev.credence.run/*", zone_name = "credence.run" },
   { pattern = "credence.nexus/*", zone_name = "credence.nexus" },
   { pattern = "dev.credence.nexus/*", zone_name = "credence.nexus" },

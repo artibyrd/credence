@@ -18,6 +18,28 @@ export default {
       const targetBackendHost = new URL(targetBackend).hostname;
 
       // 2. FastMCP SSE & Tool Proxy (mcp.credence.run & mcp.dev.credence.run)
+      if (host === 'docs.credence.run' || host === 'dev.docs.credence.run') {
+        const pagesUrl = new URL(url.pathname + url.search, 'https://credence-docs.pages.dev');
+        const reqHeaders = new Headers(request.headers);
+        reqHeaders.set('Host', 'credence-docs.pages.dev');
+        
+        const res = await fetch(pagesUrl, {
+          method: request.method,
+          headers: reqHeaders,
+          body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
+        });
+
+        const resHeaders = new Headers(res.headers);
+        resHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        resHeaders.set('Access-Control-Allow-Origin', '*');
+        
+        return new Response(res.body, {
+          status: res.status,
+          statusText: res.statusText,
+          headers: resHeaders,
+        });
+      }
+
       if (host === 'mcp.credence.run' || host === 'mcp.dev.credence.run') {
         const backendUrl = new URL(url.pathname + url.search, targetBackend);
         const newHeaders = new Headers(request.headers);
