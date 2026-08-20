@@ -752,8 +752,7 @@ release version message:
     @just git-sync commit "feat(ecosystem): release v{{version}} - {{message}}"
     @just git-sync tag {{version}}
     @just git-sync push
-    @just deploy all
-    @echo -e "\033[1;32m🚀 Full Ecosystem Release v{{version}} Completed Successfully!\033[0m"
+    @echo -e "\033[1;32m🚀 Full Ecosystem Release v{{version}} Pushed to GitHub! Continuous deployment is being orchestrated by GitHub Actions.\033[0m"
 
 # Verify Antigravity declarative workspace configuration and skills registration
 agent-check:
