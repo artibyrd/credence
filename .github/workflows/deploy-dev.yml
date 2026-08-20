@@ -73,7 +73,8 @@ jobs:
           gcloud builds submit \
             --project="${PROJECT_ID}" \
             --tag="gcr.io/${PROJECT_ID}/${SERVICE}:${{ github.sha }}" \
-            --tag="gcr.io/${PROJECT_ID}/${SERVICE}:latest"
+            --tag="gcr.io/${PROJECT_ID}/${SERVICE}:latest" \
+            --timeout="10m"
 
       - name: Deploy to Dev Cloud Run (Basic Mode)
         if: env.GCP_CONFIGURED == 'true'

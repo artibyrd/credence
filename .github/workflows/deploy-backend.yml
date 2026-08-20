@@ -80,7 +80,8 @@ jobs:
           gcloud builds submit \
             --project="${PROJECT_ID}" \
             --tag="gcr.io/${PROJECT_ID}/credence-server:${{ github.ref_name || github.sha }}" \
-            --tag="gcr.io/${PROJECT_ID}/credence-server:latest"
+            --tag="gcr.io/${PROJECT_ID}/credence-server:latest" \
+            --timeout="10m"
 
       - name: Deploy to Cloud Run
         if: env.GCP_CONFIGURED == 'true'

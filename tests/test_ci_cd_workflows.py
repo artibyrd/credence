@@ -32,7 +32,9 @@ def test_github_workflows_syntax_and_structure() -> None:
             if "backend" in wf_path.name or "dev" in wf_path.name:
                 for job_name, job_spec in parsed["jobs"].items():
                     permissions = job_spec.get("permissions", {})
-                    assert permissions.get("id-token") == "write", f"Job '{job_name}' in {wf_path.name} must declare id-token: write for WIF OIDC authentication"
+                    assert permissions.get("id-token") == "write", (
+                        f"Job '{job_name}' in {wf_path.name} must declare id-token: write for WIF OIDC authentication"
+                    )
 
         # Verify job timeouts
         for job_name, job_spec in parsed["jobs"].items():
