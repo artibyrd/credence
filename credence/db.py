@@ -17,6 +17,7 @@ from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+import credence.models  # noqa: F401
 from credence.config import settings
 
 # Global async engine instance
