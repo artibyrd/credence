@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "web/**"
+      - "docs/**"
       - ".github/workflows/deploy-edge.yml"
   workflow_dispatch:
 
@@ -14,7 +15,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Cloudflare Edge Router
+    name: Deploy Cloudflare Edge Router & Docs
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -36,6 +37,16 @@ jobs:
           npm install -g wrangler
           cd web
           wrangler deploy
+
+      - name: Deploy Docs to Cloudflare Pages
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          git clone --depth 1 https://github.com/artibyrd/credence-docs.git /tmp/credence-docs
+          cd /tmp/credence-docs
+          wrangler pages deploy . --project-name=credence-docs --branch=main
 
       - name: Skip Deploy Notice (No Secret Configured)
         if: env.CLOUDFLARE_API_TOKEN == ''
