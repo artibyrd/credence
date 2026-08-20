@@ -5,3 +5,11 @@ main = "_worker.js"
 [assets]
 directory = "."
 binding = "ASSETS"
+
+[env.production.vars]
+PROD_BACKEND_URL = "https://credence-server-663899237633.us-central1.run.app"
+DEV_BACKEND_URL = "https://credence-dev-663899237633.us-central1.run.app"
+
+[env.dev.vars]
+PROD_BACKEND_URL = "https://credence-server-663899237633.us-central1.run.app"
+DEV_BACKEND_URL = "https://credence-dev-663899237633.us-central1.run.app"

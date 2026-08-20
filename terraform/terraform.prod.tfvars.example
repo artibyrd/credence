@@ -1,0 +1,32 @@
+# ==============================================================================
+# Credence Terraform Production Environment (Advanced Mode Example)
+# ==============================================================================
+# Ideal for: Production CI/CD deploying multi-tenant Cloud Run with PostgreSQL, R2, Redis, and full SRE monitoring
+
+project_id                  = "credence-prod-505902"
+region                      = "us-central1"
+service_name                = "credence-server"
+container_image             = "gcr.io/credence-prod-505902/credence-server:latest"
+
+# Operational Cost Profile: BALANCED or ULTRA with reasoning
+credence_profile            = "balanced"
+
+# Cost Capping ($15/mo project budget ceiling with automated alert thresholds)
+monthly_budget_limit_usd    = 15.00
+min_instance_count          = 0
+max_instance_count          = 5
+
+# Cloudflare Multi-Domain & Edge Routing
+cloudflare_account_id       = "f1e95c67a1e06db65efa5aaf7a92b38e"
+domain_credence_run         = "credence.run"
+domain_credence_nexus       = "credence.nexus"
+domain_credence_foundation  = "credence.foundation"
+domain_credence_report      = "credence.report"
+
+# Monitoring & Alerting Tier: Advanced (Full SRE metrics, P95 latency, CPU/Memory saturation, 5xx server crash alerts)
+monitoring_tier             = "advanced"
+enable_uptime_check         = true
+alert_memory_threshold      = 0.85
+alert_cpu_threshold         = 0.90
+alert_latency_p95_ms        = 5000
+alert_5xx_count_threshold   = 5

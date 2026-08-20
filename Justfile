@@ -330,14 +330,18 @@ gcp action="status" arg="": (preflight "gcloud")
             gcloud run services describe "$SERVICE" --region "$REGION" --project "$PROJECT"
             ;;
         probe)
-            echo "=== Probing Live Cloud Run Endpoints ==="
-            poetry run python -c "import textwrap; exec(textwrap.dedent('''
-                import httpx, time
-                BASE = 'https://credence-server-663899237633.us-central1.run.app'
+            TARGET_SVC="{{arg}}"
+            if [ -z "$TARGET_SVC" ]; then TARGET_SVC="$SERVICE"; fi
+            echo "=== Probing Live Cloud Run Endpoints ($TARGET_SVC) ==="
+            SVC_URL=$(gcloud run services describe "$TARGET_SVC" --region "$REGION" --project "$PROJECT" --format="value(status.url)" 2>/dev/null || echo "https://credence-server-663899237633.us-central1.run.app")
+            TARGET_URL="$SVC_URL" poetry run python -c "import os, textwrap; exec(textwrap.dedent('''
+                import os, httpx, time
+                BASE = os.environ.get('TARGET_URL', 'https://credence-server-663899237633.us-central1.run.app').rstrip('/')
                 endpoints = [
                     ('/health', 'GET'),
                     ('/api/health', 'GET'),
                     ('/sse', 'STREAM'),
+                    ('/api/cost/telemetry', 'GET'),
                     ('/api/reports?limit=3', 'GET'),
                     ('/api/sifter/status', 'GET'),
                     ('/api/feeds/stream?limit=3', 'GET'),
@@ -461,7 +465,7 @@ pipeline action="status" repo="all": (preflight "gh")
     esac
 
 # Multi-Cloud Terraform Infrastructure (validate, plan, apply, output)
-tf action="validate" extra="": (preflight "terraform")
+tf action="validate" env="prod" extra="": (preflight "terraform")
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{action}}" in
@@ -473,13 +477,20 @@ tf action="validate" extra="": (preflight "terraform")
             terraform -chdir=terraform validate
             ;;
         plan)
-            terraform -chdir=terraform plan {{extra}}
+            VAR_FILE="terraform.{{env}}.tfvars"
+            STATE_FILE="terraform.{{env}}.tfstate"
+            if [ ! -f "terraform/${VAR_FILE}" ]; then VAR_FILE="terraform.tfvars"; fi
+            terraform -chdir=terraform plan -var-file="${VAR_FILE}" -state="${STATE_FILE}" {{extra}}
             ;;
         apply)
-            terraform -chdir=terraform apply {{extra}}
+            VAR_FILE="terraform.{{env}}.tfvars"
+            STATE_FILE="terraform.{{env}}.tfstate"
+            if [ ! -f "terraform/${VAR_FILE}" ]; then VAR_FILE="terraform.tfvars"; fi
+            terraform -chdir=terraform apply -var-file="${VAR_FILE}" -state="${STATE_FILE}" {{extra}}
             ;;
         output)
-            terraform -chdir=terraform output {{extra}}
+            STATE_FILE="terraform.{{env}}.tfstate"
+            terraform -chdir=terraform output -state="${STATE_FILE}" {{extra}}
             ;;
         *)
             echo "❌ Unknown tf action '{{action}}'. Valid options: validate, plan, apply, output."
@@ -519,63 +530,102 @@ ignite burst="3":
     @just doctor
     @echo -e "\033[1;32m🌱 Credence Node Ignited & Ready for Operations!\033[0m"
 
-# Multi-plane deployment pipeline with automated post-flight verification (backend, edge, all)
-deploy target="backend" project_id="credence-prod-505902":
+# Multi-plane deployment pipeline with automated post-flight verification (backend, edge, compose, dev, prod, all)
+deploy target="backend" env="dev" project_id="credence-prod-505902":
     #!/usr/bin/env bash
     set -euo pipefail
+    if [ "{{target}}" != "compose" ] && [ -n "$(git status --porcelain)" ]; then
+        echo -e "\033[1;31m❌ Working tree is dirty. Per the Commit-Before-Deploy invariant, all changes must be committed before deploying to the cloud.\033[0m"
+        git status -s
+        exit 1
+    fi
     case "{{target}}" in
         backend)
             just preflight gcloud
+            SERVICE_NAME="credence-server"
+            PROFILE="balanced"
+            MEM="1Gi"
+            if [ "{{env}}" = "dev" ] || [ "{{env}}" = "basic" ]; then
+                SERVICE_NAME="credence-dev"
+                PROFILE="economy"
+                MEM="512Mi"
+                echo "🚀 Deploying in BASIC / DEV Mode (${SERVICE_NAME}, profile: ${PROFILE}, memory: ${MEM})..."
+            else
+                echo "🚀 Deploying in ADVANCED / PRODUCTION Mode (${SERVICE_NAME}, profile: ${PROFILE}, memory: ${MEM})..."
+            fi
             echo "=== [1/3] Building & Submitting Cloud Run Container via Cloud Build ==="
-            gcloud builds submit --project={{project_id}} --tag gcr.io/{{project_id}}/credence-server:latest
+            gcloud builds submit --project={{project_id}} --tag gcr.io/{{project_id}}/${SERVICE_NAME}:latest
             echo "=== [2/3] Deploying Container to Google Cloud Run ==="
-            gcloud run deploy credence-server \
-                --image gcr.io/{{project_id}}/credence-server:latest \
+            gcloud run deploy "${SERVICE_NAME}" \
+                --image gcr.io/{{project_id}}/${SERVICE_NAME}:latest \
                 --region us-central1 \
                 --project {{project_id}} \
-                --memory 1Gi \
+                --memory "${MEM}" \
                 --cpu 1 \
                 --execution-environment gen2 \
                 --cpu-boost \
+                --set-env-vars="ENV={{env}},CREDENCE_PROFILE=${PROFILE}" \
                 --allow-unauthenticated
             echo "=== [3/3] Executing Post-Deployment Live Health Probe ==="
-            just gcp probe
+            just gcp probe "${SERVICE_NAME}"
             ;;
         edge)
             just preflight wrangler
             echo "=== Deploying Cloudflare Edge Router ==="
             just edge deploy
             ;;
+        compose)
+            MODE="{{env}}"
+            if [ "$MODE" = "prod" ] || [ "$MODE" = "advanced" ]; then
+                echo "🚀 Launching Planetary Sovereign Stack (Credence + Postgres + MinIO + Valkey)..."
+                docker compose -f docker-compose.prod.yml up -d
+            else
+                echo "🚀 Launching Basic Sovereign Node (Credence + SQLite)..."
+                docker compose up -d
+            fi
+            ;;
+        dev)
+            just deploy backend "dev" "{{project_id}}"
+            ;;
+        prod)
+            just deploy backend "prod" "{{project_id}}"
+            ;;
         all)
+            echo "=== [Phase 1/3] Deploying Dev Environment ==="
+            just deploy backend "dev" "{{project_id}}"
+            echo "=== [Phase 2/3] Deploying Production Environment ==="
+            just deploy backend "prod" "{{project_id}}"
+            echo "=== [Phase 3/3] Deploying Cloudflare Anycast Edge Router ==="
             just deploy edge
-            just deploy backend "{{project_id}}"
             ;;
         *)
-            echo "❌ Unknown deploy target '{{target}}'. Valid options: backend, edge, all."
+            echo "❌ Unknown deploy target '{{target}}'. Valid options: backend, edge, compose, dev, prod, all."
             exit 1
             ;;
     esac
 
 # Comprehensive multi-plane diagnostic health check across Edge, Compute, Infra, and Agents
-doctor:
+doctor env="prod":
     #!/usr/bin/env bash
     set -euo pipefail
+    TARGET_SERVICE="credence-server"
+    if [ "{{env}}" = "dev" ] || [ "{{env}}" = "basic" ]; then TARGET_SERVICE="credence-dev"; fi
     echo "================================================================="
-    echo "         🩺 Credence Multi-Plane Health Diagnostic              "
+    echo "         🩺 Credence Multi-Plane Health Diagnostic ({{env}})    "
     echo "================================================================="
     echo ""
     echo "--- 1. Declarative Agent & Workspace Plane ---"
     just agent-check || true
     echo ""
-    echo "--- 2. Compute Plane (Google Cloud Run) ---"
+    echo "--- 2. Compute Plane (Google Cloud Run: ${TARGET_SERVICE}) ---"
     just gcp status || true
     echo ""
-    just gcp probe || true
+    just gcp probe "${TARGET_SERVICE}" || true
     echo ""
     echo "--- 3. Edge Plane (Cloudflare Workers & Pages) ---"
     just edge status || true
     echo ""
-    echo "--- 4. Infrastructure Plane (Terraform) ---"
+    echo "--- 4. Infrastructure Plane (Terraform: {{env}}) ---"
     just tf validate || true
     echo ""
     echo "================================================================="

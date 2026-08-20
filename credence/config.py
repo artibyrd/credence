@@ -11,7 +11,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class CostProfile(str, Enum):
     """Operational cost profiles mapped to Gemini subscription tiers."""
 
+    OFFLINE = "offline"
     FREE = "free"
+    ECONOMY = "economy"
     BALANCED = "balanced"
     ULTRA = "ultra"
 
@@ -37,6 +39,23 @@ class CostProfileConfig(BaseModel):
 
 
 COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
+    CostProfile.OFFLINE: CostProfileConfig(
+        profile=CostProfile.OFFLINE,
+        name="Offline / Sovereign Air-Gapped",
+        description="Strict zero-cloud operation using deterministic structural heuristics and pattern matching at $0.00 cost.",
+        target_tier="Local Structural Heuristics Only (Zero Cloud)",
+        primary_model="offline-heuristic",
+        escalation_model="offline-heuristic",
+        triage_model="offline-heuristic",
+        default_thinking_budget=0,
+        escalation_thinking_budget=0,
+        max_tokens_per_hour=1,
+        max_tokens_per_day=1,
+        max_daily_budget_usd=0.00,
+        max_article_words=5000,
+        concurrency_limit=1,
+        enable_deep_verification=False,
+    ),
     CostProfile.FREE: CostProfileConfig(
         profile=CostProfile.FREE,
         name="Free / Zero-Marginal-Cost",
@@ -52,6 +71,23 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         max_daily_budget_usd=0.00,
         max_article_words=1500,
         concurrency_limit=1,
+        enable_deep_verification=False,
+    ),
+    CostProfile.ECONOMY: CostProfileConfig(
+        profile=CostProfile.ECONOMY,
+        name="Economy / Conservative Developer (Default)",
+        description="Most conservative fully functional profile pairing Gemini 3.7 Flash thinking with strict 15 cent/day ceiling.",
+        target_tier="Gemini Pay-As-You-Go ($0.15/day Max Budget)",
+        primary_model="gemini-3.7-flash",
+        escalation_model="gemini-3.7-flash",
+        triage_model="gemini-2.5-flash-lite",
+        default_thinking_budget=512,
+        escalation_thinking_budget=1024,
+        max_tokens_per_hour=50_000,
+        max_tokens_per_day=300_000,
+        max_daily_budget_usd=0.15,
+        max_article_words=2500,
+        concurrency_limit=2,
         enable_deep_verification=False,
     ),
     CostProfile.BALANCED: CostProfileConfig(
@@ -74,7 +110,7 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
     CostProfile.ULTRA: CostProfileConfig(
         profile=CostProfile.ULTRA,
         name="Ultra / Newsroom Fidelity",
-        description="Maximum epistemic depth utilizing Gemini 3.7 Flash high-reasoning budgets (8k-16k tokens) and Gemini 1.5 Pro for full long-form articles.",
+        description="Maximum epistemic depth utilizing Gemini 3.7 Flash high-reasoning budgets (4k-16k tokens) and Gemini 1.5 Pro for full long-form articles.",
         target_tier="Gemini Advanced / Ultra / Newsroom Desk",
         primary_model="gemini-3.7-flash",
         escalation_model="gemini-1.5-pro",
@@ -82,8 +118,8 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         default_thinking_budget=4096,
         escalation_thinking_budget=16384,
         max_tokens_per_hour=2_000_000,
-        max_tokens_per_day=20_000_000,
-        max_daily_budget_usd=15.00,
+        max_tokens_per_day=10_000_000,
+        max_daily_budget_usd=5.00,
         max_article_words=10000,
         concurrency_limit=8,
         enable_deep_verification=True,
@@ -109,27 +145,43 @@ class Settings(BaseSettings):
     NODE_KEY_PATH: Path = Path("data/node_identity.key")
     TAXONOMY_DIR: Path = Path("credence/taxonomies")
 
+    # Cloud & Blob Storage Configuration (Local Filesystem or S3 / Cloudflare R2 / GCS)
+    STORAGE_BACKEND: str = "local"
+    S3_BUCKET_NAME: Optional[str] = None
+    S3_ENDPOINT_URL: Optional[str] = None
+    S3_ACCESS_KEY_ID: Optional[str] = None
+    S3_SECRET_ACCESS_KEY: Optional[str] = None
+    S3_REGION_NAME: str = "auto"
+
+    # Distributed Cache & State Store (Redis / Valkey)
+    REDIS_URL: Optional[str] = None
+
+    # Administrative Security & Alert Webhooks
+    CREDENCE_ADMIN_API_KEY: Optional[str] = None
+    DISCORD_ALERT_WEBHOOK_URL: Optional[str] = None
+    SLACK_ALERT_WEBHOOK_URL: Optional[str] = None
+
     # Playwright Snapshotting Configuration
     HEADLESS_BROWSER: bool = True
     PLAYWRIGHT_TIMEOUT_MS: int = 15000
     BROWSER_TIMEOUT_MS: int = 15000
     MAX_CONCURRENT_SNAPSHOTS: int = 1  # Memory-safe concurrency gate
 
-    # Active Cost & Operational Profile
-    CREDENCE_PROFILE: CostProfile = CostProfile.BALANCED
+    # Active Cost & Operational Profile (Defaults to ECONOMY)
+    CREDENCE_PROFILE: CostProfile = CostProfile.ECONOMY
 
     # Multi-Agent & LLM Models (Gemini 3.7 Flash with Thinking)
     CREDENCE_GEMINI_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
     DEFAULT_SPECIALIST_MODEL: str = "gemini-3.7-flash"
     DEFAULT_TRIAGE_MODEL: str = "gemini-2.5-flash-lite"
-    DEFAULT_THINKING_BUDGET: int = 1024
-    ESCALATION_THINKING_BUDGET: int = 4096
+    DEFAULT_THINKING_BUDGET: int = 512
+    ESCALATION_THINKING_BUDGET: int = 1024
 
     # Token Safety Governor & Circuit Breaker
-    MAX_TOKENS_PER_HOUR: int = 100_000
-    MAX_TOKENS_PER_DAY: int = 1_000_000
-    MAX_DAILY_BUDGET_USD: float = 0.50
+    MAX_TOKENS_PER_HOUR: int = 50_000
+    MAX_TOKENS_PER_DAY: int = 300_000
+    MAX_DAILY_BUDGET_USD: float = 0.15
     ENABLE_CIRCUIT_BREAKER: bool = True
 
     # P2P Mesh & MCP Networking
@@ -154,12 +206,12 @@ class Settings(BaseSettings):
 
     def get_profile_config(self) -> CostProfileConfig:
         """Retrieve the CostProfileConfig for the active CREDENCE_PROFILE."""
-        cfg = COST_PROFILES.get(self.CREDENCE_PROFILE, COST_PROFILES[CostProfile.BALANCED]).model_copy()
-        if self.MAX_TOKENS_PER_HOUR != 100_000:
+        cfg = COST_PROFILES.get(self.CREDENCE_PROFILE, COST_PROFILES[CostProfile.ECONOMY]).model_copy()
+        if self.MAX_TOKENS_PER_HOUR != 50_000:
             cfg.max_tokens_per_hour = self.MAX_TOKENS_PER_HOUR
-        if self.MAX_TOKENS_PER_DAY != 1_000_000:
+        if self.MAX_TOKENS_PER_DAY != 300_000:
             cfg.max_tokens_per_day = self.MAX_TOKENS_PER_DAY
-        if self.MAX_DAILY_BUDGET_USD != 0.50:
+        if self.MAX_DAILY_BUDGET_USD != 0.15:
             cfg.max_daily_budget_usd = self.MAX_DAILY_BUDGET_USD
         return cfg
 

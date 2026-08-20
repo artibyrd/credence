@@ -49,7 +49,7 @@ async def test_record_and_query_token_headroom(db_session: AsyncSession) -> None
 
     status_updated = await get_token_headroom_status(db_session)
     assert status_updated.hourly_tokens_used == 30_000
-    assert status_updated.hourly_headroom_pct == 70.0  # 100k max -> 70% headroom remaining
+    assert status_updated.hourly_headroom_pct == 40.0  # 50k max in ECONOMY default -> 40% headroom remaining
     assert status_updated.daily_spend_usd > 0.0
 
 

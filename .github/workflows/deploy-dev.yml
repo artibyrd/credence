@@ -1,15 +1,15 @@
-name: Deploy Backend to Google Cloud Run
+name: Deploy Dev Environment to Google Cloud Run
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    branches:
+      - develop
   workflow_dispatch:
     inputs:
       project_id:
-        description: "Google Cloud Project ID"
+        description: "Dev Google Cloud Project ID"
         required: true
-        default: "credence-prod-505902"
+        default: "credence-dev-505902"
       region:
         description: "Google Cloud Region"
         required: true
@@ -17,27 +17,19 @@ on:
       service_name:
         description: "Cloud Run Service Name"
         required: true
-        default: "credence-server"
-      tier:
-        description: "Deployment Configuration Tier (advanced / simple)"
-        required: true
-        type: choice
-        options:
-          - advanced
-          - simple
-        default: "advanced"
+        default: "credence-dev"
       profile:
-        description: "Operational Cost Profile (economy / balanced / ultra / free)"
+        description: "Cost Profile (economy / free)"
         required: true
-        default: "balanced"
+        default: "economy"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy-cloud-run:
-    name: Build & Deploy Cloud Run Service
+  deploy-dev:
+    name: Build & Deploy Dev Cloud Run Service
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -68,66 +60,47 @@ jobs:
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
 
-      - name: Build and Submit Container Image
+      - name: Build and Submit Container Image to Dev Project
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          PROJECT_ID: ${{ inputs.project_id || 'credence-dev-505902' }}
+          SERVICE: ${{ inputs.service_name || 'credence-dev' }}
         run: |
           gcloud builds submit \
             --project="${PROJECT_ID}" \
-            --tag="gcr.io/${PROJECT_ID}/credence-server:${{ github.ref_name || github.sha }}" \
-            --tag="gcr.io/${PROJECT_ID}/credence-server:latest"
+            --tag="gcr.io/${PROJECT_ID}/${SERVICE}:${{ github.sha }}" \
+            --tag="gcr.io/${PROJECT_ID}/${SERVICE}:latest"
 
-      - name: Deploy to Cloud Run
+      - name: Deploy to Dev Cloud Run (Basic Mode)
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          PROJECT_ID: ${{ inputs.project_id || 'credence-dev-505902' }}
           REGION: ${{ inputs.region || 'us-central1' }}
-          SERVICE: ${{ inputs.service_name || 'credence-server' }}
-          TIER: ${{ inputs.tier || 'advanced' }}
-          PROFILE: ${{ inputs.profile || 'balanced' }}
+          SERVICE: ${{ inputs.service_name || 'credence-dev' }}
+          PROFILE: ${{ inputs.profile || 'economy' }}
         run: |
-          ENV_NAME="production"
-          if [ "${TIER}" = "simple" ]; then
-            ENV_NAME="development"
-          fi
           gcloud run deploy "${SERVICE}" \
-            --image="gcr.io/${PROJECT_ID}/credence-server:latest" \
+            --image="gcr.io/${PROJECT_ID}/${SERVICE}:latest" \
             --region="${REGION}" \
             --project="${PROJECT_ID}" \
-            --memory="1Gi" \
+            --memory="512Mi" \
             --cpu="1" \
             --execution-environment="gen2" \
             --cpu-boost \
-            --set-env-vars="ENV=${ENV_NAME},CREDENCE_PROFILE=${PROFILE}" \
+            --set-env-vars="ENV=development,CREDENCE_PROFILE=${PROFILE}" \
             --allow-unauthenticated
 
-      - name: Verify Live Service Health
+      - name: Verify Live Dev Service Health
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-          PROJECT_ID: ${{ inputs.project_id || 'credence-prod-505902' }}
+          PROJECT_ID: ${{ inputs.project_id || 'credence-dev-505902' }}
           REGION: ${{ inputs.region || 'us-central1' }}
-          SERVICE: ${{ inputs.service_name || 'credence-server' }}
+          SERVICE: ${{ inputs.service_name || 'credence-dev' }}
         run: |
           SERVICE_URL=$(gcloud run services describe "${SERVICE}" --region="${REGION}" --project="${PROJECT_ID}" --format="value(status.url)")
-          echo "Probing deployed service at: ${SERVICE_URL}"
+          echo "Probing deployed dev service at: ${SERVICE_URL}"
           curl -f -s "${SERVICE_URL}/health" || curl -f -s "${SERVICE_URL}/api/health" || exit 1
-          echo "✅ Cloud Run health check passed!"
-
-      - name: Skip Notice (No GCP Secret Configured in GitHub)
-        if: env.GCP_CONFIGURED != 'true'
-        env:
-          GCP_CONFIGURED: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' || secrets.GCP_SA_KEY != '' }}
-        run: |
-          echo "=========================================================================="
-          echo "ℹ️  Notice: Google Cloud secrets not configured in GitHub repository secrets."
-          echo "   To enable automated GitHub Actions deployment to Cloud Run, configure:"
-          echo "     - GCP_WORKLOAD_IDENTITY_PROVIDER (recommended) OR GCP_SA_KEY"
-          echo "     - GCP_SERVICE_ACCOUNT"
-          echo ""
-          echo "   Deployments can be executed immediately by operators using:"
-          echo "     just deploy backend"
-          echo "=========================================================================="
+          echo "✅ Dev Cloud Run health check passed!"

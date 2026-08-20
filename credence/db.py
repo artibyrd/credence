@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -24,7 +24,7 @@ _engine_loop: asyncio.AbstractEventLoop | None = None
 
 
 def get_engine(db_url: str | None = None) -> AsyncEngine:
-    """Get or create the global SQLAlchemy async engine."""
+    """Get or create the global SQLAlchemy async engine supporting SQLite and PostgreSQL."""
     global _engine, _engine_loop
     try:
         current_loop = asyncio.get_running_loop()
@@ -41,13 +41,25 @@ def get_engine(db_url: str | None = None) -> AsyncEngine:
                 db_path = Path(raw_path)
                 db_path.parent.mkdir(parents=True, exist_ok=True)
 
-        _engine = create_async_engine(
-            target_url,
-            echo=False,
-            future=True,
-            connect_args={"check_same_thread": False} if "sqlite" in target_url else {},
-            poolclass=NullPool if "sqlite" in target_url else None,
-        )
+        if "postgresql" in target_url:
+            _engine = create_async_engine(
+                target_url,
+                echo=False,
+                future=True,
+                poolclass=AsyncAdaptedQueuePool,
+                pool_size=20,
+                max_overflow=30,
+                pool_pre_ping=True,
+                pool_recycle=1800,
+            )
+        else:
+            _engine = create_async_engine(
+                target_url,
+                echo=False,
+                future=True,
+                connect_args={"check_same_thread": False} if "sqlite" in target_url else {},
+                poolclass=NullPool if "sqlite" in target_url else None,
+            )
         _engine_loop = current_loop
     return _engine
 

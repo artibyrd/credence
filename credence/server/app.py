@@ -1465,6 +1465,109 @@ def _register_merit_and_analytics_resources(server: MCPServer) -> None:
         return "[]"
 
 
+def _register_cost_tools_and_resources(server: MCPServer) -> None:
+    """Register Cost Governance, Token Telemetry, and Autonomous Optimizer tools and resources."""
+
+    @server.tool(
+        name="credence_get_cost_telemetry",
+        description="Retrieve real-time token spend, thinking token counts, hourly/daily headroom, USD spend, and Emergency Brake status.",
+    )
+    async def get_cost_telemetry_tool() -> str:
+        from credence.cache.distributed import get_state_store
+        from credence.db import get_session, init_db
+        from credence.pipeline.governor import get_token_headroom_status
+
+        await init_db()
+        async for session in get_session():
+            headroom = await get_token_headroom_status(session)
+            state = await get_state_store().get_runtime_cost_settings()
+            data = headroom.model_dump(mode="json")
+            data["emergency_brake_pulled"] = state.emergency_brake_pulled
+            data["brake_reason"] = state.brake_reason
+            data["runtime_daily_budget_usd"] = state.daily_budget_usd
+            data["runtime_max_tokens_per_hour"] = state.max_tokens_per_hour
+            data["runtime_active_profile"] = state.active_profile_override
+            return json.dumps(data, indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_get_cost_recommendations",
+        description="Query the Autonomous Cost Profile Optimizer for trend-based upgrade/downgrade recommendations based on rolling usage.",
+    )
+    async def get_cost_recommendations_tool() -> str:
+        from credence.db import get_session, init_db
+        from credence.pipeline.cost_optimizer import evaluate_cost_profile_recommendation
+        from credence.pipeline.governor import get_token_headroom_status
+
+        await init_db()
+        async for session in get_session():
+            headroom = await get_token_headroom_status(session)
+            rec = evaluate_cost_profile_recommendation(
+                avg_daily_spend_usd=headroom.daily_spend_usd,
+                trips_last_72h=1 if headroom.circuit_breaker_tripped else 0,
+                hours_throttled_last_72h=2.0 if headroom.throttle_active else 0.0,
+            )
+            return json.dumps(rec.model_dump(mode="json"), indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_set_budget",
+        description="Dynamically adjust live daily USD budget and hourly token ceiling across all container replicas without restarting.",
+    )
+    async def set_budget_tool(
+        daily_budget_usd: Optional[float] = None,
+        max_tokens_per_hour: Optional[int] = None,
+        profile: Optional[str] = None,
+    ) -> str:
+        from credence.cache.distributed import get_state_store
+
+        state_store = get_state_store()
+        await state_store.set_runtime_budget_override(
+            daily_budget_usd=daily_budget_usd,
+            max_tokens_per_hour=max_tokens_per_hour,
+            active_profile=profile,
+        )
+        return json.dumps({"status": "success", "message": "Runtime budget settings updated successfully."})
+
+    @server.tool(
+        name="credence_trigger_emergency_brake",
+        description="Instantly pull the Emergency Brake, downshifting 100% of audits into offline heuristic mode ($0 spend).",
+    )
+    async def trigger_emergency_brake_tool(reason: str = "Agentic Cost Guard") -> str:
+        from credence.cache.distributed import get_state_store
+
+        state_store = get_state_store()
+        await state_store.pull_emergency_brake(reason=reason)
+        return json.dumps({"status": "tripped", "circuit_breaker_tripped": True, "reason": reason})
+
+    @server.tool(
+        name="credence_apply_cost_recommendation",
+        description="Apply the recommended cost profile from the Autonomous Cost Optimizer.",
+    )
+    async def apply_cost_recommendation_tool(target_profile: str) -> str:
+        from credence.cache.distributed import get_state_store
+        from credence.config import CostProfile
+
+        if target_profile not in CostProfile.__members__.values():
+            return json.dumps({"error": f"Invalid target profile '{target_profile}'."})
+
+        state_store = get_state_store()
+        await state_store.set_runtime_budget_override(active_profile=target_profile)
+        return json.dumps({"status": "success", "active_profile": target_profile})
+
+    @server.resource("credence://cost/telemetry")
+    async def get_cost_telemetry_resource() -> str:
+        return await get_cost_telemetry_tool()
+
+    @server.resource("credence://cost/recommendations")
+    async def get_cost_recommendations_resource() -> str:
+        return await get_cost_recommendations_tool()
+
+    @server.resource("credence://cost/dashboard")
+    async def get_cost_dashboard_resource() -> str:
+        return await get_cost_telemetry_tool()
+
+
 def _register_prompts(server: MCPServer) -> None:
     """Register FastMCP prompt templates."""
 
@@ -1724,7 +1827,7 @@ async def api_reports(request: Any) -> Any:
 
 
 async def api_get_report(request: Any) -> Any:
-    """REST API: Get complete audit report by SHA-256 or URL identifier."""
+    """REST API: Get complete audit report by SHA-256 or URL identifier with immutable edge caching headers."""
     from starlette.responses import JSONResponse
 
     identifier = request.path_params.get("identifier", "")
@@ -1734,7 +1837,14 @@ async def api_get_report(request: Any) -> Any:
     report_dict = await _reconstitute_report_from_db(identifier)
     if not report_dict:
         return JSONResponse({"error": f"Report not found for identifier: '{identifier}'"}, status_code=404)
-    return JSONResponse(report_dict)
+
+    headers = {}
+    content_hash = report_dict.get("content_sha256") or (identifier if len(identifier) == 64 else None)
+    if content_hash:
+        headers["Cache-Control"] = "public, max-age=2592000, s-maxage=31536000, immutable"
+        headers["ETag"] = f'W/"sha256:{content_hash}"'
+
+    return JSONResponse(report_dict, headers=headers)
 
 
 async def api_audit_url(request: Any) -> Any:
@@ -2205,6 +2315,127 @@ async def api_boredom_status(request: Any) -> Any:
     return JSONResponse({"status": "unavailable"}, status_code=500)
 
 
+def _check_admin_auth(request: Any) -> bool:
+    """Verify administrator Bearer token authentication or local development exemption."""
+    import secrets
+
+    from credence.config import settings
+
+    client_host = getattr(request.client, "host", "") if hasattr(request, "client") and request.client else ""
+    if client_host in ("127.0.0.1", "localhost", "::1") and settings.ENV != "production":
+        return True
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.removeprefix("Bearer ").strip()
+        expected = settings.CREDENCE_ADMIN_API_KEY
+        if expected and secrets.compare_digest(token, expected):
+            return True
+    return False
+
+
+async def api_cost_telemetry(request: Any) -> Any:
+    """REST API: Query real-time token spend, headroom, and live cost telemetry."""
+    from starlette.responses import JSONResponse
+
+    from credence.cache.distributed import get_state_store
+    from credence.db import get_session, init_db
+    from credence.pipeline.governor import get_token_headroom_status
+
+    await init_db()
+    async for s in get_session():
+        headroom = await get_token_headroom_status(s)
+        state = await get_state_store().get_runtime_cost_settings()
+        data = headroom.model_dump(mode="json")
+        data["emergency_brake_pulled"] = state.emergency_brake_pulled
+        data["brake_reason"] = state.brake_reason
+        data["runtime_daily_budget_usd"] = state.daily_budget_usd
+        data["runtime_max_tokens_per_hour"] = state.max_tokens_per_hour
+        data["runtime_active_profile"] = state.active_profile_override
+        return JSONResponse(data)
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_cost_recommendations(request: Any) -> Any:
+    """REST API: Query autonomous Cost Profile Optimizer upgrade/downgrade recommendation."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.pipeline.cost_optimizer import evaluate_cost_profile_recommendation
+    from credence.pipeline.governor import get_token_headroom_status
+
+    await init_db()
+    async for s in get_session():
+        headroom = await get_token_headroom_status(s)
+        rec = evaluate_cost_profile_recommendation(
+            avg_daily_spend_usd=headroom.daily_spend_usd,
+            trips_last_72h=1 if headroom.circuit_breaker_tripped else 0,
+            hours_throttled_last_72h=2.0 if headroom.throttle_active else 0.0,
+        )
+        return JSONResponse(rec.model_dump(mode="json"))
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_cost_budget(request: Any) -> Any:
+    """REST API: Update live runtime budget and token ceilings."""
+    from starlette.responses import JSONResponse
+
+    from credence.cache.distributed import get_state_store
+
+    if not _check_admin_auth(request):
+        return JSONResponse({"error": "Unauthorized: Administrator Bearer token required"}, status_code=401)
+
+    try:
+        body = await request.json() if request.method == "POST" else {}
+    except Exception:
+        body = {}
+
+    daily_budget = body.get("daily_budget_usd", request.query_params.get("daily_budget_usd"))
+    max_tokens = body.get("max_tokens_per_hour", request.query_params.get("max_tokens_per_hour"))
+    profile = body.get("profile", request.query_params.get("profile"))
+
+    state_store = get_state_store()
+    await state_store.set_runtime_budget_override(
+        daily_budget_usd=float(daily_budget) if daily_budget is not None else None,
+        max_tokens_per_hour=int(max_tokens) if max_tokens is not None else None,
+        active_profile=str(profile) if profile is not None else None,
+    )
+    return JSONResponse({"status": "success", "message": "Runtime cost settings updated"})
+
+
+async def api_cost_emergency_stop(request: Any) -> Any:
+    """REST API: Pull 1-Click Emergency Brake into QUOTA_PRESERVED offline mode."""
+    from starlette.responses import JSONResponse
+
+    from credence.cache.distributed import get_state_store
+
+    if not _check_admin_auth(request):
+        return JSONResponse({"error": "Unauthorized: Administrator Bearer token required"}, status_code=401)
+
+    try:
+        body = await request.json() if request.method == "POST" else {}
+    except Exception:
+        body = {}
+
+    reason = body.get("reason", "Operator Emergency Stop")
+    state_store = get_state_store()
+    await state_store.pull_emergency_brake(reason=reason)
+    return JSONResponse({"status": "tripped", "circuit_breaker_tripped": True, "reason": reason})
+
+
+async def api_cost_resume(request: Any) -> Any:
+    """REST API: Release Emergency Brake and resume AI operations."""
+    from starlette.responses import JSONResponse
+
+    from credence.cache.distributed import get_state_store
+
+    if not _check_admin_auth(request):
+        return JSONResponse({"error": "Unauthorized: Administrator Bearer token required"}, status_code=401)
+
+    state_store = get_state_store()
+    await state_store.release_emergency_brake()
+    return JSONResponse({"status": "resumed", "circuit_breaker_tripped": False})
+
+
 def create_mcp_server() -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
@@ -2219,6 +2450,7 @@ def create_mcp_server() -> MCPServer:
     _register_feed_sync_tools(server)
     _register_feed_management_tools(server)
     _register_merit_and_analytics_tools(server)
+    _register_cost_tools_and_resources(server)
     _register_taxonomy_resources(server)
     _register_subject_resources(server)
     _register_merit_and_analytics_resources(server)
@@ -2263,6 +2495,11 @@ def create_server_app(
         Route("/api/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
         Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
+        Route("/api/cost/telemetry", endpoint=api_cost_telemetry, methods=["GET", "OPTIONS"]),
+        Route("/api/cost/recommendations", endpoint=api_cost_recommendations, methods=["GET", "OPTIONS"]),
+        Route("/api/cost/budget", endpoint=api_cost_budget, methods=["POST", "GET", "OPTIONS"]),
+        Route("/api/cost/emergency-stop", endpoint=api_cost_emergency_stop, methods=["POST", "OPTIONS"]),
+        Route("/api/cost/resume", endpoint=api_cost_resume, methods=["POST", "OPTIONS"]),
         Route("/api/audit", endpoint=api_audit_url, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/germinate", endpoint=api_germinate, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/sifter/status", endpoint=api_sifter_status, methods=["GET", "OPTIONS"]),

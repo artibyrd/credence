@@ -1,0 +1,23 @@
+# ==============================================================================
+# Credence Terraform Dev Environment (Basic / Simple Mode Example)
+# ==============================================================================
+# Ideal for: Local developer deploying to a dev Cloud Run instance with $0 fixed cost
+
+project_id                  = "credence-dev-project"
+region                      = "us-central1"
+service_name                = "credence-dev"
+container_image             = "gcr.io/credence-dev-project/credence-server:latest"
+
+# Operational Cost Profile: Conservative ECONOMY default ($0.15/day)
+credence_profile            = "economy"
+
+# Cost Capping ($5/mo maximum dev project ceiling)
+monthly_budget_limit_usd    = 5.00
+min_instance_count          = 0
+max_instance_count          = 1
+
+# Monitoring & Alerting Tier: Simple (3 basic failure alerts, no SRE noise)
+monitoring_tier             = "simple"
+enable_uptime_check         = true
+alert_memory_threshold      = 0.85
+alert_5xx_count_threshold   = 5

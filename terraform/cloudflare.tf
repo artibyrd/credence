@@ -113,3 +113,60 @@ resource "cloudflare_record" "mesh_srv" {
   }
   comment = "DNS SRV record for mesh seed node discovery"
 }
+
+# 4. Optional DNS Records for Dev Subdomains (dev.*)
+resource "cloudflare_record" "dev_run" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_run[0].id
+  name            = "dev"
+  type            = "CNAME"
+  content         = var.domain_credence_run
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev environment frontend and API proxy"
+}
+
+resource "cloudflare_record" "dev_mcp" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_run[0].id
+  name            = "mcp.dev"
+  type            = "CNAME"
+  content         = var.domain_credence_run
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev FastMCP SSE and Tool endpoint"
+}
+
+resource "cloudflare_record" "dev_nexus" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_nexus[0].id
+  name            = "dev"
+  type            = "CNAME"
+  content         = var.domain_credence_nexus
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev Nexus mesh peer directory"
+}
+
+resource "cloudflare_record" "dev_foundation" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_foundation[0].id
+  name            = "dev"
+  type            = "CNAME"
+  content         = var.domain_credence_foundation
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev Foundation governance mirror"
+}
+
+resource "cloudflare_record" "dev_report" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_report[0].id
+  name            = "dev"
+  type            = "CNAME"
+  content         = var.domain_credence_report
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev audit report viewer"
+}
+

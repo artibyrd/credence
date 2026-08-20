@@ -52,7 +52,7 @@ resource "google_monitoring_alert_policy" "uptime_check_failure" {
   conditions {
     display_name = "Cloud Run /health Uptime Check Failing"
     condition_threshold {
-      filter          = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND metric.label.check_id=\"${google_monitoring_uptime_check_config.credence_http_uptime[0].uptime_check_id}\""
+      filter          = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND metric.label.check_id=\"${google_monitoring_uptime_check_config.credence_http_uptime[0].uptime_check_id}\" AND resource.type=\"uptime_url\""
       duration        = "120s"
       comparison      = "COMPARISON_LT"
       threshold_value = 1
@@ -205,6 +205,19 @@ resource "google_monitoring_alert_policy" "cloud_run_cpu_saturation" {
 }
 
 # 3.3 Cloud Scheduler Job Failure Alert
+resource "google_logging_metric" "scheduler_job_failures" {
+  count       = local.enable_advanced_alerts ? 1 : 0
+  name        = "${var.service_name}-scheduler-failures"
+  description = "Log-based metric for failed Cloud Scheduler seed refresh executions."
+  filter      = "resource.type=\"cloud_scheduler_job\" AND resource.labels.job_id=\"${google_cloud_scheduler_job.seed_refresh_cron.name}\" AND (severity>=ERROR OR jsonPayload.status!=\"SUCCESS\")"
+
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+    unit        = "1"
+  }
+}
+
 resource "google_monitoring_alert_policy" "cloud_scheduler_cron_failure" {
   count                 = local.enable_advanced_alerts ? 1 : 0
   display_name          = "${var.service_name} - Seed Publisher Cron Job Failure"
@@ -215,7 +228,7 @@ resource "google_monitoring_alert_policy" "cloud_scheduler_cron_failure" {
   conditions {
     display_name = "Cloud Scheduler Job Attempt Failed"
     condition_threshold {
-      filter          = "metric.type=\"cloudscheduler.googleapis.com/job/attempt_count\" AND resource.type=\"cloud_scheduler_job\" AND resource.label.job_id=\"${google_cloud_scheduler_job.seed_refresh_cron.name}\" AND metric.label.status!=\"SUCCESS\""
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.scheduler_job_failures[0].name}\" AND resource.type=\"cloud_scheduler_job\""
       duration        = "0s"
       comparison      = "COMPARISON_GT"
       threshold_value = 0

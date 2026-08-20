@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "credence"
-version = "1.16.0"
+version = "1.18.1"
 description = "Verifiable epistemic trust network, journalistic ethics auditing, and decentralized P2P consensus engine."
 authors = ["Credence Network Contributors"]
 license = "Apache-2.0"

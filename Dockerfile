@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Multi-stage Dockerfile for Credence with Python 3.12 & Playwright Chromium
 FROM python:3.12-slim-bookworm AS base
 
@@ -23,8 +24,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 COPY pyproject.toml poetry.lock* ./
 
 # Install production python dependencies (excluding dev tools and root package)
-RUN --mount=type=cache,target=/root/.cache/pypoetry \
-    poetry install --without dev --no-root
+RUN poetry install --without dev --no-root
 
 # Install Playwright browser and OS dependencies
 RUN playwright install --with-deps chromium
@@ -33,8 +33,7 @@ RUN playwright install --with-deps chromium
 COPY . .
 
 # Install root project without development dependencies
-RUN --mount=type=cache,target=/root/.cache/pypoetry \
-    poetry install --without dev
+RUN poetry install --without dev
 
 # Precompile bytecode to eliminate Python AST compilation overhead during cold boot
 RUN python -m compileall -q /app/.venv /app/credence

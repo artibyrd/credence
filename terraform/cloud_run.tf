@@ -1,9 +1,19 @@
 locals {
   profile_resources = {
+    offline = {
+      cpu           = "1.0"
+      memory        = "512Mi"
+      max_instances = 1
+    }
     free = {
       cpu           = "1.0"
       memory        = "512Mi"
       max_instances = 1
+    }
+    economy = {
+      cpu           = "1.0"
+      memory        = "512Mi"
+      max_instances = 2
     }
     balanced = {
       cpu           = "1.0"
@@ -54,7 +64,7 @@ resource "google_cloud_run_v2_service" "credence" {
 
       env {
         name  = "ENV"
-        value = "production"
+        value = var.environment == "dev" ? "development" : "production"
       }
       env {
         name  = "CREDENCE_PROFILE"
@@ -80,10 +90,10 @@ resource "google_cloud_run_v2_service" "credence" {
       }
 
       startup_probe {
-        initial_delay_seconds = 1
+        initial_delay_seconds = 0
         period_seconds        = 2
         timeout_seconds       = 2
-        failure_threshold     = 5
+        failure_threshold     = 30
         http_get {
           path = "/health"
           port = 8000

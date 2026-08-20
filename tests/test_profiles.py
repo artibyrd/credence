@@ -30,10 +30,20 @@ from credence.server.app import create_mcp_server
 
 @pytest.mark.unit
 def test_cost_profile_presets_structure() -> None:
-    """Verify that all 3 CostProfile presets are correctly structured."""
+    """Verify that all 5 CostProfile presets are correctly structured."""
+    assert CostProfile.OFFLINE in COST_PROFILES
     assert CostProfile.FREE in COST_PROFILES
+    assert CostProfile.ECONOMY in COST_PROFILES
     assert CostProfile.BALANCED in COST_PROFILES
     assert CostProfile.ULTRA in COST_PROFILES
+
+    # Economy Profile Invariants (Default)
+    econ_cfg = COST_PROFILES[CostProfile.ECONOMY]
+    assert econ_cfg.max_daily_budget_usd == 0.15
+    assert econ_cfg.default_thinking_budget == 512
+    assert econ_cfg.escalation_thinking_budget == 1024
+    assert econ_cfg.primary_model == "gemini-3.7-flash"
+    assert econ_cfg.concurrency_limit == 2
 
     # Free Profile Invariants
     free_cfg = COST_PROFILES[CostProfile.FREE]
@@ -55,7 +65,7 @@ def test_cost_profile_presets_structure() -> None:
 
     # Ultra Profile Invariants
     ultra_cfg = COST_PROFILES[CostProfile.ULTRA]
-    assert ultra_cfg.max_daily_budget_usd == 15.00
+    assert ultra_cfg.max_daily_budget_usd == 5.00
     assert ultra_cfg.default_thinking_budget == 4096
     assert ultra_cfg.escalation_thinking_budget == 16384
     assert ultra_cfg.max_article_words == 10000

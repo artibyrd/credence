@@ -9,6 +9,23 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "environment" {
+  type        = string
+  description = "Target deployment environment: 'dev' or 'prod'."
+  default     = "prod"
+
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "environment must be either 'dev' or 'prod'."
+  }
+}
+
+variable "enable_dev_subdomains" {
+  type        = bool
+  description = "Enable provisioning and DNS routing for dev.* subdomains in Cloudflare."
+  default     = false
+}
+
 variable "service_name" {
   type        = string
   description = "The name of the Cloud Run service."
@@ -23,12 +40,12 @@ variable "container_image" {
 
 variable "credence_profile" {
   type        = string
-  description = "Operational cost profile: 'free', 'balanced', or 'ultra'."
-  default     = "balanced"
+  description = "Operational cost profile: 'offline', 'free', 'economy', 'balanced', or 'ultra'."
+  default     = "economy"
 
   validation {
-    condition     = contains(["free", "balanced", "ultra"], var.credence_profile)
-    error_message = "credence_profile must be one of: 'free', 'balanced', 'ultra'."
+    condition     = contains(["offline", "free", "economy", "balanced", "ultra"], var.credence_profile)
+    error_message = "credence_profile must be one of: 'offline', 'free', 'economy', 'balanced', 'ultra'."
   }
 }
 

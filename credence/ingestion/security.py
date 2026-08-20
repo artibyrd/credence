@@ -99,8 +99,37 @@ def is_safe_url(url: str, allow_local: bool = False, require_resolvable: bool = 
         return _is_safe_domain(lower_host, require_resolvable=require_resolvable)
 
 
+MAX_INGESTION_PAYLOAD_BYTES = 10_485_760  # 10 MB maximum payload cap
+
+
 def validate_safe_url(url: str, allow_local: bool = False, require_resolvable: bool = False) -> str:
     """Validate URL and return clean URL or raise ValueError if unsafe."""
     if not is_safe_url(url, allow_local=allow_local, require_resolvable=require_resolvable):
         raise ValueError(f"Target URL '{url}' is unsafe or resolves to a blocked private/metadata network address.")
     return url.strip()
+
+
+def resolve_and_pin_ip(url: str, allow_local: bool = False) -> tuple[str, str]:
+    """Perform single-resolution DNS pinning to prevent DNS rebinding attacks.
+
+    Returns:
+        tuple[pinned_ip, original_hostname]
+    """
+    clean_url = validate_safe_url(url, allow_local=allow_local)
+    parsed = urlparse(clean_url)
+    hostname = parsed.hostname or ""
+
+    if allow_local and hostname in ("localhost", "127.0.0.1", "::1"):
+        return "127.0.0.1", hostname
+
+    addr_info = socket.getaddrinfo(
+        hostname, parsed.port or (443 if parsed.scheme == "https" else 80), proto=socket.IPPROTO_TCP
+    )
+    for _, _, _, _, sockaddr in addr_info:
+        ip_str = str(sockaddr[0])
+        ip = ipaddress.ip_address(ip_str)
+        if not allow_local and _is_blocked_ip(ip):
+            raise ValueError(f"Resolved IP '{ip_str}' for host '{hostname}' is in a blocked network range.")
+        return ip_str, hostname
+
+    raise ValueError(f"Unable to resolve host '{hostname}' to a safe IP address.")

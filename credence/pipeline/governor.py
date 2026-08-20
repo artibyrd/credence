@@ -136,12 +136,27 @@ async def get_token_headroom_status(
     session: AsyncSession,
     profile_override: Optional[CostProfileConfig] = None,
 ) -> TokenHeadroomStatus:
-    """Calculate rolling 1-hour and 24-hour token headroom from SQLite records."""
+    """Calculate rolling 1-hour and 24-hour token headroom from SQLite records and live Redis state."""
+    from credence.cache.distributed import get_state_store
+    from credence.config import COST_PROFILES, CostProfile
+
+    state_store = get_state_store()
+    runtime_overrides = await state_store.get_runtime_cost_settings()
+
     now = utc_now()
     one_hour_ago = now - timedelta(hours=1)
     twenty_four_hours_ago = now - timedelta(hours=24)
 
-    prof = profile_override or settings.get_profile_config()
+    # Resolve active profile configuration
+    if profile_override:
+        prof = profile_override
+    elif (
+        runtime_overrides.active_profile_override
+        and runtime_overrides.active_profile_override in CostProfile.__members__.values()
+    ):
+        prof = COST_PROFILES[CostProfile(runtime_overrides.active_profile_override)]
+    else:
+        prof = settings.get_profile_config()
 
     # 1-Hour window query
     h_stmt = select(TokenUsageRecord).where(TokenUsageRecord.timestamp >= one_hour_ago)
@@ -154,10 +169,14 @@ async def get_token_headroom_status(
     daily_tokens = sum(r.total_tokens for r in d_records)
     daily_spend = sum(r.estimated_cost_usd for r in d_records)
 
-    # Calculate Headroom Percentages based on active profile
-    hourly_max = prof.max_tokens_per_hour
+    # Calculate Headroom Percentages based on active profile and dynamic overrides
+    hourly_max = runtime_overrides.max_tokens_per_hour or prof.max_tokens_per_hour
     daily_max = prof.max_tokens_per_day
-    daily_budget = prof.max_daily_budget_usd
+    daily_budget = (
+        runtime_overrides.daily_budget_usd
+        if runtime_overrides.daily_budget_usd is not None
+        else prof.max_daily_budget_usd
+    )
 
     hourly_headroom = max(0.0, min(100.0, 100.0 * (1.0 - (hourly_tokens / max(1, hourly_max)))))
     daily_headroom = max(0.0, min(100.0, 100.0 * (1.0 - (daily_tokens / max(1, daily_max)))))
@@ -171,7 +190,10 @@ async def get_token_headroom_status(
     circuit_breaker_tripped = False
     throttle_active = False
 
-    if settings.ENABLE_CIRCUIT_BREAKER:
+    # Check Emergency Brake
+    if runtime_overrides.emergency_brake_pulled:
+        circuit_breaker_tripped = True
+    elif settings.ENABLE_CIRCUIT_BREAKER:
         if (
             hourly_tokens >= hourly_max
             or daily_tokens >= daily_max

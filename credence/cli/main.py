@@ -616,6 +616,123 @@ async def cli_quota() -> None:
         return
 
 
+async def cli_cost(
+    action: str = "status",
+    daily_budget: Optional[float] = None,
+    max_tokens: Optional[int] = None,
+    profile_name: Optional[str] = None,
+    apply_opt: bool = False,
+    reason: str = "CLI Operator Stop",
+) -> None:
+    """Manage and inspect Cost Governance, Token Telemetry, and AI Optimizer recommendations."""
+    from credence.cache.distributed import get_state_store
+    from credence.config import CostProfile
+    from credence.pipeline.cost_optimizer import evaluate_cost_profile_recommendation
+
+    state_store = get_state_store()
+
+    if action == "status":
+        await init_db()
+        async for s in get_session():
+            status = await get_token_headroom_status(s)
+            state = await state_store.get_runtime_cost_settings()
+
+            brake_str = (
+                "[bold red]🚨 PULLED (QUOTA_PRESERVED)[/bold red]"
+                if state.emergency_brake_pulled
+                else "[bold green]🟢 RELEASED (Normal AI Mode)[/bold green]"
+            )
+            table = Table(title="Credence Cost & Token Governance", box=box.ROUNDED)
+            table.add_column("Metric / Control", style="cyan")
+            table.add_column("Value", style="bold")
+
+            table.add_row("Operational Profile", f"{status.active_profile.upper()} ({status.profile_target_tier})")
+            table.add_row("Emergency Brake", brake_str)
+            if state.emergency_brake_pulled and state.brake_reason:
+                table.add_row("Brake Reason", f"[red]{state.brake_reason}[/red]")
+            table.add_row(
+                "Hourly Tokens Used",
+                f"{status.hourly_tokens_used:,} / {status.hourly_tokens_max:,} ({status.hourly_headroom_pct:.1f}% free)",
+            )
+            table.add_row(
+                "Daily Tokens Used",
+                f"{status.daily_tokens_used:,} / {status.daily_tokens_max:,} ({status.daily_headroom_pct:.1f}% free)",
+            )
+            table.add_row(
+                "24h USD Spend",
+                f"${status.daily_spend_usd:.4f} / ${status.daily_budget_usd:.2f} ({status.daily_spend_pct:.1f}% used)",
+            )
+            table.add_row(
+                "Circuit Breaker Status",
+                "[red]Tripped[/red]" if status.circuit_breaker_tripped else "[green]Healthy[/green]",
+            )
+
+            console.print(table)
+            return
+
+    elif action == "optimize":
+        await init_db()
+        async for s in get_session():
+            status = await get_token_headroom_status(s)
+            rec = evaluate_cost_profile_recommendation(
+                avg_daily_spend_usd=status.daily_spend_usd,
+                trips_last_72h=1 if status.circuit_breaker_tripped else 0,
+                hours_throttled_last_72h=2.0 if status.throttle_active else 0.0,
+            )
+
+            style = "green" if rec.action == "OPTIMAL" else ("yellow" if rec.action == "DOWNGRADE" else "cyan")
+            delta_str = (
+                f"+${rec.estimated_monthly_delta_usd:.2f}/mo"
+                if rec.estimated_monthly_delta_usd > 0
+                else (
+                    f"-${abs(rec.estimated_monthly_delta_usd):.2f}/mo"
+                    if rec.estimated_monthly_delta_usd < 0
+                    else "$0.00/mo"
+                )
+            )
+
+            panel_text = (
+                f"[bold]Current Profile:[/bold]     {rec.current_profile.value.upper()}\n"
+                f"[bold]Recommended Profile:[/bold] [bold {style}]{rec.recommended_profile.value.upper()}[/bold {style}] ({rec.action})\n"
+                f"[bold]Est. Monthly Delta:[/bold]  {delta_str}\n"
+                f"[bold]Confidence:[/bold]          {int(rec.confidence * 100)}%\n\n"
+                f"[dim]{rec.rationale}[/dim]"
+            )
+            console.print(Panel(panel_text, title="[bold]Autonomous Cost Profile Optimizer[/bold]", border_style=style))
+
+            if apply_opt and rec.action in ("UPGRADE", "DOWNGRADE"):
+                await state_store.set_runtime_budget_override(active_profile=rec.recommended_profile.value)
+                console.print(
+                    f"[bold green]✓ Successfully applied recommended profile '{rec.recommended_profile.value.upper()}'.[/bold green]"
+                )
+            return
+
+    elif action == "stop":
+        await state_store.pull_emergency_brake(reason=reason)
+        console.print(f"[bold red]🚨 Emergency Brake PULLED: {reason}[/bold red]")
+        console.print("[dim]100% of audits now operate in QUOTA_PRESERVED offline heuristic mode ($0 cost).[/dim]")
+
+    elif action == "resume":
+        await state_store.release_emergency_brake()
+        console.print("[bold green]🟢 Emergency Brake RELEASED. Normal AI evaluation resumed.[/bold green]")
+
+    elif action == "set":
+        valid_profile = None
+        if profile_name:
+            if profile_name.lower() in CostProfile.__members__.values():
+                valid_profile = profile_name.lower()
+            else:
+                console.print(f"[bold red]Error:[/] Unknown profile '{profile_name}'.")
+                return
+
+        await state_store.set_runtime_budget_override(
+            daily_budget_usd=daily_budget,
+            max_tokens_per_hour=max_tokens,
+            active_profile=valid_profile,
+        )
+        console.print("[bold green]✓ Live runtime cost settings successfully updated.[/bold green]")
+
+
 def cli_health(url: str = "http://localhost:8000") -> None:
     """Check node health and print Interface Telemetry Loopback status."""
     import httpx
@@ -1981,6 +2098,18 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         cli_identity(args.action)
     elif cmd == "quota":
         asyncio.run(cli_quota())
+    elif cmd == "cost":
+        cost_act = getattr(args, "cost_action", "status") or "status"
+        asyncio.run(
+            cli_cost(
+                action=cost_act,
+                daily_budget=getattr(args, "daily", None),
+                max_tokens=getattr(args, "hourly_tokens", None),
+                profile_name=getattr(args, "profile", None),
+                apply_opt=getattr(args, "apply", False),
+                reason=getattr(args, "reason", "CLI Operator Stop"),
+            )
+        )
     elif cmd == "profile":
         cli_profile(args.action, args.profile_name)
     elif cmd == "taxonomy":
@@ -2687,6 +2816,39 @@ def main() -> None:
 
     # quota command
     subparsers.add_parser("quota", help="Display token headroom, daily USD spend, and circuit breaker status.")
+
+    # cost command
+    cost_parser = subparsers.add_parser(
+        "cost", help="Manage and inspect Cost Governance, Token Telemetry, and AI Optimizer recommendations."
+    )
+    cost_subparsers = cost_parser.add_subparsers(dest="cost_action")
+
+    cost_subparsers.add_parser(
+        "status", help="Display real-time token spend, budget meters, and emergency brake status."
+    )
+
+    opt_p = cost_subparsers.add_parser(
+        "optimize", help="Query Autonomous Cost Optimizer for upgrade/downgrade recommendations."
+    )
+    opt_p.add_argument("--apply", "-a", action="store_true", help="Automatically apply the recommended cost profile.")
+
+    set_p = cost_subparsers.add_parser(
+        "set", help="Dynamically adjust live daily USD budget, token ceilings, or profile."
+    )
+    set_p.add_argument("--daily", type=float, default=None, help="Daily spend budget in USD (e.g. 0.15).")
+    set_p.add_argument("--hourly-tokens", type=int, default=None, help="Hourly token ceiling (e.g. 50000).")
+    set_p.add_argument(
+        "--profile", type=str, default=None, help="Active cost profile (offline, free, economy, balanced, ultra)."
+    )
+
+    stop_p = cost_subparsers.add_parser(
+        "stop", help="Pull Emergency Brake into QUOTA_PRESERVED offline heuristic mode ($0 cost)."
+    )
+    stop_p.add_argument(
+        "--reason", default="Operator Emergency Stop", help="Audit log explanation for the emergency stop."
+    )
+
+    cost_subparsers.add_parser("resume", help="Release Emergency Brake and resume AI evaluation.")
 
     # profile command
     profile_parser = subparsers.add_parser("profile", help="List and inspect operational cost profiles.")

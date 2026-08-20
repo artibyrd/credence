@@ -18,6 +18,9 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Topic Entropy Astroturfing Defense ($H < 0.30$) & Poe's Law Safeguards**: Diversity calculators must combine Top-Token Concentration ($C_{\text{top3}}$) with Shannon entropy. Neutralize legitimate satire ($0.00$), but invoke `SPJ-1.6` cloaking overrides (disabling satire protection) on factual defamatory/health allegations.
 - **FastMCP Text Evaluation & Serialization Parity**: Standalone text audits (`credence_evaluate_text`) must persist complete `SnapshotRecord`, `AuditRecord`, and `ViolationRecord` entities to SQLite (`text://inline` pseudo-URLs) and serialize nested `datetime` instances to ISO-8601 strings.
 - **Multi-Model Sovereignty & Token Budget**: Abstract inference via decoupled adapters (Gemini 3.7 Flash default reference engine with 4k thinking budget Pareto sweet spot, Claude 3.7 Sonnet, GPT-4o, DeepSeek R1, Ollama/vLLM) with automatic offline circuit breakers (`QUOTA_PRESERVED`) at 30% headroom.
+- **Hermetic Unit Test Isolation & Zero-Browser CI**: Unit tests (`@pytest.mark.unit`) must execute purely in-memory in <35s with zero browser runtimes (Playwright), background daemons, or network calls. Never inject OS package managers (`apt-get`, `playwright install --with-deps`) into CI/CD workflows to satisfy unit tests. All tests requiring browsers belong strictly in `@pytest.mark.integration` or `@pytest.mark.e2e`.
+- **Commit-Before-Deploy Pipeline Order & Working-Tree Cleanliness**: Never execute cloud deployments (`just deploy`, `gcloud builds submit`, `gcloud run deploy`, `terraform apply`) or create git tags when unstaged or uncommitted modifications exist in the working tree (`git diff --quiet && git diff --cached --quiet`). The canonical pipeline progression is strictly: 1. Code & Local Unit/Doc Test $\rightarrow$ 2. Present Working-Tree Diff & Target Version for Mk1 Eyeball Review $\rightarrow$ 3. User Approves & Commits to Git (Clean Working Tree) $\rightarrow$ 4. Build & Deploy from clean commit SHA $\rightarrow$ 5. Live Health & Telemetry Gate $\rightarrow$ 6. Release Tag.
+
 
 ---
 
@@ -40,6 +43,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **7-Manifest Version Parity**: Enforces synchronized semantic versions across all repos and badges (`test_ecosystem_version_parity`).
 - **Sitemap & Deep Link Coverage**: Validates all anchors, links, and route registries (`test_sitemap_integrity_and_route_coverage`).
 - **Mermaid WCAG Contrast**: Enforces high contrast dark slate styling on diagrams (`test_mermaid_diagram_syntax_integrity`).
+- **Hermetic Unit Test Marker Integrity**: Statically verifies that no `@pytest.mark.unit` test imports Playwright or executes browser scraping (`test_hermetic_unit_test_markers_invariant`).
 
 ---
 

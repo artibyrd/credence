@@ -1,17 +1,37 @@
+# ==============================================================================
+# Credence Sovereign Node: 1-Command Basic Self-Hosted Deployment
+# ==============================================================================
+# Zero external cloud dependencies, zero database server, $0 fixed cost.
+# Usage: docker compose up -d
+
 services:
   credence:
+    image: gcr.io/credence-prod-505902/credence-server:latest
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: credence-node
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      - CREDENCE_ENV=development
-      - CREDENCE_LOG_LEVEL=INFO
+      - ENV=development
+      - CREDENCE_PROFILE=economy
       - DATABASE_URL=sqlite+aiosqlite:///data/credence.db
-      - SNAPSHOT_DIR=/app/data/snapshots
+      - STORAGE_BACKEND=local
+      - SNAPSHOT_DIR=/data/snapshots
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - CREDENCE_GEMINI_API_KEY=${CREDENCE_GEMINI_API_KEY:-}
     volumes:
-      - ./data:/app/data
-      - ./credence:/app/credence
-      - ./tests:/app/tests
-    restart: unless-stopped
+      - credence-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  credence-data:
+    driver: local

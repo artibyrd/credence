@@ -39,6 +39,64 @@ class DualCaptureResult(BaseModel):
     screenshot_bytes: Optional[bytes] = Field(default=None, repr=False, description="Raw PNG bytes")
 
 
+async def capture_webpage_fastpath(
+    url: str,
+    output_dir: Optional[Path] = None,
+    save_artifacts: bool = True,
+    force_playwright: bool = False,
+    timeout_ms: Optional[int] = None,
+) -> DualCaptureResult:
+    """Capture webpage using Trafilatura fast-path (50ms), falling back to Playwright if needed."""
+    from credence.ingestion.security import validate_safe_url
+    from credence.storage.base import get_blob_storage
+
+    is_local_file = url.startswith("file://") or url.startswith("text://")
+    clean_url = validate_safe_url(url, allow_local=is_local_file)
+
+    # If force_playwright requested or local file, use Playwright engine
+    if force_playwright or is_local_file:
+        return await capture_webpage(url, output_dir=output_dir, save_artifacts=save_artifacts, timeout_ms=timeout_ms)
+
+    # 1. Fast-Path HTTP GET via Trafilatura
+    raw_html: Optional[str] = None
+    try:
+        import trafilatura
+
+        raw_html = await asyncio.to_thread(trafilatura.fetch_url, clean_url)
+    except Exception:
+        raw_html = None
+
+    # 2. Check if Fast-Path succeeded with substantive content (>50 words)
+    if raw_html:
+        extracted = extract_clean_content(raw_html, url=clean_url)
+        word_count = len(extracted.clean_text.split())
+        if word_count >= 50:
+            content_hash = compute_content_sha256(extracted.clean_text)
+            simhash_hex = compute_simhash(extracted.clean_text)
+
+            dom_path: Optional[str] = None
+            if save_artifacts:
+                storage = get_blob_storage()
+                cas_key = f"cas/sha256/{content_hash}.html"
+                dom_path = await storage.put_blob(
+                    cas_key, raw_html.encode("utf-8"), content_type="text/plain; charset=utf-8"
+                )
+
+            return DualCaptureResult(
+                url=clean_url,
+                content_sha256=content_hash,
+                simhash_64=simhash_hex,
+                raw_html=raw_html,
+                extracted=extracted,
+                dom_file_path=dom_path,
+                screenshot_file_path=None,
+                screenshot_bytes=None,
+            )
+
+    # 3. Fallback to full Playwright Chromium capture
+    return await capture_webpage(url, output_dir=output_dir, save_artifacts=save_artifacts, timeout_ms=timeout_ms)
+
+
 async def capture_webpage(
     url: str,
     output_dir: Optional[Path] = None,
@@ -50,10 +108,10 @@ async def capture_webpage(
     Executes under an asyncio Semaphore to enforce strict concurrency limits.
     """
     from credence.ingestion.security import validate_safe_url
+    from credence.storage.base import get_blob_storage
 
     is_local_file = url.startswith("file://") or url.startswith("text://")
     clean_url = validate_safe_url(url, allow_local=is_local_file)
-    target_dir = output_dir or settings.SNAPSHOT_DIR
     target_timeout = timeout_ms or settings.PLAYWRIGHT_TIMEOUT_MS
 
     async with _SNAPSHOT_SEMAPHORE:
@@ -102,17 +160,16 @@ async def capture_webpage(
     dom_path: Optional[str] = None
     screenshot_path: Optional[str] = None
 
-    if save_artifacts and target_dir:
-        target_dir.mkdir(parents=True, exist_ok=True)
-        base_name = f"{content_hash[:16]}"
-        dom_file = target_dir / f"{base_name}.html"
-        dom_file.write_text(raw_html, encoding="utf-8")
-        dom_path = str(dom_file)
+    if save_artifacts:
+        storage = get_blob_storage()
+        cas_html_key = f"cas/sha256/{content_hash}.html"
+        dom_path = await storage.put_blob(
+            cas_html_key, raw_html.encode("utf-8"), content_type="text/plain; charset=utf-8"
+        )
 
         if screenshot_bytes:
-            shot_file = target_dir / f"{base_name}.png"
-            shot_file.write_bytes(screenshot_bytes)
-            screenshot_path = str(shot_file)
+            cas_png_key = f"cas/sha256/{content_hash}.png"
+            screenshot_path = await storage.put_blob(cas_png_key, screenshot_bytes, content_type="image/png")
 
     return DualCaptureResult(
         url=clean_url,

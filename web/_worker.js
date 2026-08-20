@@ -1,6 +1,7 @@
 /**
  * Credence Multi-Domain Zero-Build Edge Router
- * Handles all 4 domains: credence.run, mcp.credence.run, credence.nexus, credence.foundation, credence.report
+ * Supports Canonical (credence.run, credence.nexus, credence.foundation, credence.report)
+ * and Dev Subdomains (dev.credence.run, dev.credence.nexus, dev.credence.foundation, dev.credence.report)
  */
 
 export default {
@@ -8,12 +9,19 @@ export default {
     try {
       const url = new URL(request.url);
       const host = url.hostname;
+      const isDev = host.startsWith('dev.') || host.startsWith('mcp.dev.');
 
-      // 1. FastMCP SSE & Tool Proxy for mcp.credence.run -> Google Cloud Run
-      if (host === 'mcp.credence.run') {
-        const backendUrl = new URL(url.pathname + url.search, 'https://credence-server-663899237633.us-central1.run.app');
+      // 1. Resolve Target Cloud Run Compute Backend
+      const devBackend = (env && env.DEV_BACKEND_URL) || 'https://credence-dev-663899237633.us-central1.run.app';
+      const prodBackend = (env && (env.PROD_BACKEND_URL || env.BACKEND_URL)) || 'https://credence-server-663899237633.us-central1.run.app';
+      const targetBackend = isDev ? devBackend : prodBackend;
+      const targetBackendHost = new URL(targetBackend).hostname;
+
+      // 2. FastMCP SSE & Tool Proxy (mcp.credence.run & mcp.dev.credence.run)
+      if (host === 'mcp.credence.run' || host === 'mcp.dev.credence.run') {
+        const backendUrl = new URL(url.pathname + url.search, targetBackend);
         const newHeaders = new Headers(request.headers);
-        newHeaders.set('Host', 'credence-server-663899237633.us-central1.run.app');
+        newHeaders.set('Host', targetBackendHost);
         
         const res = await fetch(backendUrl, {
           method: request.method,
@@ -46,11 +54,11 @@ export default {
         });
       }
 
-      // 2. REST API Gateway & Health Check Proxy -> Google Cloud Run
+      // 3. REST API Gateway & Health Check Proxy -> Target Compute Backend
       if (url.pathname.startsWith('/api/') || url.pathname === '/health') {
-        const backendUrl = new URL(url.pathname + url.search, 'https://credence-server-663899237633.us-central1.run.app');
+        const backendUrl = new URL(url.pathname + url.search, targetBackend);
         const newHeaders = new Headers(request.headers);
-        newHeaders.set('Host', 'credence-server-663899237633.us-central1.run.app');
+        newHeaders.set('Host', targetBackendHost);
 
         const res = await fetch(backendUrl, {
           method: request.method,
@@ -64,6 +72,15 @@ export default {
         resHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         resHeaders.set('Access-Control-Allow-Headers', '*');
 
+        // Environment-aware cache headers for audit reports
+        if (url.pathname.startsWith('/api/reports/')) {
+          if (isDev) {
+            resHeaders.set('Cache-Control', 'private, max-age=60');
+          } else {
+            resHeaders.set('Cache-Control', 'public, max-age=2592000, immutable');
+          }
+        }
+
         return new Response(res.body, {
           status: res.status,
           statusText: res.statusText,
@@ -71,7 +88,7 @@ export default {
         });
       }
 
-      // 3. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
+      // 4. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
       const dirPrefixes = ['/credence.run', '/credence.nexus', '/credence.foundation', '/credence.report'];
       for (const dp of dirPrefixes) {
         if (url.pathname === dp || url.pathname.startsWith(dp + '/')) {
@@ -80,13 +97,14 @@ export default {
         }
       }
 
-      // 3. Resolve Domain-Specific Asset Prefix
+      // 5. Resolve Domain-Specific Asset Prefix (stripping dev. prefix for asset mapping)
+      const cleanHost = host.replace(/^dev\./, '');
       let prefix = 'credence.run';
-      if (host.includes('nexus')) {
+      if (cleanHost.includes('nexus')) {
         prefix = 'credence.nexus';
-      } else if (host.includes('foundation')) {
-        prefix = host.startsWith('keys') ? 'credence.foundation/keys' : 'credence.foundation';
-      } else if (host.includes('report')) {
+      } else if (cleanHost.includes('foundation')) {
+        prefix = cleanHost.startsWith('keys') ? 'credence.foundation/keys' : 'credence.foundation';
+      } else if (cleanHost.includes('report')) {
         prefix = 'credence.report';
       }
 
@@ -96,7 +114,7 @@ export default {
       }
 
       // If keys.credence.foundation root requested, serve root.pub
-      if (host.startsWith('keys') && (reqPath === '/' || reqPath === '/index.html')) {
+      if (cleanHost.startsWith('keys') && (reqPath === '/' || reqPath === '/index.html')) {
         reqPath = '/root.pub';
       }
 
