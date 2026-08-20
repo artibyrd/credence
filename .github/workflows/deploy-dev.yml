@@ -32,6 +32,9 @@ jobs:
     name: Build & Deploy Dev Cloud Run Service
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

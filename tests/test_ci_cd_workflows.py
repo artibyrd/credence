@@ -24,11 +24,15 @@ def test_github_workflows_syntax_and_structure() -> None:
         assert "name" in parsed, f"Workflow {wf_path.name} missing 'name'"
         assert "jobs" in parsed, f"Workflow {wf_path.name} missing 'jobs'"
 
-        # Verify concurrency safety on deploy workflows
+        # Verify concurrency safety and id-token permissions on GCP deploy workflows
         if "deploy" in wf_path.name:
             assert "concurrency" in parsed, f"Deploy workflow {wf_path.name} must define concurrency"
             concurrency = parsed["concurrency"]
             assert concurrency.get("cancel-in-progress") is True, f"{wf_path.name} must have cancel-in-progress: true"
+            if "backend" in wf_path.name or "dev" in wf_path.name:
+                for job_name, job_spec in parsed["jobs"].items():
+                    permissions = job_spec.get("permissions", {})
+                    assert permissions.get("id-token") == "write", f"Job '{job_name}' in {wf_path.name} must declare id-token: write for WIF OIDC authentication"
 
         # Verify job timeouts
         for job_name, job_spec in parsed["jobs"].items():
