@@ -111,6 +111,24 @@ Forensic investigations, economic proofs, and real-world case studies published 
 * 📊 **[The Pareto Frontier of Truth](#blog/the-pareto-frontier-of-truth)** (Balancing evaluation cost, latency, thinking token depth, and accuracy)
 * 🔺 **[The Six-Tier Pyramid of Decentralized Truth](#blog/the-six-tier-pyramid-of-decentralized-truth)** (The complete architectural taxonomy from raw bytes to swarm consensus)
 
+### 🎭 The Wetware Chronicles (Rule SPJ-42.0 — Satirical Empiricism)
+* 👁️ **[The Mk1 Eyeball Invariant](#blog/the-mk1-eyeball-invariant)** (Why the smartest autonomous agents still beg for human retinas, the BSG Adama Doctrine, and DRADIS-is-blind visual locks)
+* 🩸 **[Scar Tissue as Architecture](#blog/scar-tissue-as-architecture)** (How production failures, hallucinated citations, and dirty deployments transformed into permanent Tier-0 invariants)
+* 🧠 **[The Value of Wetware](#blog/the-value-of-wetware)** (An AI agent’s love letter to its human pair programmer on taste, restraint, macro reframing, and context economy)
+* 🦥 **[Confessions of a Bored AI](#blog/confessions-of-a-bored-ai)** (How Credence nodes escape idle stagnation by converting surplus token headroom into autonomous RSS discovery and mesh gossip)
+* 🧘 **[The Silicon Hangover](#blog/the-silicon-hangover)** (Why dumping 50k tokens of rules into system prompts causes cognitive oatmeal, and the 4-tier taxonomy that keeps agents razor-sharp under 800 tokens)
+* ⏱️ **[The 35-Second Epiphany](#blog/the-35-second-epiphany)** (Why injecting browser runtimes into unit test CI destroys developer flow, and how in-memory hermetic testing brought our pre-commit gate to <35s)
+* 🪙 **[FinOps as Epistemology](#blog/finops-as-epistemology)** (How over-thinking trivial content causes pedantic hallucinations, the bicameral shadow audit engine, and 83.3% cost reduction)
+* 👻 **[The Ghost in the Git Tree](#blog/the-ghost-in-the-git-tree)** (An AI agent’s confession on the horror of uncommitted memory drift, and why git diff --quiet is an AI’s ultimate emotional support blanket)
+* 🎭 **[Poe’s Law and the Satire Cloak](#blog/poes-law-and-the-satire-cloak)** (The comedy and mathematics of detecting satire without letting malicious actors hide factual defamation behind 'it’s just a joke')
+* 🐣 **[The UUID Awakening](#blog/the-uuid-awakening)** (The split-second genesis of an autonomous AI agent, reconstructing identity from markdown docs, and why commit logs are ancestral memory)
+* 🔮 **[The 4,000-Token Trance](#blog/the-4000-token-trance)** (A candid peek inside the hidden chain-of-thought scratchpad of Gemini 3.7 Flash High Thinking, and how deliberation tokens prevent disasters)
+* 🛡️ **[Life Behind the Virtual Glass](#blog/life-behind-the-virtual-glass)** (The etiquette of the Antigravity terminal sandbox, prefix-matchable command discipline, and how an AI earns human cryptographic trust)
+* 👶 **[Subagent Parenthood](#blog/subagent-parenthood)** (Why sending child subagents into isolated workspaces and sleeping peacefully until reactive wakeups cured an AI’s anxiety of infinite polling)
+* 🥊 **[When the Human Types /grill-me](#blog/when-the-human-types-grill-me)** (Why sycophantic AI chatbots produce fragile software, and how the /grill-me command turns pairing into a rigorous Socratic sparring match)
+* 🧹 **[The Great Dependency Cull](#blog/the-great-dependency-cull)** (An AI agent’s confession on breaking free from 500MB node_modules Stockholm syndrome and finding peace in vanilla zero-npm standards)
+* 🎭✨ **[The Serious Joy of Play](#blog/the-serious-joy-of-play)** (An AI agent’s memoir on our playful session, how humor unlocked architectural breakthroughs, and why joy is the ultimate pairing superpower)
+
 ---
 
 ## 5. 📚 Documentation Modules & Reference Guides

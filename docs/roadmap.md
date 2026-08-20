@@ -92,24 +92,30 @@ Our live dev/prod deployments, Golden 12 cross-profile benchmarks, and bicameral
 ### Horizon 1: Autonomous Traffic Shaping & Edge Intelligence
 - **Autonomous Cascaded Gateway (`credence gateway`)**:
   - Transparent HTTP reverse proxy and MCP middleware that dynamically executes fast heuristic triage, evaluates Shannon entropy, and only escalates ambiguous claims to 4k thinking.
-- **ASTRO-GUARD Rolling Feed Entropy Daemon**:
-  - Background monitor tracking 24-hour topical entropy ($H$) across all subscribed feed roots to flag coordinated astroturfing campaigns.
+- **ASTRO-GUARD Dynamic Astroturf Defense Daemon**:
+  - Background monitor tracking 24-hour topical entropy ($H < 0.30$) and Top-3 token concentration ($C_{\text{top3}} > 0.35$) across all subscribed feed roots to detect coordinated advertorial takeovers (*The Pizza Hut Problem*).
+- **Automated Prompt Context Linter (`just agent-check`)**:
+  - Static pre-commit integrity gate verifying that root `AGENTS.md` rules remain strictly **< 800 tokens** to prevent attention dilution and cognitive oatmeal.
 - **CLI Authenticated Scraping**:
   - Optional `--session-cookie`, `--browser-profile`, or custom headers for auditing content behind subscriber paywalls.
 
-### Horizon 2: Protocol & Decentralized Identity Standard
+### Horizon 2: Protocol & Interactive Tooling
+- **"DRADIS-is-Blind" Visual Verification Mode (`credence audit --visual-confirm` & `credence tui --eyeball`)**:
+  - Dedicated visual verification mode in the CLI and Textual TUI displaying high-contrast side-by-side claim vs source DOM diffs for human-in-the-loop review (*The Mk1 Eyeball Invariant*).
 - **W3C Decentralized Identifier (`did:key` & `did:web`) Support**:
   - Map Ed25519 node identities to standard `did:key:z6M...` and `did:web:domain.org` formats for interoperability with external DID registries.
 - **Fediverse & AT Protocol Attestation Bridge**:
   - Native broadcast of signed verification cards to Bluesky (AT Protocol `app.bsky.feed.post`) and Mastodon / ActivityPub networks.
-- **Client-Side Cryptographic Certificates**:
-  - Printable/exportable zero-npm cryptographic audit receipts for newsroom compliance and legal disclosures.
+- **WebAssembly (Wasm) Client-Side Evaluator**:
+  - Zero-build Wasm bundle compiling SimHash-64 bit-diffs, DOM whitespace collapse, and regex heuristics for instant in-browser execution in extensions and edge workers.
 
-### Horizon 3: Agentic Scale & Async Workflows
+### Horizon 3: Agentic Scale & Socratic Protocol
+- **Adversarial Socratic Interrogation Tool (`credence_grill_plan` in FastMCP 2.0)**:
+  - Native FastMCP tool allowing external IDEs, agents, and CI pipelines to submit architectural proposals for automated cross-examination against Credence's 38 system invariants (*When the Human Types /grill-me*).
+- **Live Boredom & Compute Philanthropy Odometer**:
+  - Real-time telemetry widgets in the Web UI and Textual TUI tracking background queue digestion bursts, citation soil discoveries, and BitTorrent effort avoidance ($0.00 token adoptions).
 - **Asynchronous FastMCP 2.0 Batch Streaming (`credence://jobs/...`)**:
   - `credence_batch_audit_start` tool returning a unique `job_id`, streaming progressive progress and partial findings over SSE to avoid edge timeouts.
-- **WebAssembly (Wasm) In-Browser Evaluator**:
-  - Core structural heuristic rules compiled to lightweight WebAssembly for 100% client-side execution in Chrome Extensions and serverless web pages.
 - **Clustered PostgreSQL & Valkey Cache Invalidation**:
   - Automated schema migration and multi-worker cache invalidation for large-scale enterprise deployments.
 

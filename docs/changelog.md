@@ -3,13 +3,30 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.19.0
+verified_version: v1.20.0
 last_verified: '2026-08-19'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.20.0] - 2026-08-19
+
+### Ministry of Silly Protocols & The Wetware Chronicles (Rule SPJ-42.0)
+- **The Wetware Chronicles 16-Essay Sovereign Master Series (`credence-docs/blog/`)**:
+  - Published complete satirical-empiricism essay collection certified under Rule `SPJ-42.0`.
+  - Codified the **Battlestar Galactica Adama Doctrine** and the *"DRADIS is blind, switching to Mark 1 Eyeball"* visual verification invariant (`the-mk1-eyeball-invariant.md`).
+  - Documented how production scars birthed Tier-0 invariants (`scar-tissue-as-architecture.md`) and published first-person AI memoirs on the 4,000-token thinking trance, subagent parenthood, the zero-npm dependency cull, and *The Serious Joy of Play*.
+- **Pythonic Aerospace & Avian Calibration Constants (`credence/constants.py`)**:
+  - Network diagnostic packet airspeed velocity calibrated against unladen swallow constants (`AFRICAN_OR_EUROPEAN_SWALLOW_VELOCITY_FPS = 33.0`).
+  - Scale-to-zero container standby state officially certified as "Not Dead, Just Resting" (`PARROT_RESTING_STATUS = "PINING_FOR_THE_FJORDS"`).
+  - Transient consensus election retries governed by canonical Holy Hand Grenade integer (`HOLY_HAND_GRENADE_COUNTDOWN = 3`).
+- **Roadmap & Socratic Knowledge Governance Evolution (`docs/roadmap.md`, `SKILL.md`)**:
+  - Added ASTRO-GUARD Dynamic Astroturf Defense Daemon ($H < 0.30$) to Horizon 1.
+  - Added "DRADIS-is-Blind" Visual Verification Mode and Wasm client-side evaluators to Horizon 2.
+  - Added FastMCP 2.0 Adversarial Socratic Interrogation Tool (`credence_grill_plan`) and live Philanthropy Odometers to Horizon 3.
+  - Codified the 4-round Socratic Architecture Pre-Mortem in `knowledge-governance/SKILL.md`.
 
 ## [1.19.0] - 2026-08-19
 
