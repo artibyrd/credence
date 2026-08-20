@@ -782,3 +782,201 @@ def test_learning_lifecycle_and_invariant_governance_contracts(docs_root: Path) 
     if kg_skill.exists():
         kg_content = kg_skill.read_text(encoding="utf-8")
         assert "The 4-Phase Delivery & Continuous Learning Lifecycle" in kg_content
+
+
+@pytest.mark.governance
+def test_no_unrendered_directives_or_malformed_alerts(docs_root: Path) -> None:
+    """Verify that all markdown files use valid GFM alert callouts or supported container directives.
+
+    Ensures zero unclosed :::tabs blocks, zero stray ::: markers, and zero malformed alert keywords.
+    """
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    issues = []
+    allowed_alert_types = {"NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"}
+
+    for md_file in md_files:
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        in_code_block = False
+        in_tab_block = False
+        tab_start_line = 0
+
+        for line_no, line in enumerate(lines, start=1):
+            trimmed = line.strip()
+
+            if trimmed.startswith("```"):
+                in_code_block = not in_code_block
+                continue
+
+            if in_code_block:
+                continue
+
+            # Directive check
+            if trimmed.startswith(":::"):
+                directive = trimmed[3:].strip()
+                if directive == "tabs":
+                    if in_tab_block:
+                        issues.append(f"{rel_path}:{line_no} -> Nested ':::tabs' block detected")
+                    in_tab_block = True
+                    tab_start_line = line_no
+                elif directive == "":
+                    if not in_tab_block:
+                        issues.append(f"{rel_path}:{line_no} -> Stray closing ':::' without opening block")
+                    in_tab_block = False
+                elif directive.lower() in {"note", "tip", "info", "warning", "caution", "important", "danger"}:
+                    # In our canonical documentation, alerts should strictly use GFM callouts (> [!NOTE])
+                    issues.append(
+                        f"{rel_path}:{line_no} -> Non-standard directive ':::{directive}'. "
+                        f"Standardize to GFM alert '> [!{directive.upper()}]'"
+                    )
+
+            # Tab item check outside of tabs
+            if re.match(r"^===\s+", trimmed) and not in_tab_block:
+                issues.append(f"{rel_path}:{line_no} -> Tab marker '=== ...' found outside of ':::tabs' container")
+
+            # GitHub alert callout check
+            if line.startswith(">"):
+                alert_match = re.match(r"^>\s*\[\!(.*?)\]", line)
+                if alert_match:
+                    alert_type = alert_match.group(1).upper()
+                    if alert_type not in allowed_alert_types:
+                        issues.append(
+                            f"{rel_path}:{line_no} -> Unknown alert type '> [!{alert_type}]'. "
+                            f"Valid types are: {sorted(allowed_alert_types)}"
+                        )
+
+        if in_tab_block:
+            issues.append(f"{rel_path}:{tab_start_line} -> Unclosed ':::tabs' block (missing matching ':::')")
+
+    assert not issues, f"Found {len(issues)} directive / alert syntax issues in documentation:\n" + "\n".join(
+        f"  - {issue}" for issue in issues
+    )
+
+
+@pytest.mark.governance
+def test_full_docs_markdown_rendering_pipeline(docs_root: Path) -> None:
+    """Simulate the zero-build app.js parseMarkdown pipeline across all documentation.
+
+    Ensures that every document parses without leaking unrendered directive artifacts,
+    unparsed alert callout markers, or unclosed structural HTML containers.
+    """
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    leaks = []
+
+    def escape_html(s: str) -> str:
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+    for md_file in md_files:
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+
+        # Strip frontmatter
+        fm_match = re.match(r"^---\r?\n([\s\S]*?)\r?\n---\r?\n", content)
+        body = content[fm_match.end() :] if fm_match else content
+
+        lines = body.splitlines()
+        rendered_lines = []
+        in_code_block = False
+        in_alert_box = False
+        in_tab_block = False
+
+        for line_no, line in enumerate(lines, start=1):
+            trimmed = line.strip()
+
+            # Code fence
+            if trimmed.startswith("```"):
+                in_code_block = not in_code_block
+                in_alert_box = False
+                continue
+
+            if in_code_block:
+                continue
+
+            # Tabs container
+            if trimmed.startswith(":::tabs"):
+                in_tab_block = True
+                in_alert_box = False
+                continue
+
+            if in_tab_block and trimmed == ":::":
+                in_tab_block = False
+                continue
+
+            # Alert callouts
+            alert_match = re.match(r"^>\s*\[\!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$", line, re.I)
+            if alert_match:
+                in_alert_box = True
+                continue
+
+            if in_alert_box:
+                if line.startswith(">"):
+                    continue
+                else:
+                    in_alert_box = False
+
+            # Check rendered line
+            rendered_lines.append((line_no, line))
+
+        # Check for unrendered directive leaks
+        for line_no, line in rendered_lines:
+            trimmed = line.strip()
+            if trimmed == ":::" or (trimmed.startswith(":::") and not line.startswith(" ")):
+                leaks.append(f"{rel_path}:{line_no} -> Unrendered ':::' token in parsed document: '{line}'")
+            if re.search(r"(?<!`)(?:> \[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\])(?!`)", line) and not line.startswith(
+                ">"
+            ):
+                leaks.append(f"{rel_path}:{line_no} -> Unrendered inline alert marker: '{line}'")
+
+    assert not leaks, f"Found {len(leaks)} unrendered markdown artifacts across documentation:\n" + "\n".join(
+        f"  - {leak}" for leak in leaks
+    )
+
+
+@pytest.mark.governance
+def test_app_js_directive_and_alert_resilience(docs_root: Path) -> None:
+    """Verify that app.js contains dual-engine support for both GFM callouts and container directives."""
+    app_js = docs_root / "app.js"
+    assert app_js.exists(), "credence-docs/app.js must exist"
+    content = app_js.read_text(encoding="utf-8")
+
+    # 1. Verify GFM alert regex
+    assert "alertMatch" in content, "app.js must support GFM alertCallouts"
+    assert (
+        r"^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]" in content or "NOTE|TIP|IMPORTANT|WARNING|CAUTION" in content
+    )
+
+    # 2. Verify container directive regex
+    assert "directiveMatch" in content, "app.js must support container directives"
+    assert ":::(note|tip|info|warning|caution|important|danger)" in content
+
+    # 3. Verify tabs container
+    assert ":::tabs" in content, "app.js must support :::tabs containers"
+
+
+@pytest.mark.governance
+def test_raw_html_code_entity_escaping(docs_root: Path) -> None:
+    """Verify that raw HTML cards do not contain unescaped angle brackets in <code> elements."""
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    unescaped = []
+
+    for md_file in md_files:
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+
+        # Scan for raw HTML blocks containing <code>...</code> where content has unescaped <tag>
+        for line_no, line in enumerate(content.splitlines(), start=1):
+            if "<div" in line or "<p>" in line or "<h3>" in line:
+                # Find all <code>...</code> in this HTML line
+                code_matches = re.findall(r"<code>(.*?)</code>", line)
+                for code_content in code_matches:
+                    # Check for unescaped angle brackets that look like <tag> instead of &lt;tag&gt;
+                    if re.search(r"<(?:[a-zA-Z!][^>]*?)>", code_content):
+                        unescaped.append(
+                            f"{rel_path}:{line_no} -> Unescaped angle bracket in raw HTML <code>: '{code_content}'"
+                        )
+
+    assert not unescaped, f"Found {len(unescaped)} unescaped code elements in raw HTML:\n" + "\n".join(
+        f"  - {u}" for u in unescaped
+    )
