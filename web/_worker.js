@@ -17,8 +17,8 @@ export default {
       const targetBackend = isDev ? devBackend : prodBackend;
       const targetBackendHost = new URL(targetBackend).hostname;
 
-      // 2. FastMCP SSE & Tool Proxy (mcp.credence.run & mcp.dev.credence.run)
-      if (host === 'docs.credence.run' || host === 'dev.docs.credence.run') {
+      // 2. Dynamic Zero-Cache Docs & Blog Proxy (docs.credence.run & blog.credence.run)
+      if (host === 'docs.credence.run' || host === 'dev.docs.credence.run' || host === 'blog.credence.run' || host === 'dev.blog.credence.run') {
         const pagesUrl = new URL(url.pathname + url.search, 'https://credence-docs.pages.dev');
         const reqHeaders = new Headers(request.headers);
         reqHeaders.set('Host', 'credence-docs.pages.dev');
@@ -140,6 +140,11 @@ export default {
         reqPath = '/root.pub';
       }
 
+      // If seeds.credence.nexus root requested, serve peers.json
+      if (cleanHost.startsWith('seeds') && (reqPath === '/' || reqPath === '/index.html')) {
+        reqPath = '/peers.json';
+      }
+
       // Build target asset path
       let finalPath;
       if (reqPath === '/') {
@@ -171,11 +176,12 @@ export default {
         response = await fetch(new Request(assetUrl, request));
       }
 
-      // If exact file found, return with appropriate CORS
+      // If exact file found, return with appropriate CORS & Zero-Cache Policy
       const resHeaders = new Headers(response.headers);
-      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css')) {
+      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || reqPath === '/') {
         resHeaders.set('Access-Control-Allow-Origin', '*');
         resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        resHeaders.set('Cache-Control', 'public, max-age=0, must-revalidate');
       }
 
       return new Response(response.body, {

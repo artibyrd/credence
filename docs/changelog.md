@@ -3,13 +3,24 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.5
+verified_version: v1.21.6
 last_verified: '2026-08-20'
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [1.21.6] - 2026-08-20
+
+### Multi-Domain Routing Audit & Universal Zero-Cache Edge Configuration
+- **Sovereign Blog & Subdomain Routing**:
+  - Bound `blog.credence.run` and `dev.blog.credence.run` to the Cloudflare Workers Edge Router with dynamic zero-cache proxying to `credence-docs.pages.dev`, resolving stale edge POP cache.
+  - Added dedicated root seed routing for `seeds.credence.nexus` (`peers.json`) and root public key routing for `keys.credence.foundation` (`root.pub`).
+- **Universal Zero-Cache Policy**:
+  - Enforced `Cache-Control: public, max-age=0, must-revalidate` across all static HTML, JS, and JSON assets in `_worker.js` to guarantee instantaneous global propagation.
+- **7-Manifest Parity Sync**:
+  - Synchronized canonical semantic version `v1.21.6` across all 7 ecosystem manifests.
 
 ## [1.21.5] - 2026-08-20
 
