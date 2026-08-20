@@ -12,8 +12,8 @@ export default {
       const isDev = host.startsWith('dev.') || host.startsWith('mcp.dev.');
 
       // 1. Resolve Target Cloud Run Compute Backend
-      const devBackend = (env && env.DEV_BACKEND_URL) || 'https://credence-dev-663899237633.us-central1.run.app';
-      const prodBackend = (env && (env.PROD_BACKEND_URL || env.BACKEND_URL)) || 'https://credence-server-663899237633.us-central1.run.app';
+      const devBackend = (env && env.DEV_BACKEND_URL) || 'https://credence-dev-wukzqiyqbq-uc.a.run.app';
+      const prodBackend = (env && (env.PROD_BACKEND_URL || env.BACKEND_URL)) || 'https://credence-server-psgqr4nwoq-uc.a.run.app';
       const targetBackend = isDev ? devBackend : prodBackend;
       const targetBackendHost = new URL(targetBackend).hostname;
 

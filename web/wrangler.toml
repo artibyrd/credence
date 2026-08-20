@@ -6,10 +6,28 @@ main = "_worker.js"
 directory = "."
 binding = "ASSETS"
 
+routes = [
+  { pattern = "credence.run/*", zone_name = "credence.run" },
+  { pattern = "mcp.credence.run/*", zone_name = "credence.run" },
+  { pattern = "dev.credence.run/*", zone_name = "credence.run" },
+  { pattern = "mcp.dev.credence.run/*", zone_name = "credence.run" },
+  { pattern = "credence.nexus/*", zone_name = "credence.nexus" },
+  { pattern = "dev.credence.nexus/*", zone_name = "credence.nexus" },
+  { pattern = "credence.foundation/*", zone_name = "credence.foundation" },
+  { pattern = "dev.credence.foundation/*", zone_name = "credence.foundation" },
+  { pattern = "credence.report/*", zone_name = "credence.report" },
+  { pattern = "dev.credence.report/*", zone_name = "credence.report" }
+]
+
+[vars]
+PROD_BACKEND_URL = "https://credence-server-psgqr4nwoq-uc.a.run.app"
+DEV_BACKEND_URL = "https://credence-dev-wukzqiyqbq-uc.a.run.app"
+
 [env.production.vars]
-PROD_BACKEND_URL = "https://credence-server-663899237633.us-central1.run.app"
-DEV_BACKEND_URL = "https://credence-dev-663899237633.us-central1.run.app"
+PROD_BACKEND_URL = "https://credence-server-psgqr4nwoq-uc.a.run.app"
+DEV_BACKEND_URL = "https://credence-dev-wukzqiyqbq-uc.a.run.app"
 
 [env.dev.vars]
-PROD_BACKEND_URL = "https://credence-server-663899237633.us-central1.run.app"
-DEV_BACKEND_URL = "https://credence-dev-663899237633.us-central1.run.app"
+PROD_BACKEND_URL = "https://credence-server-psgqr4nwoq-uc.a.run.app"
+DEV_BACKEND_URL = "https://credence-dev-wukzqiyqbq-uc.a.run.app"
+
