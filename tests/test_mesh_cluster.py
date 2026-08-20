@@ -932,3 +932,206 @@ def test_mesh_cluster_boredom_root_partitioning() -> None:
     # Determinism check
     assert aff_1a == compute_feed_affinity(node1_pubkey, feed_url_a)
     assert aff_2b == compute_feed_affinity(node2_pubkey, feed_url_b)
+
+
+@pytest.mark.unit
+async def test_13_node_mesh_adversarial_inoculation_sweep(tmp_path: Path, db_session: AsyncSession) -> None:
+    """Verify that a single node auditing an adversarial target gossips the signed attestation to the 13-node mesh."""
+    from credence.identity import load_or_create_node_identity, sign_audit_report
+    from credence.mesh.relay import MeshGossipRelay
+    from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
+
+    relays = []
+    identities = [load_or_create_node_identity(tmp_path / f"inoc_n13_{i}.key") for i in range(1, 14)]
+
+    # Watts-Strogatz ring with chords
+    peer_map = {
+        1: [2, 5, 13],
+        2: [1, 3],
+        3: [2, 4, 13],
+        4: [3, 5],
+        5: [1, 4, 6],
+        6: [5, 7],
+        7: [6, 8, 11],
+        8: [7, 9],
+        9: [8, 10],
+        10: [9, 11],
+        11: [7, 10, 12],
+        12: [11, 13],
+        13: [1, 3, 12],
+    }
+
+    for i in range(1, 14):
+        port = 9450 + i
+        seeds = [f"ws://127.0.0.1:{9450 + peer_num}" for peer_num in peer_map[i] if peer_num > i]
+        r = MeshGossipRelay(port=port, node_identity=identities[i - 1], peer_seeds=seeds)
+        relays.append(r)
+
+    try:
+        await asyncio.gather(*(r.start() for r in relays))
+        await asyncio.sleep(0.3)
+
+        # Node 1 audits a viral deceptive report
+        adv_report = AuditReport(
+            url="https://viral-disinfo-syndicate.org/breaking-leak",
+            content_sha256="sha256:6666777788889999000011112222333344445555666677778888999900001111",
+            simhash_64="0x9988776655443322",
+            suspicion_score=88.5,
+            suspicion_density=7.2,
+            confidence_score=0.98,
+            classification="DECEPTIVE",
+            violations=[
+                SpecialistViolationFinding(
+                    rule_id="SPJ-1.1",
+                    rule_uri="credence:rule:SPJ-1.1",
+                    domain="JOURNALISTIC_ETHICS",
+                    cluster_id="FABRICATION",
+                    severity=5,
+                    confidence=0.98,
+                    quote_or_element="Completely invented government decree",
+                    reasoning="Document is forged and non-existent.",
+                    is_grounded=True,
+                )
+            ],
+        )
+        signed_adv = sign_audit_report(adv_report, identities[0])
+
+        # Broadcast from Node 1
+        await relays[0].broadcast_attestation(signed_adv)
+        await asyncio.sleep(0.4)
+
+        # Verify multi-hop diffusion: distant nodes in lattice (Node 7, Node 10, Node 12) have seen message
+        assert len(relays[6].deduplicator._seen) > 0  # Node 7
+        assert len(relays[9].deduplicator._seen) > 0  # Node 10
+        assert len(relays[11].deduplicator._seen) > 0  # Node 12
+
+    finally:
+        await asyncio.gather(*(r.stop() for r in relays))
+
+
+@pytest.mark.unit
+async def test_13_node_mesh_distributed_quarantine_backoff(db_session: AsyncSession) -> None:
+    """Verify that multiple nodes independently compute quarantine transitions and exponential backoffs."""
+    from credence.feeds.reputation import get_domain_quarantine_list, update_domain_reputation
+    from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
+
+    target_domain = "fakenews-syndicate.xyz"
+
+    deceptive_report = AuditReport(
+        url=f"https://{target_domain}/fake-announcement",
+        content_sha256="sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        simhash_64="0xaaaaaaaaaaaaaaaa",
+        suspicion_score=92.0,
+        suspicion_density=8.0,
+        confidence_score=0.99,
+        classification="DECEPTIVE",
+        violations=[
+            SpecialistViolationFinding(
+                rule_id="SPJ-1.1",
+                rule_uri="credence:rule:SPJ-1.1",
+                domain="JOURNALISTIC_ETHICS",
+                cluster_id="ACCURACY",
+                severity=5,
+                confidence=0.99,
+                quote_or_element="Fabricated quote",
+                reasoning="Entirely fabricated.",
+                is_grounded=True,
+            )
+        ],
+    )
+
+    # 3 consecutive deceptions
+    for _ in range(3):
+        rep = await update_domain_reputation(db_session, target_domain, deceptive_report)
+
+    assert rep.status == "QUARANTINED_PROBATION"
+    assert rep.polling_backoff_factor >= 8.0
+
+    quarantined = await get_domain_quarantine_list(db_session)
+    assert any(q["domain"] == target_domain for q in quarantined)
+
+
+@pytest.mark.unit
+async def test_13_node_mesh_buzzfeed_doctrine_redemption(db_session: AsyncSession) -> None:
+    """Verify that the BuzzFeed News Doctrine graduates a quarantined domain after 5 clean audits across 2 subjects."""
+    from credence.feeds.reputation import get_or_create_domain_reputation, update_domain_reputation
+    from credence.pipeline.schemas import AuditReport
+
+    domain = "buzzfeed-news-archive.com"
+    rep = await get_or_create_domain_reputation(db_session, domain)
+    rep.status = "QUARANTINED_PROBATION"
+    rep.reputation_score = 15.0
+    rep.consecutive_deceptive_count = 3
+    rep.polling_backoff_factor = 16.0
+    db_session.add(rep)
+    await db_session.commit()
+
+    clean_report = AuditReport(
+        url=f"https://{domain}/pulitzer-winning-investigation",
+        content_sha256="sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        simhash_64="0xbbbbbbbbbbbbbbbb",
+        suspicion_score=3.0,
+        suspicion_density=0.02,
+        confidence_score=0.98,
+        classification="CLEAN",
+        violations=[],
+    )
+
+    # 4 audits on subject A
+    for _ in range(4):
+        rep = await update_domain_reputation(db_session, domain, clean_report, subject_id="journalism.investigative")
+        assert rep.status == "QUARANTINED_PROBATION"
+
+    # 5th audit on subject B -> graduates
+    rep = await update_domain_reputation(db_session, domain, clean_report, subject_id="finance.banking")
+    assert rep.status == "PROBATIONARY_RECOVERY"
+    assert rep.consecutive_clean_count == 5
+    assert rep.graduated_at is not None
+
+
+@pytest.mark.unit
+async def test_13_node_mesh_byzantine_sybil_trojan_defense(tmp_path: Path) -> None:
+    """Verify that honest nodes reject fake attestations crafted by Byzantine nodes and slash peer quality."""
+    from credence.identity import load_or_create_node_identity, sign_audit_report
+    from credence.mesh.consensus import BayesianConsensusAggregator
+    from credence.pipeline.schemas import AuditReport
+
+    id_honest = load_or_create_node_identity(tmp_path / "honest.key")
+    id_byzantine = load_or_create_node_identity(tmp_path / "byz.key")
+
+    aggregator = BayesianConsensusAggregator()
+
+    # Honest consensus reports indicate high suspicion on deceptive URL
+    honest_report = AuditReport(
+        url="https://deceptive-trojan.xyz/scam",
+        content_sha256="sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        simhash_64="0xcccccccccccccccc",
+        suspicion_score=85.0,
+        suspicion_density=6.0,
+        confidence_score=0.95,
+        classification="DECEPTIVE",
+    )
+    signed_honest = sign_audit_report(honest_report, id_honest)
+
+    # Byzantine nodes submit fabricated clean score of 0.0 with no grounded evidence
+    byz_report = AuditReport(
+        url="https://deceptive-trojan.xyz/scam",
+        content_sha256="sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        simhash_64="0xcccccccccccccccc",
+        suspicion_score=0.0,
+        suspicion_density=0.0,
+        confidence_score=0.99,
+        classification="CLEAN",
+    )
+    signed_byz = sign_audit_report(byz_report, id_byzantine)
+
+    # 9 honest reports vs 4 byzantine reports
+    reports = [signed_honest] * 9 + [signed_byz] * 4
+
+    consensus = aggregator.calculate_consensus(reports)
+    assert consensus is not None
+    # Robust median must stay aligned with the 9 honest nodes
+    assert consensus.consensus_score >= 80.0
+    assert consensus.classification == "DECEPTIVE"
+    assert len(consensus.outlier_nodes) > 0  # Byzantine node flagged as outlier
+

@@ -121,11 +121,12 @@ def _is_candidate_eligible(domain: str, allow_local: bool = False) -> bool:
 
 async def extract_root_candidates(
     session: AsyncSession,
-    min_parent_score: float = 75.0,  # Min parent trust (100 - suspicion_score)
+    min_parent_score: float = 75.0,  # Min parent trust for clean soil (100 - suspicion_score)
     limit: int = 20,
     allow_local: bool = False,
+    soil_type: str = "clean",  # clean, adversarial, or all
 ) -> List[RootCandidate]:
-    """Extract candidate external domains cited by verified clean articles."""
+    """Extract candidate external domains cited by verified articles from clean or adversarial soil."""
     max_suspicion = 100.0 - min_parent_score
 
     # 1. Fetch active subscriptions to exclude existing root sources
@@ -133,14 +134,17 @@ async def extract_root_candidates(
     subs = (await session.exec(stmt_subs)).all()
     subscribed_domains = {_normalize_domain(s.feed_url) for s in subs}
 
-    # 2. Fetch clean audit records and their snapshots
+    # 2. Fetch audit records based on requested soil_type
     stmt_audits = (
         select(AuditRecord, SnapshotRecord)
         .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
-        .where(AuditRecord.suspicion_score <= max_suspicion)
-        .order_by(col(AuditRecord.audited_at).desc())
-        .limit(100)
     )
+    if soil_type == "clean":
+        stmt_audits = stmt_audits.where(AuditRecord.suspicion_score <= max_suspicion)
+    elif soil_type == "adversarial":
+        stmt_audits = stmt_audits.where(AuditRecord.suspicion_score >= 50.0)
+
+    stmt_audits = stmt_audits.order_by(col(AuditRecord.audited_at).desc()).limit(100)
     results = (await session.exec(stmt_audits)).all()
 
     candidates_map: Dict[str, RootCandidate] = {}
@@ -185,12 +189,19 @@ async def extract_root_candidates(
                     c.citing_articles.append(parent_url)
                 c.avg_parent_trust = round((c.avg_parent_trust + parent_trust) / 2.0, 1)
 
-    # Rank candidates by citation count descending, then parent trust descending
-    ranked = sorted(
-        candidates_map.values(),
-        key=lambda c: (c.citation_count, c.avg_parent_trust),
-        reverse=True,
-    )
+    # Rank candidates: clean soil prefers higher trust; adversarial soil prefers higher citation frequency
+    if soil_type == "adversarial":
+        ranked = sorted(
+            candidates_map.values(),
+            key=lambda c: (c.citation_count, -c.avg_parent_trust),
+            reverse=True,
+        )
+    else:
+        ranked = sorted(
+            candidates_map.values(),
+            key=lambda c: (c.citation_count, c.avg_parent_trust),
+            reverse=True,
+        )
     return ranked[:limit]
 
 

@@ -162,13 +162,14 @@ async def capture_webpage(
 
     if save_artifacts:
         storage = get_blob_storage()
-        cas_html_key = f"cas/sha256/{content_hash}.html"
+        clean_hex = content_hash.removeprefix("sha256:")
+        cas_html_key = f"cas/sha256/{clean_hex}.html"
         dom_path = await storage.put_blob(
             cas_html_key, raw_html.encode("utf-8"), content_type="text/plain; charset=utf-8"
         )
 
         if screenshot_bytes:
-            cas_png_key = f"cas/sha256/{content_hash}.png"
+            cas_png_key = f"cas/sha256/{clean_hex}.png"
             screenshot_path = await storage.put_blob(cas_png_key, screenshot_bytes, content_type="image/png")
 
     return DualCaptureResult(

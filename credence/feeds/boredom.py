@@ -21,9 +21,10 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from credence.config import COST_PROFILES, CostProfile
 from credence.db import get_session
 from credence.feeds.dedup import check_mesh_effort_avoidance
+from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain, update_domain_reputation
 from credence.feeds.roots import RootExpansionSummary, expand_roots
 from credence.mesh.relay import MeshGossipRelay
-from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
+from credence.models import DomainReputationRecord, FeedItemRecord, FeedSubscriptionRecord, utc_now
 from credence.pipeline.governor import get_token_headroom_status
 
 console = Console()
@@ -37,11 +38,16 @@ class BoredomCycleSummary:
     headroom_daily_pct: float = 100.0
     headroom_hourly_pct: float = 100.0
     circuit_breaker_tripped: bool = False
+    boredom_ratio: float = 0.60
     pending_items_scanned: int = 0
     pending_items_audited: int = 0
     mesh_attestations_adopted: int = 0
     items_deferred_budget: int = 0
     tokens_saved_mesh: int = 0
+    clean_soil_harvested: int = 0
+    adversarial_soil_harvested: int = 0
+    quarantined_items_probed: int = 0
+    redemptions_graduated: int = 0
     new_roots_subscribed: int = 0
     initial_items_harvested: int = 0
     details: List[Dict[str, Any]] = field(default_factory=list)
@@ -50,6 +56,7 @@ class BoredomCycleSummary:
 async def run_boredom_cycle(
     session: AsyncSession,
     audit_burst: int = 3,
+    boredom_ratio: float = 0.60,
     expand_roots_enabled: bool = True,
     mesh_relay: Optional[MeshGossipRelay] = None,
     cost_profile: CostProfile = CostProfile.BALANCED,
@@ -57,8 +64,8 @@ async def run_boredom_cycle(
     allow_local: bool = False,
     client: Optional[Any] = None,
 ) -> BoredomCycleSummary:
-    """Execute one complete opportunistic boredom cycle."""
-    summary = BoredomCycleSummary()
+    """Execute one complete opportunistic boredom cycle with dual-soil ratio balancing."""
+    summary = BoredomCycleSummary(boredom_ratio=boredom_ratio)
     prof_cfg = profile_override or COST_PROFILES.get(cost_profile)
 
     # 1. Check Token Safety Governor Headroom
@@ -73,14 +80,50 @@ async def run_boredom_cycle(
         .join(FeedSubscriptionRecord, col(FeedItemRecord.feed_id) == col(FeedSubscriptionRecord.id), isouter=True)
         .where(FeedItemRecord.processing_status == "pending")
         .order_by(col(FeedSubscriptionRecord.priority_tier).asc(), col(FeedItemRecord.discovered_at).asc())
-        .limit(audit_burst * 2)
+        .limit(audit_burst * 3)
     )
     pending_pairs = (await session.exec(stmt_pending)).all()
     summary.pending_items_scanned = len(pending_pairs)
 
+    # Partition items into clean vs quarantined/adversarial
+    clean_candidates = []
+    quarantined_candidates = []
+
+    for item, sub in pending_pairs:
+        dom = normalize_domain(item.item_url)
+        rep = await get_or_create_domain_reputation(session, dom)
+        if rep.status in ("QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY", "SUSPICIOUS"):
+            quarantined_candidates.append((item, sub, rep))
+        else:
+            clean_candidates.append((item, sub, rep))
+
+    clean_budget = max(1, int(round(audit_burst * boredom_ratio)))
+    adv_budget = audit_burst - clean_budget
+
+    selected_pairs = []
+    # Add clean candidates up to clean_budget
+    selected_pairs.extend(clean_candidates[:clean_budget])
+
+    # Lazarus Sampling Probe: Sample from quarantined feeds if headroom is abundant (>= 50%)
+    if summary.headroom_daily_pct >= 50.0 and quarantined_candidates:
+        lazarus_picks = quarantined_candidates[: max(1, adv_budget)]
+        selected_pairs.extend(lazarus_picks)
+        summary.quarantined_items_probed = len(lazarus_picks)
+    elif adv_budget > 0:
+        # Fallback to remaining clean candidates if no quarantined items or headroom < 50%
+        selected_pairs.extend(clean_candidates[clean_budget : clean_budget + adv_budget])
+
+    # HRW Rendezvous Hashing to eliminate Swarm Stampedes across mesh
+    if mesh_relay and getattr(mesh_relay, "node_identity", None):
+        from credence.feeds.worker import compute_feed_affinity
+
+        pk = getattr(mesh_relay.node_identity, "public_key_hex", "")
+        if pk:
+            selected_pairs.sort(key=lambda pair: compute_feed_affinity(pk, pair[0].item_url), reverse=True)
+
     audited_in_this_cycle = 0
 
-    for item, _sub in pending_pairs:
+    for item, _sub, _rep in selected_pairs:
         if audited_in_this_cycle >= audit_burst:
             break
 
@@ -129,6 +172,16 @@ async def run_boredom_cycle(
             session.add(item)
             await session.commit()
 
+            # Synchronize Domain Reputation & BuzzFeed News Doctrine
+            rep_after = await update_domain_reputation(
+                session=session,
+                url_or_domain=item.item_url,
+                audit_report=report,
+                subject_id=item.subject_id,
+            )
+            if rep_after.status == "PROBATIONARY_RECOVERY" and rep_after.consecutive_clean_count == 5:
+                summary.redemptions_graduated += 1
+
             summary.pending_items_audited += 1
             audited_in_this_cycle += 1
             summary.details.append(
@@ -138,6 +191,8 @@ async def run_boredom_cycle(
                     "score": f"{report.suspicion_score:.1f}",
                     "classification": report.classification,
                     "violations_count": len(report.violations),
+                    "domain_reputation": rep_after.reputation_score,
+                    "domain_status": rep_after.status,
                 }
             )
 
@@ -160,23 +215,42 @@ async def run_boredom_cycle(
                 }
             )
 
-    # 3. Autonomous Root Expansion (Expanding Roots from Clean Citations)
+    # 3. Autonomous Root Expansion (Dual-Soil: Clean & Adversarial Inoculation)
     if expand_roots_enabled:
+        # A. Clean Soil Expansion (rho)
         try:
-            root_summary: RootExpansionSummary = await expand_roots(
+            clean_summary: RootExpansionSummary = await expand_roots(
                 session=session,
-                max_new_sources=3,
+                max_new_sources=max(1, int(round(3 * boredom_ratio))),
                 min_citation_count=1,
                 dry_run=False,
                 allow_local=allow_local,
                 client=client,
             )
-            summary.new_roots_subscribed = root_summary.new_feeds_subscribed
-            summary.initial_items_harvested = root_summary.initial_items_harvested
-            for detail in root_summary.details:
-                summary.details.append({"root_expansion": detail})
+            summary.new_roots_subscribed += clean_summary.new_feeds_subscribed
+            summary.initial_items_harvested += clean_summary.initial_items_harvested
+            summary.clean_soil_harvested = clean_summary.candidates_scanned
+            for detail in clean_summary.details:
+                summary.details.append({"clean_root_expansion": detail})
         except Exception as e:
-            summary.details.append({"root_expansion_error": str(e)})
+            summary.details.append({"clean_root_expansion_error": str(e)})
+
+        # B. Adversarial Soil Expansion (1 - rho)
+        if boredom_ratio < 1.0:
+            try:
+                adv_summary: RootExpansionSummary = await expand_roots(
+                    session=session,
+                    max_new_sources=max(1, int(round(3 * (1.0 - boredom_ratio)))),
+                    min_citation_count=1,
+                    dry_run=False,
+                    allow_local=allow_local,
+                    client=client,
+                )
+                summary.adversarial_soil_harvested = adv_summary.candidates_scanned
+                for detail in adv_summary.details:
+                    summary.details.append({"adversarial_root_expansion": detail})
+            except Exception as e:
+                summary.details.append({"adversarial_root_expansion_error": str(e)})
 
     return summary
 
@@ -188,12 +262,14 @@ class BoredomDaemon:
         self,
         idle_interval_seconds: int = 120,
         audit_burst: int = 3,
+        boredom_ratio: float = 0.60,
         expand_roots_enabled: bool = True,
         cost_profile: CostProfile = CostProfile.BALANCED,
         mesh_relay: Optional[MeshGossipRelay] = None,
     ):
         self.idle_interval = idle_interval_seconds
         self.audit_burst = audit_burst
+        self.boredom_ratio = boredom_ratio
         self.expand_roots_enabled = expand_roots_enabled
         self.cost_profile = cost_profile
         self.mesh_relay = mesh_relay
@@ -205,7 +281,8 @@ class BoredomDaemon:
         self._running = True
         console.print(
             f"[bold cyan]🧠 Starting Credence Autonomous Boredom Engine[/] "
-            f"(Interval: {self.idle_interval}s, Burst: {self.audit_burst}, Roots: {self.expand_roots_enabled}, Once: {once})"
+            f"(Interval: {self.idle_interval}s, Burst: {self.audit_burst}, Ratio: {self.boredom_ratio:.2f}, "
+            f"Roots: {self.expand_roots_enabled}, Once: {once})"
         )
 
         loop = asyncio.get_running_loop()
@@ -221,6 +298,7 @@ class BoredomDaemon:
                     summary = await run_boredom_cycle(
                         session=session,
                         audit_burst=self.audit_burst,
+                        boredom_ratio=self.boredom_ratio,
                         expand_roots_enabled=self.expand_roots_enabled,
                         mesh_relay=self.mesh_relay,
                         cost_profile=self.cost_profile,
@@ -251,7 +329,8 @@ class BoredomDaemon:
         table.add_column("Audited Novel", justify="right", style="green")
         table.add_column("Mesh Adopted (0 tokens)", justify="right", style="cyan")
         table.add_column("Tokens Saved", justify="right", style="yellow")
-        table.add_column("Roots Subscribed", justify="right", style="bold magenta")
+        table.add_column("Ratio (ρ)", justify="right", style="magenta")
+        table.add_column("Lazarus Probes", justify="right", style="blue")
         table.add_column("Headroom Daily", justify="right")
 
         table.add_row(
@@ -259,7 +338,9 @@ class BoredomDaemon:
             str(summary.pending_items_audited),
             str(summary.mesh_attestations_adopted),
             f"{summary.tokens_saved_mesh:,}",
-            str(summary.new_roots_subscribed),
+            f"{summary.boredom_ratio:.2f}",
+            str(summary.quarantined_items_probed),
             f"{summary.headroom_daily_pct:.1f}%",
         )
         console.print(table)
+

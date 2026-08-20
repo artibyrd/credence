@@ -303,6 +303,11 @@ flowchart TD
 <p>When nodes detect idle compute with rolling daily token headroom $\ge 30\%$ and clear circuit breakers, they must autonomously execute prioritized FIFO queue digestion, extract cited outbound domains from verified clean articles ($G=1.00, \text{Score} \le 25.0$), probe and auto-subscribe to candidate RSS/Atom feeds, and gossip signed Ed25519 attestations across the P2P mesh to enable zero-token peer adoption.</p>
 </div>
 
+<div class="invariant-card" id="invariant-40">
+<h3><a href="#docs/invariants#invariant-40">Invariant 40: Soft Blacklisting & The BuzzFeed News Doctrine (Asymmetric Redemption)</a></h3>
+<p>Consistently deceptive sources ($\ge 3$ consecutive deceptions or trust score $\le 20.0$) MUST NOT be hard-deleted, but transitioned to <code>QUARANTINED_PROBATION</code> with exponential polling backoff ($T_{\text{poll}} \times 2^{\min(\text{deceptions}, 6)}$). Under the <strong>BuzzFeed News Doctrine</strong>, quarantined domains retain a verifiable path to redemption through low-frequency Lazarus sampling probes; completing $k=5$ consecutive clean audits ($G=1.00, \text{Suspicion} \le 15.0$) spanning $\ge 2$ distinct subject namespaces graduates the domain to probationary recovery, while any high-severity violation (Severity $\ge 3$) immediately triggers full quarantine relapse.</p>
+</div>
+
 ---
 
 ## Invariant Reference Index Matrix
@@ -332,3 +337,5 @@ flowchart TD
 | **[Invariant 37](#invariant-37)** | Presentation | Inline HTML & Math | Balanced-brace LaTeX & safe tag masking |
 | **[Invariant 38](#invariant-38)** | Presentation | Anti-Scrollbox Flow | Natural auto-height & details accordion |
 | **[Invariant 39](#invariant-39)** | Mesh / Ingestion | Boredom & Root Expansion | Autonomous opportunistic digestion & feed discovery |
+| **[Invariant 40](#invariant-40)** | Mesh / Ingestion | Soft Blacklist & BuzzFeed Doctrine | Exponential backoff & asymmetric redemption |
+

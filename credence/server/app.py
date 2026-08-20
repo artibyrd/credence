@@ -834,7 +834,11 @@ def _register_feed_management_tools(server: MCPServer) -> None:
         name="credence_trigger_boredom_cycle",
         description="Trigger an opportunistic boredom cycle to digest pending feed items and autonomously expand subscription roots when token headroom allows.",
     )
-    async def trigger_boredom_cycle_tool(audit_burst: int = 3, expand_roots: bool = True) -> str:
+    async def trigger_boredom_cycle_tool(
+        audit_burst: int = 3,
+        boredom_ratio: float = 0.60,
+        expand_roots: bool = True,
+    ) -> str:
         from dataclasses import asdict
 
         from credence.db import get_session, init_db
@@ -842,10 +846,66 @@ def _register_feed_management_tools(server: MCPServer) -> None:
 
         await init_db()
         async for session in get_session():
-            summary = await run_boredom_cycle(session, audit_burst=audit_burst, expand_roots_enabled=expand_roots)
+            summary = await run_boredom_cycle(
+                session,
+                audit_burst=audit_burst,
+                boredom_ratio=boredom_ratio,
+                expand_roots_enabled=expand_roots,
+            )
             res = asdict(summary)
             res["timestamp"] = summary.timestamp.isoformat()
             return json.dumps(res, indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_get_domain_reputation",
+        description="Retrieve domain-level reputation score, status, and BuzzFeed Doctrine redemption progress.",
+    )
+    async def get_domain_reputation_tool(domain: str) -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain
+
+        await init_db()
+        async for session in get_session():
+            rec = await get_or_create_domain_reputation(session, normalize_domain(domain))
+            return json.dumps(rec.model_dump(mode="json"), indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_get_domain_quarantine",
+        description="List all currently quarantined or suspicious domains with exponential polling backoff factors.",
+    )
+    async def get_domain_quarantine_tool() -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.reputation import get_domain_quarantine_list
+
+        await init_db()
+        async for session in get_session():
+            quarantined = await get_domain_quarantine_list(session)
+            return json.dumps(quarantined, indent=2)
+        return "[]"
+
+    @server.tool(
+        name="credence_appeal_domain_quarantine",
+        description="File an expedited BuzzFeed News Doctrine redemption appeal for a quarantined domain.",
+    )
+    async def appeal_domain_quarantine_tool(domain: str) -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain
+
+        await init_db()
+        async for session in get_session():
+            rec = await get_or_create_domain_reputation(session, normalize_domain(domain))
+            return json.dumps(
+                {
+                    "domain": rec.domain,
+                    "status": rec.status,
+                    "reputation_score": rec.reputation_score,
+                    "appeal_status": "QUEUED_FOR_EXPEDITED_AUDIT",
+                    "doctrine": "The BuzzFeed News Doctrine (Asymmetric Epistemic Recovery)",
+                },
+                indent=2,
+            )
         return "{}"
 
     @server.tool(
@@ -1099,6 +1159,28 @@ def _register_subject_resources(server: MCPServer) -> None:
                 indent=2,
             )
         return "{}"
+
+    @server.resource("credence://domain/{domain}/reputation")
+    async def get_domain_reputation_resource(domain: str) -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain
+
+        await init_db()
+        async for session in get_session():
+            rec = await get_or_create_domain_reputation(session, normalize_domain(domain))
+            return json.dumps(rec.model_dump(mode="json"), indent=2)
+        return "{}"
+
+    @server.resource("credence://domain/quarantine")
+    async def get_domain_quarantine_resource() -> str:
+        from credence.db import get_session, init_db
+        from credence.feeds.reputation import get_domain_quarantine_list
+
+        await init_db()
+        async for session in get_session():
+            quarantined = await get_domain_quarantine_list(session)
+            return json.dumps(quarantined, indent=2)
+        return "[]"
 
     @server.resource("credence://digest/morning")
     async def get_morning_digest_resource() -> str:
@@ -2240,6 +2322,62 @@ async def api_roots_candidates(request: Any) -> Any:
     return JSONResponse({"total": 0, "candidates": []})
 
 
+async def api_domain_reputation(request: Any) -> Any:
+    """REST API: Get domain-level reputation metrics and BuzzFeed Doctrine standing."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain
+
+    domain = request.path_params.get("domain", "")
+    if not domain:
+        return JSONResponse({"error": "Domain required"}, status_code=400)
+    await init_db()
+    async for session in get_session():
+        record = await get_or_create_domain_reputation(session, normalize_domain(domain))
+        return JSONResponse(record.model_dump(mode="json"))
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_domain_quarantine(request: Any) -> Any:
+    """REST API: List all currently quarantined or suspicious domains with exponential backoff."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.reputation import get_domain_quarantine_list
+
+    await init_db()
+    async for session in get_session():
+        quarantined = await get_domain_quarantine_list(session)
+        return JSONResponse({"total_quarantined": len(quarantined), "quarantined_domains": quarantined})
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
+async def api_domain_appeal(request: Any) -> Any:
+    """REST API: File an expedited BuzzFeed News Doctrine redemption appeal."""
+    from starlette.responses import JSONResponse
+
+    from credence.db import get_session, init_db
+    from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain
+
+    domain = request.path_params.get("domain", "")
+    if not domain:
+        return JSONResponse({"error": "Domain required"}, status_code=400)
+    await init_db()
+    async for session in get_session():
+        record = await get_or_create_domain_reputation(session, normalize_domain(domain))
+        return JSONResponse(
+            {
+                "domain": record.domain,
+                "status": record.status,
+                "reputation_score": record.reputation_score,
+                "appeal_status": "QUEUED_FOR_EXPEDITED_AUDIT",
+                "doctrine": "The BuzzFeed News Doctrine (Asymmetric Epistemic Recovery)",
+            }
+        )
+    return JSONResponse({"error": "Database session unavailable"}, status_code=500)
+
+
 async def api_boredom_cycle(request: Any) -> Any:
     """REST API: Trigger an immediate opportunistic boredom cycle."""
     from dataclasses import asdict
@@ -2256,11 +2394,17 @@ async def api_boredom_cycle(request: Any) -> Any:
         except Exception:
             body = {}
     burst = int(body.get("burst", request.query_params.get("burst", 3)))
+    ratio = float(body.get("ratio", body.get("boredom_ratio", request.query_params.get("ratio", 0.60))))
     expand_roots_enabled = bool(body.get("expand_roots", request.query_params.get("expand_roots", True)))
 
     await init_db()
     async for s in get_session():
-        summary = await run_boredom_cycle(s, audit_burst=burst, expand_roots_enabled=expand_roots_enabled)
+        summary = await run_boredom_cycle(
+            s,
+            audit_burst=burst,
+            boredom_ratio=ratio,
+            expand_roots_enabled=expand_roots_enabled,
+        )
         res = asdict(summary)
         res["timestamp"] = summary.timestamp.isoformat()
         return JSONResponse(res)
@@ -2509,6 +2653,9 @@ def create_server_app(
         Route("/api/roots/candidates", endpoint=api_roots_candidates, methods=["GET", "OPTIONS"]),
         Route("/api/boredom/cycle", endpoint=api_boredom_cycle, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/boredom/status", endpoint=api_boredom_status, methods=["GET", "OPTIONS"]),
+        Route("/api/domain/reputation/{domain:path}", endpoint=api_domain_reputation, methods=["GET", "OPTIONS"]),
+        Route("/api/domain/quarantine", endpoint=api_domain_quarantine, methods=["GET", "OPTIONS"]),
+        Route("/api/domain/appeal/{domain:path}", endpoint=api_domain_appeal, methods=["POST", "OPTIONS"]),
         Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
         Route("/api/leaderboard", endpoint=api_leaderboard, methods=["GET", "OPTIONS"]),
         Route("/api/merit", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),

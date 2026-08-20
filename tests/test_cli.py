@@ -286,19 +286,27 @@ async def test_cli_roots_and_boredom(db_session: Any) -> None:
         await cli_expand_roots(max_sources=2, dry_run=False, format_type="json")
 
     # Test boredom single pass
-    with patch(
-        "credence.feeds.boredom.run_boredom_cycle",
-        new=AsyncMock(
-            return_value=AsyncMock(
-                pending_items_scanned=1,
-                pending_items_audited=1,
-                mesh_attestations_adopted=0,
-                tokens_saved_mesh=0,
-                new_roots_subscribed=1,
-                initial_items_harvested=2,
-                headroom_daily_pct=95.0,
-                circuit_breaker_tripped=False,
-            )
-        ),
-    ):
-        await cli_boredom(burst=1, expand_roots_enabled=True, continuous=False)
+    from credence.feeds.boredom import BoredomCycleSummary
+    mock_boredom = BoredomCycleSummary(
+        pending_items_scanned=1,
+        pending_items_audited=1,
+        mesh_attestations_adopted=0,
+        tokens_saved_mesh=0,
+        boredom_ratio=0.60,
+        quarantined_items_probed=0,
+        new_roots_subscribed=1,
+        initial_items_harvested=2,
+        headroom_daily_pct=95.0,
+        circuit_breaker_tripped=False,
+    )
+    with patch("credence.feeds.boredom.run_boredom_cycle", new=AsyncMock(return_value=mock_boredom)):
+        await cli_boredom(burst=1, ratio=0.60, expand_roots_enabled=True, continuous=False)
+
+    # Test domain CLI commands
+    from credence.cli.main import cli_domain
+    await cli_domain(action="quarantine", format_type="human")
+    await cli_domain(action="quarantine", format_type="json")
+    await cli_domain(action="reputation", domain="theonion.com", format_type="human")
+    await cli_domain(action="reputation", domain="theonion.com", format_type="json")
+    await cli_domain(action="appeal", domain="theonion.com")
+

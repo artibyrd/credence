@@ -127,20 +127,13 @@ async def test_boredom_cycle_respects_token_governor_budget(db_session: AsyncSes
 @pytest.mark.unit
 async def test_boredom_daemon_single_cycle():
     """Verify BoredomDaemon executes a clean single cycle with once=True."""
+    from credence.feeds.boredom import BoredomCycleSummary
+
     daemon = BoredomDaemon(idle_interval_seconds=1, audit_burst=1, expand_roots_enabled=False)
 
     with patch(
         "credence.feeds.boredom.run_boredom_cycle",
-        new=AsyncMock(
-            return_value=AsyncMock(
-                pending_items_scanned=0,
-                pending_items_audited=0,
-                mesh_attestations_adopted=0,
-                tokens_saved_mesh=0,
-                new_roots_subscribed=0,
-                headroom_daily_pct=100.0,
-            )
-        ),
+        new=AsyncMock(return_value=BoredomCycleSummary()),
     ):
         await daemon.start(once=True)
         assert daemon._running is True

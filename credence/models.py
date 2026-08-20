@@ -232,3 +232,37 @@ class FeedItemRecord(SQLModel, table=True):
         default=None, description="Node pubkey whose signed attestation was adopted at 0 token cost"
     )
     tokens_saved: int = Field(default=0, description="Estimated LLM tokens saved via zero-token mesh adoption")
+
+
+class DomainReputationRecord(SQLModel, table=True):
+    """Stores observed domain-level reputation, quarantine status, and BuzzFeed Doctrine redemption metrics."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    domain: str = Field(index=True, unique=True, description="Normalized lowercased domain name (FQDN)")
+    reputation_score: float = Field(
+        default=50.0, ge=0.0, le=100.0, description="Calibrated domain trust score from 0.0 to 100.0 (default 50.0)"
+    )
+    audits_count: int = Field(default=0, description="Total audits completed for articles on this domain")
+    clean_audits_count: int = Field(default=0, description="Total audits with suspicion score <= 20.0")
+    deceptive_audits_count: int = Field(default=0, description="Total audits with suspicion score >= 60.0")
+    consecutive_clean_count: int = Field(default=0, description="Current run of consecutive clean audits")
+    consecutive_deceptive_count: int = Field(default=0, description="Current run of consecutive deceptive audits")
+    status: str = Field(
+        default="NEUTRAL",
+        index=True,
+        description="Reputation status: TRUSTED, NEUTRAL, SUSPICIOUS, QUARANTINED_PROBATION, PROBATIONARY_RECOVERY",
+    )
+    polling_backoff_factor: float = Field(
+        default=1.0, description="Multiplier for syndicated feed polling interval (1.0x to 64.0x)"
+    )
+    distinct_clean_subjects_json: str = Field(
+        default="[]", description="JSON list of distinct subject IDs cleared during probation"
+    )
+    redemption_progress_pct: float = Field(
+        default=0.0, ge=0.0, le=100.0, description="Progress percentage towards graduating from probation"
+    )
+    first_seen_at: datetime = Field(default_factory=utc_now, description="Timestamp of first encounter")
+    last_audited_at: datetime = Field(default_factory=utc_now, description="Timestamp of most recent audit")
+    quarantined_at: Optional[datetime] = Field(default=None, description="Timestamp when domain entered quarantine")
+    graduated_at: Optional[datetime] = Field(default=None, description="Timestamp when domain graduated from probation")
+

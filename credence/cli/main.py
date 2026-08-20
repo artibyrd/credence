@@ -2152,10 +2152,19 @@ def _dispatch_utility_commands(args: argparse.Namespace) -> None:
         asyncio.run(
             cli_boredom(
                 burst=getattr(args, "burst", 3),
+                ratio=getattr(args, "ratio", 0.60),
                 expand_roots_enabled=not getattr(args, "no_expand_roots", False),
                 continuous=getattr(args, "continuous", False),
                 interval=getattr(args, "interval", 120),
                 profile=getattr(args, "profile", "balanced"),
+            )
+        )
+    elif cmd == "domain":
+        asyncio.run(
+            cli_domain(
+                action=getattr(args, "action", "reputation"),
+                domain=getattr(args, "domain_name", None),
+                format_type=getattr(args, "format", "human"),
             )
         )
     elif cmd == "roots":
@@ -2334,6 +2343,7 @@ async def cli_roots(
 
 async def cli_boredom(
     burst: int = 3,
+    ratio: float = 0.60,
     expand_roots_enabled: bool = True,
     continuous: bool = False,
     interval: int = 120,
@@ -2349,6 +2359,7 @@ async def cli_boredom(
         daemon = BoredomDaemon(
             idle_interval_seconds=interval,
             audit_burst=burst,
+            boredom_ratio=ratio,
             expand_roots_enabled=expand_roots_enabled,
             cost_profile=prof,
         )
@@ -2360,6 +2371,7 @@ async def cli_boredom(
         summary = await run_boredom_cycle(
             s,
             audit_burst=burst,
+            boredom_ratio=ratio,
             expand_roots_enabled=expand_roots_enabled,
             cost_profile=prof,
         )
@@ -2370,6 +2382,8 @@ async def cli_boredom(
                 f"• Items Audited Novel:       [bold green]{summary.pending_items_audited}[/bold green]\n"
                 f"• Mesh Adopted (0 tokens):   [bold cyan]{summary.mesh_attestations_adopted}[/bold cyan]\n"
                 f"• Tokens Saved via Mesh:     [bold yellow]{summary.tokens_saved_mesh:,}[/bold yellow]\n"
+                f"• Epistemic Ratio (ρ):       [bold magenta]{summary.boredom_ratio:.2f}[/bold magenta]\n"
+                f"• Lazarus Probes:            [bold blue]{summary.quarantined_items_probed}[/bold blue]\n"
                 f"• New Roots Subscribed:      [bold magenta]{summary.new_roots_subscribed}[/bold magenta]\n"
                 f"• Initial Items Harvested:   {summary.initial_items_harvested}\n"
                 f"• Daily Token Headroom:      {summary.headroom_daily_pct:.1f}%\n"
@@ -2379,6 +2393,95 @@ async def cli_boredom(
             )
         )
         return
+
+
+async def cli_domain(
+    action: str = "reputation",
+    domain: Optional[str] = None,
+    format_type: str = "human",
+) -> None:
+    """CLI: Inspect domain reputation, list quarantined feeds, or file an appeal."""
+    from credence.db import get_session, init_db
+    from credence.feeds.reputation import (
+        get_domain_quarantine_list,
+        get_or_create_domain_reputation,
+        normalize_domain,
+    )
+
+    await init_db()
+    async for session in get_session():
+        if action in ("reputation", "show"):
+            if not domain:
+                console.print("[red]Error: Please specify a domain (e.g. credence domain reputation example.com)[/red]")
+                return
+            clean_dom = normalize_domain(domain)
+            record = await get_or_create_domain_reputation(session, clean_dom)
+            if format_type == "json":
+                print(json.dumps(record.model_dump(mode="json"), indent=2))
+                return
+
+            status_color = "green" if record.status == "TRUSTED" else ("red" if "QUARANTINE" in record.status else "yellow")
+            console.print(
+                Panel(
+                    f"[bold cyan]Domain:[/] [bold]{record.domain}[/]\n"
+                    f"• Trust Score:          [{status_color}]{record.reputation_score:.1f} / 100.0[/{status_color}]\n"
+                    f"• Status:               [{status_color}]{record.status}[/{status_color}]\n"
+                    f"• Total Audits:         {record.audits_count}\n"
+                    f"• Clean Audits:         [green]{record.clean_audits_count}[/green]\n"
+                    f"• Deceptive Audits:     [red]{record.deceptive_audits_count}[/red]\n"
+                    f"• Consecutive Clean:    {record.consecutive_clean_count}\n"
+                    f"• Consecutive Deceptive:{record.consecutive_deceptive_count}\n"
+                    f"• Polling Backoff:      {record.polling_backoff_factor:.1f}x\n"
+                    f"• Redemption Progress:  {record.redemption_progress_pct:.1f}% (BuzzFeed News Doctrine)\n"
+                    f"• Last Audited:         {record.last_audited_at.strftime('%Y-%m-%d %H:%M:%S UTC') if record.last_audited_at else 'Never'}",
+                    title="[bold]Domain Epistemic Standing[/bold]",
+                    border_style="cyan",
+                )
+            )
+            return
+
+        elif action in ("quarantine", "blacklist", "list"):
+            quarantined = await get_domain_quarantine_list(session)
+            if format_type == "json":
+                print(json.dumps(quarantined, indent=2))
+                return
+
+            if not quarantined:
+                console.print("[bold green]No domains currently in quarantine or under penalty.[/bold green]")
+                return
+
+            table = Table(title="Domain Soft Quarantine & Blacklist", show_header=True, header_style="bold red")
+            table.add_column("Domain", style="cyan")
+            table.add_column("Score", justify="right")
+            table.add_column("Status", style="magenta")
+            table.add_column("Backoff", justify="right", style="yellow")
+            table.add_column("Deceptions", justify="right", style="red")
+            table.add_column("Redemption", justify="right", style="green")
+
+            for q in quarantined:
+                table.add_row(
+                    q["domain"],
+                    f"{q['reputation_score']:.1f}",
+                    q["status"],
+                    f"{q['polling_backoff_factor']:.1f}x",
+                    str(q["consecutive_deceptive_count"]),
+                    f"{q['redemption_progress_pct']:.1f}%",
+                )
+            console.print(table)
+            return
+
+        elif action == "appeal":
+            if not domain:
+                console.print("[red]Error: Please specify a domain to appeal (e.g. credence domain appeal example.com)[/red]")
+                return
+            clean_dom = normalize_domain(domain)
+            record = await get_or_create_domain_reputation(session, clean_dom)
+            console.print(
+                f"[bold cyan]Submitting expedited BuzzFeed News Doctrine redemption appeal for:[/] [bold]{clean_dom}[/]"
+            )
+            console.print(f"Current standing: {record.status} ({record.reputation_score:.1f}/100.0)")
+            console.print("[yellow]Expedited multi-sample audit queued for next boredom cycle.[/yellow]")
+            return
 
 
 async def cli_feeds(
@@ -3152,6 +3255,9 @@ def main() -> None:
         "--burst", "-b", type=int, default=3, help="Max pending queue items to audit in this cycle (default: 3)."
     )
     boredom_parser.add_argument(
+        "--ratio", "-r", type=float, default=0.60, help="Epistemic allocation ratio: clean soil (rho) vs adversarial inoculation (1-rho) (default: 0.60)."
+    )
+    boredom_parser.add_argument(
         "--continuous", action="store_true", help="Run continuously as background daemon during idle intervals."
     )
     boredom_parser.add_argument(
@@ -3164,6 +3270,23 @@ def main() -> None:
     boredom_parser.add_argument("--no-expand-roots", action="store_true", help="Skip autonomous root expansion stage.")
     boredom_parser.add_argument(
         "--profile", choices=["free", "balanced", "ultra"], default="balanced", help="Operational cost profile."
+    )
+
+    # domain command
+    domain_parser = subparsers.add_parser(
+        "domain",
+        help="Inspect domain reputation, review soft blacklists/quarantines, or file BuzzFeed Doctrine redemption appeals.",
+    )
+    domain_parser.add_argument(
+        "action",
+        choices=["reputation", "show", "quarantine", "blacklist", "list", "appeal"],
+        default="reputation",
+        nargs="?",
+        help="Action: reputation, quarantine, appeal",
+    )
+    domain_parser.add_argument("domain_name", nargs="?", default=None, help="Target domain (e.g. theonion.com).")
+    domain_parser.add_argument(
+        "--format", choices=["human", "json"], default="human", help="Output format (default: human)."
     )
 
     # roots command
