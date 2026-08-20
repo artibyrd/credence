@@ -632,6 +632,14 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
             ;;
     esac
 
+# Run comprehensive invariant token budget, dynamic naming, lifecycle, and parity audit
+audit-invariants:
+    @echo "=== Credence Living Invariant & Governance Audit ==="
+    @just agent-check
+    @poetry run pytest tests/test_docs_integrity.py -k "learning_lifecycle or ecosystem_version_parity or zero_npm or code_fences"
+    @poetry run pytest tests/test_ci_cd_workflows.py
+    @echo -e "\033[1;32m✅ All Ecosystem Invariants & Lifecycle Governance Contracts Passed Cleanly!\033[0m"
+
 # Comprehensive multi-plane diagnostic health check across Edge, Compute, Infra, and Agents
 doctor env="prod":
     #!/usr/bin/env bash

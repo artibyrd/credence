@@ -747,3 +747,38 @@ def test_all_markdown_code_fences_and_syntax(docs_root: Path) -> None:
     assert not unclosed_fences, f"Found {len(unclosed_fences)} markdown files with unclosed code fences:\n" + "\n".join(
         unclosed_fences
     )
+
+
+@pytest.mark.unit
+def test_learning_lifecycle_and_invariant_governance_contracts(docs_root: Path) -> None:
+    """Verify that the 4-Phase Delivery & Continuous Learning Lifecycle and invariant governance contracts are declared."""
+    ecosystem_root = docs_root.parent
+    agents_files = [
+        ecosystem_root / "AGENTS.md",
+        ecosystem_root / "credence" / "AGENTS.md",
+        ecosystem_root / "credence-docs" / "AGENTS.md",
+        ecosystem_root / "credence-agent" / "AGENTS.md",
+    ]
+    for af in agents_files:
+        if af.exists():
+            content = af.read_text(encoding="utf-8")
+            assert "4-Phase Release & Learning Lifecycle" in content, (
+                f"{af.name} must declare 4-Phase Release & Learning Lifecycle"
+            )
+            assert "Dual-Environment Least-Privilege CI/CD" in content, (
+                f"{af.name} must declare Dual-Environment Least-Privilege CI/CD"
+            )
+            assert "invariant-audit" in content, f"{af.name} must reference invariant-audit skill"
+
+    # Verify invariant-audit skill existence and frontmatter
+    audit_skill = ecosystem_root / "credence-agent" / ".agents" / "skills" / "invariant-audit" / "SKILL.md"
+    assert audit_skill.exists(), "invariant-audit/SKILL.md must exist"
+    skill_content = audit_skill.read_text(encoding="utf-8")
+    assert "name: invariant-audit" in skill_content
+    assert "description:" in skill_content
+
+    # Verify knowledge-governance skill declares 4-phase lifecycle
+    kg_skill = ecosystem_root / "credence-agent" / ".agents" / "skills" / "knowledge-governance" / "SKILL.md"
+    if kg_skill.exists():
+        kg_content = kg_skill.read_text(encoding="utf-8")
+        assert "The 4-Phase Delivery & Continuous Learning Lifecycle" in kg_content
