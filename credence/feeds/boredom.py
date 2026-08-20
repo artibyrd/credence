@@ -19,12 +19,12 @@ from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.config import COST_PROFILES, CostProfile
-from credence.db import get_session
+from credence.db import get_async_session
 from credence.feeds.dedup import check_mesh_effort_avoidance
 from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain, update_domain_reputation
 from credence.feeds.roots import RootExpansionSummary, expand_roots
 from credence.mesh.relay import MeshGossipRelay
-from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
+from credence.models import FeedItem, FeedSubscription, utc_now
 from credence.pipeline.governor import get_token_headroom_status
 
 console = Console()
@@ -76,10 +76,10 @@ async def run_boredom_cycle(
 
     # 2. Opportunistic Pending Feed Item Ingestion
     stmt_pending = (
-        select(FeedItemRecord, FeedSubscriptionRecord)
-        .join(FeedSubscriptionRecord, col(FeedItemRecord.feed_id) == col(FeedSubscriptionRecord.id), isouter=True)
-        .where(FeedItemRecord.processing_status == "pending")
-        .order_by(col(FeedSubscriptionRecord.priority_tier).asc(), col(FeedItemRecord.discovered_at).asc())
+        select(FeedItem, FeedSubscription)
+        .join(FeedSubscription, col(FeedItem.feed_id) == col(FeedSubscription.id), isouter=True)
+        .where(FeedItem.processing_status == "pending")
+        .order_by(col(FeedSubscription.priority_tier).asc(), col(FeedItem.discovered_at).asc())
         .limit(audit_burst * 3)
     )
     pending_pairs = (await session.exec(stmt_pending)).all()
@@ -294,7 +294,7 @@ class BoredomDaemon:
 
         try:
             while self._running and not self._shutdown_event.is_set():
-                async for session in get_session():
+                async with get_async_session() as session:
                     summary = await run_boredom_cycle(
                         session=session,
                         audit_burst=self.audit_burst,
@@ -304,7 +304,6 @@ class BoredomDaemon:
                         cost_profile=self.cost_profile,
                     )
                     self._render_cycle_summary(summary)
-                    break
                 if once:
                     break
                 try:

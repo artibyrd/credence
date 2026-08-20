@@ -7,8 +7,15 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from credence.cache.distributed import reset_state_store
 from credence.db import init_db
 from credence.taxonomy_loader import TaxonomyRegistry
+
+
+@pytest.fixture(autouse=True)
+def reset_governor_state() -> None:
+    """Reset distributed state store and runtime cost settings before each test."""
+    reset_state_store()
 
 
 @pytest.fixture

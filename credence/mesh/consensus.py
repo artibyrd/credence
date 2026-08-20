@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from credence.pipeline.schemas import AuditReport
 from credence.pipeline.scoring import classify_verdict
-from credence.subjects.expertise import calculate_effective_weight
+from credence.subjects.expertise import compute_effective_weight
 
 
 class PeerAttestationWeight(BaseModel):
@@ -34,6 +34,8 @@ class ConsensusVerdict(BaseModel):
     content_sha256: str
     consensus_score: float = Field(..., ge=0.0, le=100.0, description="Confidence-weighted consensus suspicion score")
     classification: str = Field(..., description="Consensus verdict classification band")
+    consensus_verdict: str = Field(default="NEWS_ARTICLE", description="Alias for classification")
+    byzantine_nodes_trimmed_count: int = Field(default=0, description="Count of trimmed byzantine nodes")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Aggregate network confidence")
     node_count: int = Field(..., description="Total number of peer attestations aggregated")
     agreement_pct: float = Field(..., ge=0.0, le=100.0, description="Percentage of nodes agreeing with verdict band")
@@ -47,7 +49,21 @@ class ConsensusVerdict(BaseModel):
 class BayesianConsensusAggregator:
     """Consensus aggregator calculating weighted Bayesian agreement across peer nodes."""
 
-    def __init__(self, consensus_threshold: float = 0.66, outlier_delta_threshold: float = 25.0) -> None:
+    def __init__(
+        self,
+        consensus_threshold: float = 0.66,
+        outlier_delta_threshold: float = 25.0,
+        f: Optional[int] = None,
+        prior_mean: float = 20.0,
+        prior_variance: float = 100.0,
+        enable_byzantine_trimming: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        self.f = f
+        self.prior_mean = prior_mean
+        self.prior_variance = prior_variance
+        self.enable_byzantine_trimming = enable_byzantine_trimming
         self.consensus_threshold = consensus_threshold
         self.outlier_delta_threshold = outlier_delta_threshold
 
@@ -71,7 +87,7 @@ class BayesianConsensusAggregator:
 
             domain_exp = exp_map.get(pubkey, 0.05) if subject_id else 0.5
             if subject_id:
-                base_weight = calculate_effective_weight(
+                base_weight = compute_effective_weight(
                     node_pubkey=pubkey,
                     subject_id=subject_id,
                     base_quality=rep,
@@ -138,7 +154,7 @@ class BayesianConsensusAggregator:
                 valid_peers.append(p)
         return outlier_pubkeys, valid_peers
 
-    def calculate_consensus(
+    def compute_consensus(
         self,
         attestations: List[AuditReport],
         node_reputations: Optional[Dict[str, float]] = None,

@@ -12,7 +12,6 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-import httpx
 from pydantic import BaseModel, Field
 
 
@@ -332,17 +331,17 @@ async def fetch_and_parse_feed(
     timeout_seconds: float = 10.0,
 ) -> ParsedFeed:
     """Fetch and parse feed with HTTP conditional GET headers."""
-    from credence.ingestion.security import validate_safe_url
+    from credence.ingestion.security import create_safe_async_client, validate_safe_url
 
     clean_url = validate_safe_url(feed_url)
-    headers = {"User-Agent": "Credence-Epistemic-Feed-Ingester/1.0"}
+    headers = {"User-Agent": "Credence-Epistemic-Feed-Ingester/2.0"}
     if etag:
         headers["If-None-Match"] = etag
     if last_modified:
         headers["If-Modified-Since"] = last_modified
 
-    async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
-        response = await client.get(clean_url, headers=headers)
+    async with create_safe_async_client(timeout=timeout_seconds, headers=headers) as client:
+        response = await client.get(clean_url)
 
         if response.status_code == 304:
             return ParsedFeed(

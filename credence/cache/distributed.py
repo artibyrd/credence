@@ -186,3 +186,9 @@ def get_state_store() -> DistributedStateStore:
 
         _global_state_store = DistributedStateStore(redis_url=settings.REDIS_URL)
     return _global_state_store
+
+
+def reset_state_store() -> None:
+    """Reset the global DistributedStateStore instance (used for hermetic test isolation)."""
+    global _global_state_store
+    _global_state_store = None

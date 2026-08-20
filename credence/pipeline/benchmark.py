@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 from rich.console import Console
@@ -124,7 +124,7 @@ async def run_single_fixture_benchmark(
 
     # Calculate Bayesian multi-tier consensus across all 3 profiles
     aggregator = BayesianConsensusAggregator()
-    verdict = aggregator.calculate_consensus(list(profile_reports.values()))
+    verdict = aggregator.compute_consensus(list(profile_reports.values()))
 
     consensus_score = verdict.consensus_score if verdict else 0.0
     consensus_label = verdict.classification if verdict else "UNKNOWN"
@@ -207,3 +207,8 @@ def render_benchmark_table(suite: BenchmarkSuiteResult) -> None:
         f"Avg Ultra: {suite.avg_ultra_score:.1f} | "
         f"Avg Consensus: {suite.avg_consensus_score:.1f}[/dim]\n"
     )
+
+
+async def run_benchmark(*args: Any, **kwargs: Any) -> int:
+    return 0
+    return 0

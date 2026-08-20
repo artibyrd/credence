@@ -12,7 +12,7 @@ from typing import Optional
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.models import DomainMetricRecord, utc_now
+from credence.models import DomainMetric, utc_now
 
 
 @dataclass
@@ -29,7 +29,7 @@ class DomainMetrics:
     last_evaluated_at: Optional[datetime] = None
 
 
-def calculate_subject_expertise(metrics: DomainMetrics) -> float:
+def compute_subject_expertise(metrics: DomainMetrics) -> float:
     """Calculate empirical subject expertise score E_i(subject) in [0.05, 1.0].
 
     Formula:
@@ -68,7 +68,7 @@ def calculate_subject_expertise(metrics: DomainMetrics) -> float:
     return round(min(1.0, max(0.05, penalized_score)), 4)
 
 
-def calculate_effective_weight(
+def compute_effective_weight(
     node_pubkey: str,
     subject_id: str,
     base_quality: float = 0.5,
@@ -91,9 +91,9 @@ async def get_node_subject_expertise(
 ) -> float:
     """Query or compute empirical expertise score for a node in a subject."""
     # Check if exact subject or parent subject exists
-    stmt = select(DomainMetricRecord).where(
-        DomainMetricRecord.node_pubkey == node_pubkey,
-        DomainMetricRecord.subject_id == subject_id,
+    stmt = select(DomainMetric).where(
+        DomainMetric.node_pubkey == node_pubkey,
+        DomainMetric.subject_id == subject_id,
     )
     result = await session.exec(stmt)
     record = result.first()
@@ -104,9 +104,9 @@ async def get_node_subject_expertise(
     # Check parent subject fallback (e.g. apiculture fallback for apiculture.equipment)
     if "." in subject_id:
         parent_id = subject_id.rsplit(".", 1)[0]
-        stmt_parent = select(DomainMetricRecord).where(
-            DomainMetricRecord.node_pubkey == node_pubkey,
-            DomainMetricRecord.subject_id == parent_id,
+        stmt_parent = select(DomainMetric).where(
+            DomainMetric.node_pubkey == node_pubkey,
+            DomainMetric.subject_id == parent_id,
         )
         parent_result = await session.exec(stmt_parent)
         parent_record = parent_result.first()
@@ -124,18 +124,18 @@ async def record_domain_evaluation(
     median_deviation: float,
     grounded_quotes: int,
     total_quotes: int,
-) -> DomainMetricRecord:
+) -> DomainMetric:
     """Update historical metrics and recalculate expertise for an observed audit."""
-    stmt = select(DomainMetricRecord).where(
-        DomainMetricRecord.node_pubkey == node_pubkey,
-        DomainMetricRecord.subject_id == subject_id,
+    stmt = select(DomainMetric).where(
+        DomainMetric.node_pubkey == node_pubkey,
+        DomainMetric.subject_id == subject_id,
     )
     result = await session.exec(stmt)
     record = result.first()
 
     now = utc_now()
     if not record:
-        record = DomainMetricRecord(
+        record = DomainMetric(
             node_pubkey=node_pubkey,
             subject_id=subject_id,
             evaluations_count=1,
@@ -163,7 +163,7 @@ async def record_domain_evaluation(
         first_evaluated_at=record.first_evaluated_at,
         last_evaluated_at=record.last_evaluated_at,
     )
-    record.expertise_score = calculate_subject_expertise(metrics)
+    record.expertise_score = compute_subject_expertise(metrics)
     await session.commit()
     await session.refresh(record)
     return record
@@ -173,11 +173,11 @@ async def slash_domain_expertise(
     session: AsyncSession,
     node_pubkey: str,
     subject_id: str,
-) -> Optional[DomainMetricRecord]:
+) -> Optional[DomainMetric]:
     """Slash domain expertise by 50% upon detecting hallucination or malicious collusion."""
-    stmt = select(DomainMetricRecord).where(
-        DomainMetricRecord.node_pubkey == node_pubkey,
-        DomainMetricRecord.subject_id == subject_id,
+    stmt = select(DomainMetric).where(
+        DomainMetric.node_pubkey == node_pubkey,
+        DomainMetric.subject_id == subject_id,
     )
     result = await session.exec(stmt)
     record = result.first()
@@ -195,7 +195,7 @@ async def slash_domain_expertise(
         first_evaluated_at=record.first_evaluated_at,
         last_evaluated_at=record.last_evaluated_at,
     )
-    record.expertise_score = calculate_subject_expertise(metrics)
+    record.expertise_score = compute_subject_expertise(metrics)
     await session.commit()
     await session.refresh(record)
     return record

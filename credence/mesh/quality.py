@@ -60,7 +60,7 @@ class NodeQualityScore(BaseModel):
     is_seed_candidate: bool = Field(default=False, description="True if Q_i >= 0.85")
 
 
-def calculate_node_quality(
+def compute_node_quality(
     metrics: NodeMetrics,
     now: Optional[datetime] = None,
 ) -> NodeQualityScore:
@@ -124,7 +124,7 @@ def rank_nodes(
     now: Optional[datetime] = None,
 ) -> List[NodeQualityScore]:
     """Calculate quality scores for a list of node metrics and return ranked seed candidates."""
-    scores = [calculate_node_quality(m, now=now) for m in metrics_list]
+    scores = [compute_node_quality(m, now=now) for m in metrics_list]
     # Sort descending by composite score, then by uptime
     scores.sort(key=lambda s: (s.quality_score, s.uptime_factor), reverse=True)
     return scores[:top_k]

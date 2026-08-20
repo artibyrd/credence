@@ -38,6 +38,7 @@ data/snapshots/*
 !data/snapshots/.gitkeep
 data/*.db*
 data/*.sqlite*
+orgs/
 *.db*
 *.sqlite*
 data/*.key

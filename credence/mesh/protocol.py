@@ -36,7 +36,7 @@ class PeerHelloPayload(BaseModel):
     node_pubkey: str = Field(..., description="Sender node Ed25519 public key hex")
     node_alias: str = Field(default="credence-node", description="Human-readable node label")
     listen_mesh_port: int = Field(default=8765, description="Inbound WebSocket mesh port")
-    protocol_version: str = Field(default="1.0.0", description="Mesh protocol version")
+    protocol_version: str = Field(default="2.0.0", description="Mesh protocol version")
     supported_catalog_hashes: Dict[str, str] = Field(
         default_factory=dict, description="Map of {catalog_id: sha256_hash}"
     )
@@ -73,7 +73,10 @@ class HeartbeatPayload(BaseModel):
 
 
 class MeshMessageEnvelope(BaseModel):
-    """Top-level cryptographically verifiable P2P message envelope."""
+    """Top-level cryptographically verifiable P2P message envelope.
+
+    Governed by Invariant 6 (RFC 8785 Canonical JSON & Ed25519 Custody).
+    """
 
     message_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), description="Unique message UUID for deduplication"
@@ -85,19 +88,18 @@ class MeshMessageEnvelope(BaseModel):
     signature: Optional[str] = Field(default=None, description="Ed25519 signature over canonical envelope content")
 
     def get_canonical_bytes(self) -> bytes:
-        """Serialize envelope payload deterministically for Ed25519 signing/verification."""
-        import json
+        """Serialize envelope payload deterministically into RFC 8785 canonical bytes.
 
-        def _json_default(obj: Any) -> str:
-            if isinstance(obj, datetime):
-                return obj.isoformat()
-            return str(obj)
+        Returns:
+            Deterministic UTF-8 bytes with ensure_ascii=False for Ed25519 signing/verification.
+        """
+        from credence.identity import canonical_json_bytes
 
         payload_data = {
             "message_id": self.message_id,
-            "message_type": self.message_type.value,
+            "message_type": self.message_type.value if hasattr(self.message_type, "value") else str(self.message_type),
+            "payload": self.payload,
             "sender_pubkey": self.sender_pubkey,
             "timestamp": self.timestamp.isoformat(),
-            "payload": self.payload,
         }
-        return json.dumps(payload_data, sort_keys=True, separators=(",", ":"), default=_json_default).encode("utf-8")
+        return canonical_json_bytes(payload_data)

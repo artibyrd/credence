@@ -21,7 +21,7 @@ from credence.feeds.discovery import DiscoveredFeedCandidate, discover_feed_endp
 from credence.feeds.parser import fetch_and_parse_feed
 from credence.ingestion.extractor import extract_outbound_links
 from credence.ingestion.security import is_safe_url
-from credence.models import AuditRecord, FeedItemRecord, FeedSubscriptionRecord, SnapshotRecord, utc_now
+from credence.models import Audit, FeedItem, FeedSubscription, Snapshot, utc_now
 from credence.subjects.registry import classify_subject
 
 console = Console()
@@ -130,20 +130,18 @@ async def extract_root_candidates(
     max_suspicion = 100.0 - min_parent_score
 
     # 1. Fetch active subscriptions to exclude existing root sources
-    stmt_subs = select(FeedSubscriptionRecord)
+    stmt_subs = select(FeedSubscription)
     subs = (await session.exec(stmt_subs)).all()
     subscribed_domains = {_normalize_domain(s.feed_url) for s in subs}
 
     # 2. Fetch audit records based on requested soil_type
-    stmt_audits = select(AuditRecord, SnapshotRecord).join(
-        SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id)
-    )
+    stmt_audits = select(Audit, Snapshot).join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
     if soil_type == "clean":
-        stmt_audits = stmt_audits.where(AuditRecord.suspicion_score <= max_suspicion)
+        stmt_audits = stmt_audits.where(Audit.suspicion_score <= max_suspicion)
     elif soil_type == "adversarial":
-        stmt_audits = stmt_audits.where(AuditRecord.suspicion_score >= 50.0)
+        stmt_audits = stmt_audits.where(Audit.suspicion_score >= 50.0)
 
-    stmt_audits = stmt_audits.order_by(col(AuditRecord.audited_at).desc()).limit(100)
+    stmt_audits = stmt_audits.order_by(col(Audit.audited_at).desc()).limit(100)
     results = (await session.exec(stmt_audits)).all()
 
     candidates_map: Dict[str, RootCandidate] = {}
@@ -255,7 +253,7 @@ async def expand_roots(
                 continue
 
             # 2. Check if already subscribed to this exact feed URL
-            stmt_existing = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == feed_cand.feed_url)
+            stmt_existing = select(FeedSubscription).where(FeedSubscription.feed_url == feed_cand.feed_url)
             existing_sub = (await session.exec(stmt_existing)).first()
             if existing_sub:
                 cand.validation_status = "already_subscribed"
@@ -265,8 +263,8 @@ async def expand_roots(
             parsed = await fetch_and_parse_feed(feed_cand.feed_url)
             title = parsed.title or feed_cand.title or f"{cand.domain} Feed"
 
-            # 4. Auto-register new FeedSubscriptionRecord
-            new_sub = FeedSubscriptionRecord(
+            # 4. Auto-register new FeedSubscription
+            new_sub = FeedSubscription(
                 feed_url=feed_cand.feed_url,
                 title=title,
                 feed_format=parsed.feed_format,
@@ -284,15 +282,15 @@ async def expand_roots(
             summary.new_feeds_subscribed += 1
             cand.validation_status = "subscribed"
 
-            # 5. Harvest initial entries into FeedItemRecord queue
+            # 5. Harvest initial entries into FeedItem queue
             harvested_count = 0
             for entry in parsed.entries[:10]:
-                stmt_item = select(FeedItemRecord).where(FeedItemRecord.item_url == entry.url)
+                stmt_item = select(FeedItem).where(FeedItem.item_url == entry.url)
                 if (await session.exec(stmt_item)).first():
                     continue
 
                 item_subject, _ = classify_subject(f"{entry.title} {entry.summary or ''}")
-                item_record = FeedItemRecord(
+                item_record = FeedItem(
                     item_url=entry.url,
                     feed_id=new_sub.id,
                     title=entry.title,
@@ -341,7 +339,7 @@ async def get_root_tree(session: AsyncSession) -> Dict[str, Any]:
     from sqlmodel import func
 
     # Active subscriptions
-    stmt_subs = select(FeedSubscriptionRecord).order_by(col(FeedSubscriptionRecord.priority_tier).asc())
+    stmt_subs = select(FeedSubscription).order_by(col(FeedSubscription.priority_tier).asc())
     subs = (await session.exec(stmt_subs)).all()
 
     # Total feed items per feed
@@ -349,7 +347,7 @@ async def get_root_tree(session: AsyncSession) -> Dict[str, Any]:
     total_items = 0
 
     for sub in subs:
-        stmt_count = select(func.count(col(FeedItemRecord.id))).where(FeedItemRecord.feed_id == sub.id)
+        stmt_count = select(func.count(col(FeedItem.id))).where(FeedItem.feed_id == sub.id)
         count = (await session.exec(stmt_count)).first() or 0
         total_items += count
 

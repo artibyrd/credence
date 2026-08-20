@@ -36,7 +36,7 @@ def collect_seed_node_metrics() -> List[NodeMetrics]:
     """Collect node metrics from local database and known network anchors."""
     now = datetime.now(timezone.utc)
 
-    # In production, queries local SQLite database `PeerMetricRecord` table
+    # In production, queries local SQLite database `PeerMetric` table
     # Standard bootstrap seed anchors:
     return [
         NodeMetrics(

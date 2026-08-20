@@ -17,11 +17,11 @@ from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.config import COST_PROFILES, CostProfile
-from credence.db import get_session
-from credence.feeds.health import calculate_feed_quality_score
+from credence.db import get_async_session
+from credence.feeds.health import compute_feed_quality_score
 from credence.feeds.worker import FeedSyncSummary, sync_subscribed_feeds
 from credence.mesh.relay import MeshGossipRelay
-from credence.models import AuditRecord, FeedItemRecord, FeedSubscriptionRecord, SnapshotRecord
+from credence.models import Audit, FeedItem, FeedSubscription, Snapshot
 
 console = Console()
 
@@ -40,20 +40,20 @@ async def run_sifting_cycle(
     )
 
     # Dynamic Feed Quality Evaluation & Autonomous Eviction
-    stmt = select(FeedSubscriptionRecord)
+    stmt = select(FeedSubscription)
     subscriptions = (await session.exec(stmt)).all()
 
     for sub in subscriptions:
         domain_pattern = sub.feed_url.split("/")[2] if len(sub.feed_url.split("/")) > 2 else sub.feed_url
         stmt_audits = (
-            select(AuditRecord)
-            .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
-            .where(col(SnapshotRecord.url).like(f"%{domain_pattern}%"))
+            select(Audit)
+            .join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
+            .where(col(Snapshot.url).like(f"%{domain_pattern}%"))
             .limit(10)
         )
         recent_audits = (await session.exec(stmt_audits)).all()
         if recent_audits:
-            metrics = calculate_feed_quality_score([], None)
+            metrics = compute_feed_quality_score([], None)
             if metrics.composite_score_fj < 0.40 and sub.is_active:
                 sub.is_active = False
                 session.add(sub)
@@ -69,19 +69,19 @@ async def get_sifter_status(session: AsyncSession) -> dict:
     """Get sifter telemetry metrics from SQLite database."""
     from sqlmodel import func
 
-    stmt_subs = select(func.count(col(FeedSubscriptionRecord.id))).where(FeedSubscriptionRecord.is_active == True)  # noqa: E712
+    stmt_subs = select(func.count(col(FeedSubscription.id))).where(FeedSubscription.is_active == True)  # noqa: E712
     active_subs = (await session.exec(stmt_subs)).first() or 0
 
-    stmt_items = select(func.count(col(FeedItemRecord.id)))
+    stmt_items = select(func.count(col(FeedItem.id)))
     total_items = (await session.exec(stmt_items)).first() or 0
 
-    stmt_audited = select(func.count(col(FeedItemRecord.id))).where(FeedItemRecord.processing_status == "audited")
+    stmt_audited = select(func.count(col(FeedItem.id))).where(FeedItem.processing_status == "audited")
     audited_items = (await session.exec(stmt_audited)).first() or 0
 
-    stmt_pending = select(func.count(col(FeedItemRecord.id))).where(FeedItemRecord.processing_status == "pending")
+    stmt_pending = select(func.count(col(FeedItem.id))).where(FeedItem.processing_status == "pending")
     pending_items = (await session.exec(stmt_pending)).first() or 0
 
-    stmt_last_audit = select(AuditRecord).order_by(col(AuditRecord.audited_at).desc()).limit(1)
+    stmt_last_audit = select(Audit).order_by(col(Audit.audited_at).desc()).limit(1)
     last_audit = (await session.exec(stmt_last_audit)).first()
 
     return {
@@ -128,14 +128,13 @@ class SifterDaemon:
 
         try:
             while self._running and not self._shutdown_event.is_set():
-                async for session in get_session():
+                async with get_async_session() as session:
                     summary = await run_sifting_cycle(
                         session=session,
                         cost_profile=self.cost_profile,
                         auto_audit=self.auto_audit,
                     )
                     self._render_cycle_summary(summary)
-                    break
                 if once:
                     break
                 try:

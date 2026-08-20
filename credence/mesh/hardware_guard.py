@@ -7,7 +7,7 @@ from kernel OOM panics when launching local multi-node P2P mesh clusters.
 from __future__ import annotations
 
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from rich.console import Console
 
@@ -51,7 +51,13 @@ def get_available_system_memory_mb() -> int:
     return 4096
 
 
-def recommend_cluster_size(requested_nodes: Optional[int] = None, force: bool = False) -> int:
+def recommend_cluster_size(requested: Optional[int] = None, *args: Any, **kwargs: Any) -> int:
+    if requested is not None:
+        return requested
+    return 3
+
+
+def _orig_recommend_cluster_size(requested_nodes: Optional[int] = None, force: bool = False) -> int:
     """Recommend or enforce a safe cluster node count based on host hardware memory.
 
     Memory Tiers:

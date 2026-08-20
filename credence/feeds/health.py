@@ -51,7 +51,7 @@ class PreflightAuditResult:
     quarantine_reasons: List[str]
 
 
-def calculate_topic_entropy(article_texts: List[str]) -> float:
+def compute_topic_entropy(article_texts: List[str]) -> float:
     """Calculate normalized Shannon entropy over semantic content tokens.
 
     Detects sudden commercial astroturfing or single-product propaganda pivots.
@@ -151,7 +151,7 @@ def calculate_topic_entropy(article_texts: List[str]) -> float:
     return round(min(1.0, max(0.0, diversity)), 3)
 
 
-def calculate_feed_quality_score(
+def compute_feed_quality_score(
     reports: List[AuditReport],
     published_dates: Optional[List[datetime]] = None,
     now: Optional[datetime] = None,
@@ -182,7 +182,7 @@ def calculate_feed_quality_score(
 
     # Factor 3: Topic Entropy (H_topic)
     article_texts = [r.url for r in reports]  # Fallback text representation
-    topic_entropy = calculate_topic_entropy(article_texts)
+    topic_entropy = compute_topic_entropy(article_texts)
 
     # Factor 4: Freshness Index (T_freshness)
     freshness = 0.8
@@ -285,8 +285,8 @@ async def run_preflight_feed_audit(
         )
 
     # Compute topic entropy over sampled article texts
-    topic_entropy = calculate_topic_entropy(article_texts)
-    metrics = calculate_feed_quality_score(reports, published_dates=published_dates)
+    topic_entropy = compute_topic_entropy(article_texts)
+    metrics = compute_feed_quality_score(reports, published_dates=published_dates)
     # Overwrite with actual text entropy
     metrics.topic_entropy = topic_entropy
     metrics.composite_score_fj = round(

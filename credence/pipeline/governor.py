@@ -18,7 +18,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.config import CostProfileConfig, settings
-from credence.models import TokenUsageRecord
+from credence.models import TokenUsage
 from credence.pipeline.schemas import SpecialistViolationFinding
 
 # Model Pricing Matrix (Price per 1,000,000 tokens in USD)
@@ -74,7 +74,7 @@ class TokenHeadroomStatus(BaseModel):
     )
 
 
-def calculate_call_cost(
+def compute_call_cost(
     model_name: str,
     prompt_tokens: int,
     completion_tokens: int,
@@ -110,12 +110,12 @@ async def record_token_usage(
     thinking_tokens: int = 0,
     caller: str = "specialist",
     was_escalated: bool = False,
-) -> TokenUsageRecord:
+) -> TokenUsage:
     """Persist a token usage record to SQLite and update the rolling budget."""
     total_tokens = prompt_tokens + completion_tokens + thinking_tokens
-    cost_usd = calculate_call_cost(model_name, prompt_tokens, completion_tokens, thinking_tokens)
+    cost_usd = compute_call_cost(model_name, prompt_tokens, completion_tokens, thinking_tokens)
 
-    record = TokenUsageRecord(
+    record = TokenUsage(
         timestamp=utc_now(),
         model_name=model_name,
         prompt_tokens=prompt_tokens,
@@ -159,24 +159,29 @@ async def get_token_headroom_status(
         prof = settings.get_profile_config()
 
     # 1-Hour window query
-    h_stmt = select(TokenUsageRecord).where(TokenUsageRecord.timestamp >= one_hour_ago)
+    h_stmt = select(TokenUsage).where(TokenUsage.timestamp >= one_hour_ago)
     h_records = (await session.exec(h_stmt)).all()
     hourly_tokens = sum(r.total_tokens for r in h_records)
 
     # 24-Hour window query
-    d_stmt = select(TokenUsageRecord).where(TokenUsageRecord.timestamp >= twenty_four_hours_ago)
+    d_stmt = select(TokenUsage).where(TokenUsage.timestamp >= twenty_four_hours_ago)
     d_records = (await session.exec(d_stmt)).all()
     daily_tokens = sum(r.total_tokens for r in d_records)
     daily_spend = sum(r.estimated_cost_usd for r in d_records)
 
     # Calculate Headroom Percentages based on active profile and dynamic overrides
-    hourly_max = runtime_overrides.max_tokens_per_hour or prof.max_tokens_per_hour
-    daily_max = prof.max_tokens_per_day
-    daily_budget = (
-        runtime_overrides.daily_budget_usd
-        if runtime_overrides.daily_budget_usd is not None
-        else prof.max_daily_budget_usd
-    )
+    if profile_override:
+        hourly_max = prof.max_tokens_per_hour
+        daily_max = prof.max_tokens_per_day
+        daily_budget = prof.max_daily_budget_usd
+    else:
+        hourly_max = runtime_overrides.max_tokens_per_hour or prof.max_tokens_per_hour
+        daily_max = prof.max_tokens_per_day
+        daily_budget = (
+            runtime_overrides.daily_budget_usd
+            if runtime_overrides.daily_budget_usd is not None
+            else prof.max_daily_budget_usd
+        )
 
     hourly_headroom = max(0.0, min(100.0, 100.0 * (1.0 - (hourly_tokens / max(1, hourly_max)))))
     daily_headroom = max(0.0, min(100.0, 100.0 * (1.0 - (daily_tokens / max(1, daily_max)))))

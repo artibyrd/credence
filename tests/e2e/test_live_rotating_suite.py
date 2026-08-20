@@ -23,7 +23,7 @@ from typing import List
 import httpx
 import pytest
 
-from credence.feeds.health import calculate_feed_quality_score
+from credence.feeds.health import compute_feed_quality_score
 from credence.feeds.parser import fetch_and_parse_feed
 from credence.identity import (
     load_or_create_node_identity,
@@ -127,7 +127,7 @@ async def test_live_rotating_feed_sifter_and_dynamic_articles() -> None:
 
     # 2. Evaluate Dynamic Feed Quality Metric (F_j)
     published_dates = [e.published_at for e in parsed.entries if e.published_at]
-    quality_metrics = calculate_feed_quality_score([], published_dates)
+    quality_metrics = compute_feed_quality_score([], published_dates)
     print(
         f"✓ Composite Feed Score F_j: {quality_metrics.composite_score_fj:.2f} (Status: {'ACTIVE' if quality_metrics.composite_score_fj >= 0.40 else 'QUARANTINE'})"
     )
@@ -289,7 +289,7 @@ async def test_live_rotating_mesh_cluster_work_sharing(tmp_path: Path) -> None:
         all_reports = honest_reports + [signed_fake]
 
         aggregator = BayesianConsensusAggregator()
-        verdict = aggregator.calculate_consensus(all_reports)
+        verdict = aggregator.compute_consensus(all_reports)
         assert verdict is not None
         print(f"✓ Bayesian Consensus Score: {verdict.consensus_score:.1f} (Classification: {verdict.classification})")
         print(f"✓ Rogue Attestation Filtered: {rogue_id.public_key_hex in verdict.outlier_nodes}")

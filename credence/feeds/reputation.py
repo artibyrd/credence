@@ -15,7 +15,7 @@ from rich.console import Console
 from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.models import DomainReputationRecord, FeedSubscriptionRecord, utc_now
+from credence.models import DomainReputation, FeedSubscription, utc_now
 from credence.pipeline.schemas import AuditReport
 
 console = Console()
@@ -42,14 +42,14 @@ def normalize_domain(url_or_domain: str) -> str:
 async def get_or_create_domain_reputation(
     session: AsyncSession,
     domain: str,
-) -> DomainReputationRecord:
+) -> DomainReputation:
     """Fetch existing domain reputation record or initialize a new NEUTRAL entry."""
     clean_domain = normalize_domain(domain)
-    stmt = select(DomainReputationRecord).where(DomainReputationRecord.domain == clean_domain)
+    stmt = select(DomainReputation).where(DomainReputation.domain == clean_domain)
     record = (await session.exec(stmt)).first()
 
     if not record:
-        record = DomainReputationRecord(
+        record = DomainReputation(
             domain=clean_domain,
             reputation_score=50.0,
             status="NEUTRAL",
@@ -65,7 +65,7 @@ async def get_or_create_domain_reputation(
     return record
 
 
-def calculate_polling_backoff(consecutive_deceptions: int) -> float:
+def compute_polling_backoff(consecutive_deceptions: int) -> float:
     """Calculate exponential backoff factor (1.0x to 64.0x) based on consecutive deceptions."""
     if consecutive_deceptions <= 0:
         return 1.0
@@ -79,7 +79,7 @@ async def update_domain_reputation(
     audit_report: AuditReport,
     subject_id: Optional[str] = None,
     word_count: int = 0,
-) -> DomainReputationRecord:
+) -> DomainReputation:
     """Apply an asymmetric Bayesian reputation update following an audit.
 
     - Slashing: Immediate and severe for high-suspicion content.
@@ -127,7 +127,7 @@ async def update_domain_reputation(
                 record.status = "QUARANTINED_PROBATION"
                 if not record.quarantined_at:
                     record.quarantined_at = utc_now()
-                record.polling_backoff_factor = calculate_polling_backoff(record.consecutive_deceptive_count)
+                record.polling_backoff_factor = compute_polling_backoff(record.consecutive_deceptive_count)
                 record.redemption_progress_pct = 0.0
             elif record.reputation_score <= 40.0:
                 record.status = "SUSPICIOUS"
@@ -182,7 +182,7 @@ async def update_domain_reputation(
     await session.refresh(record)
 
     # Sync backoff factor to active feed subscriptions for this domain
-    stmt_subs = select(FeedSubscriptionRecord)
+    stmt_subs = select(FeedSubscription)
     subs = (await session.exec(stmt_subs)).all()
     for sub in subs:
         if normalize_domain(sub.feed_url) == domain:
@@ -199,9 +199,9 @@ async def get_domain_quarantine_list(
 ) -> List[Dict[str, Any]]:
     """Return all currently quarantined or suspicious domains with backoff multipliers."""
     stmt = (
-        select(DomainReputationRecord)
-        .where(col(DomainReputationRecord.status).in_(["QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY", "SUSPICIOUS"]))
-        .order_by(col(DomainReputationRecord.reputation_score).asc())
+        select(DomainReputation)
+        .where(col(DomainReputation.status).in_(["QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY", "SUSPICIOUS"]))
+        .order_by(col(DomainReputation.reputation_score).asc())
     )
     records = (await session.exec(stmt)).all()
 

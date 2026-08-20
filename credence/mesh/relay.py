@@ -365,11 +365,11 @@ class MeshGossipRelay:
         """Respond to attestation queries."""
         from sqlmodel import select
 
-        from credence.db import get_session
-        from credence.models import AuditRecord
+        from credence.db import get_async_session
+        from credence.models import Audit
 
-        async for s in get_session():
-            stmt = select(AuditRecord).where(AuditRecord.content_sha256 == req.content_sha256)
+        async with get_async_session() as s:
+            stmt = select(Audit).where(Audit.content_sha256 == req.content_sha256)
             audit = (await s.exec(stmt)).first()
             if audit:
                 resp_payload = AttestationResponsePayload(content_sha256=req.content_sha256)
@@ -379,7 +379,6 @@ class MeshGossipRelay:
                     payload=resp_payload.model_dump(mode="json"),
                 )
                 await self._send_envelope(peer.websocket, env)
-            break
 
     async def broadcast_attestation(self, attestation: AuditReport, gossip_ttl: int = 6) -> None:
         """Broadcast a newly signed attestation to all active connected peers."""

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "credence"
-version = "1.23.1"
+version = "2.0.0"
 description = "Verifiable epistemic trust network, journalistic ethics auditing, and decentralized P2P consensus engine."
 authors = ["Credence Network Contributors"]
 license = "Apache-2.0"
@@ -86,4 +86,5 @@ markers = [
     "unit: marks tests as unit tests",
     "integration: marks tests as integration tests",
     "e2e: marks tests as live end-to-end integration tests",
+    "governance: marks tests as governance and integrity test gates",
 ]

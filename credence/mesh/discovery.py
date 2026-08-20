@@ -23,9 +23,9 @@ import httpx
 from sqlmodel import col, select
 
 from credence.config import settings
-from credence.db import get_session
+from credence.db import get_async_session
 from credence.mesh.seed import BootstrapSeedFile, verify_seed_file
-from credence.models import PeerMetricRecord
+from credence.models import PeerMetric
 
 logger = logging.getLogger("credence.mesh.discovery")
 
@@ -102,11 +102,11 @@ class BootstrapDiscovery:
 
     async def _discover_from_local_cache(self) -> List[str]:
         """Query top-quality peers recorded in local SQLite database."""
-        async for session in get_session():
+        async with get_async_session() as session:
             stmt = (
-                select(PeerMetricRecord)
-                .where(PeerMetricRecord.quality_score >= 0.70)
-                .order_by(col(PeerMetricRecord.quality_score).desc())
+                select(PeerMetric)
+                .where(PeerMetric.quality_score >= 0.70)
+                .order_by(col(PeerMetric.quality_score).desc())
                 .limit(10)
             )
             results = await session.exec(stmt)

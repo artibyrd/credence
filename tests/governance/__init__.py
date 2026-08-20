@@ -1,0 +1,1 @@
+"""Architecture governance contract tests."""

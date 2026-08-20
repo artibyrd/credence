@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 from typing import List, Optional
+from urllib.parse import urlparse
 
 import trafilatura
 from pydantic import BaseModel, Field
@@ -159,3 +160,15 @@ def extract_clean_content(html: str, url: str = "") -> ExtractedContent:
         satire_cue_reasons=satire_reasons,
         outbound_links=outbound_links,
     )
+
+
+def extract_root_domain(url: str) -> str:
+    """Extract root domain from URL string."""
+    try:
+        parsed = urlparse(url)
+        netloc = parsed.netloc.split(":")[0].lower()
+        if netloc.startswith("www."):
+            netloc = netloc[4:]
+        return netloc or "unknown-domain"
+    except Exception:
+        return "unknown-domain"

@@ -26,33 +26,37 @@ from credence.taxonomy_loader import TaxonomyRegistry, registry
 
 
 def validate_grounded_quote(quote: str, raw_text: str, raw_html: str) -> bool:
-    """Verify that a cited quote or DOM selector exists within the ingested snapshot."""
+    """Verify that a cited quote exists verbatim within the ingested snapshot.
+
+    Governed by Invariant 5: Epistemic Verbatim Grounding (G=1.00). Citations
+    must match source DOM text character-for-character after whitespace collapse.
+
+    Args:
+        quote: The cited text excerpt or element string from an auditor finding.
+        raw_text: The normalized prose text of the webpage snapshot.
+        raw_html: The raw DOM HTML markup of the webpage snapshot.
+
+    Returns:
+        True if the quote is found verbatim in either the prose text or DOM HTML.
+    """
     if not quote or not quote.strip():
         return False
 
-    def _normalize_all_whitespace(s: str) -> str:
-        return re.sub(r"\s+", " ", normalize_text(s)).strip().lower()
+    def _normalize_whitespace_and_quotes(s: str) -> str:
+        # Strip outer quotation marks and collapse internal whitespace
+        stripped = s.strip().strip("\"'“”‘’«»`")
+        normalized = normalize_text(stripped)
+        return re.sub(r"\s+", " ", normalized).strip().lower()
 
-    clean_quote = _normalize_all_whitespace(quote)
-    clean_source_text = _normalize_all_whitespace(raw_text)
-    clean_html_text = _normalize_all_whitespace(raw_html)
+    clean_quote = _normalize_whitespace_and_quotes(quote)
+    if not clean_quote:
+        return False
 
-    # 1. Exact substring match in clean prose
-    if clean_quote in clean_source_text:
-        return True
+    clean_source_text = _normalize_whitespace_and_quotes(raw_text)
+    clean_html_text = _normalize_whitespace_and_quotes(raw_html)
 
-    # 2. Check within raw HTML markup
-    if clean_quote in clean_html_text:
-        return True
-
-    # 3. Check for 80%+ fuzzy token match for slightly trimmed quotes
-    quote_tokens = [w for w in re.findall(r"\w+", clean_quote) if len(w) > 3]
-    if len(quote_tokens) >= 4:
-        matched_tokens = sum(1 for tok in quote_tokens if tok in clean_source_text)
-        if (matched_tokens / len(quote_tokens)) >= 0.8:
-            return True
-
-    return False
+    # Strict G=1.00: Exact character-for-character substring match in prose or DOM HTML
+    return (clean_quote in clean_source_text) or (clean_quote in clean_html_text)
 
 
 def validate_all_violations(

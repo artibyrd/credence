@@ -1,13 +1,14 @@
 """SQLModel Database Models for Credence.
 
 Defines schemas for:
-- SnapshotRecord: Captured webpage metadata, DOM/screenshot paths, and cryptographic hashes.
-- AuditRecord: Evaluated suspicion scores, satire flags, and attestation signatures.
-- ViolationRecord: Granular rule violations linked to exact cited quotes and evidence.
-- TokenUsageRecord: In-database token consumption, thinking tokens, and cost tracking.
+- Snapshot: Captured webpage metadata, DOM/screenshot paths, and cryptographic hashes.
+- Audit: Evaluated suspicion scores, satire flags, and attestation signatures.
+- Violation: Granular rule violations linked to exact cited quotes and evidence.
+- TokenUsage: In-database token consumption, thinking tokens, and cost tracking.
 """
 
 from datetime import datetime, timezone
+from enum import Enum
 from typing import List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -18,7 +19,7 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class SnapshotRecord(SQLModel, table=True):
+class Snapshot(SQLModel, table=True):
     """Stores metadata and content hashes for a dual-captured webpage snapshot."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -38,17 +39,17 @@ class SnapshotRecord(SQLModel, table=True):
     is_satire_cue: bool = Field(default=False, description="Whether snapshot contained explicit satire metadata cues")
 
     # Relationships
-    audits: List["AuditRecord"] = Relationship(
+    audits: List["Audit"] = Relationship(
         back_populates="snapshot",
         cascade_delete=True,
     )
 
 
-class AuditRecord(SQLModel, table=True):
+class Audit(SQLModel, table=True):
     """Stores full audit report, suspicion score, satire verdict, and cryptographic signature."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    snapshot_id: int = Field(foreign_key="snapshotrecord.id", index=True)
+    snapshot_id: int = Field(foreign_key="snapshot.id", index=True)
     audited_at: datetime = Field(default_factory=utc_now, description="UTC audit timestamp")
     content_sha256: str = Field(index=True, description="SHA-256 of snapshot content")
 
@@ -83,18 +84,18 @@ class AuditRecord(SQLModel, table=True):
     )
 
     # Relationships
-    snapshot: Optional[SnapshotRecord] = Relationship(back_populates="audits")
-    violations: List["ViolationRecord"] = Relationship(
+    snapshot: Optional[Snapshot] = Relationship(back_populates="audits")
+    violations: List["Violation"] = Relationship(
         back_populates="audit",
         cascade_delete=True,
     )
 
 
-class ViolationRecord(SQLModel, table=True):
+class Violation(SQLModel, table=True):
     """Stores an itemized violation citing specific taxonomy rules and grounded excerpts."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    audit_id: int = Field(foreign_key="auditrecord.id", index=True)
+    audit_id: int = Field(foreign_key="audit.id", index=True)
     rule_id: str = Field(index=True, description="Rule code (e.g. SPJ-1.1, FALLACY-2.2, DP-1.1)")
     rule_uri: str = Field(index=True, description="Full namespaced rule URI")
     domain: str = Field(index=True, description="Root taxonomy domain (e.g. JOURNALISTIC_ETHICS)")
@@ -106,10 +107,10 @@ class ViolationRecord(SQLModel, table=True):
     line_or_selector: Optional[str] = Field(default=None, description="Source line number or DOM CSS selector")
 
     # Relationships
-    audit: Optional[AuditRecord] = Relationship(back_populates="violations")
+    audit: Optional[Audit] = Relationship(back_populates="violations")
 
 
-class TokenUsageRecord(SQLModel, table=True):
+class TokenUsage(SQLModel, table=True):
     """Stores token consumption, thinking tokens, and estimated USD cost per subagent call."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -124,7 +125,7 @@ class TokenUsageRecord(SQLModel, table=True):
     was_escalated: bool = Field(default=False, description="Whether this call was an escalated evaluation")
 
 
-class PeerMetricRecord(SQLModel, table=True):
+class PeerMetric(SQLModel, table=True):
     """Stores observed peer node quality metrics and reputation history."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -162,7 +163,7 @@ class PeerMetricRecord(SQLModel, table=True):
     badges_unlocked_json: str = Field(default="[]", description="JSON list of earned badge IDs and award metadata")
 
 
-class SubjectRecord(SQLModel, table=True):
+class Subject(SQLModel, table=True):
     """Stores registered hierarchical subject namespaces and evaluation taxonomy mappings."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -176,7 +177,7 @@ class SubjectRecord(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utc_now, description="UTC registration timestamp")
 
 
-class DomainMetricRecord(SQLModel, table=True):
+class DomainMetric(SQLModel, table=True):
     """Stores observed empirical domain expertise metrics for a node within a specific subject."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -193,7 +194,7 @@ class DomainMetricRecord(SQLModel, table=True):
     last_evaluated_at: datetime = Field(default_factory=utc_now, description="Most recent evaluation timestamp")
 
 
-class FeedSubscriptionRecord(SQLModel, table=True):
+class FeedSubscription(SQLModel, table=True):
     """Stores syndicated RSS/Atom/JSON feed subscriptions and polling metadata."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -213,12 +214,12 @@ class FeedSubscriptionRecord(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utc_now, description="Subscription creation timestamp")
 
 
-class FeedItemRecord(SQLModel, table=True):
+class FeedItem(SQLModel, table=True):
     """Stores discovered syndicated feed items, processing status, and mesh adoption records."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
     item_url: str = Field(index=True, unique=True, description="Target article URL")
-    feed_id: Optional[int] = Field(default=None, foreign_key="feedsubscriptionrecord.id", index=True)
+    feed_id: Optional[int] = Field(default=None, foreign_key="feedsubscription.id", index=True)
     title: str = Field(default="", description="Article headline title")
     subject_id: str = Field(default="journalism.news", index=True, description="Classified subject namespace")
     published_at: Optional[datetime] = Field(default=None, description="Article published timestamp")
@@ -234,7 +235,7 @@ class FeedItemRecord(SQLModel, table=True):
     tokens_saved: int = Field(default=0, description="Estimated LLM tokens saved via zero-token mesh adoption")
 
 
-class DomainReputationRecord(SQLModel, table=True):
+class DomainReputation(SQLModel, table=True):
     """Stores observed domain-level reputation, quarantine status, and BuzzFeed Doctrine redemption metrics."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -265,3 +266,11 @@ class DomainReputationRecord(SQLModel, table=True):
     last_audited_at: datetime = Field(default_factory=utc_now, description="Timestamp of most recent audit")
     quarantined_at: Optional[datetime] = Field(default=None, description="Timestamp when domain entered quarantine")
     graduated_at: Optional[datetime] = Field(default=None, description="Timestamp when domain graduated from probation")
+
+
+class EpistemicTier(str, Enum):
+    SPROUT = "SPROUT"
+    SIFTER = "SIFTER"
+    AUDITOR = "AUDITOR"
+    SPECIALIST = "SPECIALIST"
+    ROOT_ANCHOR = "ROOT_ANCHOR"

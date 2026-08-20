@@ -125,7 +125,7 @@ async def test_live_13_node_work_sharing_and_byzantine_defense(tmp_path: Path) -
         all_reports = honest_reports + [signed_fake]
 
         aggregator = BayesianConsensusAggregator()
-        verdict = aggregator.calculate_consensus(all_reports)
+        verdict = aggregator.compute_consensus(all_reports)
         assert verdict is not None
         print(f"✓ Bayesian Consensus Score: {verdict.consensus_score:.1f} (Classification: {verdict.classification})")
         print(f"✓ Rogue Attestation Filtered: {rogue_id.public_key_hex in verdict.outlier_nodes}")

@@ -11,7 +11,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.models import AuditRecord, FeedItemRecord, PeerMetricRecord, SnapshotRecord, utc_now
+from credence.models import Audit, FeedItem, PeerMetric, Snapshot, utc_now
 
 
 class MeshAttestationLookupResult(SQLModel):
@@ -41,9 +41,9 @@ async def check_mesh_effort_avoidance(
     """
     # 1. Check local snapshot / audit cache
     stmt_local = (
-        select(AuditRecord, SnapshotRecord)
-        .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
-        .where(SnapshotRecord.url == item_url)
+        select(Audit, Snapshot)
+        .join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
+        .where(Snapshot.url == item_url)
     )
     result_local = await session.exec(stmt_local)
     row = result_local.first()
@@ -62,9 +62,7 @@ async def check_mesh_effort_avoidance(
     # 2. Check if a high-quality mesh peer has signed an attestation for this URL / hash
     if content_sha256:
         stmt_peer = (
-            select(AuditRecord)
-            .where(AuditRecord.content_sha256 == content_sha256)
-            .where(col(AuditRecord.node_pubkey).isnot(None))
+            select(Audit).where(Audit.content_sha256 == content_sha256).where(col(Audit.node_pubkey).isnot(None))
         )
         peer_audits = (await session.exec(stmt_peer)).all()
 
@@ -72,8 +70,8 @@ async def check_mesh_effort_avoidance(
             if not peer_audit.node_pubkey:
                 continue
 
-            # Lookup peer quality in PeerMetricRecord
-            stmt_quality = select(PeerMetricRecord).where(PeerMetricRecord.node_pubkey == peer_audit.node_pubkey)
+            # Lookup peer quality in PeerMetric
+            stmt_quality = select(PeerMetric).where(PeerMetric.node_pubkey == peer_audit.node_pubkey)
             peer_metric = (await session.exec(stmt_quality)).first()
 
             peer_q = peer_metric.quality_score if peer_metric else 0.5
@@ -81,8 +79,8 @@ async def check_mesh_effort_avoidance(
                 # High-reputation peer verified: Adopt attestation at 0 token cost!
                 estimated_tokens_saved = 1450  # Average multi-agent audit token footprint
 
-                # Update FeedItemRecord if present
-                stmt_item = select(FeedItemRecord).where(FeedItemRecord.item_url == item_url)
+                # Update FeedItem if present
+                stmt_item = select(FeedItem).where(FeedItem.item_url == item_url)
                 item_record = (await session.exec(stmt_item)).first()
                 if item_record:
                     item_record.processing_status = "mesh_adopted"
@@ -113,10 +111,10 @@ async def adopt_peer_attestation(
     is_satire: bool,
     content_sha256: str,
     simhash_64: str,
-) -> AuditRecord:
+) -> Audit:
     """Explicitly adopt a gossiped peer attestation into the local SQLite database."""
-    # Create SnapshotRecord
-    snapshot = SnapshotRecord(
+    # Create Snapshot
+    snapshot = Snapshot(
         url=item_url,
         title=title,
         content_sha256=content_sha256,
@@ -127,8 +125,8 @@ async def adopt_peer_attestation(
     await session.commit()
     await session.refresh(snapshot)
 
-    # Create AuditRecord
-    audit = AuditRecord(
+    # Create Audit
+    audit = Audit(
         snapshot_id=snapshot.id,  # type: ignore
         content_sha256=content_sha256,
         suspicion_score=suspicion_score,
@@ -141,8 +139,8 @@ async def adopt_peer_attestation(
     )
     session.add(audit)
 
-    # Update or create FeedItemRecord
-    stmt_item = select(FeedItemRecord).where(FeedItemRecord.item_url == item_url)
+    # Update or create FeedItem
+    stmt_item = select(FeedItem).where(FeedItem.item_url == item_url)
     item_record = (await session.exec(stmt_item)).first()
     if item_record:
         item_record.processing_status = "mesh_adopted"

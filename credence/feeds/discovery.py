@@ -115,11 +115,14 @@ async def discover_feed_endpoints(
     timeout_sec: float = 10.0,
 ) -> List[DiscoveredFeedCandidate]:
     """Dynamically discover candidate feed endpoints from any target website or URL."""
+    from credence.ingestion.security import create_safe_async_client, validate_safe_url
+
     parsed = urlparse(target_url)
     if not parsed.scheme:
         target_url = f"https://{target_url}"
         parsed = urlparse(target_url)
 
+    target_url = validate_safe_url(target_url)
     domain = parsed.netloc.lower()
     base_origin = f"{parsed.scheme}://{domain}"
 
@@ -128,10 +131,9 @@ async def discover_feed_endpoints(
 
     should_close = False
     if client is None:
-        client = httpx.AsyncClient(
+        client = create_safe_async_client(
             timeout=timeout_sec,
-            follow_redirects=True,
-            headers={"User-Agent": "Credence-Epistemic-Feed-Discoverer/1.0"},
+            headers={"User-Agent": "Credence-Epistemic-Feed-Discoverer/2.0"},
         )
         should_close = True
 

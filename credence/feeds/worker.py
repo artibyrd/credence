@@ -15,7 +15,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.feeds.dedup import check_mesh_effort_avoidance
 from credence.feeds.parser import fetch_and_parse_feed
-from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
+from credence.models import FeedItem, FeedSubscription, utc_now
 from credence.pipeline.governor import get_token_headroom_status
 from credence.subjects.registry import classify_subject
 
@@ -49,7 +49,7 @@ def _get_domain_semaphore(url: str) -> asyncio.Semaphore:
 async def _process_single_entry(
     session: AsyncSession,
     entry: Any,
-    subscription: FeedSubscriptionRecord,
+    subscription: FeedSubscription,
     summary: FeedSyncSummary,
     dry_run: bool,
     now: datetime,
@@ -57,7 +57,7 @@ async def _process_single_entry(
     profile_override: Any = None,
 ) -> None:
     """Process an individual feed entry with effort avoidance, headroom checks, and live audit."""
-    stmt_item = select(FeedItemRecord).where(FeedItemRecord.item_url == entry.url)
+    stmt_item = select(FeedItem).where(FeedItem.item_url == entry.url)
     existing = (await session.exec(stmt_item)).first()
     if existing:
         return
@@ -76,7 +76,7 @@ async def _process_single_entry(
         )
         return
 
-    item_record = FeedItemRecord(
+    item_record = FeedItem(
         item_url=entry.url,
         feed_id=subscription.id,
         title=entry.title,
@@ -160,7 +160,7 @@ async def _process_single_entry(
 
 async def sync_single_feed(
     session: AsyncSession,
-    subscription: FeedSubscriptionRecord,
+    subscription: FeedSubscription,
     dry_run: bool = False,
     evaluate_novel: bool = True,
     profile_override: Any = None,
@@ -221,9 +221,9 @@ async def sync_all_feeds(
 ) -> FeedSyncSummary:
     """Synchronize all active feed subscriptions ordered by priority tier."""
     stmt = (
-        select(FeedSubscriptionRecord)
-        .where(FeedSubscriptionRecord.is_active == True)  # noqa: E712
-        .order_by(col(FeedSubscriptionRecord.priority_tier).asc())
+        select(FeedSubscription)
+        .where(FeedSubscription.is_active == True)  # noqa: E712
+        .order_by(col(FeedSubscription.priority_tier).asc())
     )
     subscriptions = (await session.exec(stmt)).all()
 
@@ -325,10 +325,10 @@ async def bootstrap_preset_feeds(
     for cat in categories:
         for title, url, priority in PRESET_FEED_CATALOGS[cat]:
             try:
-                stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.feed_url == url)
+                stmt = select(FeedSubscription).where(FeedSubscription.feed_url == url)
                 existing = (await session.exec(stmt)).first()
                 if not existing:
-                    sub = FeedSubscriptionRecord(
+                    sub = FeedSubscription(
                         feed_url=url,
                         title=title,
                         priority_tier=priority,

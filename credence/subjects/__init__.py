@@ -2,8 +2,8 @@
 
 from credence.subjects.expertise import (
     DomainMetrics,
-    calculate_effective_weight,
-    calculate_subject_expertise,
+    compute_effective_weight,
+    compute_subject_expertise,
     record_domain_evaluation,
     slash_domain_expertise,
 )
@@ -20,8 +20,8 @@ __all__ = [
     "get_subject_registry",
     "classify_subject",
     "DomainMetrics",
-    "calculate_subject_expertise",
-    "calculate_effective_weight",
+    "compute_subject_expertise",
+    "compute_effective_weight",
     "record_domain_evaluation",
     "slash_domain_expertise",
 ]

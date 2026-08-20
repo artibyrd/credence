@@ -324,9 +324,9 @@
           <div class="overview-grid" style="margin-bottom: 1.5rem;">
             <!-- Metric 1: DEI Score & Trust Band -->
             <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem;">
-              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Domain Epistemic Index (DEI)</div>
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Domain Credence Index (DCI)</div>
               <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-top: 0.5rem;">
-                <span id="pub-dei-score" style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green);">--</span>
+                <span id="pub-dci-score" style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green);">--</span>
                 <span id="pub-trust-band" class="sig-pill sig-valid" style="font-size: 0.8rem;">--</span>
               </div>
               <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
@@ -1489,7 +1489,7 @@ ${summaryContent}
     const MOCK_PUBLISHER_DATA = {
       "inmaricopa.com": {
         domain: "inmaricopa.com",
-        dei_score: 62.5,
+        dci_score: 62.5,
         trust_band: "MIXED",
         avg_suspicion: 53.3,
         avg_violation_density: 5.7,
@@ -1516,18 +1516,18 @@ ${summaryContent}
           { rule_id: "SPJ-1.1", domain: "JOURNALISTIC_ETHICS", name: "Verify Sourcing Before Release", violations_count: 1, frequency_pct: 7.7 }
         ],
         trend_timeline: [
-          { period_label: "2026-08-10", audits_count: 1, avg_suspicion: 8.0, avg_dei: 92.0, violations_count: 0 },
-          { period_label: "2026-08-12", audits_count: 1, avg_suspicion: 68.0, avg_dei: 32.0, violations_count: 2 },
-          { period_label: "2026-08-13", audits_count: 1, avg_suspicion: 42.0, avg_dei: 58.0, violations_count: 1 },
-          { period_label: "2026-08-14", audits_count: 1, avg_suspicion: 74.0, avg_dei: 26.0, violations_count: 3 },
-          { period_label: "2026-08-15", audits_count: 1, avg_suspicion: 38.0, avg_dei: 62.0, violations_count: 0 },
-          { period_label: "2026-08-16", audits_count: 1, avg_suspicion: 78.5, avg_dei: 21.5, violations_count: 3 },
-          { period_label: "2026-08-19", audits_count: 7, avg_suspicion: 55.0, avg_dei: 45.0, violations_count: 0 }
+          { period_label: "2026-08-10", audits_count: 1, avg_suspicion: 8.0, avg_dci: 92.0, violations_count: 0 },
+          { period_label: "2026-08-12", audits_count: 1, avg_suspicion: 68.0, avg_dci: 32.0, violations_count: 2 },
+          { period_label: "2026-08-13", audits_count: 1, avg_suspicion: 42.0, avg_dci: 58.0, violations_count: 1 },
+          { period_label: "2026-08-14", audits_count: 1, avg_suspicion: 74.0, avg_dci: 26.0, violations_count: 3 },
+          { period_label: "2026-08-15", audits_count: 1, avg_suspicion: 38.0, avg_dci: 62.0, violations_count: 0 },
+          { period_label: "2026-08-16", audits_count: 1, avg_suspicion: 78.5, avg_dci: 21.5, violations_count: 3 },
+          { period_label: "2026-08-19", audits_count: 7, avg_suspicion: 55.0, avg_dci: 45.0, violations_count: 0 }
         ]
       },
       "apnews.com": {
         domain: "apnews.com",
-        dei_score: 93.4,
+        dci_score: 93.4,
         trust_band: "HIGH_INTEGRITY",
         avg_suspicion: 6.6,
         avg_violation_density: 0.8,
@@ -1550,10 +1550,10 @@ ${summaryContent}
           { rule_id: "SPJ-1.2", domain: "JOURNALISTIC_ETHICS", name: "Multi-Source Corroboration", violations_count: 2, frequency_pct: 7.1 }
         ],
         trend_timeline: [
-          { period_label: "2026-05", audits_count: 6, avg_suspicion: 5.8, avg_dei: 94.2, violations_count: 0 },
-          { period_label: "2026-06", audits_count: 8, avg_suspicion: 7.1, avg_dei: 92.9, violations_count: 1 },
-          { period_label: "2026-07", audits_count: 7, avg_suspicion: 6.2, avg_dei: 93.8, violations_count: 0 },
-          { period_label: "2026-08", audits_count: 7, avg_suspicion: 7.0, avg_dei: 93.0, violations_count: 1 }
+          { period_label: "2026-05", audits_count: 6, avg_suspicion: 5.8, avg_dci: 94.2, violations_count: 0 },
+          { period_label: "2026-06", audits_count: 8, avg_suspicion: 7.1, avg_dci: 92.9, violations_count: 1 },
+          { period_label: "2026-07", audits_count: 7, avg_suspicion: 6.2, avg_dci: 93.8, violations_count: 0 },
+          { period_label: "2026-08", audits_count: 7, avg_suspicion: 7.0, avg_dci: 93.0, violations_count: 1 }
         ]
       }
     };
@@ -1592,7 +1592,7 @@ ${summaryContent}
         const avgSusp = matching.reduce((acc, m) => acc + (m.suspicion_score || 0), 0) / matching.length;
         const synthProfile = {
           domain: cleanDom,
-          dei_score: Math.max(0, 100.0 - avgSusp),
+          dci_score: Math.max(0, 100.0 - avgSusp),
           trust_band: avgSusp <= 15 ? "HIGH_INTEGRITY" : (avgSusp <= 40 ? "RELIABLE" : (avgSusp <= 60 ? "MIXED" : "POOR")),
           avg_suspicion: avgSusp,
           avg_violation_density: matching.reduce((acc, m) => acc + (m.suspicion_density || 0), 0) / matching.length,
@@ -1613,7 +1613,7 @@ ${summaryContent}
           },
           top_violated_rules: [],
           trend_timeline: [
-            { period_label: "2026-08", audits_count: matching.length, avg_suspicion: avgSusp, avg_dei: Math.max(0, 100 - avgSusp), violations_count: 0 }
+            { period_label: "2026-08", audits_count: matching.length, avg_suspicion: avgSusp, avg_dci: Math.max(0, 100 - avgSusp), violations_count: 0 }
           ]
         };
         renderPublisherTab(synthProfile);
@@ -1627,10 +1627,10 @@ ${summaryContent}
     function renderPublisherTab(profile) {
       activePublisherProfile = profile;
 
-      document.getElementById("pub-dei-score").textContent = `${profile.dei_score.toFixed(1)}%`;
+      document.getElementById("pub-dci-score").textContent = `${profile.dci_score.toFixed(1)}%`;
       const bandEl = document.getElementById("pub-trust-band");
       bandEl.textContent = profile.trust_band;
-      bandEl.className = "sig-pill " + (profile.dei_score >= 80 ? "sig-valid" : (profile.dei_score >= 50 ? "sig-warn" : "sig-invalid"));
+      bandEl.className = "sig-pill " + (profile.dci_score >= 80 ? "sig-valid" : (profile.dci_score >= 50 ? "sig-warn" : "sig-invalid"));
 
       document.getElementById("pub-total-audits").textContent = profile.total_audits;
       document.getElementById("pub-avg-suspicion").textContent = `${profile.avg_suspicion.toFixed(1)} / 100`;
@@ -1688,10 +1688,10 @@ ${summaryContent}
 
       timeline.forEach((b, i) => {
         const x = padX + (n > 1 ? i * stepX : graphW / 2);
-        const yDei = padY + graphH - (b.avg_dei / 100.0) * graphH;
+        const yDci = padY + graphH - (b.avg_dci / 100.0) * graphH;
         const ySusp = padY + graphH - (b.avg_suspicion / 100.0) * graphH;
         
-        deiPoints.push(`${x.toFixed(1)},${yDei.toFixed(1)}`);
+        deiPoints.push(`${x.toFixed(1)},${yDci.toFixed(1)}`);
         suspPoints.push(`${x.toFixed(1)},${ySusp.toFixed(1)}`);
 
         // Volume Bar
@@ -1730,8 +1730,8 @@ ${summaryContent}
           <!-- Dots on points -->
           ${timeline.map((b, i) => {
             const x = padX + (n > 1 ? i * stepX : graphW / 2);
-            const yDei = padY + graphH - (b.avg_dei / 100.0) * graphH;
-            return `<circle cx="${x.toFixed(1)}" cy="${yDei.toFixed(1)}" r="3.5" fill="#4ade80" />`;
+            const yDci = padY + graphH - (b.avg_dci / 100.0) * graphH;
+            return `<circle cx="${x.toFixed(1)}" cy="${yDci.toFixed(1)}" r="3.5" fill="#4ade80" />`;
           }).join("")}
 
           <!-- X-Axis Labels -->
@@ -1755,7 +1755,7 @@ ${summaryContent}
         const rows = [
           ["metric", "value"],
           ["domain", p.domain],
-          ["dei_score", p.dei_score],
+          ["dci_score", p.dci_score],
           ["trust_band", p.trust_band],
           ["avg_suspicion", p.avg_suspicion],
           ["avg_violation_density", p.avg_violation_density],

@@ -20,7 +20,7 @@ from rich.table import Table
 from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.models import AuditRecord, SnapshotRecord, ViolationRecord
+from credence.models import Audit, Snapshot, Violation
 
 console = Console()
 
@@ -123,9 +123,9 @@ async def generate_morning_digest(
 
     # Fetch recent audit records with their snapshot
     stmt = (
-        select(AuditRecord, SnapshotRecord)
-        .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
-        .where(AuditRecord.audited_at >= cutoff)
+        select(Audit, Snapshot)
+        .join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
+        .where(Audit.audited_at >= cutoff)
     )
     results = (await session.exec(stmt)).all()
 
@@ -139,7 +139,7 @@ async def generate_morning_digest(
 
     for rec, snap in results:
         # Fetch associated violations
-        stmt_v = select(ViolationRecord).where(ViolationRecord.audit_id == rec.id)
+        stmt_v = select(Violation).where(Violation.audit_id == rec.id)
         v_records = (await session.exec(stmt_v)).all()
 
         top_rule = v_records[0].rule_id if v_records else None

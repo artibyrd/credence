@@ -11,14 +11,14 @@ from pathlib import Path
 
 from sqlmodel import select
 
-from credence.db import get_session
+from credence.db import get_async_session
 from credence.models import (
-    AuditRecord,
-    FeedItemRecord,
-    FeedSubscriptionRecord,
-    SnapshotRecord,
-    TokenUsageRecord,
-    ViolationRecord,
+    Audit,
+    FeedItem,
+    FeedSubscription,
+    Snapshot,
+    TokenUsage,
+    Violation,
 )
 from credence.subjects.registry import get_subject_registry
 from credence.taxonomy_loader import registry
@@ -35,14 +35,14 @@ async def seed_tui_fixtures() -> None:
     sub_reg = get_subject_registry()
     sub_reg.load_catalogs()
 
-    async for session in get_session():
+    async with get_async_session() as session:
         # Clear any existing records in memory / dev db
-        existing_snaps = (await session.exec(select(SnapshotRecord))).all()
+        existing_snaps = (await session.exec(select(Snapshot))).all()
         if existing_snaps:
             return  # Already seeded
 
         # 1. Seed Deceptive Health Clickbait Article
-        snap_deceptive = SnapshotRecord(
+        snap_deceptive = Snapshot(
             url="https://miracle-remedies.example.com/cancer-cure-breakthrough",
             captured_at=utc_now(),
             content_sha256="8f4e2b8c9d1a3e5f7b2c4d6e8a0b1c3d5e7f9a1b3c5d7e9f1a3b5c7d9e1f3a5b",
@@ -58,7 +58,7 @@ async def seed_tui_fixtures() -> None:
         await session.commit()
         await session.refresh(snap_deceptive)
 
-        audit_deceptive = AuditRecord(
+        audit_deceptive = Audit(
             snapshot_id=snap_deceptive.id,
             audited_at=utc_now(),
             content_sha256=snap_deceptive.content_sha256,
@@ -77,7 +77,7 @@ async def seed_tui_fixtures() -> None:
         await session.commit()
         await session.refresh(audit_deceptive)
 
-        v1 = ViolationRecord(
+        v1 = Violation(
             audit_id=audit_deceptive.id,
             rule_id="MED-1.2",
             rule_uri="domain:medical/unsubstantiated_cure@1.0.0",
@@ -89,7 +89,7 @@ async def seed_tui_fixtures() -> None:
             reasoning="Unsubstantiated medical claim guaranteeing absolute cancer cure rate without peer-reviewed human clinical trials.",
             line_or_selector="article > p:nth-child(3)",
         )
-        v2 = ViolationRecord(
+        v2 = Violation(
             audit_id=audit_deceptive.id,
             rule_id="ETH-2.1",
             rule_uri="domain:journalism/anonymous_conspiracy@1.0.0",
@@ -101,7 +101,7 @@ async def seed_tui_fixtures() -> None:
             reasoning="Unattributed conspiratorial accusation violating standard SPJ verification and attribution guidelines.",
             line_or_selector="article > p:nth-child(5)",
         )
-        v3 = ViolationRecord(
+        v3 = Violation(
             audit_id=audit_deceptive.id,
             rule_id="FALLACY-4.3",
             rule_uri="domain:logic/false_dilemma@1.0.0",
@@ -113,7 +113,7 @@ async def seed_tui_fixtures() -> None:
             reasoning="False dilemma / false dichotomy forcing a binary choice where multiple nuanced medical options exist.",
             line_or_selector="article > p:nth-child(8)",
         )
-        v4 = ViolationRecord(
+        v4 = Violation(
             audit_id=audit_deceptive.id,
             rule_id="DP-1.1",
             rule_uri="domain:deceptive_patterns/urgency_countdown@1.0.0",
@@ -128,7 +128,7 @@ async def seed_tui_fixtures() -> None:
         session.add_all([v1, v2, v3, v4])
 
         # 2. Seed Legitimate Satire Article
-        snap_satire = SnapshotRecord(
+        snap_satire = Snapshot(
             url="https://theonion.com/scientists-discover-new-form-of-procrastination",
             captured_at=utc_now(),
             content_sha256="4d7c2a1b9e8f0a3b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b",
@@ -144,7 +144,7 @@ async def seed_tui_fixtures() -> None:
         await session.commit()
         await session.refresh(snap_satire)
 
-        audit_satire = AuditRecord(
+        audit_satire = Audit(
             snapshot_id=snap_satire.id,
             audited_at=utc_now(),
             content_sha256=snap_satire.content_sha256,
@@ -163,7 +163,7 @@ async def seed_tui_fixtures() -> None:
         session.add(audit_satire)
 
         # 3. Seed Clean Investigative Article
-        snap_clean = SnapshotRecord(
+        snap_clean = Snapshot(
             url="https://arstechnica.com/science/2026/08/fusion-breakthrough",
             captured_at=utc_now(),
             content_sha256="1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
@@ -179,7 +179,7 @@ async def seed_tui_fixtures() -> None:
         await session.commit()
         await session.refresh(snap_clean)
 
-        audit_clean = AuditRecord(
+        audit_clean = Audit(
             snapshot_id=snap_clean.id,
             audited_at=utc_now(),
             content_sha256=snap_clean.content_sha256,
@@ -197,7 +197,7 @@ async def seed_tui_fixtures() -> None:
         session.add(audit_clean)
 
         # 4. Seed Syndicated Feed Subscriptions
-        f1 = FeedSubscriptionRecord(
+        f1 = FeedSubscription(
             feed_url="https://arstechnica.com/feed",
             title="Ars Technica Science & Tech",
             feed_format="rss",
@@ -206,7 +206,7 @@ async def seed_tui_fixtures() -> None:
             polling_interval_seconds=600,
             is_active=True,
         )
-        f2 = FeedSubscriptionRecord(
+        f2 = FeedSubscription(
             feed_url="https://apnews.com/feed",
             title="Associated Press Top News",
             feed_format="rss",
@@ -215,7 +215,7 @@ async def seed_tui_fixtures() -> None:
             polling_interval_seconds=300,
             is_active=True,
         )
-        f3 = FeedSubscriptionRecord(
+        f3 = FeedSubscription(
             feed_url="https://nature.com/nature/current_issue/rss",
             title="Nature Peer-Reviewed Articles",
             feed_format="rss",
@@ -224,7 +224,7 @@ async def seed_tui_fixtures() -> None:
             polling_interval_seconds=900,
             is_active=True,
         )
-        f4 = FeedSubscriptionRecord(
+        f4 = FeedSubscription(
             feed_url="https://theonion.com/feed",
             title="The Onion Satirical Stream",
             feed_format="rss",
@@ -234,7 +234,7 @@ async def seed_tui_fixtures() -> None:
             is_active=True,
             is_satire=True,
         )
-        f5 = FeedSubscriptionRecord(
+        f5 = FeedSubscription(
             feed_url="https://reuters.com/tools/rss",
             title="Reuters World Wire",
             feed_format="rss",
@@ -248,7 +248,7 @@ async def seed_tui_fixtures() -> None:
 
         # 5. Seed Discovered Feed Items (for Morning Digest & Token Savings)
         for i in range(1, 15):
-            item = FeedItemRecord(
+            item = FeedItem(
                 item_url=f"https://apnews.com/article/world-news-{i}",
                 feed_id=f2.id,
                 title=f"Global Summit Reaches Landmark Epistemic Accord #{i}",
@@ -262,7 +262,7 @@ async def seed_tui_fixtures() -> None:
 
         # 6. Seed Token Usage for Governor
         for _k in range(5):
-            tok = TokenUsageRecord(
+            tok = TokenUsage(
                 timestamp=utc_now(),
                 model_name="gemini-3.7-flash",
                 prompt_tokens=1850,
@@ -276,7 +276,6 @@ async def seed_tui_fixtures() -> None:
             session.add(tok)
 
         await session.commit()
-        break
 
 
 async def export_all_tui_screenshots() -> None:

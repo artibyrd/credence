@@ -24,7 +24,7 @@ DEFAULT_DOMAIN_WEIGHTS: Dict[str, float] = {
 }
 
 
-def calculate_raw_suspicion(
+def compute_raw_suspicion(
     violations: List[SpecialistViolationFinding],
     domain_weights: Optional[Dict[str, float]] = None,
 ) -> float:
@@ -50,7 +50,7 @@ def calculate_raw_suspicion(
     return round(raw_total, 3)
 
 
-def calculate_suspicion_density(violation_count: int, word_count: int) -> float:
+def compute_suspicion_density(violation_count: int, word_count: int) -> float:
     """Calculate the suspicion density index (violations per 1,000 words).
 
     Constrained by a minimum denominator of 50 words to prevent divide-by-zero or distortion.
@@ -60,7 +60,7 @@ def calculate_suspicion_density(violation_count: int, word_count: int) -> float:
     return round(density, 2)
 
 
-def calculate_calibrated_score(
+def compute_calibrated_score(
     raw_score: float,
     is_satire: bool = False,
     has_cloaked_disinfo: bool = False,
@@ -105,7 +105,7 @@ def classify_verdict(
         return "DECEPTIVE"
 
 
-def calculate_aggregate_confidence(violations: List[SpecialistViolationFinding]) -> float:
+def compute_aggregate_confidence(violations: List[SpecialistViolationFinding]) -> float:
     """Calculate mean confidence across all discovered violations."""
     if not violations:
         return 1.0

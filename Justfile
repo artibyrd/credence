@@ -144,7 +144,7 @@ test suite="unit" extra="": (preflight "poetry")
             CREDENCE_LIVE_TESTS=1 poetry run pytest tests/e2e/ -v -m e2e {{extra}}
             ;;
         docs)
-            poetry run pytest tests/test_docs_integrity.py -v {{extra}}
+            poetry run pytest tests/governance/test_docs_integrity.py -v {{extra}}
             ;;
         docker)
             docker compose run --rm credence poetry run pytest tests/ {{extra}}

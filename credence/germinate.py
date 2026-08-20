@@ -24,11 +24,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from credence.feeds.worker import bootstrap_preset_feeds, compute_feed_affinity, sync_single_feed
 from credence.identity import load_or_create_node_identity
 from credence.models import (
-    AuditRecord,
-    FeedItemRecord,
-    FeedSubscriptionRecord,
-    SnapshotRecord,
-    ViolationRecord,
+    Audit,
+    FeedItem,
+    FeedSubscription,
+    Snapshot,
+    Violation,
 )
 from credence.pipeline.evaluator import audit_url
 from credence.pipeline.governor import get_token_headroom_status
@@ -91,11 +91,11 @@ async def inoculate_from_mesh_seeds(
 
         try:
             # Check for existing snapshot
-            stmt_snap = select(SnapshotRecord).where(SnapshotRecord.content_sha256 == content_sha)
+            stmt_snap = select(Snapshot).where(Snapshot.content_sha256 == content_sha)
             existing_snap = (await session.exec(stmt_snap)).first()
 
             if not existing_snap:
-                existing_snap = SnapshotRecord(
+                existing_snap = Snapshot(
                     url=item.get("url", ""),
                     title=item.get("title", "Untitled Attestation"),
                     byline=item.get("byline"),
@@ -112,11 +112,11 @@ async def inoculate_from_mesh_seeds(
                 await session.refresh(existing_snap)
 
             # Check for existing audit
-            stmt_audit = select(AuditRecord).where(AuditRecord.content_sha256 == content_sha)
+            stmt_audit = select(Audit).where(Audit.content_sha256 == content_sha)
             existing_audit = (await session.exec(stmt_audit)).first()
 
             if not existing_audit and existing_snap.id is not None:
-                audit_rec = AuditRecord(
+                audit_rec = Audit(
                     snapshot_id=existing_snap.id,
                     content_sha256=content_sha,
                     suspicion_score=float(item.get("suspicion_score", 0.0)),
@@ -137,7 +137,7 @@ async def inoculate_from_mesh_seeds(
                 # Add violations if present
                 for v in item.get("violations", []):
                     if audit_rec.id is not None:
-                        viol = ViolationRecord(
+                        viol = Violation(
                             audit_id=audit_rec.id,
                             rule_id=v.get("rule_id", "UNKNOWN"),
                             rule_uri=v.get("rule_uri", "unknown:rule@v1"),
@@ -154,10 +154,10 @@ async def inoculate_from_mesh_seeds(
                 adopted_count += 1
 
             # Record FeedItem record for tracking
-            stmt_item = select(FeedItemRecord).where(FeedItemRecord.item_url == existing_snap.url)
+            stmt_item = select(FeedItem).where(FeedItem.item_url == existing_snap.url)
             feed_item = (await session.exec(stmt_item)).first()
             if not feed_item:
-                feed_item = FeedItemRecord(
+                feed_item = FeedItem(
                     feed_id=None,  # Mesh adopted attestation
                     item_url=existing_snap.url,
                     title=existing_snap.title,
@@ -195,7 +195,7 @@ async def run_germination_sifting_burst(
         Number of novel articles evaluated during the burst.
     """
     # Fetch active subscriptions
-    stmt = select(FeedSubscriptionRecord).where(FeedSubscriptionRecord.is_active == True)  # noqa: E712
+    stmt = select(FeedSubscription).where(FeedSubscription.is_active == True)  # noqa: E712
     subscriptions = list((await session.exec(stmt)).all())
     if not subscriptions:
         return 0
@@ -220,10 +220,10 @@ async def run_germination_sifting_burst(
 
         # Check for newly pending items
         stmt_pending = (
-            select(FeedItemRecord)
+            select(FeedItem)
             .where(
-                FeedItemRecord.feed_id == sub.id,
-                FeedItemRecord.processing_status == "pending",
+                FeedItem.feed_id == sub.id,
+                FeedItem.processing_status == "pending",
             )
             .limit(burst_limit - audited_count)
         )
@@ -235,9 +235,9 @@ async def run_germination_sifting_burst(
 
             # Check if content has already been evaluated locally or adopted from mesh gossip
             stmt_check = (
-                select(AuditRecord, SnapshotRecord)
-                .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
-                .where(SnapshotRecord.url == item.item_url)
+                select(Audit, Snapshot)
+                .join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
+                .where(Snapshot.url == item.item_url)
             )
             existing_audit = (await session.exec(stmt_check)).first()
             if existing_audit:
@@ -289,9 +289,9 @@ async def export_catalog_to_disk(
     out_file = output_dir / "reports.json"
 
     stmt = (
-        select(AuditRecord, SnapshotRecord)
-        .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id), isouter=True)
-        .order_by(col(AuditRecord.audited_at).desc())
+        select(Audit, Snapshot)
+        .join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id), isouter=True)
+        .order_by(col(Audit.audited_at).desc())
     )
     results = list((await session.exec(stmt)).all())
 
@@ -300,7 +300,7 @@ async def export_catalog_to_disk(
         audit = row[0]
         snap = row[1]
 
-        stmt_v = select(ViolationRecord).where(ViolationRecord.audit_id == audit.id)
+        stmt_v = select(Violation).where(Violation.audit_id == audit.id)
         violations = list((await session.exec(stmt_v)).all())
 
         cat = (
@@ -416,10 +416,10 @@ async def germinate_node(
     # Aggregate totals
     from sqlmodel import func
 
-    stmt_total_audits = select(func.count(col(AuditRecord.id)))
+    stmt_total_audits = select(func.count(col(Audit.id)))
     total_reports = (await session.exec(stmt_total_audits)).first() or 0
 
-    stmt_subs = select(func.count(col(FeedSubscriptionRecord.id)))
+    stmt_subs = select(func.count(col(FeedSubscription.id)))
     total_feeds = (await session.exec(stmt_subs)).first() or 0
 
     duration = time.perf_counter() - t_start
