@@ -95,10 +95,12 @@ class CredenceBadge extends HTMLElement {
 
   extractHostText() {
     // Clone host body or main container to safely strip ignored elements
-    const clone = document.body ? document.body.cloneNode(true) : document.createElement('div');
+    const container = this.closest ? (this.closest('.markdown-body') || this.closest('article') || this.closest('main') || document.body) : document.body;
+    if (!container) return '';
+    const clone = container.cloneNode(true);
     
     // Strip all credence badges, widgets, and ignored elements
-    const toRemove = clone.querySelectorAll('credence-badge, [data-credence-ignore="true"], [data-credence-widget="true"], .credence-badge-container, script, style, noscript');
+    const toRemove = clone.querySelectorAll('credence-badge, [data-credence-ignore="true"], [data-credence-widget="true"], .credence-badge-container, .doc-metadata-bar, .footer-container, script, style, noscript');
     toRemove.forEach(el => el.remove());
 
     return clone.innerText || clone.textContent || '';
@@ -391,11 +393,16 @@ class CredenceBadge extends HTMLElement {
       </div>
     `;
 
-    this.shadowRoot.getElementById('badgePill').addEventListener('click', () => this.togglePopover());
-    this.shadowRoot.getElementById('closeBtn').addEventListener('click', () => this.togglePopover());
-    this.shadowRoot.getElementById('tabSurface').addEventListener('click', () => this.setLens('surface'));
-    this.shadowRoot.getElementById('tabFocus').addEventListener('click', () => this.setLens('focus'));
-    this.shadowRoot.getElementById('tabDeep').addEventListener('click', () => this.setLens('deep'));
+    const pill = this.shadowRoot.getElementById('badgePill');
+    if (pill) pill.addEventListener('click', () => this.togglePopover());
+    const closeBtn = this.shadowRoot.getElementById('closeBtn');
+    if (closeBtn) closeBtn.addEventListener('click', () => this.togglePopover());
+    const tabSurface = this.shadowRoot.getElementById('tabSurface');
+    if (tabSurface) tabSurface.addEventListener('click', () => this.setLens('surface'));
+    const tabFocus = this.shadowRoot.getElementById('tabFocus');
+    if (tabFocus) tabFocus.addEventListener('click', () => this.setLens('focus'));
+    const tabDeep = this.shadowRoot.getElementById('tabDeep');
+    if (tabDeep) tabDeep.addEventListener('click', () => this.setLens('deep'));
   }
 }
 
