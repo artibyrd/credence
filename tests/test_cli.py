@@ -287,6 +287,7 @@ async def test_cli_roots_and_boredom(db_session: Any) -> None:
 
     # Test boredom single pass
     from credence.feeds.boredom import BoredomCycleSummary
+
     mock_boredom = BoredomCycleSummary(
         pending_items_scanned=1,
         pending_items_audited=1,
@@ -304,9 +305,9 @@ async def test_cli_roots_and_boredom(db_session: Any) -> None:
 
     # Test domain CLI commands
     from credence.cli.main import cli_domain
+
     await cli_domain(action="quarantine", format_type="human")
     await cli_domain(action="quarantine", format_type="json")
     await cli_domain(action="reputation", domain="theonion.com", format_type="human")
     await cli_domain(action="reputation", domain="theonion.com", format_type="json")
     await cli_domain(action="appeal", domain="theonion.com")
-

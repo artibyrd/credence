@@ -8,13 +8,9 @@ Verifies:
 - Relapse circuit breaker on severity >= 3 violation during probation.
 """
 
-from pathlib import Path
-from unittest.mock import AsyncMock, patch
-
 import pytest
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.feeds.boredom import run_boredom_cycle
 from credence.feeds.reputation import (
     calculate_polling_backoff,
     get_domain_quarantine_list,
@@ -22,7 +18,6 @@ from credence.feeds.reputation import (
     normalize_domain,
     update_domain_reputation,
 )
-from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 
 

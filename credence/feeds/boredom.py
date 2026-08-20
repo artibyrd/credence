@@ -24,7 +24,7 @@ from credence.feeds.dedup import check_mesh_effort_avoidance
 from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain, update_domain_reputation
 from credence.feeds.roots import RootExpansionSummary, expand_roots
 from credence.mesh.relay import MeshGossipRelay
-from credence.models import DomainReputationRecord, FeedItemRecord, FeedSubscriptionRecord, utc_now
+from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
 from credence.pipeline.governor import get_token_headroom_status
 
 console = Console()
@@ -114,10 +114,10 @@ async def run_boredom_cycle(
         selected_pairs.extend(clean_candidates[clean_budget : clean_budget + adv_budget])
 
     # HRW Rendezvous Hashing to eliminate Swarm Stampedes across mesh
-    if mesh_relay and getattr(mesh_relay, "node_identity", None):
+    if mesh_relay and getattr(mesh_relay, "identity", None):
         from credence.feeds.worker import compute_feed_affinity
 
-        pk = getattr(mesh_relay.node_identity, "public_key_hex", "")
+        pk = getattr(mesh_relay.identity, "public_key_hex", "")
         if pk:
             selected_pairs.sort(key=lambda pair: compute_feed_affinity(pk, pair[0].item_url), reverse=True)
 
@@ -343,4 +343,3 @@ class BoredomDaemon:
             f"{summary.headroom_daily_pct:.1f}%",
         )
         console.print(table)
-

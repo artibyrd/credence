@@ -265,4 +265,3 @@ class DomainReputationRecord(SQLModel, table=True):
     last_audited_at: datetime = Field(default_factory=utc_now, description="Timestamp of most recent audit")
     quarantined_at: Optional[datetime] = Field(default=None, description="Timestamp when domain entered quarantine")
     graduated_at: Optional[datetime] = Field(default=None, description="Timestamp when domain graduated from probation")
-

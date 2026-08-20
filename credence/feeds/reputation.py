@@ -8,7 +8,6 @@ for verifiable redemption.
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urlparse
 
@@ -151,7 +150,7 @@ async def update_domain_reputation(
 
         if subject_id:
             subjects.add(subject_id)
-        record.distinct_clean_subjects_json = json.dumps(sorted(list(subjects)))
+        record.distinct_clean_subjects_json = json.dumps(sorted(subjects))
 
         # Evaluate BuzzFeed News Doctrine Redemption
         if record.status in ("QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY"):
@@ -201,11 +200,7 @@ async def get_domain_quarantine_list(
     """Return all currently quarantined or suspicious domains with backoff multipliers."""
     stmt = (
         select(DomainReputationRecord)
-        .where(
-            col(DomainReputationRecord.status).in_(
-                ["QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY", "SUSPICIOUS"]
-            )
-        )
+        .where(col(DomainReputationRecord.status).in_(["QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY", "SUSPICIOUS"]))
         .order_by(col(DomainReputationRecord.reputation_score).asc())
     )
     records = (await session.exec(stmt)).all()

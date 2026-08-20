@@ -10,27 +10,12 @@ Simulates a 13-node Watts-Strogatz small-world mesh to measure:
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List
-from unittest.mock import AsyncMock, patch
 
 from rich.console import Console
 from rich.table import Table
-from sqlmodel import SQLModel, create_engine
-from sqlmodel.ext.asyncio.session import AsyncSession
-
-from credence.feeds.boredom import BoredomCycleSummary, run_boredom_cycle
-from credence.feeds.reputation import (
-    get_domain_quarantine_list,
-    get_or_create_domain_reputation,
-    update_domain_reputation,
-)
-from credence.identity import load_or_create_node_identity, sign_audit_report
-from credence.mesh.relay import MeshGossipRelay
-from credence.models import FeedItemRecord, FeedSubscriptionRecord, utc_now
-from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 
 console = Console()
 
@@ -57,7 +42,9 @@ async def run_study_a_ratio_sweep(tmp_path: Path) -> StudyResult:
         clean_roots_discovered = int(round(30 * rho * 0.90))
         slop_tokens_wasted = int(round(12000 * (1.0 - rho)))
 
-        net_utility = round((preemptive_viral_hits * 150) + (clean_roots_discovered * 100) - (slop_tokens_wasted * 0.1), 1)
+        net_utility = round(
+            (preemptive_viral_hits * 150) + (clean_roots_discovered * 100) - (slop_tokens_wasted * 0.1), 1
+        )
         results_by_ratio[str(rho)] = {
             "preemptive_viral_hits": preemptive_viral_hits,
             "clean_roots_discovered": clean_roots_discovered,
@@ -89,8 +76,10 @@ async def run_study_b_swarm_stampede(tmp_path: Path) -> StudyResult:
         metrics={
             "nodes_in_mesh": 13,
             "uncoordinated_audits": 13,
+            "uncoordinated_collisions": uncoordinated_collisions,
             "uncoordinated_tokens_burned": tokens_uncoordinated,
             "hrw_coordinated_audits": 1,
+            "hrw_coordinated_collisions": hrw_coordinated_collisions,
             "hrw_tokens_burned": tokens_hrw,
             "tokens_saved_pct": 92.3,
             "redundancy_eliminated": "12 duplicate LLM calls avoided",
@@ -121,6 +110,7 @@ async def run_study_c_slop_triage_efficiency() -> StudyResult:
         study_name="Study C: Slop Sinkhole Filter Efficiency",
         metrics={
             "candidate_urls": candidate_urls_tested,
+            "real_deceptive_campaigns": legitimate_deceptive_campaigns,
             "ephemeral_spam_urls": ephemeral_seo_spam_farms,
             "spam_filtered_zero_tokens": rejected_at_zero_tokens,
             "spam_filter_accuracy_pct": 98.3,

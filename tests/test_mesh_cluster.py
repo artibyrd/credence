@@ -1134,4 +1134,3 @@ async def test_13_node_mesh_byzantine_sybil_trojan_defense(tmp_path: Path) -> No
     assert consensus.consensus_score >= 80.0
     assert consensus.classification == "DECEPTIVE"
     assert len(consensus.outlier_nodes) > 0  # Byzantine node flagged as outlier
-

@@ -135,9 +135,8 @@ async def extract_root_candidates(
     subscribed_domains = {_normalize_domain(s.feed_url) for s in subs}
 
     # 2. Fetch audit records based on requested soil_type
-    stmt_audits = (
-        select(AuditRecord, SnapshotRecord)
-        .join(SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id))
+    stmt_audits = select(AuditRecord, SnapshotRecord).join(
+        SnapshotRecord, col(AuditRecord.snapshot_id) == col(SnapshotRecord.id)
     )
     if soil_type == "clean":
         stmt_audits = stmt_audits.where(AuditRecord.suspicion_score <= max_suspicion)

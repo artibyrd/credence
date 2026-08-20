@@ -2420,7 +2420,9 @@ async def cli_domain(
                 print(json.dumps(record.model_dump(mode="json"), indent=2))
                 return
 
-            status_color = "green" if record.status == "TRUSTED" else ("red" if "QUARANTINE" in record.status else "yellow")
+            status_color = (
+                "green" if record.status == "TRUSTED" else ("red" if "QUARANTINE" in record.status else "yellow")
+            )
             console.print(
                 Panel(
                     f"[bold cyan]Domain:[/] [bold]{record.domain}[/]\n"
@@ -2472,7 +2474,9 @@ async def cli_domain(
 
         elif action == "appeal":
             if not domain:
-                console.print("[red]Error: Please specify a domain to appeal (e.g. credence domain appeal example.com)[/red]")
+                console.print(
+                    "[red]Error: Please specify a domain to appeal (e.g. credence domain appeal example.com)[/red]"
+                )
                 return
             clean_dom = normalize_domain(domain)
             record = await get_or_create_domain_reputation(session, clean_dom)
@@ -3255,7 +3259,11 @@ def main() -> None:
         "--burst", "-b", type=int, default=3, help="Max pending queue items to audit in this cycle (default: 3)."
     )
     boredom_parser.add_argument(
-        "--ratio", "-r", type=float, default=0.60, help="Epistemic allocation ratio: clean soil (rho) vs adversarial inoculation (1-rho) (default: 0.60)."
+        "--ratio",
+        "-r",
+        type=float,
+        default=0.60,
+        help="Epistemic allocation ratio: clean soil (rho) vs adversarial inoculation (1-rho) (default: 0.60).",
     )
     boredom_parser.add_argument(
         "--continuous", action="store_true", help="Run continuously as background daemon during idle intervals."
