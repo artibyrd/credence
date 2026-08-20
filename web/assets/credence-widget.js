@@ -29,16 +29,27 @@ class CredenceBadge extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['url', 'receipt', 'lens'];
+    return ['url', 'receipt', 'score', 'version', 'lens'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
       if (name === 'url') this.state.url = newValue;
+      if (name === 'score' && newValue) this.state.score = parseFloat(newValue) || 100.0;
+      if (name === 'version' && newValue) this.state.version = newValue;
       if (name === 'lens') this.state.activeLens = newValue || 'focus';
       if (name === 'receipt' && newValue) {
         try {
           this.state.receipt = typeof newValue === 'string' && newValue.startsWith('{') ? JSON.parse(newValue) : newValue;
+          if (this.state.receipt) {
+            if (this.state.receipt.suspicion_score !== undefined) {
+              this.state.suspicionScore = this.state.receipt.suspicion_score;
+              this.state.score = Math.round((100.0 - this.state.suspicionScore) * 10) / 10;
+            }
+            if (this.state.receipt.classification) this.state.classification = this.state.receipt.classification;
+            if (this.state.receipt.verified_version) this.state.version = this.state.receipt.verified_version;
+            if (this.state.receipt.content_sha256) this.state.receiptHash = this.state.receipt.content_sha256;
+          }
         } catch (e) {
           console.warn('[Credence] Could not parse receipt attribute JSON', e);
         }
@@ -49,6 +60,8 @@ class CredenceBadge extends HTMLElement {
 
   connectedCallback() {
     this.state.url = this.getAttribute('url') || window.location.href;
+    if (this.getAttribute('score')) this.state.score = parseFloat(this.getAttribute('score')) || 100.0;
+    if (this.getAttribute('version')) this.state.version = this.getAttribute('version') || 'v2.1.1';
     const receiptAttr = this.getAttribute('receipt');
     if (receiptAttr) {
       try {
