@@ -868,30 +868,18 @@ commit message:
 install-hooks:
     @python3 ../credence-agent/scripts/install_hooks.py
 
-# Manage GitHub Pull Requests across the ecosystem via GitHub CLI (gh)
+# Manage GitHub Pull Requests across the ecosystem with rich markdown and approval gating
 pr action="status" arg="":
     #!/usr/bin/env bash
     set -euo pipefail
-    REPOS="/home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent"
     case "{{action}}" in
-        create)
+        create|update)
             TITLE="{{arg}}"
             if [ -z "$TITLE" ]; then echo "❌ Please provide a PR title. e.g. just pr create 'feat: v2.3.0 workflow'"; exit 1; fi
-            for r in $REPOS; do
-                BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
-                if [ "$BRANCH" != "main" ]; then
-                    echo "=== Creating PR for $(basename "$r") ($BRANCH -> main) ==="
-                    COMMITS=$(cd "$r" && git log origin/main..HEAD --oneline 2>/dev/null || git log main..HEAD --oneline 2>/dev/null || echo "Branch changes")
-                    BODY="## Summary\n${TITLE}\n\n### Ecosystem Milestone Branch\n- **Branch**: \`${BRANCH}\`\n- **Target**: \`main\`\n\n### Staged Commits on Branch\n\`\`\`text\n${COMMITS}\n\`\`\`\n\n### Automated CI/CD Staging\n- **PR Open / Synchronize**: Auto-deploys live preview to Cloud Run Dev (\`credence-dev-495173\`).\n- **PR Merge to Main**: Auto-deploys production to Cloud Run Prod (\`credence-prod-505902\`) and Cloudflare Edge.\n\n### Shift-Left Verification Matrix\n- ✅ Unit & Contract Tests Passing\n- ✅ 7-Manifest Ecosystem Parity\n- ✅ Zero-npm Web Invariant & Governance Linters"
-                    (cd "$r" && gh pr create --title "$TITLE" --body "$BODY" --base main --head "$BRANCH" || true)
-                fi
-            done
+            python3 ../credence-agent/scripts/manage_pr.py "{{action}}" "$TITLE"
             ;;
         status)
-            for r in $REPOS; do
-                echo "=== PR Status: $(basename "$r") ==="
-                (cd "$r" && gh pr list || true)
-            done
+            python3 ../credence-agent/scripts/manage_pr.py status
             ;;
         view)
             PR_NUM="{{arg}}"
@@ -903,16 +891,17 @@ pr action="status" arg="":
             ;;
         merge)
             PR_NUM="{{arg}}"
-            for r in $REPOS; do
-                BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
-                if [ "$BRANCH" != "main" ]; then
-                    echo "=== Merging PR for $(basename "$r") ==="
-                    (cd "$r" && gh pr merge ${PR_NUM:+"$PR_NUM"} --merge --auto || true)
-                fi
-            done
+            python3 ../credence-agent/scripts/manage_pr.py merge ${PR_NUM:+"$PR_NUM"}
+            ;;
+        merge-force)
+            PR_NUM="{{arg}}"
+            python3 ../credence-agent/scripts/manage_pr.py merge ${PR_NUM:+"$PR_NUM"} --force
+            ;;
+        lock-branch)
+            python3 ../credence-agent/scripts/configure_branch_protection.py
             ;;
         *)
-            echo "❌ Unknown pr action '{{action}}'. Valid options: create, status, view, checks, merge."
+            echo "❌ Unknown pr action '{{action}}'. Valid options: create, update, status, view, checks, merge, merge-force, lock-branch."
             exit 1
             ;;
     esac
