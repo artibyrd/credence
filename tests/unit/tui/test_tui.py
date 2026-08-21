@@ -1,8 +1,12 @@
 """Unit tests for the Credence Textual TUI Application."""
 
 import pytest
+from textual.coordinate import Coordinate
+from textual.widgets import DataTable
+from textual.widgets.data_table import RowKey
 
 from credence.tui.app import CredenceApp
+from credence.tui.screens.info_modal import InfoModalScreen
 
 
 @pytest.mark.unit
@@ -22,6 +26,8 @@ async def test_credence_tui_app_lifecycle() -> None:
         assert app.query_one("#quota_panel") is not None
         assert app.query_one("#ops_panel") is not None
         assert app.query_one("#mesh_panel") is not None
+        assert app.query_one("#leaderboard_table") is not None
+        assert app.query_one("#merit_panel") is not None
 
         # Test switching tabs via action handlers
         app.action_switch_to_inspector()
@@ -51,48 +57,54 @@ async def test_credence_tui_app_lifecycle() -> None:
         app.action_switch_to_mesh()
         await pilot.pause()
 
-        # Test keybindings 1-9 and m
+        # Test keybindings 1-9
+        for key in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+            await pilot.press(key)
+            await pilot.pause()
+
+        # Switch back to Inspector
         await pilot.press("1")
         await pilot.pause()
-        await pilot.press("2")
-        await pilot.pause()
-        await pilot.press("3")
-        await pilot.pause()
-        await pilot.press("4")
-        await pilot.pause()
-        await pilot.press("5")
-        await pilot.pause()
-        await pilot.press("6")
-        await pilot.pause()
-        await pilot.press("7")
-        await pilot.pause()
-        await pilot.press("8")
-        await pilot.pause()
-        await pilot.press("9")
-        await pilot.pause()
-        await pilot.press("m")
-        await pilot.pause()
 
-        # Test view mode cycling (v)
-        assert app._view_mode == "rich"
+        # Test 3-tier epistemic lensing cycling (v)
+        assert app._lens_mode == 1
         await pilot.press("v")
         await pilot.pause()
-        assert app._view_mode == "compact"
+        assert app._lens_mode == 2
         await pilot.press("v")
         await pilot.pause()
-        assert app._view_mode == "raw"
+        assert app._lens_mode == 3
         await pilot.press("v")
         await pilot.pause()
-        assert app._view_mode == "rich"
+        assert app._lens_mode == 1
 
-        # Test random audit action / keybinding (r)
+        # Test Surprise Me random audit cycling (r)
+        initial_url = app._current_item["url"]
         await pilot.press("r")
+        await pilot.pause()
+        assert app._current_item["url"] != initial_url
+
+        # Test selecting a history row
+        hist_table = app.query_one("#history_table", DataTable)
+        hist_table.cursor_coordinate = Coordinate(0, 0)
+        app.on_data_table_row_selected(DataTable.RowSelected(hist_table, 0, RowKey("0")))
+        await pilot.pause()
+
+        # Test selecting a publisher dossier row
+        app.action_switch_to_leaderboard()
+        await pilot.pause()
+        lb_table = app.query_one("#leaderboard_table", DataTable)
+        lb_table.cursor_coordinate = Coordinate(1, 0)
+        app.on_data_table_row_selected(DataTable.RowSelected(lb_table, 1, RowKey("1")))
         await pilot.pause()
 
         # Test refresh data action
         await app.action_refresh_data()
         await pilot.pause()
 
-        # Test sync feeds action
-        app.action_sync_feeds_action()
+        # Test opening in-terminal topic & invariant modal (? / i)
+        app.action_open_info_modal()
+        await pilot.pause()
+        assert isinstance(app.screen, InfoModalScreen)
+        await pilot.press("escape")
         await pilot.pause()
