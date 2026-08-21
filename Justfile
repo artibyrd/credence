@@ -508,6 +508,19 @@ edge action="status": (preflight "wrangler")
             (cd web && npx wrangler login)
             ;;
         deploy)
+            if [ "${FORCE_PROD_DEPLOY:-false}" != "true" ]; then
+                echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+                echo -e "\033[1;33m⚠️  CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING\033[0m"
+                echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+                echo -e "\033[1;33m⚠️  Target Domain     : credence.run (Cloudflare Workers Anycast Router)\033[0m"
+                echo -e "\033[1;33m⚠️  Standard Process  : Deploy via GitHub Actions PR merge to 'main'.\033[0m"
+                echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+                read -r -p "Type 'DEPLOY-PROD' to confirm edge deployment: " CONFIRM_STR
+                if [ "$CONFIRM_STR" != "DEPLOY-PROD" ]; then
+                    echo -e "\033[1;31m❌ Edge deployment cancelled.\033[0m"
+                    exit 1
+                fi
+            fi
             echo "=== Deploying Cloudflare Edge Router & Web Assets ==="
             (cd web && npx wrangler deploy)
             ;;
@@ -633,6 +646,34 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
         git status -s
         exit 1
     fi
+
+    # Determine if this deploy targets production
+    IS_PROD=false
+    if [ "{{target}}" = "prod" ] || [ "{{target}}" = "all" ] || [ "{{env}}" = "prod" ] || [ "{{env}}" = "advanced" ]; then
+        IS_PROD=true
+    fi
+
+    # Safety Gate for Local Production Deployments
+    if [ "$IS_PROD" = "true" ]; then
+        if [ "${FORCE_PROD_DEPLOY:-false}" != "true" ]; then
+            echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+            echo -e "\033[1;33m⚠️  PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)\033[0m"
+            echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+            echo -e "\033[1;33m⚠️  Target Environment : PRODUCTION (credence-prod-505902 / Cloudflare Edge)\033[0m"
+            echo -e "\033[1;33m⚠️  Standard Process   : Use Pull Request merge to 'main' for production releases.\033[0m"
+            echo -e "\033[1;33m⚠️  Local Execution    : Strictly reserved for testing, diagnostics & emergency fixes.\033[0m"
+            echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+            read -r -p "Type 'DEPLOY-PROD' to confirm local production deployment: " CONFIRM_STR
+            if [ "$CONFIRM_STR" != "DEPLOY-PROD" ]; then
+                echo -e "\033[1;31m❌ Local production deployment cancelled. Rely on standard PR merge workflow.\033[0m"
+                exit 1
+            fi
+            echo -e "\033[1;32m✅ Production deployment confirmed by operator.\033[0m"
+        else
+            echo "ℹ️  FORCE_PROD_DEPLOY=true detected. Bypassing interactive production confirmation prompt."
+        fi
+    fi
+
     case "{{target}}" in
         backend)
             just preflight gcloud
@@ -706,6 +747,11 @@ audit-invariants:
     @poetry run pytest tests/integration/test_ci_cd_workflows.py
     @echo -e "\033[1;32m✅ All Ecosystem Invariants & Lifecycle Governance Contracts Passed Cleanly!\033[0m"
 
+# Scrutinize and challenge a specific invariant for validity, token cost, and demotion readiness
+challenge-invariant slug="inv-version-governance":
+    @python3 ../credence-agent/scripts/challenge_invariant.py {{slug}}
+
+
 # Comprehensive multi-plane diagnostic health check across Edge, Compute, Infra, and Agents
 doctor env="prod":
     #!/usr/bin/env bash
@@ -746,7 +792,7 @@ sync-version version: (preflight "poetry")
     @poetry run pytest tests/governance/test_docs_integrity.py -k test_ecosystem_version_parity
     @echo "✅ All ecosystem version badges and manifests synchronized to {{version}}."
 
-# Coordinate multi-repository git operations (status, commit, tag, push)
+# Coordinate multi-repository git operations (status, branch, commit, tag, push)
 git-sync action="status" arg="":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -758,9 +804,29 @@ git-sync action="status" arg="":
                 (cd "$r" && git status -s)
             done
             ;;
+        branch)
+            BRANCH="{{arg}}"
+            if [ -z "$BRANCH" ]; then echo "❌ Please provide a branch name. e.g. just git-sync branch feat/v2.3.0-workflow"; exit 1; fi
+            for r in $REPOS; do
+                echo "=== Checking out branch '$BRANCH' in $(basename "$r") ==="
+                (cd "$r" && (git checkout "$BRANCH" 2>/dev/null || git checkout -b "$BRANCH"))
+            done
+            echo "✅ All ecosystem repositories switched to branch '$BRANCH'."
+            ;;
         commit)
             MSG="{{arg}}"
             if [ -z "$MSG" ]; then echo "❌ Please provide a commit message. e.g. just git-sync commit 'msg'"; exit 1; fi
+            python3 -c '
+            import re, sys
+            msg = sys.argv[1]
+            pat = r"^(\[v[0-9]+\.[0-9]+\.[0-9]+\] )?(feat|fix|docs|refactor|test|ci|chore|perf)(\((governance|forensics|mesh|crypto|ui|ops)\))?!?: .+$"
+            if not re.match(pat, msg):
+                print(f"❌ Error: Commit message violates ecosystem convention:\n   \"{msg}\"")
+                print("   Allowed format: <type>(<scope>): <summary> OR <type>: <summary>")
+                print("   Allowed types : feat, fix, docs, refactor, test, ci, chore, perf")
+                print("   Allowed scopes: (governance), (forensics), (mesh), (crypto), (ui), (ops)")
+                sys.exit(1)
+            ' "$MSG"
             for r in $REPOS; do
                 echo "=== Committing in $(basename "$r") ==="
                 (cd "$r" && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "$MSG")))
@@ -778,13 +844,64 @@ git-sync action="status" arg="":
             ;;
         push)
             for r in $REPOS; do
-                echo "=== Pushing $(basename "$r") to origin ==="
-                (cd "$r" && git push origin main --follow-tags)
+                CURRENT_BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
+                echo "=== Pushing $(basename "$r") ($CURRENT_BRANCH) to origin ==="
+                (cd "$r" && git push origin "$CURRENT_BRANCH" --follow-tags)
             done
             echo "✅ All ecosystem branches and tags pushed to GitHub."
             ;;
         *)
-            echo "❌ Unknown git-sync action '{{action}}'. Valid options: status, commit, tag, push."
+            echo "❌ Unknown git-sync action '{{action}}'. Valid options: status, branch, commit, tag, push."
+            exit 1
+            ;;
+    esac
+
+# Create or switch feature branch across all ecosystem repositories
+branch name:
+    @just git-sync branch {{name}}
+
+# Perform incremental verified atomic commit across ecosystem repositories
+commit message:
+    @just git-sync commit "{{message}}"
+
+# Install conventional commit pre-commit hooks across all 3 ecosystem repositories
+install-hooks:
+    @python3 ../credence-agent/scripts/install_hooks.py
+
+# Manage GitHub Pull Requests across the ecosystem with rich markdown and approval gating
+pr action="status" arg="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{action}}" in
+        create|update)
+            TITLE="{{arg}}"
+            if [ -z "$TITLE" ]; then echo "❌ Please provide a PR title. e.g. just pr create 'feat: v2.3.0 workflow'"; exit 1; fi
+            python3 ../credence-agent/scripts/manage_pr.py "{{action}}" "$TITLE"
+            ;;
+        status)
+            python3 ../credence-agent/scripts/manage_pr.py status
+            ;;
+        view)
+            PR_NUM="{{arg}}"
+            gh pr view ${PR_NUM:+"$PR_NUM"}
+            ;;
+        checks)
+            PR_NUM="{{arg}}"
+            gh pr checks ${PR_NUM:+"$PR_NUM"}
+            ;;
+        merge)
+            PR_NUM="{{arg}}"
+            python3 ../credence-agent/scripts/manage_pr.py merge ${PR_NUM:+"$PR_NUM"}
+            ;;
+        merge-force)
+            PR_NUM="{{arg}}"
+            python3 ../credence-agent/scripts/manage_pr.py merge ${PR_NUM:+"$PR_NUM"} --force
+            ;;
+        lock-branch)
+            python3 ../credence-agent/scripts/configure_branch_protection.py
+            ;;
+        *)
+            echo "❌ Unknown pr action '{{action}}'. Valid options: create, update, status, view, checks, merge, merge-force, lock-branch."
             exit 1
             ;;
     esac
@@ -800,12 +917,23 @@ release version message:
     @just git-sync push
     @echo -e "\033[1;32m🚀 Full Ecosystem Release v{{version}} Pushed to GitHub! Continuous deployment is being orchestrated by GitHub Actions.\033[0m"
 
-# Verify Antigravity declarative workspace configuration and skills registration
+# Verify Antigravity declarative workspace configuration, skills schema, and prompt economy
 agent-check:
     @echo "=== Credence Antigravity Declarative Health Check ==="
     @test -f ../AGENTS.md && echo "✅ Universal root AGENTS.md verified." || (echo "❌ Missing root AGENTS.md"; exit 1)
     @test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
     @test -d ../credence-agent/.agents/skills && echo "✅ Native skills repository verified." || (echo "❌ Missing credence-agent skills"; exit 1)
-    @echo "=== All Declarative Antigravity Configs Verified ==="
+    @python3 ../credence-agent/scripts/lint_skills.py
+    @python3 ../credence-agent/scripts/audit_demotions.py
+    @echo -e "\033[1;32m✅ Declarative Antigravity Workspace & Invariant Engine Verified Cleanly!\033[0m"
+
+# Audit skills schema, frontmatter, and token economy
+audit-skills:
+    @python3 ../credence-agent/scripts/lint_skills.py
+
+# Audit invariant demotion candidates and token savings
+audit-demotions:
+    @python3 ../credence-agent/scripts/audit_demotions.py
+
 
 

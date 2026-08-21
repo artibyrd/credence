@@ -111,3 +111,41 @@ jobs:
 
       - name: Terraform Validate
         run: terraform -chdir=terraform validate
+
+  validate-pr-conventions:
+    name: Validate PR & Branch Naming Conventions
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Verify Branch Name & PR Title Format
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Checking branch name: $HEAD_REF"
+          echo "Checking PR title: $PR_TITLE"
+          python3 -c '
+          import re, sys, os
+          branch = os.environ.get("HEAD_REF", "")
+          title = os.environ.get("PR_TITLE", "")
+          
+          # Branch Pattern: release/vX.Y.Z, feat/..., fix/..., docs/..., ci/..., hotfix/...
+          branch_pat = r"^(release/v[0-9]+\.[0-9]+\.[0-9]+|(feat|fix|docs|ci|hotfix)/.+)$"
+          if not re.match(branch_pat, branch):
+              print(f"❌ Error: Branch name \"{branch}\" violates naming conventions.")
+              print("   Allowed formats: release/vX.Y.Z, feat/<slug>, fix/<slug>, docs/<slug>, ci/<slug>")
+              sys.exit(1)
+              
+          # PR Title Pattern: [vX.Y.Z] <type>(<scope>): <summary>
+          title_pat = r"^(\[v[0-9]+\.[0-9]+\.[0-9]+\] )?(feat|fix|docs|refactor|test|ci|chore|perf)(\((governance|forensics|mesh|crypto|ui|ops)\))?!?: .+$"
+          if not re.match(title_pat, title):
+              print(f"❌ Error: PR title \"{title}\" violates conventional format.")
+              print("   Allowed format: [vX.Y.Z] <type>(<scope>): <imperative summary>")
+              print("   Allowed types: feat, fix, docs, refactor, test, ci, chore, perf")
+              print("   Allowed scopes: (governance), (forensics), (mesh), (crypto), (ui), (ops)")
+              sys.exit(1)
+              
+          print("✅ Branch name and PR title comply with ecosystem governance standards.")
+          '
+

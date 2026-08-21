@@ -405,6 +405,70 @@ export function toggleShortcutsModal() {
 // 3-TIER EPISTEMIC INFORMATION PYRAMID TABBED MODAL ENGINE
 // -----------------------------------------------------------------------------
 
+export const INVARIANTS_REGISTRY = {
+  "inv-workspace-isolation": { legacyId: 1, class: "Class β", title: "Project & Workspace Isolation" },
+  "inv-async-sqlmodel": { legacyId: 2, class: "Class β", title: "Python & SQLModel Async Architecture" },
+  "inv-version-governance": { legacyId: 3, class: "Class γ", title: "Continuous Changelog & Version Governance" },
+  "inv-hermetic-testing": { legacyId: 4, class: "Class β", title: "Hermetic In-Memory Testing & Docs Integrity" },
+  "inv-scoped-verification": { legacyId: 5, class: "Class β", title: "Scoped Verification for Docs-Only Changes" },
+  "inv-mk1-eyeball": { legacyId: 6, class: "Class α", title: "Human Review Before Commits (\"Mk1 Eyeball\")" },
+  "inv-multi-model-sovereignty": { legacyId: 7, class: "Class γ", title: "Multi-Model Sovereignty & Token Budget" },
+  "inv-ssrf-defense": { legacyId: 8, class: "Class α", title: "Untrusted Ingestion Boundary & SSRF Defense" },
+  "inv-ingestion-defense": { legacyId: 9, class: "Class α", title: "Red Team Ingestion & Protocol Defense" },
+  "inv-xml-safety": { legacyId: 10, class: "Class β", title: "XML ElementTree Traversal Safety" },
+  "inv-ground-truth-config": { legacyId: 11, class: "Class β", title: "Model Default Truth & Verification Guardrail" },
+  "inv-fastmcp-transport-security": { legacyId: 12, class: "Class β", title: "FastMCP 2.0 Reverse Proxy Transport Security" },
+  "inv-cloudflare-assets": { legacyId: 13, class: "Class β", title: "Cloudflare Workers Zero-Build Static Assets" },
+  "inv-edge-origin-header": { legacyId: 14, class: "Class β", title: "Edge Routing Origin Header Translation" },
+  "inv-4k-thinking-budget": { legacyId: 15, class: "Class γ", title: "Empirical Thinking Budget Sweet Spot (4k Pareto)" },
+  "inv-fastmcp-datetime-serialization": { legacyId: 16, class: "Class γ", title: "FastMCP Nested Datetime Serialization" },
+  "inv-content-decoupling": { legacyId: 17, class: "Class β", title: "Content Decoupling & Hermetic CI" },
+  "inv-progressive-disclosure": { legacyId: 18, class: "Class γ", title: "Context Governance & Progressive Disclosure" },
+  "inv-topic-entropy-defense": { legacyId: 19, class: "Class γ", title: "Topic Entropy Astroturfing Defense (Pizza Hut)" },
+  "inv-poes-law-satire": { legacyId: 20, class: "Class γ", title: "Poe's Law & Satire Safeguards" },
+  "inv-fixed-taxonomies": { legacyId: 21, class: "Class β", title: "Namespaced Fixed Taxonomies" },
+  "inv-verbatim-grounding": { legacyId: 22, class: "Class α", title: "Whitespace-Insensitive Verbatim Grounding (G=1.00)" },
+  "inv-heuristic-disclosure": { legacyId: 23, class: "Class β", title: "Transparent Heuristic Disclosure" },
+  "inv-canonical-json-ed25519": { legacyId: 24, class: "Class α", title: "RFC 8785 Canonical JSON & Ed25519 Custody" },
+  "inv-5factor-node-quality": { legacyId: 25, class: "Class β", title: "5-Factor Node Quality Score (Qi)" },
+  "inv-empirical-expertise": { legacyId: 26, class: "Class β", title: "Empirical Expertise (Ei) & Anti-Diploma Invariant" },
+  "inv-galileo-rule": { legacyId: 27, class: "Class β", title: "The Galileo Rule (Asymmetric Grounded Evidence)" },
+  "inv-bittorrent-worksharing": { legacyId: 28, class: "Class β", title: "BitTorrent Work-Sharing & Generous Defaults" },
+  "inv-byzantine-cartel-resistance": { legacyId: 29, class: "Class β", title: "Byzantine Cartel Resistance (3f+1)" },
+  "inv-4way-feature-parity": { legacyId: 30, class: "Class γ", title: "Universal Presentation Layer Feature Parity" },
+  "inv-zero-build-standards": { legacyId: 31, class: "Class γ", title: "Universal Zero-Build Standards (Zero-npm Invariant)" },
+  "inv-zero-build-math": { legacyId: 32, class: "Class γ", title: "Zero-Build Math & Currency Invariant" },
+  "inv-edge-canonicalization": { legacyId: 33, class: "Class β", title: "Edge Subdirectory Canonicalization" },
+  "inv-mermaid-syntax-safety": { legacyId: 34, class: "Class β", title: "Universal Mermaid & Visual Syntax Guardrail" },
+  "inv-visual-density": { legacyId: 35, class: "Class γ", title: "Visual Density & Anti-Wall-of-Text Invariant" },
+  "inv-playwright-rendering-tests": { legacyId: 36, class: "Class β", title: "Automated Live Rendering Regression Verification" },
+  "inv-inline-html-math-integrity": { legacyId: 37, class: "Class γ", title: "Zero-Build Inline HTML & Nested Math Integrity" },
+  "inv-anti-scrollbox": { legacyId: 38, class: "Class γ", title: "Anti-Scrollbox & Natural Flow Presentation" },
+  "inv-boredom-root-expansion": { legacyId: 39, class: "Class β", title: "Opportunistic Boredom Ingestion & Root Expansion" },
+  "inv-soft-blacklist-buzzfeed": { legacyId: 40, class: "Class β", title: "Soft Blacklisting & BuzzFeed News Doctrine" },
+  "inv-symmetric-navigation-zero-cache": { legacyId: 41, class: "Class γ", title: "Symmetric 4-Pillar Navigation & Zero-Cache" },
+  "inv-information-pyramid-lensing": { legacyId: 42, class: "Class γ", title: "The Epistemic Lensing & Information Pyramid" },
+  "inv-order-of-operations": { legacyId: 43, class: "Class β", title: "The Cart-Before-the-Horse Order-of-Operations" },
+  "inv-web-component-zero-clone": { legacyId: 44, class: "Class γ", title: "Web Component Isolation & Zero-Clone Safety" },
+  "inv-dense-workstation-viewport": { legacyId: 45, class: "Class γ", title: "Dense Workstation Viewport & Zero-Masking" }
+};
+
+export function resolveInvariant(slugOrId) {
+  if (INVARIANTS_REGISTRY[slugOrId]) {
+    return { slug: slugOrId, ...INVARIANTS_REGISTRY[slugOrId] };
+  }
+  const clean = String(slugOrId).replace(/^invariant-/, '');
+  const num = parseInt(clean, 10);
+  if (!isNaN(num)) {
+    for (const [slug, item] of Object.entries(INVARIANTS_REGISTRY)) {
+      if (item.legacyId === num) {
+        return { slug, ...item };
+      }
+    }
+  }
+  return { slug: String(slugOrId), legacyId: 0, class: "Living Canon", title: String(slugOrId) };
+}
+
 const INFO_TOPICS = {
   // === REPORTS LAB TOPICS ===
   search: {
@@ -428,10 +492,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence audit https://reuters.com/world/energy/clean-grid-transition-2026",
     math_proof: null,
-    invariants: [
-      { id: "1", title: "Verbatim Grounding (G = 1.00)", anchor: "invariant-1-epistemic-verbatim-grounding" },
-      { id: "14", title: "FastMCP Text Evaluation Parity", anchor: "invariant-14-fastmcp-text-evaluation" }
-    ],
+    invariants: ["inv-verbatim-grounding", "inv-fastmcp-datetime-serialization"],
     links: [
       { label: "📘 CLI Scripting & Search Guide", url: "https://docs.credence.run#docs/integrations/cli-scripting-guide", desc: "Automate batch evaluations and headless search queries" },
       { label: "🧪 Interactive Playground", url: "https://docs.credence.run#docs/playground", desc: "Simulate adversarial payloads and cloaking in-browser" }
@@ -459,10 +520,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence benchmark --profile balanced",
     math_proof: "Cross-Entropy: H(P, Q) = -Σ P(x) log Q(x) evaluated across Free, Balanced, and Ultra inference profiles.",
-    invariants: [
-      { id: "2", title: "RFC 8785 Canonical JSON", anchor: "invariant-2-rfc-8785-canonical-json" },
-      { id: "33", title: "Production Telemetry vs Simulation Boundary", anchor: "invariant-33-production-telemetry" }
-    ],
+    invariants: ["inv-canonical-json-ed25519", "inv-playwright-rendering-tests"],
     links: [
       { label: "📘 Golden 12 Benchmark Blueprint", url: "https://docs.credence.run#docs/tutorials/10-reusable-live-e2e-and-mesh-gauntlet", desc: "Precision, recall, and cross-entropy evaluation gauntlet" },
       { label: "✍️ The Blue Checkmark is Dead", url: "https://blog.credence.run#the-blue-checkmark-is-dead", desc: "Why cryptographic receipts replace centralized platform trust badges" },
@@ -493,10 +551,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence audit <url> --lens focus",
     math_proof: "Information Pyramid Invariant: Depth(L1) ⊂ Evidence(L2) ⊂ CryptographicProof(L3). Strict zero-redundancy across layers.",
-    invariants: [
-      { id: "31", title: "The Epistemic Lensing & Information Pyramid Invariant", anchor: "invariant-31-epistemic-lensing" },
-      { id: "1", title: "Verbatim Grounding (G = 1.00)", anchor: "invariant-1-epistemic-verbatim-grounding" }
-    ],
+    invariants: ["inv-information-pyramid-lensing", "inv-verbatim-grounding"],
     links: [
       { label: "📘 Epistemic Lensing Technical Blueprint", url: "https://docs.credence.run#docs/blueprints/information-pyramid-and-epistemic-lensing", desc: "Full architectural specification of the 3-tier cognitive hierarchy" },
       { label: "🧪 Interactive Lensing Simulator", url: "https://docs.credence.run#docs/playground", desc: "Test real-time switching across Surface, Focus, and Spectrum lenses" }
@@ -527,10 +582,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence score <url>",
     math_proof: "S = min(100, Σ (w_i · severity_i · domain_multiplier)). Satire: S = 0.0 unless SPJ-1.6 cloaking override triggered.",
-    invariants: [
-      { id: "11", title: "Astroturfing Defense & Entropy (H < 0.30)", anchor: "invariant-11-astroturfing-entropy" },
-      { id: "12", title: "Poe's Law Safeguards & Satire Overrides", anchor: "invariant-12-poes-law-safeguards" }
-    ],
+    invariants: ["inv-topic-entropy-defense", "inv-poes-law-satire"],
     links: [
       { label: "📘 Scoring & Thresholds Blueprint", url: "https://docs.credence.run#docs/walkthroughs/01-auditing-webpages-and-text", desc: "Mathematical formulations, severity weights, and threshold boundaries" },
       { label: "✍️ The Pareto Frontier of Truth", url: "https://blog.credence.run#the-pareto-frontier-of-truth", desc: "Balancing false positive rates with high-severity evasion detection" }
@@ -558,10 +610,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence audit <url> --verify-grounding",
     math_proof: "Grounding Exactness: G = |Quote_cited ∩ DOM_source| / |Quote_cited| = 1.000. Rejects any G < 1.00.",
-    invariants: [
-      { id: "1", title: "Epistemic Verbatim Grounding (G = 1.00) & Slashing", anchor: "invariant-1-epistemic-verbatim-grounding" },
-      { id: "2", title: "RFC 8785 Canonical JSON & Ed25519 Custody", anchor: "invariant-2-rfc-8785-canonical-json" }
-    ],
+    invariants: ["inv-verbatim-grounding", "inv-canonical-json-ed25519"],
     links: [
       { label: "📘 Living Invariant Canon", url: "https://docs.credence.run#docs/invariants", desc: "Mathematical proofs and non-negotiable guardrails" }
     ]
@@ -588,10 +637,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence diff <url> --snap-a <id1> --snap-b <id2>",
     math_proof: "Hamming Distance: d_H(SimHash(t_0), SimHash(t_1)) = Σ (b_0 ⊕ b_1). Drift flagged when d_H > 3 bits without correction.",
-    invariants: [
-      { id: "28", title: "Bitwise SimHash-64 Locality Hashing", anchor: "invariant-28-bitwise-simhash-64" },
-      { id: "3", title: "Temporal Snapshot Lineage", anchor: "invariant-3-temporal-snapshot" }
-    ],
+    invariants: ["inv-bittorrent-worksharing", "inv-version-governance"],
     links: [
       { label: "📘 Temporal Content Evolution Lab", url: "https://docs.credence.run#docs/lab-content-evolution", desc: "Inspect live multi-snapshot diff trajectories and stealth edit flags" },
       { label: "📘 SimHash Mirror Detection Mathematics", url: "https://docs.credence.run#docs/lab-content-evolution", desc: "Mathematical proof of 64-bit Hamming distance thresholds" }
@@ -619,10 +665,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence verify-envelope envelope.json",
     math_proof: "PureEdDSA Verification: Verify(K_pub, M_rfc8785, Sig_Ed25519) ∈ {0, 1}. Executed in-memory in <0.3ms.",
-    invariants: [
-      { id: "2", title: "RFC 8785 Canonical JSON & Ed25519 Custody", anchor: "invariant-2-rfc-8785-canonical-json" },
-      { id: "9", title: "Universal 4-Way Feature Parity & Zero-Build", anchor: "invariant-9-universal-4-way-parity" }
-    ],
+    invariants: ["inv-canonical-json-ed25519", "inv-zero-build-standards"],
     links: [
       { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Dual-crypto conformance and key rotation ceremonies" }
     ]
@@ -649,10 +692,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence dossier reuters.com",
     math_proof: "DCI Score: DCI = 100 · (α + 1) / (α + β + 2). Longitudinal Stability: σ_30d = √(αβ / ((α+β)^2 · (α+β+1))).",
-    invariants: [
-      { id: "13", title: "Domain Credence Index (DCI) Ontology", anchor: "invariant-13-domain-credence-index" },
-      { id: "3", title: "Multi-Snapshot Content Lineage", anchor: "invariant-3-temporal-snapshot" }
-    ],
+    invariants: ["inv-cloudflare-assets", "inv-version-governance"],
     links: [
       { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run#docs/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics and domain normalization" }
     ]
@@ -679,10 +719,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence dci top --limit 20",
     math_proof: "Rank Order: Sort by DCI_score DESC, AvgSuspicion ASC. Laplace Smoothing: α_prior = 1.0, β_prior = 1.0.",
-    invariants: [
-      { id: "13", title: "Domain Credence Index (DCI) Ontology", anchor: "invariant-13-domain-credence-index" },
-      { id: "18", title: "Barbell Partition Resistance", anchor: "invariant-18-barbell-partition" }
-    ],
+    invariants: ["inv-cloudflare-assets", "inv-progressive-disclosure"],
     links: [
       { label: "📘 Terminology & Ontology Lexicon", url: "https://docs.credence.run#docs/blueprints/terminology-and-ontology-lexicon", desc: "Comprehensive definition of trust bands and scoring scales" },
       { label: "📘 Robust Consensus Proofs", url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition", desc: "Mathematical theorems on Byzantine consensus resilience" }
@@ -710,10 +747,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence sifter stream --interval 300",
     math_proof: "Boredom Score: B(t) = 1.0 - CosineSimilarity(Embedding_latest, Centroid_window). Explores when B(t) > 0.65.",
-    invariants: [
-      { id: "8", title: "Network Ingestion SSRF Guard & Billion Laughs Defense", anchor: "invariant-8-network-ingestion-ssrf" },
-      { id: "15", title: "Multi-Model Sovereignty & Token Budget Headroom", anchor: "invariant-15-multi-model-sovereignty" }
-    ],
+    invariants: ["inv-ssrf-defense", "inv-4k-thinking-budget"],
     links: [
       { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run#docs/cookbooks/morning-feed-sifter", desc: "Setup automated headless RSS monitoring pipelines" }
     ]
@@ -744,11 +778,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence taxonomy list",
     math_proof: "Integrity Hash: SHA256(RFC8785(Catalog_JSON)) pinned in root seed manifest.",
-    invariants: [
-      { id: "1", title: "Epistemic Verbatim Grounding (G = 1.00)", anchor: "invariant-1-epistemic-verbatim-grounding" },
-      { id: "12", title: "Poe's Law Safeguards & Satire Overrides", anchor: "invariant-12-poes-law-safeguards" },
-      { id: "20", title: "Strict CSP & Zero Supply-Chain Security", anchor: "invariant-20-strict-csp" }
-    ],
+    invariants: ["inv-verbatim-grounding", "inv-poes-law-satire", "inv-fixed-taxonomies"],
     links: [
       { label: "✍️ Poe's Law and the Satire Cloak", url: "https://blog.credence.run#poes-law-and-the-satire-cloak", desc: "Safeguarding humor while neutralizing malicious deceptive cloaking" }
     ]
@@ -775,10 +805,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence taxonomy inspect SPJ",
     math_proof: "Weighted Impact: W_spj = 1.20 · Σ (Sev_i · GroundedMatch_i).",
-    invariants: [
-      { id: "1", title: "Verbatim Grounding (G = 1.00)", anchor: "invariant-1-epistemic-verbatim-grounding" },
-      { id: "28", title: "Bitwise SimHash-64 Locality Hashing", anchor: "invariant-28-bitwise-simhash-64" }
-    ],
+    invariants: ["inv-verbatim-grounding", "inv-bittorrent-worksharing"],
     links: [
       { label: "📘 Taxonomy Engineering Cookbook", url: "https://docs.credence.run#docs/cookbooks/taxonomy-engineering", desc: "Calibrating SPJ rule triggers and evidence thresholds" }
     ]
@@ -805,10 +832,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence taxonomy inspect IEP",
     math_proof: "Fallacy Impact: W_iep = 1.00 · Σ (Sev_i · GroundedMatch_i).",
-    invariants: [
-      { id: "1", title: "Verbatim Grounding (G = 1.00)", anchor: "invariant-1-epistemic-verbatim-grounding" },
-      { id: "11", title: "Astroturfing Defense & Entropy (H < 0.30)", anchor: "invariant-11-astroturfing-entropy" }
-    ],
+    invariants: ["inv-verbatim-grounding", "inv-topic-entropy-defense"],
     links: [
       { label: "📘 Mathematical Robustness Proofs", url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition", desc: "Mathematical dampening of rhetorical fallacies" }
     ]
@@ -835,10 +859,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence taxonomy inspect DEC",
     math_proof: "Deceptive Impact: W_dec = 1.50 · Σ (Sev_i · GroundedMatch_i).",
-    invariants: [
-      { id: "20", title: "Strict CSP & Zero Supply-Chain Security", anchor: "invariant-20-strict-csp" },
-      { id: "32", title: "Web Component Isolation & Zero-Clone Invariant", anchor: "invariant-32-web-component-isolation" }
-    ],
+    invariants: ["inv-web-component-zero-clone", "inv-zero-build-math"],
     links: [
       { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Detecting clickjacking and deceptive interfaces" }
     ]
@@ -865,10 +886,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence keygen --export-pubkey",
     math_proof: "Signature Scheme: PureEdDSA on Curve25519 with SHA-512 (RFC 8032). Key pinned at root.pub.",
-    invariants: [
-      { id: "2", title: "RFC 8785 Canonical JSON & Ed25519 Custody", anchor: "invariant-2-rfc-8785-canonical-json" },
-      { id: "10", title: "3-Plane Deployment Governance", anchor: "invariant-10-3-plane-governance" }
-    ],
+    invariants: ["inv-canonical-json-ed25519", "inv-xml-safety"],
     links: [
       { label: "📘 Security Threat Model & Key Custody", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Cryptographic threat vectors, blast radius containment, and key rotation" }
     ]
@@ -895,10 +913,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence canonicalize envelope.json",
     math_proof: "RFC 8785 Rule: CanonicalBytes(Obj_A) == CanonicalBytes(Obj_B) ⟺ Obj_A ≡ Obj_B.",
-    invariants: [
-      { id: "2", title: "RFC 8785 Canonical JSON & Ed25519 Custody", anchor: "invariant-2-rfc-8785-canonical-json" },
-      { id: "9", title: "Universal 4-Way Feature Parity", anchor: "invariant-9-universal-4-way-parity" }
-    ],
+    invariants: ["inv-canonical-json-ed25519", "inv-4way-feature-parity"],
     links: [
       { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Canonical JSON specifications and cross-runtime test gauntlets" }
     ]
@@ -925,10 +940,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence invariants audit",
     math_proof: "Byzantine Quorum for RFC Ratification: Consensus ≥ 66.7% (2f+1 honest votes).",
-    invariants: [
-      { id: "0", title: "The Living Invariant Canon & Universal Non-Negotiables", anchor: "tier-0-universal-core-invariants" },
-      { id: "30", title: "The Mk1 Eyeball Invariant (Human Review Before Commits)", anchor: "invariant-30-mk1-eyeball" }
-    ],
+    invariants: ["inv-mk1-eyeball", "inv-order-of-operations", "inv-version-governance"],
     links: [
       { label: "📘 Invariant Scalability & Knowledge Governance", url: "https://docs.credence.run#docs/blueprints/invariant-scalability-and-knowledge-governance", desc: "3-tier scalable invariant architecture and context economy" },
       { label: "📘 The Living Invariant Canon", url: "https://docs.credence.run#docs/invariants", desc: "Complete mathematical proofs and non-negotiable guardrails" }
@@ -957,11 +969,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence mesh status",
     math_proof: "HRW Rendezvous Function: Node_assigned(URL) = argmax_i ( HMAC-SHA256(Node_i.pubkey, URL) ).",
-    invariants: [
-      { id: "18", title: "Barbell Partition Resistance & Gossip Sync", anchor: "invariant-18-barbell-partition" },
-      { id: "33", title: "Production Telemetry vs Simulation Boundary", anchor: "invariant-33-production-telemetry" },
-      { id: "17", title: "Byzantine Sybil Cartel Resistance (3f+1)", anchor: "invariant-17-sybil-cartel-resistance" }
-    ],
+    invariants: ["inv-byzantine-cartel-resistance", "inv-edge-canonicalization"],
     links: [
       { label: "📘 Mesh Architecture Technical Blueprint", url: "https://docs.credence.run#docs/walkthroughs/03-p2p-mesh-consensus", desc: "P2P protocol specification, HRW rendezvous routing, and gossip sync" },
       { label: "🧪 Interactive Mesh Playground", url: "https://docs.credence.run#docs/playground", desc: "Simulate Byzantine partition attacks and cartel isolation in-browser" }
@@ -989,10 +997,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence mesh quorum",
     math_proof: "Quorum Condition: |V_ratified| ≥ 2f + 1 where f = ⌊(N-1)/3⌋. Total nodes N ≥ 3f + 1.",
-    invariants: [
-      { id: "17", title: "Byzantine Sybil Cartel Resistance (3f+1)", anchor: "invariant-17-sybil-cartel-resistance" },
-      { id: "18", title: "Barbell Partition Resistance", anchor: "invariant-18-barbell-partition" }
-    ],
+    invariants: ["inv-byzantine-cartel-resistance", "inv-galileo-rule"],
     links: [
       { label: "✍️ Blast Radius Containment", url: "https://blog.credence.run#blast-radius-containment-in-decentralized-networks", desc: "Decentralized containment of compromised nodes" }
     ]
@@ -1019,10 +1024,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence mesh gossip --tail",
     math_proof: "Gossip Latency: T_sync = O(log N) rounds with fanout k=3 peers per cycle.",
-    invariants: [
-      { id: "2", title: "RFC 8785 Canonical JSON & Ed25519 Custody", anchor: "invariant-2-rfc-8785-canonical-json" },
-      { id: "18", title: "Barbell Partition Resistance", anchor: "invariant-18-barbell-partition" }
-    ],
+    invariants: ["inv-canonical-json-ed25519", "inv-byzantine-cartel-resistance"],
     links: [
       { label: "📘 Mesh Architecture Technical Blueprint", url: "https://docs.credence.run#docs/walkthroughs/03-p2p-mesh-consensus", desc: "WebSocket transport, gossip payloads, and reconnection backoff" }
     ]
@@ -1049,10 +1051,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence mesh score <node_id>",
     math_proof: "Q_i = 0.30·U_i + 0.25·C_i + 0.20·G_i + 0.15·R_i + 0.10·P_i where Q_i ∈ [0, 1]. Slashing penalty: Q_i = 0.50·Q_i on hallucination.",
-    invariants: [
-      { id: "16", title: "Galileo Rule Consensus", anchor: "invariant-16-galileo-rule-consensus" },
-      { id: "1", title: "Verbatim Grounding (G = 1.00) & Slashing", anchor: "invariant-1-epistemic-verbatim-grounding" }
-    ],
+    invariants: ["inv-5factor-node-quality", "inv-empirical-expertise", "inv-verbatim-grounding"],
     links: [
       { label: "📘 Terminology & Ontology Lexicon", url: "https://docs.credence.run#docs/blueprints/terminology-and-ontology-lexicon", desc: "Quality formulations and epoch reward schedules" },
       { label: "📘 Robust Consensus Proofs", url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition", desc: "Mathematical proofs of cartel resistance and quality convergence" }
@@ -1080,10 +1079,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence doctor",
     math_proof: "Cold Start Target: T_germinate < 850ms. Memory Footprint Target: RSS < 180MB at idle.",
-    invariants: [
-      { id: "10", title: "3-Plane Deployment Governance", anchor: "invariant-10-3-plane-governance" },
-      { id: "24", title: "Scale-to-Zero Container Optimization", anchor: "invariant-24-scale-to-zero" }
-    ],
+    invariants: ["inv-hermetic-testing", "inv-dense-workstation-viewport"],
     links: [
       { label: "📘 Cloud Run Scale-to-Zero Blueprint", url: "https://docs.credence.run#docs/blueprints/cloudrun-scale-to-zero-cold-start-optimization", desc: "Sub-40s deployment, WIF keyless auth, and scale-to-zero tuning" },
       { label: "✍️ From 860MB to 2MB: Sub-40s CI/CD Pipeline", url: "https://blog.credence.run#from-860mb-to-2mb-sub-40s-cicd-pipeline", desc: "Ultra-compact build artifacts and container optimization" }
@@ -1111,10 +1107,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence telemetry",
     math_proof: "Telemetry Envelope: { status: 'HEALTHY', role: 'LOCAL_PRIMARY_ROOT', mode: 'STANDALONE', grounding_quotient: 1.00 }.",
-    invariants: [
-      { id: "10", title: "3-Plane Deployment Governance", anchor: "invariant-10-3-plane-governance" },
-      { id: "33", title: "Production Telemetry vs Simulation Boundary", anchor: "invariant-33-production-telemetry" }
-    ],
+    invariants: ["inv-xml-safety", "inv-dense-workstation-viewport"],
     links: [
       { label: "📘 Node & Mesh Telemetry Blueprint", url: "https://docs.credence.run#docs/blueprints/node-and-mesh-telemetry-dashboard", desc: "Diagnostic schema and real-time dashboard instrumentation" }
     ]
@@ -1141,10 +1134,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence badge generate --domain reuters.com",
     math_proof: "SVG Signature: Anti-tamper digest embedded directly in SVG DOM comment metadata: <!-- credence-sig: 0x... -->.",
-    invariants: [
-      { id: "22", title: "Embeddable Attestation Badges & Anti-Tamper", anchor: "invariant-22-embeddable-badges" },
-      { id: "21", title: "White-Label Sovereign Org Scaffolding", anchor: "invariant-21-white-label-org" }
-    ],
+    invariants: ["inv-web-component-zero-clone", "inv-verbatim-grounding"],
     links: [
       { label: "📘 Embeddable Badges & Anti-Tamper Blueprint", url: "https://docs.credence.run#docs/blueprints/embeddable-attestation-badges-and-anti-tamper", desc: "Embeddable HTML5 custom elements and CSP-compliant badges" }
     ]
@@ -1171,10 +1161,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence mesh seeds",
     math_proof: "Seed Verification: Verify(Root_pub, Manifest_bytes, Manifest_sig) == true before accepting peer endpoints.",
-    invariants: [
-      { id: "18", title: "Barbell Partition Resistance", anchor: "invariant-18-barbell-partition" },
-      { id: "2", title: "RFC 8785 Canonical JSON & Ed25519 Custody", anchor: "invariant-2-rfc-8785-canonical-json" }
-    ],
+    invariants: ["inv-canonical-json-ed25519", "inv-byzantine-cartel-resistance"],
     links: [
       { label: "📘 DNS-SRV Discovery Blueprint", url: "https://docs.credence.run#docs/tutorials/05-mesh-quickstart", desc: "Automating zero-coordinator mesh discovery" }
     ]
@@ -1201,10 +1188,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence admin status",
     math_proof: "Circuit Breaker Condition: If Headroom(Tokens_daily) < 0.30, BackgroundQueue.halt() -> return QUOTA_PRESERVED.",
-    invariants: [
-      { id: "15", title: "Multi-Model Sovereignty & Token Budget Headroom", anchor: "invariant-15-multi-model-sovereignty" },
-      { id: "10", title: "Dual-Environment Least-Privilege CI/CD", anchor: "invariant-10-dual-environment-cicd" }
-    ],
+    invariants: ["inv-multi-model-sovereignty", "inv-4k-thinking-budget"],
     links: [
       { label: "📘 Operator Security & Workstation Tutorial", url: "https://docs.credence.run#docs/tutorials/14-operator-security-and-admin-workstation", desc: "Managing cost governors, circuit breakers, and administrative tokens" },
       { label: "✍️ The Economics of Epistemic Headroom", url: "https://blog.credence.run#the-economics-of-epistemic-headroom", desc: "Mathematical models for token preservation under adversarial burst traffic" }
@@ -1232,10 +1216,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence seed --burst 10",
     math_proof: "Germination Batch Size: N_burst ∈ [1, 25]. Cache Hit Latency: T_hit < 2ms.",
-    invariants: [
-      { id: "24", title: "Scale-to-Zero Container Optimization", anchor: "invariant-24-scale-to-zero" },
-      { id: "15", title: "Token Budget & Headroom", anchor: "invariant-15-multi-model-sovereignty" }
-    ],
+    invariants: ["inv-4k-thinking-budget", "inv-multi-model-sovereignty"],
     links: [
       { label: "📘 Developer Quickstart Guide", url: "https://docs.credence.run#docs/quickstart", desc: "Seeding local environments with one-command bootstrap" }
     ]
@@ -1262,10 +1243,7 @@ const INFO_TOPICS = {
     ],
     cli: "credence daemon start --all",
     math_proof: "Polling Cadence: T_sifter = 900s, T_roots = 3600s, T_boredom = 1800s.",
-    invariants: [
-      { id: "8", title: "Network Ingestion SSRF Guard & Billion Laughs", anchor: "invariant-8-network-ingestion-ssrf" },
-      { id: "15", title: "Multi-Model Sovereignty & Headroom", anchor: "invariant-15-multi-model-sovereignty" }
-    ],
+    invariants: ["inv-ssrf-defense", "inv-boredom-root-expansion"],
     links: [
       { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run#docs/cookbooks/morning-feed-sifter", desc: "Configuring systemd daemons and headless scrapers" }
     ]
@@ -1482,11 +1460,25 @@ export function openInfoModal(topicKey) {
   }
 
   if (invarBox && info.invariants) {
-    invarBox.innerHTML = info.invariants.map(inv => `
-      <a href="https://docs.credence.run#docs/invariants#invariant-${inv.id}" target="_blank" rel="noopener" class="invariant-link-badge">
-        📜 Invariant ${inv.id}: ${inv.title} ↗
-      </a>
-    `).join("");
+    invarBox.innerHTML = info.invariants.map(invRef => {
+      const inv = resolveInvariant(typeof invRef === "object" ? (invRef.slug || invRef.id) : invRef);
+      const isAlpha = inv.class.includes("α");
+      const isBeta = inv.class.includes("β");
+      const isGamma = inv.class.includes("γ");
+      const badgeStyle = isAlpha 
+        ? "background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3);" 
+        : (isBeta 
+          ? "background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);"
+          : (isGamma 
+            ? "background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3);"
+            : "background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);"));
+      return `
+        <a href="https://docs.credence.run#docs/invariants#${inv.slug}" target="_blank" rel="noopener" class="invariant-link-badge" style="display:inline-flex; align-items:center; gap:6px;">
+          <span style="font-size:0.72rem; font-weight:800; padding:1px 5px; border-radius:3px; ${badgeStyle}">${inv.class}</span>
+          <span>${inv.title}</span> ↗
+        </a>
+      `;
+    }).join("");
   }
 
   if (linksGrid && info.links) {

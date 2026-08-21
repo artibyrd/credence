@@ -1,6 +1,10 @@
 name: Deploy Dev Environment to Google Cloud Run
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
   push:
     branches:
       - develop
@@ -63,18 +67,32 @@ jobs:
         env:
           GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
 
-      - name: Build and Submit Container Image to Dev Project
+      - name: Configure Docker for Google Container Registry
+        if: env.GCP_CONFIGURED == 'true'
+        env:
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
+        run: |
+          gcloud auth configure-docker gcr.io --quiet
+
+      - name: Set up Docker Buildx
+        if: env.GCP_CONFIGURED == 'true'
+        uses: docker/setup-buildx-action@v3
+        env:
+          GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
+
+      - name: Build and Push Container Image to Dev Project
         if: env.GCP_CONFIGURED == 'true'
         env:
           GCP_CONFIGURED: ${{ (secrets.GCP_DEV_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_DEV_SA_KEY || secrets.GCP_SA_KEY) != '' }}
           PROJECT_ID: ${{ secrets.GCP_DEV_PROJECT_ID || inputs.project_id || 'credence-dev-495173' }}
           SERVICE: ${{ inputs.service_name || 'credence-dev' }}
         run: |
-          gcloud builds submit \
-            --project="${PROJECT_ID}" \
-            --tag="gcr.io/${PROJECT_ID}/${SERVICE}:${{ github.sha }}" \
-            --tag="gcr.io/${PROJECT_ID}/${SERVICE}:latest" \
-            --timeout="10m"
+          docker buildx build \
+            --file Dockerfile \
+            --tag "gcr.io/${PROJECT_ID}/${SERVICE}:${{ github.sha }}" \
+            --tag "gcr.io/${PROJECT_ID}/${SERVICE}:latest" \
+            --push \
+            .
 
       - name: Deploy to Dev Cloud Run (Basic Mode)
         if: env.GCP_CONFIGURED == 'true'
@@ -93,6 +111,7 @@ jobs:
             --cpu="1" \
             --execution-environment="gen2" \
             --cpu-boost \
+            --clear-secrets \
             --set-env-vars="ENV=development,CREDENCE_PROFILE=${PROFILE}" \
             --allow-unauthenticated
 

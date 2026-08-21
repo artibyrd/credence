@@ -99,3 +99,74 @@ def test_gcp_project_id_matrix() -> None:
         if prod_vars.exists():
             prod_content = prod_vars.read_text(encoding="utf-8")
             assert "credence-prod-505902" in prod_content
+
+
+@pytest.mark.integration
+def test_workflow_branch_and_pr_staging_triggers() -> None:
+    """Verify deploy-dev triggers on PR creation/synchronization and deploy-backend triggers on merge to main."""
+    dev_wf = WORKFLOWS_DIR / "deploy-dev.yml"
+    backend_wf = WORKFLOWS_DIR / "deploy-backend.yml"
+    edge_wf = WORKFLOWS_DIR / "deploy-edge.yml"
+
+    assert dev_wf.exists()
+    assert backend_wf.exists()
+    assert edge_wf.exists()
+
+    dev_data = yaml.safe_load(dev_wf.read_text(encoding="utf-8"))
+    backend_data = yaml.safe_load(backend_wf.read_text(encoding="utf-8"))
+    edge_data = yaml.safe_load(edge_wf.read_text(encoding="utf-8"))
+
+    dev_on = dev_data.get("on") or dev_data.get(True)
+    backend_on = backend_data.get("on") or backend_data.get(True)
+    edge_on = edge_data.get("on") or edge_data.get(True)
+
+    # Assert Dev triggers on pull request to main
+    assert "pull_request" in dev_on, "deploy-dev.yml must define pull_request trigger"
+    pr_spec = dev_on["pull_request"]
+    assert "main" in pr_spec.get("branches", []), "deploy-dev.yml must target main branch PRs"
+    assert "synchronize" in pr_spec.get("types", []), "deploy-dev.yml must trigger on PR synchronize (new pushes)"
+
+    # Assert Prod Backend triggers on push/merge to main and version tags
+    assert "push" in backend_on, "deploy-backend.yml must define push trigger"
+    push_spec = backend_on["push"]
+    assert "main" in push_spec.get("branches", []), "deploy-backend.yml must deploy on push/merge to main"
+
+    # Assert Edge router triggers on push/merge to main
+    assert "push" in edge_on, "deploy-edge.yml must define push trigger"
+    assert "main" in edge_on["push"].get("branches", []), "deploy-edge.yml must deploy on push to main"
+
+
+@pytest.mark.integration
+def test_local_production_deploy_safety_gate() -> None:
+    """Verify that local production deployments are strictly gated with warning banners and confirmation prompts."""
+    justfile_path = Path(__file__).resolve().parents[2] / "Justfile"
+    assert justfile_path.exists(), f"Justfile not found at {justfile_path}"
+
+    justfile_content = justfile_path.read_text(encoding="utf-8")
+
+    assert "PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)" in justfile_content
+    assert "DEPLOY-PROD" in justfile_content
+    assert "FORCE_PROD_DEPLOY" in justfile_content
+    assert "CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING" in justfile_content
+
+
+@pytest.mark.integration
+def test_codeowners_and_authorized_approvers_gating() -> None:
+    """Verify that all 3 ecosystem repositories define .github/CODEOWNERS with @artibyrd and manage_pr.py parses them."""
+    ecosystem_root = Path(__file__).resolve().parents[3]
+    repos = ["credence", "credence-docs", "credence-agent"]
+
+    for repo_name in repos:
+        codeowners_path = ecosystem_root / repo_name / ".github" / "CODEOWNERS"
+        assert codeowners_path.exists(), f"Missing .github/CODEOWNERS in {repo_name}"
+        content = codeowners_path.read_text(encoding="utf-8")
+        assert "@artibyrd" in content, f"{repo_name}/.github/CODEOWNERS must designate @artibyrd as authorized approver"
+        assert "* @artibyrd" in content, f"{repo_name}/.github/CODEOWNERS must set default root code ownership"
+
+    # Verify branch protection script sets require_code_owner_reviews
+    branch_script = ecosystem_root / "credence-agent" / "scripts" / "configure_branch_protection.py"
+    assert branch_script.exists()
+    branch_content = branch_script.read_text(encoding="utf-8")
+    assert (
+        '"require_code_owner_reviews": True' in branch_content or "'require_code_owner_reviews': True" in branch_content
+    )
