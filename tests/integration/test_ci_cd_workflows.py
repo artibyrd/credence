@@ -149,6 +149,3 @@ def test_local_production_deploy_safety_gate() -> None:
     assert "DEPLOY-PROD" in justfile_content
     assert "FORCE_PROD_DEPLOY" in justfile_content
     assert "CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING" in justfile_content
-
-
-

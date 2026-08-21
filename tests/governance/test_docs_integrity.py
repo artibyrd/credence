@@ -1190,7 +1190,7 @@ def test_skills_schema_and_frontmatter_integrity(docs_root: Path) -> None:
         if errors:
             all_errors.extend(errors)
 
-    assert not all_errors, f"Found skill schema violations:\n" + "\n".join(f"  • {e}" for e in all_errors)
+    assert not all_errors, "Found skill schema violations:\n" + "\n".join(f"  • {e}" for e in all_errors)
 
 
 @pytest.mark.governance
@@ -1228,7 +1228,15 @@ def test_subagent_templates_validity(docs_root: Path) -> None:
     json_files = list(templates_dir.glob("*.json"))
     assert len(json_files) >= 3, f"Expected at least 3 subagent templates, found {len(json_files)}"
 
-    required_keys = {"name", "role", "description", "system_prompt", "enable_write_tools", "enable_subagent_tools", "default_workspace"}
+    required_keys = {
+        "name",
+        "role",
+        "description",
+        "system_prompt",
+        "enable_write_tools",
+        "enable_subagent_tools",
+        "default_workspace",
+    }
 
     for template_file in json_files:
         with open(template_file, "r", encoding="utf-8") as f:
@@ -1303,8 +1311,12 @@ def test_ecosystem_naming_conventions_and_guardrails():
     sequential_antipattern = re.compile(r"^inv-\d+$")
 
     for card_id in card_ids:
-        assert slug_pattern.match(card_id), f"Invariant slug '{card_id}' does not match pattern '{slug_pattern.pattern}'"
-        assert not sequential_antipattern.match(card_id), f"Invariant slug '{card_id}' uses sequential number antipattern"
+        assert slug_pattern.match(card_id), (
+            f"Invariant slug '{card_id}' does not match pattern '{slug_pattern.pattern}'"
+        )
+        assert not sequential_antipattern.match(card_id), (
+            f"Invariant slug '{card_id}' uses sequential number antipattern"
+        )
 
     # 2. Subagent Template Filenames: snake_case.json
     if templates_dir.is_dir():
@@ -1362,6 +1374,3 @@ def test_ecosystem_naming_conventions_and_guardrails():
     ]
     for ib in invalid_branches:
         assert not branch_pattern.match(ib), f"Invalid branch '{ib}' unexpectedly passed regex match"
-
-
-
