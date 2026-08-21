@@ -762,9 +762,10 @@ def test_learning_lifecycle_and_invariant_governance_contracts(docs_root: Path) 
     for af in agents_files:
         if af.exists():
             content = af.read_text(encoding="utf-8")
-            assert "4-Phase Release & Learning Lifecycle" in content, (
-                f"{af.name} must declare 4-Phase Release & Learning Lifecycle"
-            )
+            assert (
+                "4-Phase Release & Learning Lifecycle" in content
+                or "4-Phase Release & Lean Learning Lifecycle" in content
+            ), f"{af.name} must declare 4-Phase Release & Learning Lifecycle"
             assert "Dual-Environment Least-Privilege CI/CD" in content, (
                 f"{af.name} must declare Dual-Environment Least-Privilege CI/CD"
             )
