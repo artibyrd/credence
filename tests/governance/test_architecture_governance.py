@@ -81,4 +81,3 @@ def test_workstation_viewport_vertical_bounds_invariant() -> None:
     assert "ws-scroll-pane" in report_html, "Missing .ws-scroll-pane container in credence.report/index.html"
     assert "max-height:580px" in report_html or "max-height: 580px" in report_html
     assert "ws-table-container" in report_html, "Missing .ws-table-container in credence.report/index.html"
-
