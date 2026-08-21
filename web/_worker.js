@@ -111,7 +111,7 @@ export default {
       }
 
       // 4. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
-      const dirPrefixes = ['/credence.run', '/credence.nexus', '/credence.foundation', '/credence.report'];
+      const dirPrefixes = ['/credence.run', '/credence.nexus', '/credence.foundation', '/credence.report', '/admin.credence.run'];
       for (const dp of dirPrefixes) {
         if (url.pathname === dp || url.pathname.startsWith(dp + '/')) {
           const cleanPath = url.pathname.slice(dp.length) || '/';
@@ -122,7 +122,9 @@ export default {
       // 5. Resolve Domain-Specific Asset Prefix (stripping dev. prefix for asset mapping)
       const cleanHost = host.replace(/^dev\./, '');
       let prefix = 'credence.run';
-      if (cleanHost.includes('nexus')) {
+      if (cleanHost.startsWith('admin')) {
+        prefix = 'admin.credence.run';
+      } else if (cleanHost.includes('nexus')) {
         prefix = 'credence.nexus';
       } else if (cleanHost.includes('foundation')) {
         prefix = cleanHost.startsWith('keys') ? 'credence.foundation/keys' : 'credence.foundation';

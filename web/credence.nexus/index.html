@@ -145,10 +145,10 @@
               <span>⌨️ Hotkeys Reference</span>
               <span class="nav-badge" style="background:var(--bg-card); color:var(--text-dim);">[?]</span>
             </button>
-            <button class="deck-admin-link" data-tab="admin" id="btn-rail-admin" onclick="window.CredenceWS.switchTab('admin')">
-              <span>🛠️ Operator Admin Deck</span>
-              <span class="nav-badge" id="admin-tab-badge">Operator</span>
-            </button>
+            <a class="deck-admin-link" href="https://admin.credence.run" style="text-decoration:none;" id="btn-rail-admin" title="Open Dedicated Operator Admin Cockpit">
+              <span>🛠️ Operator Admin Cockpit</span>
+              <span class="nav-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8;">↗</span>
+            </a>
           </div>
         </aside>
 
@@ -354,108 +354,6 @@
             </div>
           </div>
 
-          <!-- TAB 5: OPERATOR ADMIN COCKPIT -->
-          <div id="tab-admin" class="tab-panel">
-            <div id="admin-locked-view" style="display:block;">
-              <div class="deck-card" style="text-align:center; padding:3rem 1.5rem;">
-                <div style="font-size:2.5rem; margin-bottom:1rem;">🔒</div>
-                <h3 style="color:#fff; font-size:1.35rem; margin-bottom:0.5rem;">Operator Admin Deck Gated</h3>
-                <p style="color:var(--text-muted); font-size:0.92rem; max-width:480px; margin:0 auto 1.5rem;">
-                  Admin mutation controls, AI budget ceilings, and emergency stops require authenticated node operator authorization.
-                </p>
-                <button class="btn-primary" style="padding:0.6rem 1.5rem; font-size:0.9rem;" onclick="window.CredenceWS.openOperatorModal()">
-                  🔑 Authenticate with Operator Key
-                </button>
-              </div>
-            </div>
-
-            <div id="admin-unlocked-view" style="display:none;">
-              <div class="deck-card" style="margin-bottom:1.25rem; border-color:rgba(56, 189, 248, 0.3); background:rgba(56, 189, 248, 0.05);">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                  <div>
-                    <span class="ribbon-pill operator-active">🔓 OPERATOR MODE: ACTIVE</span>
-                    <span style="font-size:0.85rem; color:var(--text-muted); margin-left:0.5rem;">Gated mutations authorized for current session.</span>
-                  </div>
-                  <button class="btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.78rem;" onclick="window.CredenceWS.clearStoredToken()">🔒 Lock Operator Console</button>
-                </div>
-              </div>
-
-              <div class="admin-cockpit-grid">
-                <!-- Card 1: Token & FinOps Governor -->
-                <div class="admin-card">
-                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
-                    <h3 style="margin:0;">⚡ AI Token &amp; Budget Governor</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('operator_admin')" title="Info: Budget & Token Headroom">ℹ</button>
-                  </div>
-                  <p style="font-size:0.85rem; color:var(--text-muted);">
-                    Configure spend ceilings ($USD/day), hourly token velocity limits, and emergency stops.
-                  </p>
-                  <div class="form-group">
-                    <label class="form-label" for="adm-daily-budget">Daily Budget Ceiling ($USD)</label>
-                    <input type="number" id="adm-daily-budget" class="form-input" value="5.00" step="0.50" min="0">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="adm-max-tokens">Max Tokens / Hour</label>
-                    <input type="number" id="adm-max-tokens" class="form-input" value="100000" step="10000" min="0">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="adm-profile-select">Inference Engine Profile</label>
-                    <select id="adm-profile-select" class="form-input">
-                      <option value="economy">Economy (Low Cost)</option>
-                      <option value="balanced" selected>Balanced (Standard)</option>
-                      <option value="ultra">Ultra (High Precision)</option>
-                    </select>
-                  </div>
-                  <div style="display:flex; gap:0.75rem; margin-top:1rem;">
-                    <button class="btn-primary" style="flex:1;" onclick="saveBudgetSettings()">Save Limits</button>
-                    <button class="btn-secondary" style="color:var(--accent-rose); border-color:rgba(244,63,94,0.4);" onclick="triggerEmergencyStop()">🛑 Emergency Stop</button>
-                  </div>
-                </div>
-
-                <!-- Card 2: Miracle-Gro Engine -->
-                <div class="admin-card">
-                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
-                    <h3 style="margin:0;">🌱 Miracle-Gro Seed Germination</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('miracle_gro')" title="Info: Miracle-Gro Cache Warming Engine">ℹ</button>
-                  </div>
-                  <p style="font-size:0.85rem; color:var(--text-muted);">
-                    Trigger cold-start seeding cycles to populate local SQLite cache with attested evaluations.
-                  </p>
-                  <div class="form-group">
-                    <label class="form-label" for="adm-burst-count">Germination Burst Size</label>
-                    <input type="number" id="adm-burst-count" class="form-input" value="5" min="1" max="25">
-                  </div>
-                  <div id="germination-status" style="font-size:0.82rem; color:var(--text-muted); margin:0.5rem 0; min-height:1.2rem;"></div>
-                  <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="triggerGerminationBurst()">🚀 Execute Germination Burst</button>
-                </div>
-
-                <!-- Card 3: Ingestion Stream Controls -->
-                <div class="admin-card">
-                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
-                    <h3 style="margin:0;">📡 Ingestion Stream Daemons</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('daemons')" title="Info: Background Ingestion Daemons &amp; Crawlers">ℹ</button>
-                  </div>
-                  <p style="font-size:0.85rem; color:var(--text-muted);">
-                    Manually trigger background Sifter, Roots crawler, and Boredom polling loops.
-                  </p>
-                  <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.75rem;">
-                    <button class="btn-secondary" style="text-align:left; display:flex; justify-content:space-between;" onclick="triggerSifterCycle()">
-                      <span>⚡ Run Sifter Cycle</span>
-                      <span style="color:var(--text-dim); font-size:0.75rem;">RSS/Sitemap</span>
-                    </button>
-                    <button class="btn-secondary" style="text-align:left; display:flex; justify-content:space-between;" onclick="triggerRootsExpansion()">
-                      <span>🌳 Run Roots Discovery</span>
-                      <span style="color:var(--text-dim); font-size:0.75rem;">Discovery</span>
-                    </button>
-                    <button class="btn-secondary" style="text-align:left; display:flex; justify-content:space-between;" onclick="triggerBoredomCycle()">
-                      <span>🔄 Trigger Boredom Loop</span>
-                      <span style="color:var(--text-dim); font-size:0.75rem;">Idle Pulse</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </main>
       </div>
     </div>
@@ -488,7 +386,7 @@
           <h4>Operations</h4>
           <ul class="footer-links">
             <li><a href="https://credence.nexus#mesh">P2P Mesh Cluster</a></li>
-            <li><a href="https://credence.nexus#admin">Operator Admin</a></li>
+            <li><a href="https://admin.credence.run">Operator Admin</a></li>
             <li><a href="https://credence.report/viewer.html">Report Viewer</a></li>
             <li><a href="https://docs.credence.run#docs/quickstart">Developer Quickstart</a></li>
           </ul>

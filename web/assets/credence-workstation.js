@@ -48,6 +48,11 @@ export function clearStoredToken() {
   authState.identity = null;
   authState.method = null;
   updateRibbonAuthBadge();
+  window.dispatchEvent(new CustomEvent('credence-auth-changed', { detail: authState }));
+  if (typeof window.renderAdminView === 'function') {
+    window.renderAdminView();
+  }
+  showToast('🔒 Operator Console Locked', 'info');
 }
 
 export async function checkAuthStatus() {
@@ -1536,6 +1541,7 @@ export function normalizeLocalLinks() {
   if (!isLocal) return;
 
   const domainMap = {
+    'https://admin.credence.run': '/admin.credence.run/',
     'https://credence.run': '/credence.run/',
     'https://credence.report': '/credence.report/',
     'https://credence.nexus': '/credence.nexus/',

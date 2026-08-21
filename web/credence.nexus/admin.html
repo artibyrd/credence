@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=index.html#admin">
-  <title>Redirecting to Credence Operator Command Deck...</title>
+  <meta http-equiv="refresh" content="0; url=https://admin.credence.run">
+  <title>Redirecting to Credence Operator Admin Cockpit...</title>
   <script>
-    window.location.replace("index.html#admin");
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    window.location.replace(isLocal ? "/admin.credence.run/" : "https://admin.credence.run");
   </script>
 </head>
 <body style="background:#07090e; color:#94a3b8; font-family:monospace; padding:2rem; text-align:center;">
-  <p>Redirecting to <a href="index.html#admin" style="color:#38bdf8;">Operator Command Deck</a>...</p>
+  <p>Redirecting to <a href="https://admin.credence.run" style="color:#38bdf8;">Credence Operator Admin Cockpit</a>...</p>
 </body>
 </html>
