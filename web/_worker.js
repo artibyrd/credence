@@ -1,7 +1,7 @@
 /**
  * Credence Multi-Domain Zero-Build Edge Router
- * Supports Canonical (credence.run, credence.nexus, credence.foundation, credence.report)
- * and Dev Subdomains (dev.credence.run, dev.credence.nexus, dev.credence.foundation, dev.credence.report)
+ * Supports Canonical (credence.run, admin.credence.run, credence.nexus, credence.foundation, credence.report)
+ * and Dev Subdomains (dev.credence.run, dev.admin.credence.run, dev.credence.nexus, dev.credence.foundation, dev.credence.report)
  */
 
 export default {
@@ -110,16 +110,7 @@ export default {
         });
       }
 
-      // 4. Canonical URL redirect: if browser visits with subdirectory prefix, 301 redirect to clean root
-      const dirPrefixes = ['/credence.run', '/credence.nexus', '/credence.foundation', '/credence.report', '/admin.credence.run'];
-      for (const dp of dirPrefixes) {
-        if (url.pathname === dp || url.pathname.startsWith(dp + '/')) {
-          const cleanPath = url.pathname.slice(dp.length) || '/';
-          return Response.redirect(new URL(cleanPath + url.search, request.url), 301);
-        }
-      }
-
-      // 5. Resolve Domain-Specific Asset Prefix (stripping dev. prefix for asset mapping)
+      // 4. Resolve Domain-Specific Asset Prefix (stripping dev. prefix for asset mapping)
       const cleanHost = host.replace(/^dev\./, '');
       let prefix = 'credence.run';
       if (cleanHost.startsWith('admin')) {
@@ -134,7 +125,7 @@ export default {
 
       let reqPath = url.pathname;
       if (reqPath === '' || reqPath === '/') {
-        reqPath = '/';
+        reqPath = '/index.html';
       }
 
       // If keys.credence.foundation root requested, serve root.pub
@@ -149,41 +140,34 @@ export default {
 
       // Build target asset path
       let finalPath;
-      if (reqPath === '/' || reqPath === '') {
-        finalPath = `/${prefix}/index.html`;
+      if (reqPath.startsWith(`/${prefix}/`)) {
+        finalPath = reqPath;
       } else if (reqPath.endsWith('/')) {
         finalPath = `/${prefix}${reqPath}index.html`;
       } else {
         finalPath = `/${prefix}${reqPath}`;
       }
 
-      const assetUrl = new URL(finalPath, request.url);
+      const assetUrl = new URL(finalPath, 'http://assets.local');
       let response;
 
-
       if (env && env.ASSETS) {
-        response = await env.ASSETS.fetch(new Request(assetUrl, request));
-        // If Cloudflare returns a redirect for internal folder, follow it internally to hide redirect from browser
-        if (response.status >= 300 && response.status < 400 && response.headers.has('Location')) {
-          const loc = response.headers.get('Location');
-          const targetUrl = new URL(loc, request.url);
-          response = await env.ASSETS.fetch(new Request(targetUrl, request));
-        }
+        response = await env.ASSETS.fetch(new Request(assetUrl));
         // Clean URL fallback: try .html if extensionless path returns 404
         if (response.status === 404 && !reqPath.includes('.')) {
-          const htmlAssetUrl = new URL(finalPath + '.html', request.url);
-          const htmlResponse = await env.ASSETS.fetch(new Request(htmlAssetUrl, request));
+          const htmlAssetUrl = new URL(finalPath + '.html', 'http://assets.local');
+          const htmlResponse = await env.ASSETS.fetch(new Request(htmlAssetUrl));
           if (htmlResponse.status < 400) {
             response = htmlResponse;
           }
         }
       } else {
-        response = await fetch(new Request(assetUrl, request));
+        response = await fetch(new Request(new URL(finalPath, request.url)));
       }
 
       // If exact file found, return with appropriate CORS & Zero-Cache Policy
       const resHeaders = new Headers(response.headers);
-      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || reqPath === '/') {
+      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || reqPath === '/index.html') {
         resHeaders.set('Access-Control-Allow-Origin', '*');
         resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
         resHeaders.set('Cache-Control', 'public, max-age=0, must-revalidate');
