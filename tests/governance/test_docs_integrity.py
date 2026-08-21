@@ -1119,3 +1119,45 @@ def test_dashboard_info_modals_and_docs_linkage_parity(docs_root: Path) -> None:
     assert "Workstation & Dashboard Knowledge Modal Registry" in topic_index_content
     for key in topic_keys:
         assert f"`{key}`" in topic_index_content, f"Topic '{key}' must be cataloged in docs/topic-index.md"
+
+
+@pytest.mark.governance
+def test_edge_wrangler_routes_and_web_folders_parity(docs_root: Path) -> None:
+    """Verify Cloudflare Wrangler edge router declares all web surfaces and routes (Invariant 9 & 13)."""
+    import tomllib
+
+    credence_root = docs_root.parent / "credence"
+    wrangler_toml = credence_root / "web" / "wrangler.toml"
+    assert wrangler_toml.exists(), "web/wrangler.toml must exist"
+
+    with open(wrangler_toml, "rb") as f:
+        data = tomllib.load(f)
+
+    assert data.get("name") == "credence"
+    assert data.get("main") == "_worker.js"
+    assert data.get("assets", {}).get("binding") == "ASSETS"
+
+    routes = data.get("routes", [])
+    assert len(routes) >= 15, f"Expected at least 15 edge routes, found {len(routes)}"
+
+    route_patterns = {r["pattern"] for r in routes if "pattern" in r}
+
+    # Verify primary apex and subdomains are explicitly bound
+    expected_patterns = [
+        "credence.run/*",
+        "admin.credence.run/*",
+        "docs.credence.run/*",
+        "blog.credence.run/*",
+        "credence.nexus/*",
+        "credence.foundation/*",
+        "credence.report/*",
+    ]
+    for ep in expected_patterns:
+        assert ep in route_patterns, f"Missing required edge route pattern: {ep}"
+
+    # Verify all web directories have corresponding route bindings
+    web_dir = credence_root / "web"
+    domain_dirs = [d.name for d in web_dir.iterdir() if d.is_dir() and "." in d.name and not d.name.startswith(".")]
+    for d in domain_dirs:
+        matching = [p for p in route_patterns if p.startswith(f"{d}/") or p.startswith(f"dev.{d}/")]
+        assert len(matching) > 0, f"Web directory '{d}' has no matching route pattern in wrangler.toml"
