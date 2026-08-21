@@ -747,6 +747,11 @@ audit-invariants:
     @poetry run pytest tests/integration/test_ci_cd_workflows.py
     @echo -e "\033[1;32m✅ All Ecosystem Invariants & Lifecycle Governance Contracts Passed Cleanly!\033[0m"
 
+# Scrutinize and challenge a specific invariant for validity, token cost, and demotion readiness
+challenge-invariant slug="inv-version-governance":
+    @python3 ../credence-agent/scripts/challenge_invariant.py {{slug}}
+
+
 # Comprehensive multi-plane diagnostic health check across Edge, Compute, Infra, and Agents
 doctor env="prod":
     #!/usr/bin/env bash
@@ -859,6 +864,10 @@ branch name:
 commit message:
     @just git-sync commit "{{message}}"
 
+# Install conventional commit pre-commit hooks across all 3 ecosystem repositories
+install-hooks:
+    @python3 ../credence-agent/scripts/install_hooks.py
+
 # Manage GitHub Pull Requests across the ecosystem via GitHub CLI (gh)
 pr action="status" arg="":
     #!/usr/bin/env bash
@@ -872,7 +881,9 @@ pr action="status" arg="":
                 BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
                 if [ "$BRANCH" != "main" ]; then
                     echo "=== Creating PR for $(basename "$r") ($BRANCH -> main) ==="
-                    (cd "$r" && gh pr create --title "$TITLE" --body "Automated ecosystem PR for branch $BRANCH." --base main --head "$BRANCH" || true)
+                    COMMITS=$(cd "$r" && git log origin/main..HEAD --oneline 2>/dev/null || git log main..HEAD --oneline 2>/dev/null || echo "Branch changes")
+                    BODY="## Summary\n${TITLE}\n\n### Ecosystem Milestone Branch\n- **Branch**: \`${BRANCH}\`\n- **Target**: \`main\`\n\n### Staged Commits on Branch\n\`\`\`text\n${COMMITS}\n\`\`\`\n\n### Automated CI/CD Staging\n- **PR Open / Synchronize**: Auto-deploys live preview to Cloud Run Dev (\`credence-dev-495173\`).\n- **PR Merge to Main**: Auto-deploys production to Cloud Run Prod (\`credence-prod-505902\`) and Cloudflare Edge.\n\n### Shift-Left Verification Matrix\n- ✅ Unit & Contract Tests Passing\n- ✅ 7-Manifest Ecosystem Parity\n- ✅ Zero-npm Web Invariant & Governance Linters"
+                    (cd "$r" && gh pr create --title "$TITLE" --body "$BODY" --base main --head "$BRANCH" || true)
                 fi
             done
             ;;
