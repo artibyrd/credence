@@ -51,10 +51,8 @@ def get_available_system_memory_mb() -> int:
     return 4096
 
 
-def recommend_cluster_size(requested: Optional[int] = None, *args: Any, **kwargs: Any) -> int:
-    if requested is not None:
-        return requested
-    return 3
+def recommend_cluster_size(requested: Optional[int] = None, force: bool = False, *args: Any, **kwargs: Any) -> int:
+    return _orig_recommend_cluster_size(requested_nodes=requested, force=force)
 
 
 def _orig_recommend_cluster_size(requested_nodes: Optional[int] = None, force: bool = False) -> int:

@@ -217,6 +217,8 @@ class BayesianConsensusAggregator:
             content_sha256=content_sha256,
             consensus_score=consensus_score,
             classification=classification,
+            consensus_verdict=classification,
+            byzantine_nodes_trimmed_count=len(outlier_pubkeys),
             confidence=round(avg_confidence, 2),
             node_count=len(attestations),
             agreement_pct=agreement_pct,

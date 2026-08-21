@@ -84,6 +84,10 @@ services:
       - REDIS_URL=redis://valkey:6379/0
       - MCP_HOST=0.0.0.0
       - MCP_PORT=8000
+      - CREDENCE_BACKUP_ENABLED=true
+      - CREDENCE_BACKUP_DIR=/data/backups
+      - CREDENCE_BOREDOM_ENABLED=true
+      - CREDENCE_SIFTER_ENABLED=true
       - CREDENCE_GEMINI_API_KEY=${CREDENCE_GEMINI_API_KEY:-}
       - CREDENCE_ADMIN_API_KEY=${CREDENCE_ADMIN_API_KEY:-admin_secret_token}
     healthcheck:

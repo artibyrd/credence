@@ -638,7 +638,7 @@ ignite burst="3":
     @echo -e "\033[1;32m🌱 Credence Node Ignited & Ready for Operations!\033[0m"
 
 # Multi-plane deployment pipeline with automated post-flight verification (backend, edge, compose, dev, prod, all)
-deploy target="backend" env="dev" project_id="credence-prod-505902":
+deploy target="backend" env="dev" project_id="auto":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ "{{target}}" != "compose" ] && [ -n "$(git status --porcelain)" ]; then
@@ -653,13 +653,23 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
         IS_PROD=true
     fi
 
+    # Resolve target project ID
+    ACTUAL_PROJECT_ID="{{project_id}}"
+    if [ "$ACTUAL_PROJECT_ID" = "auto" ] || [ -z "$ACTUAL_PROJECT_ID" ]; then
+        if [ "$IS_PROD" = "true" ]; then
+            ACTUAL_PROJECT_ID="credence-prod-505902"
+        else
+            ACTUAL_PROJECT_ID="credence-dev-495173"
+        fi
+    fi
+
     # Safety Gate for Local Production Deployments
     if [ "$IS_PROD" = "true" ]; then
         if [ "${FORCE_PROD_DEPLOY:-false}" != "true" ]; then
             echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
             echo -e "\033[1;33m⚠️  PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)\033[0m"
             echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
-            echo -e "\033[1;33m⚠️  Target Environment : PRODUCTION (credence-prod-505902 / Cloudflare Edge)\033[0m"
+            echo -e "\033[1;33m⚠️  Target Environment : PRODUCTION (${ACTUAL_PROJECT_ID} / Cloudflare Edge)\033[0m"
             echo -e "\033[1;33m⚠️  Standard Process   : Use Pull Request merge to 'main' for production releases.\033[0m"
             echo -e "\033[1;33m⚠️  Local Execution    : Strictly reserved for testing, diagnostics & emergency fixes.\033[0m"
             echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
@@ -684,22 +694,22 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
                 SERVICE_NAME="credence-dev"
                 PROFILE="economy"
                 MEM="512Mi"
-                echo "🚀 Deploying in BASIC / DEV Mode (${SERVICE_NAME}, profile: ${PROFILE}, memory: ${MEM})..."
+                echo "🚀 Deploying in BASIC / DEV Mode (${SERVICE_NAME}, profile: ${PROFILE}, memory: ${MEM}, project: ${ACTUAL_PROJECT_ID})..."
             else
-                echo "🚀 Deploying in ADVANCED / PRODUCTION Mode (${SERVICE_NAME}, profile: ${PROFILE}, memory: ${MEM})..."
+                echo "🚀 Deploying in ADVANCED / PRODUCTION Mode (${SERVICE_NAME}, profile: ${PROFILE}, memory: ${MEM}, project: ${ACTUAL_PROJECT_ID})..."
             fi
             echo "=== [1/3] Building & Submitting Cloud Run Container via Cloud Build ==="
-            gcloud builds submit --project={{project_id}} --tag gcr.io/{{project_id}}/${SERVICE_NAME}:latest
+            gcloud builds submit --project=${ACTUAL_PROJECT_ID} --tag gcr.io/${ACTUAL_PROJECT_ID}/${SERVICE_NAME}:latest
             echo "=== [2/3] Deploying Container to Google Cloud Run ==="
             gcloud run deploy "${SERVICE_NAME}" \
-                --image gcr.io/{{project_id}}/${SERVICE_NAME}:latest \
+                --image gcr.io/${ACTUAL_PROJECT_ID}/${SERVICE_NAME}:latest \
                 --region us-central1 \
-                --project {{project_id}} \
+                --project ${ACTUAL_PROJECT_ID} \
                 --memory "${MEM}" \
                 --cpu 1 \
                 --execution-environment gen2 \
                 --cpu-boost \
-                --set-env-vars="ENV={{env}},CREDENCE_PROFILE=${PROFILE}" \
+                --set-env-vars="ENV={{env}},CREDENCE_PROFILE=${PROFILE},CREDENCE_BACKUP_ENABLED=true,CREDENCE_BOREDOM_ENABLED=true,CREDENCE_SIFTER_ENABLED=true" \
                 --allow-unauthenticated
             echo "=== [3/3] Executing Post-Deployment Live Health Probe ==="
             just gcp probe "${SERVICE_NAME}"
@@ -720,16 +730,16 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
             fi
             ;;
         dev)
-            just deploy backend "dev" "{{project_id}}"
+            just deploy backend "dev" "credence-dev-495173"
             ;;
         prod)
-            just deploy backend "prod" "{{project_id}}"
+            just deploy backend "prod" "credence-prod-505902"
             ;;
         all)
             echo "=== [Phase 1/3] Deploying Dev Environment ==="
-            just deploy backend "dev" "{{project_id}}"
+            just deploy backend "dev" "credence-dev-495173"
             echo "=== [Phase 2/3] Deploying Production Environment ==="
-            just deploy backend "prod" "{{project_id}}"
+            just deploy backend "prod" "credence-prod-505902"
             echo "=== [Phase 3/3] Deploying Cloudflare Anycast Edge Router ==="
             just deploy edge
             ;;

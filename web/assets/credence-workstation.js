@@ -499,6 +499,61 @@ const INFO_TOPICS = {
     ]
   },
 
+  backup: {
+    title: "Sovereign Database Backup & Cold-Boot Recovery",
+    icon: "💾",
+    tag: "STORAGE GRAVITY",
+    tier1_plain_english: `
+      <b>In plain words:</b> Credence safeguards all of your evaluations, snapshots, and node trust scores so you never lose work.
+      <br><br>
+      It creates compact, compressed backups with cryptographic checksums. If a server restarts or crashes, it automatically restores your data in less than a quarter of a second.
+    `,
+    tier1_article: {
+      title: "📘 Architectural Blueprint: Sovereign Data Gravity & CAS Portability",
+      desc: "How Credence ensures sovereign node data custody and zero-effort re-evaluation.",
+      url: "https://docs.credence.run#docs/blueprints/sovereign-data-gravity-and-cas-portability"
+    },
+    tier2_mechanics: [
+      "<b>Atomic SQLite Snapshots</b>: Uses the SQLite Backup API with WAL truncation to ensure zero-lock snapshots.",
+      "<b>SHA-256 Manifests & Ed25519 Signatures</b>: Every backup archive is hashed and signed with the node's sovereign private key.",
+      "<b>Cold-Boot Auto Restore</b>: Pre-boot lifespan hook downloads the latest cloud backup before initialization in &lt;200ms."
+    ],
+    cli: "credence db backup --output /data/backups/credence_latest.db.gz",
+    math_proof: "Archive Integrity: SHA256(Gzip(SQLite)) == Manifest.sha256_hash verified under Ed25519(CanonicalJSON(Manifest)).",
+    invariants: ["inv-canonical-json-ed25519", "inv-4way-parity-symmetric-web"],
+    links: [
+      { label: "📘 Sovereign Data Gravity Blueprint", url: "https://docs.credence.run#docs/blueprints/sovereign-data-gravity-and-cas-portability", desc: "CAS portability and SQLite-to-PostgreSQL storage architecture" },
+      { label: "📘 Cloud Run Deployment & Ops", url: "https://docs.credence.run#docs/deployment-cloudrun", desc: "Automated container lifecycle and cloud backup hooks" }
+    ]
+  },
+
+  boredom: {
+    title: "Autonomous Epistemic Boredom Engine",
+    icon: "🌀",
+    tag: "AUTONOMOUS INGESTION",
+    tier1_plain_english: `
+      <b>In plain words:</b> When your node is idling and has extra token budget available, it gets 'bored' and goes hunting for new knowledge.
+      <br><br>
+      It checks RSS feeds, audits breaking news, and balances 60% clean sources with 40% adversarial probes to discover deceptive tactics.
+    `,
+    tier1_article: {
+      title: "📘 Curiosity Loop Architecture & Dual-Soil Ingestion",
+      desc: "How autonomous agents maintain high-velocity truth detection within token ceilings.",
+      url: "https://docs.credence.run#docs/blueprints/sovereign-data-gravity-and-cas-portability"
+    },
+    tier2_mechanics: [
+      "<b>Dual-Soil Balancing</b>: Partitions ingestion into 60% trusted sources and 40% adversarial/probationary probes.",
+      "<b>Token Headroom Circuit Breakers</b>: Automatically sleeps when daily spend exceeds 70% of safety limit.",
+      "<b>Zero-Token Mesh Dedup</b>: Adopts existing peer attestations from the P2P gossip swarm at $0.00 token cost."
+    ],
+    cli: "credence boredom --force",
+    math_proof: "Curiosity Equilibrium: Harvest(t) = 0.60 * S_clean + 0.40 * S_adversarial constrained by Headroom(t) >= 0.30.",
+    invariants: ["inv-multi-model-sovereignty", "inv-production-telemetry-boundary"],
+    links: [
+      { label: "📘 Feed Ingestion & Boredom Guide", url: "https://docs.credence.run#docs/tutorials/09-zero-trust-feed-sifter-digest", desc: "Autonomous ingestion daemons and background tasks" }
+    ]
+  },
+
   browse: {
     title: "Curated Audit Directory & Case Studies",
     icon: "📚",

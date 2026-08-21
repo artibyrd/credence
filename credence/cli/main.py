@@ -31,7 +31,15 @@ from credence.cli.commands.audit import (
     cli_verify_file,
 )
 from credence.cli.commands.boredom import run_boredom_command
-from credence.cli.commands.db import run_db_init_command, run_db_migrate_command
+from credence.cli.commands.db import (
+    run_db_backup_command,
+    run_db_export_pack_command,
+    run_db_import_pack_command,
+    run_db_init_command,
+    run_db_migrate_command,
+    run_db_restore_command,
+    run_db_status_command,
+)
 from credence.cli.commands.docs_audit import cli_audit_docs
 from credence.cli.commands.feeds import run_feeds_list_command, run_sifter_command
 from credence.cli.commands.org import run_init_org_command
@@ -224,8 +232,16 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("quota", help="Display token headroom and spend status")
 
     # db
-    p_db = subparsers.add_parser("db", help="Database administrative operations")
-    p_db.add_argument("action", default="init", nargs="?", choices=["init", "migrate"])
+    p_db = subparsers.add_parser("db", help="Database backup, recovery, and migration operations")
+    p_db.add_argument(
+        "action",
+        default="status",
+        nargs="?",
+        choices=["status", "backup", "restore", "export-pack", "import-pack", "init", "migrate"],
+    )
+    p_db.add_argument("--source", "-s", help="Source file for restore or import-pack")
+    p_db.add_argument("--output", "-o", help="Target output file for backup or export-pack")
+    p_db.add_argument("--force", "-f", action="store_true", help="Force overwrite on restore")
 
     # taxonomies
     p_tax = subparsers.add_parser("taxonomies", help="List registered epistemic taxonomies and rules")
@@ -301,9 +317,27 @@ def main() -> None:
     elif args.command == "quota":
         asyncio.run(run_quota_command()) if asyncio.iscoroutinefunction(run_quota_command) else run_quota_command()
     elif args.command == "db":
-        asyncio.run(run_db_init_command()) if asyncio.iscoroutinefunction(
-            run_db_init_command
-        ) else run_db_init_command()
+        if args.action == "init":
+            code = asyncio.run(run_db_init_command())
+        elif args.action == "migrate":
+            code = asyncio.run(run_db_migrate_command())
+        elif args.action == "backup":
+            code = asyncio.run(run_db_backup_command(output_path=args.output))
+        elif args.action == "restore":
+            if not args.source:
+                print("❌ --source required for db restore")
+                sys.exit(1)
+            code = asyncio.run(run_db_restore_command(source_path=args.source, force=args.force))
+        elif args.action == "export-pack":
+            code = asyncio.run(run_db_export_pack_command(output_path=args.output))
+        elif args.action == "import-pack":
+            if not args.source:
+                print("❌ --source required for db import-pack")
+                sys.exit(1)
+            code = asyncio.run(run_db_import_pack_command(input_source=args.source))
+        else:
+            code = run_db_status_command()
+        sys.exit(code if isinstance(code, int) else 0)
     elif args.command == "taxonomies":
         run_taxonomy_list_command(domain=args.domain)
     elif args.command == "roots":

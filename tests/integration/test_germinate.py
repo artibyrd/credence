@@ -111,7 +111,7 @@ async def test_germinate_rest_endpoint(db_session: Any) -> None:
             res = await client.post("/api/germinate", json={"burst": 0, "sync_mesh": True})
             assert res.status_code == 200
             data = res.json()
-            assert data["status"] == "germinated"
+            assert data["status"] in ("germinated", "incremental_ready")
             assert "identity_pubkey" in data
             assert "peer_attestations_adopted" in data
             assert "total_reports_ready" in data

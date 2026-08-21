@@ -195,3 +195,152 @@ async def api_germinate(request: Any) -> Any:
             verbose=True,
         )
         return JSONResponse(summary.model_dump(mode="json"))
+
+
+async def api_db_backup(request: Any) -> Any:
+    """REST API: Trigger manual atomic database snapshot and cloud sync (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to trigger database backup"},
+            status_code=401,
+        )
+
+    from pathlib import Path
+
+    from credence.storage.backup import create_database_backup
+
+    body = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+    output_path = Path(body["output"]) if body.get("output") else None
+    upload_cloud = bool(body.get("upload_cloud", True))
+
+    try:
+        meta = create_database_backup(output_path=output_path, upload_cloud=upload_cloud)
+        return JSONResponse(
+            {
+                "status": "success",
+                "message": "Database backup created successfully",
+                "backup": meta.model_dump(mode="json"),
+            }
+        )
+    except Exception as e:
+        logger.error("API database backup failed: %s", e)
+        return JSONResponse({"error": f"Database backup failed: {e}"}, status_code=500)
+
+
+async def api_db_restore(request: Any) -> Any:
+    """REST API: Restore database from verified cloud or local backup archive (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to restore database"},
+            status_code=401,
+        )
+
+    from pathlib import Path
+
+    from credence.config import settings
+    from credence.storage.backup import restore_database_backup
+
+    body = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+    source = body.get("source")
+    force = bool(body.get("force", False))
+
+    if not source:
+        latest = settings.CREDENCE_BACKUP_DIR / "credence_latest.db.gz"
+        if latest.exists():
+            source = str(latest)
+        else:
+            return JSONResponse(
+                {"error": "No backup source specified and no local latest backup found"}, status_code=400
+            )
+
+    try:
+        res = restore_database_backup(source_path=Path(source), force=force)
+        return JSONResponse(
+            {
+                "status": "success",
+                "message": "Database restored successfully",
+                "restore": res.model_dump(mode="json"),
+            }
+        )
+    except Exception as e:
+        logger.error("API database restore failed: %s", e)
+        return JSONResponse({"error": f"Database restore failed: {e}"}, status_code=500)
+
+
+async def api_db_status(request: Any) -> Any:
+    """REST API: Retrieve database storage, backup inventory, and latest snapshot telemetry."""
+    from credence.storage.backup import get_backup_status
+
+    status = get_backup_status()
+    return JSONResponse(status)
+
+
+async def api_db_export_pack(request: Any) -> Any:
+    """REST API: Export all local audits to signed attestation bundle (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to export attestation pack"},
+            status_code=401,
+        )
+
+    import json
+
+    from credence.storage.backup import export_attestation_pack
+
+    async with get_async_session() as session:
+        try:
+            pack_path = await export_attestation_pack(session=session)
+            pack_data = json.loads(pack_path.read_text(encoding="utf-8"))
+            return JSONResponse(pack_data)
+        except Exception as e:
+            return JSONResponse({"error": f"Export attestation pack failed: {e}"}, status_code=500)
+
+
+async def api_db_import_pack(request: Any) -> Any:
+    """REST API: Inoculate signed attestations into local database at $0.00 cost (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to import attestation pack"},
+            status_code=401,
+        )
+
+    import tempfile
+
+    from credence.storage.backup import import_attestation_pack
+
+    body = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+    source_path = body.get("pack_path")
+    if not source_path and "attestations" in body:
+        with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False, encoding="utf-8") as tmp:
+            import json
+
+            json.dump(body, tmp)
+            source_path = tmp.name
+
+    if not source_path:
+        return JSONResponse({"error": "No pack_path or attestations payload provided"}, status_code=400)
+
+    async with get_async_session() as session:
+        try:
+            res = await import_attestation_pack(session=session, pack_path_or_url=source_path)
+            return JSONResponse(res)
+        except Exception as e:
+            return JSONResponse({"error": f"Import attestation pack failed: {e}"}, status_code=500)

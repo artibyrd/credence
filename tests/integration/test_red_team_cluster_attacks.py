@@ -163,14 +163,17 @@ def test_attack_fastmcp_burst_throttled() -> None:
 
     # 1. Verify normal requests pass within quota
     for _ in range(5):
-        assert limiter.check_and_record(payload_length=50) is True
+        ok, _ = limiter.check_and_record(payload_length=50)
+        assert ok is True
 
     # 2. 6th burst request is throttled
-    assert limiter.check_and_record(payload_length=50) is False
+    ok6, _ = limiter.check_and_record(payload_length=50)
+    assert ok6 is False
 
-    # 3. Oversized payload raises ValueError
-    with pytest.raises(ValueError, match="Payload size .* exceeds maximum allowed limit"):
-        limiter.check_and_record(payload_length=5000)
+    # 3. Oversized payload returns False with max limit error
+    ok_over, err = limiter.check_and_record(payload_length=5000)
+    assert ok_over is False
+    assert "exceeds maximum" in err
 
 
 @pytest.mark.integration

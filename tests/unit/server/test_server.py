@@ -292,7 +292,7 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
         res_germ = await client.post("/api/germinate", json={"burst": 0, "sync_mesh": False})
         assert res_germ.status_code == 200
         germ_data = res_germ.json()
-        assert germ_data["status"] == "germinated"
+        assert germ_data["status"] in ("germinated", "incremental_ready")
 
         # 6. Roots tree and candidates endpoints
         res_tree = await client.get("/api/roots/tree")

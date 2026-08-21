@@ -152,6 +152,11 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY_ID: Optional[str] = None
     S3_SECRET_ACCESS_KEY: Optional[str] = None
     S3_REGION_NAME: str = "auto"
+    CREDENCE_BACKUP_BUCKET: Optional[str] = None
+    CREDENCE_BACKUP_DIR: Path = Path("data/backups")
+    CREDENCE_BACKUP_ENABLED: bool = True
+    CREDENCE_BOREDOM_ENABLED: bool = True
+    CREDENCE_SIFTER_ENABLED: bool = False
 
     # Distributed Cache & State Store (Redis / Valkey)
     REDIS_URL: Optional[str] = None

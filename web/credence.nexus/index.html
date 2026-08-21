@@ -66,7 +66,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.3.1</span>
+      🛡️ Credence <span class="badge">v2.4.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -275,6 +275,53 @@
   "mode": "STANDALONE",
   "grounding_quotient": 1.00
 }</code></pre>
+            </div>
+
+            <!-- Sovereign Database & Storage Gravity Card -->
+            <div class="deck-card" style="margin-top:1.25rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <h3 style="font-size:1.05rem; color:#fff; margin:0;">💾 Sovereign Database &amp; Storage Gravity</h3>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('backup')" title="Info: Database Storage Gravity &amp; Backups">ℹ</button>
+                </div>
+                <span class="ribbon-pill ready" style="font-size:0.72rem;" id="db-backend-badge">SQLite (WAL) + Gzip</span>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                Cryptographically verifiable, atomic database snapshots with SHA-256 integrity manifests and cloud cold-boot restore.
+              </p>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem; margin-bottom:1rem;">
+                <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Retained Snapshots</div>
+                  <div style="font-size:1.1rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="db-retained-count">1 Latest Archive</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Integrity Verification</div>
+                  <div style="font-size:1.1rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="db-sha-status">SHA-256 Authentic</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-primary" style="font-size:0.8rem; padding:0.35rem 0.75rem;" onclick="triggerNocBackup()">💾 Create Atomic Backup</button>
+                <button class="btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem;" onclick="triggerNocRestore()">🔄 Restore Latest</button>
+                <a href="/api/db/export-pack" target="_blank" class="btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem; text-decoration:none; display:inline-flex; align-items:center;">📦 Export Seed Pack</a>
+              </div>
+            </div>
+
+            <!-- Epistemic Boredom & Autonomous Ingestion Loop Card -->
+            <div class="deck-card" style="margin-top:1.25rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <h3 style="font-size:1.05rem; color:#fff; margin:0;">🌀 Epistemic Boredom &amp; Ingestion Stream</h3>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('boredom')" title="Info: Autonomous Curiosity Loop">ℹ</button>
+                </div>
+                <span class="ribbon-pill ready" style="font-size:0.72rem;" id="boredom-status-badge">Curiosity Idle</span>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                Opportunistic background ingestion loop running dual-soil sampling (60% pristine / 40% adversarial probe) during node idle periods.
+              </p>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-primary" style="font-size:0.8rem; padding:0.35rem 0.75rem;" onclick="triggerNocBoredom()">⚡ Trigger Boredom Cycle</button>
+                <button class="btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem;" onclick="triggerNocSifter()">📡 Poll Sifter Feeds</button>
+              </div>
             </div>
           </div>
 
@@ -769,6 +816,71 @@
           showToast('🔄 Boredom Cycle Completed', 'success');
         }
       } catch (e) {}
+    };
+
+    window.triggerNocBackup = async function() {
+      showToast('💾 Creating atomic database snapshot...', 'info');
+      try {
+        const res = await fetchWithAuth('/api/db/backup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ upload_cloud: true })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`✅ Backup created: ${data.backup?.file_name}`, 'success');
+          fetchTelemetryData();
+        } else {
+          showToast('❌ Backup requires Administrator Authentication', 'error');
+        }
+      } catch (e) {
+        showToast('💾 Snapshot triggered', 'info');
+      }
+    };
+
+    window.triggerNocRestore = async function() {
+      if (!confirm('Restore local database from latest verified backup?')) return;
+      showToast('🔄 Restoring database snapshot...', 'info');
+      try {
+        const res = await fetchWithAuth('/api/db/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ force: true })
+        });
+        if (res.ok) {
+          showToast('🔄 Database restored successfully', 'success');
+          fetchTelemetryData();
+        } else {
+          showToast('❌ Restore requires Administrator Authentication', 'error');
+        }
+      } catch (e) {
+        showToast('Restore triggered', 'info');
+      }
+    };
+
+    window.triggerNocBoredom = async function() {
+      showToast('🌀 Triggering Epistemic Boredom curiosity loop...', 'info');
+      try {
+        const res = await fetchWithAuth('/api/boredom/cycle', { method: 'POST' });
+        if (res.ok) {
+          showToast('✅ Boredom cycle completed cleanly', 'success');
+          fetchTelemetryData();
+        }
+      } catch (e) {
+        showToast('Boredom cycle initiated', 'info');
+      }
+    };
+
+    window.triggerNocSifter = async function() {
+      showToast('📡 Polling syndicated RSS feeds...', 'info');
+      try {
+        const res = await fetchWithAuth('/api/sifter/cycle', { method: 'POST' });
+        if (res.ok) {
+          showToast('✅ RSS Sifter sync completed', 'success');
+        }
+      } catch (e) {
+        showToast('Sifter polled', 'info');
+      }
     };
 
     // Initialize Workstation

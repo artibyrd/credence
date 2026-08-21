@@ -47,7 +47,12 @@ def _register_merit_and_analytics_tools(server: MCPServer) -> None:
         await init_db()
         async with get_async_session() as session:
             card = await get_local_node_merit(session, local_pubkey=node_pubkey)
-            return json.dumps(asdict(card), indent=2)
+            card_dict = asdict(card)
+            card_dict["unlocked_badges"] = [
+                b.model_dump() if hasattr(b, "model_dump") else asdict(b) if hasattr(b, "__dataclass_fields__") else b
+                for b in card.unlocked_badges
+            ]
+            return json.dumps(card_dict, indent=2)
         return "{}"
 
     @server.tool(

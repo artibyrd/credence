@@ -36,6 +36,12 @@ spec:
               value: "0.0.0.0"
             - name: MCP_PORT
               value: "8000"
+            - name: CREDENCE_BACKUP_ENABLED
+              value: "true"
+            - name: CREDENCE_BOREDOM_ENABLED
+              value: "true"
+            - name: CREDENCE_SIFTER_ENABLED
+              value: "true"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
