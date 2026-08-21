@@ -1430,6 +1430,7 @@ export function openInfoModal(topicKey) {
   if (key === "mesh" || key === "nodes") key = "topology";
   if (key === "admin" || key === "governor" || key === "cost") key = "operator_admin";
   if (key === "qi" || key === "leaderboard") key = "qi_scoring";
+  if (key === "identity" || key === "pubkey") key = "custody";
 
   const info = INFO_TOPICS[key] || INFO_TOPICS["score"];
 

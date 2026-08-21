@@ -1051,3 +1051,71 @@ def test_web_component_zero_clone_and_defensive_events(docs_root: Path) -> None:
     )
     assert "customElements.define('credence-badge'" in content, "credence-widget.js must register custom element"
     assert "attributeChangedCallback" in content, "credence-widget.js must implement attributeChangedCallback"
+
+
+@pytest.mark.governance
+def test_dashboard_info_modals_and_docs_linkage_parity(docs_root: Path) -> None:
+    """Verify 100% of dashboard info modals in INFO_TOPICS link to real docs and invariants."""
+    credence_root = docs_root.parent / "credence"
+    workstation_js = credence_root / "web" / "assets" / "credence-workstation.js"
+    assert workstation_js.exists(), "credence-workstation.js must exist"
+
+    content = workstation_js.read_text(encoding="utf-8")
+
+    # 1. Parse all topic keys from INFO_TOPICS
+    topic_keys = set(re.findall(r"^\s{2}([a-z0-9_]+):\s*\{", content, re.MULTILINE))
+    assert len(topic_keys) >= 25, f"Expected at least 25 registered INFO_TOPICS, found {len(topic_keys)}"
+
+    # 2. Check all openInfoModal calls across all HTML templates in web/
+    aliases = {
+        "diff": "temporal_diff",
+        "revisions": "temporal_diff",
+        "stealth": "temporal_diff",
+        "webcrypto": "webcrypto",
+        "crypto": "webcrypto",
+        "signature": "webcrypto",
+        "keys": "webcrypto",
+        "rules": "taxonomies",
+        "rule": "taxonomies",
+        "taxonomy": "taxonomies",
+        "mesh": "topology",
+        "nodes": "topology",
+        "admin": "operator_admin",
+        "governor": "operator_admin",
+        "cost": "operator_admin",
+        "qi": "qi_scoring",
+        "leaderboard": "qi_scoring",
+        "identity": "custody",
+        "pubkey": "custody",
+    }
+
+    web_root = credence_root / "web"
+    for html_path in web_root.glob("**/*.html"):
+        html_text = html_path.read_text(encoding="utf-8")
+        for called_key in re.findall(r'openInfoModal\([\'"]([a-z0-9_]+)[\'"]\)', html_text):
+            resolved_key = aliases.get(called_key, called_key)
+            assert resolved_key in topic_keys, f"HTML file {html_path.name} calls unregistered modal key '{called_key}'"
+
+    # 3. Verify all doc URLs in INFO_TOPICS resolve to real markdown files on disk
+    urls = re.findall(r'url:\s*["\']([^"\']+)["\']', content)
+    for u in urls:
+        if "docs.credence.run#" in u:
+            slug = u.split("docs.credence.run#")[1].split("#")[0]
+            target_md = docs_root / f"{slug}.md"
+            target_md_direct = docs_root / "docs" / f"{slug.replace('docs/', '')}.md"
+            target_blog = docs_root / "blog" / f"{slug.replace('blog/', '')}.md"
+            assert target_md.exists() or target_md_direct.exists() or target_blog.exists(), (
+                f"URL '{u}' references missing documentation slug '{slug}'"
+            )
+        elif "blog.credence.run#" in u:
+            slug = u.split("blog.credence.run#")[1].split("#")[0]
+            target_blog = docs_root / "blog" / f"{slug.replace('blog/', '')}.md"
+            assert target_blog.exists(), f"Blog URL '{u}' references missing blog essay '{slug}'"
+
+    # 4. Verify topic-index.md catalogs the Knowledge Modal Registry
+    topic_index_path = docs_root / "docs" / "topic-index.md"
+    assert topic_index_path.exists()
+    topic_index_content = topic_index_path.read_text(encoding="utf-8")
+    assert "Workstation & Dashboard Knowledge Modal Registry" in topic_index_content
+    for key in topic_keys:
+        assert f"`{key}`" in topic_index_content, f"Topic '{key}' must be cataloged in docs/topic-index.md"
