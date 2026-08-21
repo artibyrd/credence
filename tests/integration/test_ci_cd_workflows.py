@@ -99,3 +99,40 @@ def test_gcp_project_id_matrix() -> None:
         if prod_vars.exists():
             prod_content = prod_vars.read_text(encoding="utf-8")
             assert "credence-prod-505902" in prod_content
+
+
+@pytest.mark.integration
+def test_workflow_branch_and_pr_staging_triggers() -> None:
+    """Verify deploy-dev triggers on PR creation/synchronization and deploy-backend triggers on merge to main."""
+    dev_wf = WORKFLOWS_DIR / "deploy-dev.yml"
+    backend_wf = WORKFLOWS_DIR / "deploy-backend.yml"
+    edge_wf = WORKFLOWS_DIR / "deploy-edge.yml"
+
+    assert dev_wf.exists()
+    assert backend_wf.exists()
+    assert edge_wf.exists()
+
+    dev_data = yaml.safe_load(dev_wf.read_text(encoding="utf-8"))
+    backend_data = yaml.safe_load(backend_wf.read_text(encoding="utf-8"))
+    edge_data = yaml.safe_load(edge_wf.read_text(encoding="utf-8"))
+
+    dev_on = dev_data.get("on") or dev_data.get(True)
+    backend_on = backend_data.get("on") or backend_data.get(True)
+    edge_on = edge_data.get("on") or edge_data.get(True)
+
+    # Assert Dev triggers on pull request to main
+    assert "pull_request" in dev_on, "deploy-dev.yml must define pull_request trigger"
+    pr_spec = dev_on["pull_request"]
+    assert "main" in pr_spec.get("branches", []), "deploy-dev.yml must target main branch PRs"
+    assert "synchronize" in pr_spec.get("types", []), "deploy-dev.yml must trigger on PR synchronize (new pushes)"
+
+    # Assert Prod Backend triggers on push/merge to main and version tags
+    assert "push" in backend_on, "deploy-backend.yml must define push trigger"
+    push_spec = backend_on["push"]
+    assert "main" in push_spec.get("branches", []), "deploy-backend.yml must deploy on push/merge to main"
+
+    # Assert Edge router triggers on push/merge to main
+    assert "push" in edge_on, "deploy-edge.yml must define push trigger"
+    assert "main" in edge_on["push"].get("branches", []), "deploy-edge.yml must deploy on push to main"
+
+

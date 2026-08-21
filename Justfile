@@ -746,7 +746,7 @@ sync-version version: (preflight "poetry")
     @poetry run pytest tests/governance/test_docs_integrity.py -k test_ecosystem_version_parity
     @echo "✅ All ecosystem version badges and manifests synchronized to {{version}}."
 
-# Coordinate multi-repository git operations (status, commit, tag, push)
+# Coordinate multi-repository git operations (status, branch, commit, tag, push)
 git-sync action="status" arg="":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -758,9 +758,29 @@ git-sync action="status" arg="":
                 (cd "$r" && git status -s)
             done
             ;;
+        branch)
+            BRANCH="{{arg}}"
+            if [ -z "$BRANCH" ]; then echo "❌ Please provide a branch name. e.g. just git-sync branch feat/v2.3.0-workflow"; exit 1; fi
+            for r in $REPOS; do
+                echo "=== Checking out branch '$BRANCH' in $(basename "$r") ==="
+                (cd "$r" && (git checkout "$BRANCH" 2>/dev/null || git checkout -b "$BRANCH"))
+            done
+            echo "✅ All ecosystem repositories switched to branch '$BRANCH'."
+            ;;
         commit)
             MSG="{{arg}}"
             if [ -z "$MSG" ]; then echo "❌ Please provide a commit message. e.g. just git-sync commit 'msg'"; exit 1; fi
+            python3 -c '
+            import re, sys
+            msg = sys.argv[1]
+            pat = r"^(\[v[0-9]+\.[0-9]+\.[0-9]+\] )?(feat|fix|docs|refactor|test|ci|chore|perf)(\((governance|forensics|mesh|crypto|ui|ops)\))?!?: .+$"
+            if not re.match(pat, msg):
+                print(f"❌ Error: Commit message violates ecosystem convention:\n   \"{msg}\"")
+                print("   Allowed format: <type>(<scope>): <summary> OR <type>: <summary>")
+                print("   Allowed types : feat, fix, docs, refactor, test, ci, chore, perf")
+                print("   Allowed scopes: (governance), (forensics), (mesh), (crypto), (ui), (ops)")
+                sys.exit(1)
+            ' "$MSG"
             for r in $REPOS; do
                 echo "=== Committing in $(basename "$r") ==="
                 (cd "$r" && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "$MSG")))
@@ -778,13 +798,69 @@ git-sync action="status" arg="":
             ;;
         push)
             for r in $REPOS; do
-                echo "=== Pushing $(basename "$r") to origin ==="
-                (cd "$r" && git push origin main --follow-tags)
+                CURRENT_BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
+                echo "=== Pushing $(basename "$r") ($CURRENT_BRANCH) to origin ==="
+                (cd "$r" && git push origin "$CURRENT_BRANCH" --follow-tags)
             done
             echo "✅ All ecosystem branches and tags pushed to GitHub."
             ;;
         *)
-            echo "❌ Unknown git-sync action '{{action}}'. Valid options: status, commit, tag, push."
+            echo "❌ Unknown git-sync action '{{action}}'. Valid options: status, branch, commit, tag, push."
+            exit 1
+            ;;
+    esac
+
+# Create or switch feature branch across all ecosystem repositories
+branch name:
+    @just git-sync branch {{name}}
+
+# Perform incremental verified atomic commit across ecosystem repositories
+commit message:
+    @just git-sync commit "{{message}}"
+
+# Manage GitHub Pull Requests across the ecosystem via GitHub CLI (gh)
+pr action="status" arg="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    REPOS="/home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent"
+    case "{{action}}" in
+        create)
+            TITLE="{{arg}}"
+            if [ -z "$TITLE" ]; then echo "❌ Please provide a PR title. e.g. just pr create 'feat: v2.3.0 workflow'"; exit 1; fi
+            for r in $REPOS; do
+                BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
+                if [ "$BRANCH" != "main" ]; then
+                    echo "=== Creating PR for $(basename "$r") ($BRANCH -> main) ==="
+                    (cd "$r" && gh pr create --title "$TITLE" --body "Automated ecosystem PR for branch $BRANCH." --base main --head "$BRANCH" || true)
+                fi
+            done
+            ;;
+        status)
+            for r in $REPOS; do
+                echo "=== PR Status: $(basename "$r") ==="
+                (cd "$r" && gh pr list || true)
+            done
+            ;;
+        view)
+            PR_NUM="{{arg}}"
+            gh pr view ${PR_NUM:+"$PR_NUM"}
+            ;;
+        checks)
+            PR_NUM="{{arg}}"
+            gh pr checks ${PR_NUM:+"$PR_NUM"}
+            ;;
+        merge)
+            PR_NUM="{{arg}}"
+            for r in $REPOS; do
+                BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
+                if [ "$BRANCH" != "main" ]; then
+                    echo "=== Merging PR for $(basename "$r") ==="
+                    (cd "$r" && gh pr merge ${PR_NUM:+"$PR_NUM"} --merge --auto || true)
+                fi
+            done
+            ;;
+        *)
+            echo "❌ Unknown pr action '{{action}}'. Valid options: create, status, view, checks, merge."
             exit 1
             ;;
     esac
@@ -800,12 +876,23 @@ release version message:
     @just git-sync push
     @echo -e "\033[1;32m🚀 Full Ecosystem Release v{{version}} Pushed to GitHub! Continuous deployment is being orchestrated by GitHub Actions.\033[0m"
 
-# Verify Antigravity declarative workspace configuration and skills registration
+# Verify Antigravity declarative workspace configuration, skills schema, and prompt economy
 agent-check:
     @echo "=== Credence Antigravity Declarative Health Check ==="
     @test -f ../AGENTS.md && echo "✅ Universal root AGENTS.md verified." || (echo "❌ Missing root AGENTS.md"; exit 1)
     @test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
     @test -d ../credence-agent/.agents/skills && echo "✅ Native skills repository verified." || (echo "❌ Missing credence-agent skills"; exit 1)
-    @echo "=== All Declarative Antigravity Configs Verified ==="
+    @python3 ../credence-agent/scripts/lint_skills.py
+    @python3 ../credence-agent/scripts/audit_demotions.py
+    @echo -e "\033[1;32m✅ Declarative Antigravity Workspace & Invariant Engine Verified Cleanly!\033[0m"
+
+# Audit skills schema, frontmatter, and token economy
+audit-skills:
+    @python3 ../credence-agent/scripts/lint_skills.py
+
+# Audit invariant demotion candidates and token savings
+audit-demotions:
+    @python3 ../credence-agent/scripts/audit_demotions.py
+
 
 

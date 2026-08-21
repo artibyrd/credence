@@ -1,6 +1,10 @@
 name: Deploy Dev Environment to Google Cloud Run
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
   push:
     branches:
       - develop
