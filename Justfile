@@ -186,13 +186,50 @@ serve transport="sse" port="8000" sifter="false": (preflight "poetry")
             poetry run credence serve --transport stdio
             ;;
         web)
-            poetry run python -m http.server {{port}} --directory web/credence.run
+            poetry run python -m http.server {{port}} --directory web
             ;;
         *)
             echo "❌ Unknown transport '{{transport}}'. Valid options: sse, stdio, web."
             exit 1
             ;;
     esac
+
+# Preview all zero-build multi-domain web workstations locally for browser inspection
+preview port="8080":
+    @echo "🌐 Previewing Credence Multi-Domain Zero-Build Web Surfaces on http://localhost:{{port}}"
+    @echo "   👉 Home:       http://localhost:{{port}}/credence.run/"
+    @echo "   👉 Reports:    http://localhost:{{port}}/credence.report/"
+    @echo "   👉 Nexus:      http://localhost:{{port}}/credence.nexus/"
+    @echo "   👉 Admin Deck: http://localhost:{{port}}/credence.nexus/#admin"
+    @echo "   👉 Foundation: http://localhost:{{port}}/credence.foundation/"
+    @poetry run python3 -m http.server {{port}} --directory web
+
+# Preview zero-build documentation portal locally on http://localhost:8081
+preview-docs port="8081":
+    @echo "📚 Previewing Credence Documentation Portal on http://localhost:{{port}}"
+    @python3 -m http.server {{port}} --directory ../credence-docs
+
+# Launch complete local development stack (Backend on 8000 + Web Workstations on 8080)
+dev backend_port="8000" web_port="8080": (preflight "poetry")
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "================================================================="
+    echo "  🚀 Starting Credence Dual-Plane Local Development Stack"
+    echo "================================================================="
+    echo "  ⚙️  Backend (FastMCP + REST): http://localhost:{{backend_port}}"
+    echo "  🌐 Web Workstations:         http://localhost:{{web_port}}"
+    echo "     👉 Home:       http://localhost:{{web_port}}/credence.run/"
+    echo "     👉 Reports:    http://localhost:{{web_port}}/credence.report/"
+    echo "     👉 Nexus:      http://localhost:{{web_port}}/credence.nexus/"
+    echo "     👉 Admin Deck: http://localhost:{{web_port}}/credence.nexus/#admin"
+    echo "     👉 Foundation: http://localhost:{{web_port}}/credence.foundation/"
+    echo "================================================================="
+    echo "Press CTRL+C to terminate both servers."
+    
+    trap 'kill $(jobs -p) 2>/dev/null || true' EXIT SIGINT SIGTERM
+    
+    python3 -m http.server {{web_port}} --directory web &
+    poetry run credence serve --transport sse --port {{backend_port}}
 
 # Launch interactive Textual TUI workstation
 tui: (preflight "poetry")
@@ -569,10 +606,19 @@ check:
     @echo ""
     @echo -e "\033[1;32m🎉 Complete QA Verification Passed Cleanly!\033[0m"
 
-# One-command developer onboarding: setup dependencies, preflight, germinate node, and verify
+# Bootstrap and manage operator administrative authentication credentials
+auth-bootstrap env="local":
+    @poetry run python3 scripts/bootstrap_admin_auth.py {{env}}
+
+# Print the active local operator admin authentication token
+auth-token:
+    @poetry run python3 scripts/bootstrap_admin_auth.py local --print-token
+
+# One-command developer onboarding: setup dependencies, preflight, bootstrap admin key, germinate node, and verify
 ignite burst="3":
     @just setup
     @just preflight all
+    @just auth-bootstrap local
     @just germinate {{burst}}
     @just test mock
     @just doctor

@@ -57,14 +57,21 @@ def cli_identity(action: str = "show", key_path: str | None = None) -> None:
 
 
 def cli_stats(*args: Any, **kwargs: Any) -> None:
-    from credence.mesh.stats import compute_mesh_stats
+    is_mesh = bool(kwargs.get("mesh")) or ("--mesh" in args) or ("mesh" in args)
 
     async def _runner() -> None:
         from credence.db import get_async_session
 
         async with get_async_session() as s:
-            stats = await compute_mesh_stats(s)
-            console.print(json.dumps(stats, indent=2))
+            if is_mesh:
+                from credence.mesh.topology import compute_network_mesh_health
+
+                stats = await compute_network_mesh_health(s)
+            else:
+                from credence.mesh.stats import compute_mesh_stats
+
+                stats = await compute_mesh_stats(s)
+            print(json.dumps(stats, indent=2))
 
     asyncio.run(_runner())
 

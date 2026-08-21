@@ -2,148 +2,56 @@
   "catalog_id": "deceptive_patterns",
   "domain": "DECEPTIVE_PATTERN",
   "version": "1.0.0",
-  "description": "Catalog of deceptive user interface (UI) and user experience (UX) dark patterns designed to trick, coerce, or mislead users.",
+  "rules_count": 8,
   "default_weight": 1.5,
-  "clusters": [
+  "rules": [
     {
-      "cluster_id": "VISUAL_AND_ATTENTION_INTERFERENCE",
-      "name": "Visual & Attention Interference",
-      "description": "Manipulating visual hierarchy, typography, colors, or layout to conceal disclosures or emphasize deceptive options.",
-      "rules": [
-        {
-          "rule_id": "DP-1.1",
-          "name": "Disguised Ads & Fake UI Elements",
-          "severity": 4,
-          "description": "Advertisements styled to look like native site content, search results, system alert dialogs, or primary action buttons.",
-          "detection_signals": [
-            "Banner ads styled as 'Download Now' or 'Scan System' system prompts.",
-            "Sponsored promotional links disguised as genuine editorial navigation."
-          ],
-          "evidence_guidelines": "Identify the deceptive visual element or DOM selector and specify how it mimics native controls.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:visual-and-attention-interference/DP-1.1@v1.0.0"
-        },
-        {
-          "rule_id": "DP-1.2",
-          "name": "Visual Contrast Suppression / Hidden Disclosures",
-          "severity": 3,
-          "description": "Making crucial terms, recurring billing conditions, or opt-out links nearly invisible using ultra-low contrast or microscopic fonts.",
-          "detection_signals": [
-            "Light gray text on white background for critical subscription pricing.",
-            "Tiny disclaimers placed outside the visual viewport or below the fold."
-          ],
-          "evidence_guidelines": "Quote the suppressed text and note its CSS styling, font size, or color contrast ratio.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:visual-and-attention-interference/DP-1.2@v1.0.0"
-        },
-        {
-          "rule_id": "DP-1.3",
-          "name": "Preselection & Sneaking",
-          "severity": 4,
-          "description": "Pre-checking opt-ins for expensive add-ons, marketing lists, or recurring donations without user affirmative action.",
-          "detection_signals": [
-            "Default checked boxes that add products or subscriptions to the cart."
-          ],
-          "evidence_guidelines": "Identify the preselected checkbox, toggle, or stealth charge.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:visual-and-attention-interference/DP-1.3@v1.0.0"
-        }
-      ]
+      "id": "DEC-1.1",
+      "name": "Hidden Drip Pricing & Sneak-into-Basket",
+      "sev": 4,
+      "desc": "Concealing mandatory fees, service surcharges, or auto-selected items until the final steps of a transaction."
     },
     {
-      "cluster_id": "EMOTIONAL_AND_SOCIAL_PRESSURE",
-      "name": "Emotional & Social Pressure",
-      "description": "Using psychological manipulation, manufactured anxiety, or guilt to coerce compliance.",
-      "rules": [
-        {
-          "rule_id": "DP-2.1",
-          "name": "Confirmshaming",
-          "severity": 3,
-          "description": "Phrasing the opt-out option to guilt, insult, or shame the user into complying with the site's preferred choice.",
-          "detection_signals": [
-            "'No thanks, I hate saving money' or 'No, I don't care about security' as the decline button text."
-          ],
-          "evidence_guidelines": "Quote the manipulative reject button text and the positive accept alternative.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:emotional-and-social-pressure/DP-2.1@v1.0.0"
-        },
-        {
-          "rule_id": "DP-2.2",
-          "name": "Fake Urgency / Resetting Countdowns",
-          "severity": 4,
-          "description": "Displaying artificial timers, countdowns, or claims of impending price hikes that automatically reset upon page refresh.",
-          "detection_signals": [
-            "'Special deal expires in 04:59' timers that loop or reset upon reload.",
-            "Manufactured urgency with no real inventory expiration."
-          ],
-          "evidence_guidelines": "Quote the timer or urgency claim and note its artificial reset behavior.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:emotional-and-social-pressure/DP-2.2@v1.0.0"
-        },
-        {
-          "rule_id": "DP-2.3",
-          "name": "Fabricated Social Proof / Fake Activity Tickers",
-          "severity": 4,
-          "description": "Generating synthetic notifications claiming other users just purchased the item or that high demand is depleting stock.",
-          "detection_signals": [
-            "Repeating toast popups ('John from Ohio just bought this!') generated randomly via client-side script."
-          ],
-          "evidence_guidelines": "Quote the social proof popup or identify the client-side ticker script.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:emotional-and-social-pressure/DP-2.3@v1.0.0"
-        }
-      ]
+      "id": "DEC-1.2",
+      "name": "Confirmshaming & Manipulative Microcopy",
+      "sev": 3,
+      "desc": "Phrasing opt-out button text to guilt, insult, or shame the user into complying with the site's preferred choice."
     },
     {
-      "cluster_id": "FORCED_ACTION_AND_OBSTRUCTION",
-      "name": "Forced Action & Obstruction",
-      "description": "Making simple actions arduous, requiring unwanted user tasks, or preventing direct comparison.",
-      "rules": [
-        {
-          "rule_id": "DP-3.1",
-          "name": "Roach Motel / Trapped Cancellation",
-          "severity": 5,
-          "description": "Making it effortless to sign up or subscribe (1-click), but requiring phone calls, maze-like forms, or hidden menus to cancel.",
-          "detection_signals": [
-            "Asymmetric friction: instant online signup vs mandatory telephone cancellation during limited hours."
-          ],
-          "evidence_guidelines": "Identify the cancellation friction pathway compared to initial onboarding.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:forced-action-and-obstruction/DP-3.1@v1.0.0"
-        },
-        {
-          "rule_id": "DP-3.2",
-          "name": "Comparison Prevention",
-          "severity": 3,
-          "description": "Intentionally obfuscating unit prices, plan features, or metrics to prevent users from making an informed financial comparison.",
-          "detection_signals": [
-            "Concealing per-ounce or per-month true costs behind arbitrary bundle points."
-          ],
-          "evidence_guidelines": "Identify the obfuscated pricing tier and note the omitted standard metrics.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:forced-action-and-obstruction/DP-3.2@v1.0.0"
-        }
-      ]
+      "id": "DEC-1.3",
+      "name": "Visual Contrast Suppression",
+      "sev": 3,
+      "desc": "Making crucial terms, recurring billing conditions, or opt-out links nearly invisible using ultra-low contrast or microscopic fonts."
     },
     {
-      "cluster_id": "DECEPTIVE_NAVIGATION",
-      "name": "Deceptive Navigation",
-      "description": "Tricking the user into navigating somewhere they did not intend or performing unintended actions.",
-      "rules": [
-        {
-          "rule_id": "DP-4.1",
-          "name": "Bait and Switch",
-          "severity": 5,
-          "description": "Promising one outcome (e.g. clicking 'Close' or 'Skip') but executing an entirely different action (e.g. initiating download or checkout).",
-          "detection_signals": [
-            "Clicking an 'X' button that opens a sponsored popup instead of closing the modal."
-          ],
-          "evidence_guidelines": "Identify the deceptive trigger and its unexpected resulting action.",
-          "mitigations_or_exemptions": null,
-          "namespaced_uri": "deceptive-pattern:deceptive-navigation/DP-4.1@v1.0.0"
-        }
-      ]
+      "id": "DEC-2.1",
+      "name": "Fake Urgency & Resetting Countdowns",
+      "sev": 4,
+      "desc": "Displaying artificial timers, countdowns, or claims of impending price hikes that automatically reset upon page reload."
+    },
+    {
+      "id": "DEC-2.2",
+      "name": "Fabricated Social Proof & Fake Activity",
+      "sev": 4,
+      "desc": "Generating synthetic notifications claiming other users just purchased the item or that high demand is depleting stock."
+    },
+    {
+      "id": "DEC-2.3",
+      "name": "Roach Motel / Trapped Cancellation",
+      "sev": 5,
+      "desc": "Making it effortless to subscribe (1-click), but requiring phone calls, maze-like forms, or hidden menus to cancel."
+    },
+    {
+      "id": "DEC-3.1",
+      "name": "Fake System Warnings & Rogue Dialogs",
+      "sev": 5,
+      "desc": "Simulating native operating system error dialogs, antivirus infection alerts, or browser crash screens to frighten users."
+    },
+    {
+      "id": "DEC-3.2",
+      "name": "Bait and Switch",
+      "sev": 5,
+      "desc": "Promising one outcome (e.g. clicking 'Close' or 'Skip') but executing an entirely different action (e.g. opening an ad or initiating checkout)."
     }
-  ],
-  "catalog_hash": "sha256:a500e5be929f32bd1bddc0489ff284ba0b8ae4b48205b937c1332018c371d86d"
+  ]
 }

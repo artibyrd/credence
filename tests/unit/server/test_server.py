@@ -239,6 +239,20 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
     app = create_server_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        # 0. Root index and favicon discovery
+        res_root_json = await client.get("/", headers={"accept": "application/json"})
+        assert res_root_json.status_code == 200
+        root_data = res_root_json.json()
+        assert root_data["service"] == "credence-server"
+        assert "endpoints" in root_data
+
+        res_root_html = await client.get("/", headers={"accept": "text/html"})
+        assert res_root_html.status_code == 200
+        assert "Credence Node Server" in res_root_html.text
+
+        res_favicon = await client.get("/favicon.ico")
+        assert res_favicon.status_code == 204
+
         # 1. Health check (with Interface Telemetry Loopback payload)
         res_health = await client.get("/health")
         assert res_health.status_code == 200

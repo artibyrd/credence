@@ -175,3 +175,23 @@ variable "alert_5xx_count_threshold" {
   default     = 5
 }
 
+variable "admin_api_key" {
+  type        = string
+  description = "Administrator API Key for mutating operations and operator session."
+  sensitive   = true
+  default     = ""
+}
+
+variable "admin_emails" {
+  type        = string
+  description = "Comma-separated email addresses allowed for operator OAuth / OIDC login."
+  default     = ""
+}
+
+variable "oauth_google_client_id" {
+  type        = string
+  description = "Google OAuth 2.0 Client ID for browser operator login."
+  default     = ""
+}
+
+

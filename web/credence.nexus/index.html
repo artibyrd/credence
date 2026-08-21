@@ -3,60 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence Nexus — P2P Mesh Network & Epistemic Leaderboards</title>
-  <meta name="description" content="Decentralized P2P mesh network, live bootstrap seed directory, epistemic badges, and 5-factor node quality rankings for Credence.">
-  <link rel="stylesheet" href="styles.css">
+  <title>Credence Nexus — Decentralized P2P Mesh NOC & Operator Deck</title>
+  <meta name="description" content="Decentralized P2P gossip mesh topology, Byzantine fault tolerance, node vitals, operator admin controls, and bootstrap seed discovery.">
+  <link rel="stylesheet" href="../assets/credence-ui.css">
   <style>
-    .tab-bar {
-      display: flex;
-      gap: 0.5rem;
-      margin: 1.5rem 0 1rem 0;
-      flex-wrap: wrap;
-    }
-    .tab-btn {
-      background: var(--bg-surface, #1e293b);
-      border: 1px solid var(--border-color, #334155);
-      color: #94a3b8;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.15s ease;
-    }
-    .tab-btn.active, .tab-btn:hover {
-      background: #0284c7;
-      color: #ffffff;
-      border-color: #38bdf8;
-    }
-    .badge-grid {
+    .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
-      margin-top: 1rem;
+      margin-bottom: 1.25rem;
     }
-    .badge-item {
-      background: var(--bg-surface, #1e293b);
-      border: 1px solid var(--border-color, #334155);
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+    .metric-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+    .canvas-container {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 1rem;
-      border-radius: 8px;
+      position: relative;
+      margin-bottom: 1.25rem;
+      min-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #mesh-canvas {
+      width: 100%;
+      height: 380px;
+      display: block;
+    }
+    .badge-preview-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--radius);
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
     }
-    .badge-preview {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      font-weight: bold;
-      background: #0f172a;
-      border: 1px solid #334155;
-    }
-    .traffic-fast { color: #4ade80; font-weight: bold; }
-    .traffic-std { color: #facc15; }
-    .traffic-choke { color: #f87171; }
   </style>
 </head>
 <body>
@@ -74,250 +77,814 @@
     </ul>
   </nav>
 
-
-  <div class="container">
-    <header>
-      <span class="badge">Decentralized Trust Network</span>
-      <h1>Credence Nexus</h1>
-      <p class="lead">Peer-to-peer gossip network topology, live bootstrap seed directory (<code>peers.json</code>), compute philanthropy odometers, and 5-factor node quality rankings (Qᵢ).</p>
+  <div class="workstation-container">
+    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
+    <header class="workstation-header">
+      <span class="badge-pill">🕸️ Network Operations Center</span>
+      <h1 class="hero-title">Credence Nexus</h1>
+      <p class="hero-subtitle">
+        Live node telemetry, peer connectivity, and Byzantine quorum monitoring across the mesh network.
+      </p>
     </header>
 
-    <!-- Nexus Subnav Bar -->
-    <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; border-bottom:1px solid #1e293b; padding-bottom:0.75rem;">
-      <a href="index.html" style="background:#0284c7; color:#fff; border:1px solid #38bdf8; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">🏆 Epistemic Leaderboard</a>
-      <a href="dashboard.html" style="background:#111827; color:#94a3b8; border:1px solid #1e293b; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">👤 My Node Dashboard</a>
-      <a href="mesh.html" style="background:#111827; color:#94a3b8; border:1px solid #1e293b; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">🕸️ Whole-Mesh Network Health</a>
-      <a href="cost.html" style="background:#111827; color:#94a3b8; border:1px solid #1e293b; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; font-weight:600;">⚖️ Cost & Token Budget</a>
+    <!-- Unified Connected Workstation Frame -->
+    <div class="deck-frame">
+      <!-- Unified Workstation Command Deck -->
+      <div class="deck-shell">
+        <!-- Left Command Rail -->
+        <aside class="deck-rail">
+          <!-- Top Section: Local Page Views -->
+          <div class="deck-rail-local">
+            <div class="deck-rail-header">NOC Workspaces</div>
+            <button class="deck-nav-item active" data-tab="topology" onclick="window.CredenceWS.switchTab('topology')">
+              <span>🕸️ 1. Mesh Topology</span>
+              <span class="nav-badge" id="rail-nodes-badge">1 Node</span>
+            </button>
+            <button class="deck-nav-item" data-tab="leaderboard" onclick="window.CredenceWS.switchTab('leaderboard')">
+              <span>🏆 2. Leaderboards</span>
+              <span class="nav-badge">Qᵢ Rank</span>
+            </button>
+            <button class="deck-nav-item" data-tab="vitals" onclick="window.CredenceWS.switchTab('vitals')">
+              <span>👤 3. Node Vitals</span>
+              <span class="nav-badge">Local</span>
+            </button>
+            <button class="deck-nav-item" data-tab="badges" onclick="window.CredenceWS.switchTab('badges')">
+              <span>🛡️ 4. Seed Manifest</span>
+              <span class="nav-badge">peers.json</span>
+            </button>
+          </div>
+
+          <!-- Lower Section: Global Ecosystem Switcher -->
+          <div class="deck-rail-global">
+            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
+            <a href="https://credence.run" class="deck-domain-link">
+              <span>Home Hub</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
+            </a>
+            <a href="https://credence.report" class="deck-domain-link">
+              <span>🛡️ Reports Lab</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">report ↗</span>
+            </a>
+            <a href="https://credence.nexus" class="deck-domain-link active-domain">
+              <span class="domain-name">🕸️ Nexus NOC</span>
+              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
+            </a>
+            <a href="https://credence.foundation" class="deck-domain-link">
+              <span>🏛️ Foundation</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">vault ↗</span>
+            </a>
+            <a href="https://docs.credence.run" class="deck-domain-link">
+              <span>📚 Docs &amp; Tools</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
+            </a>
+          </div>
+
+          <!-- Bottom Pinned Operator Footer -->
+          <div class="deck-rail-admin-footer">
+            <button type="button" class="btn-secondary" style="width:100%; text-align:center; font-size:0.78rem; padding:0.4rem; margin-bottom:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;" onclick="window.CredenceWS.openShortcutsModal()">
+              <span>⌨️ Hotkeys Reference</span>
+              <span class="nav-badge" style="background:var(--bg-card); color:var(--text-dim);">[?]</span>
+            </button>
+            <button class="deck-admin-link" data-tab="admin" id="btn-rail-admin" onclick="window.CredenceWS.switchTab('admin')">
+              <span>🛠️ Operator Admin Deck</span>
+              <span class="nav-badge" id="admin-tab-badge">Operator</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Deck Stage -->
+        <main class="deck-stage">
+          <!-- TAB 1: MESH TOPOLOGY -->
+          <div id="tab-topology" class="tab-panel active">
+            <div class="metric-grid">
+              <div class="metric-card" style="cursor:pointer;" onclick="window.CredenceWS.openInfoModal('topology')" title="Learn about Mesh Topology">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div class="metric-label">Active Mesh Nodes (N)</div>
+                  <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('topology')" title="Learn about Mesh Topology">ℹ</button>
+                </div>
+                <div class="metric-val" style="color:var(--accent-cyan);" id="m-nodes">1</div>
+              </div>
+              <div class="metric-card" style="cursor:pointer;" onclick="window.CredenceWS.openInfoModal('byzantine')" title="Learn about Byzantine Quorum: f = floor((N-1)/3)">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div class="metric-label">Max Byzantine Faults (f)</div>
+                  <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('byzantine')" title="Learn about Byzantine Quorum">ℹ</button>
+                </div>
+                <div class="metric-val" style="color:var(--accent-green);" id="m-faults">0</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Network Mode</div>
+                <div class="metric-val" style="color:var(--accent-amber); font-size:1.4rem;" id="m-mode">STANDALONE</div>
+              </div>
+              <div class="metric-card" style="cursor:pointer;" onclick="window.CredenceWS.openInfoModal('byzantine')" title="Learn about Sybil Cartel Resistance (3f+1)">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div class="metric-label">Sybil Resistance Score</div>
+                  <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('byzantine')" title="Learn about Sybil Cartel Resistance">ℹ</button>
+                </div>
+                <div class="metric-val" style="color:var(--accent-purple);" id="m-sybil">100.0%</div>
+              </div>
+            </div>
+
+            <!-- Canvas Container with Node Topology -->
+            <div class="canvas-container">
+              <canvas id="mesh-canvas"></canvas>
+            </div>
+
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <h3 style="font-size:1rem; color:#fff; margin:0;">📡 Live Node Attestation &amp; Gossip Stream</h3>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('gossip')" title="Info: Live P2P Attestation Gossip Stream">ℹ</button>
+                </div>
+                <span style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono);" id="gossip-state-label">Live Local Attestations</span>
+              </div>
+              <div id="gossip-stream" style="font-family:var(--font-mono); font-size:0.82rem; display:flex; flex-direction:column; gap:0.4rem; max-height:180px; overflow-y:auto;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: LEADERBOARD & MERIT -->
+          <div id="tab-leaderboard" class="tab-panel">
+            <div class="deck-card" style="margin-bottom:1.5rem;">
+              <div class="deck-card-header">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">5-Factor Node Quality Leaderboard (Qᵢ)</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('qi_scoring')" title="Info: 5-Factor Quality Scoring (Q_i)">ℹ</button>
+                  </div>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">
+                    <span style="font-family:var(--font-mono); font-weight:600; color:var(--accent-cyan);">Qᵢ = 0.30·Uᵢ + 0.25·Cᵢ + 0.20·Gᵢ + 0.15·Rᵢ + 0.10·Pᵢ</span> &bull; Genuine Live Node Roster
+                  </p>
+                </div>
+                <span class="ribbon-pill ready" id="leaderboard-status-pill">Local Primary Verified</span>
+              </div>
+
+              <div class="ws-table-container">
+                <table class="ws-table" id="leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Node ID &amp; Region</th>
+                      <th>Quality (Qᵢ)</th>
+                      <th>Uptime</th>
+                      <th>Consensus</th>
+                      <th>Verbatim (G)</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboard-body">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: NODE VITALS & SRE -->
+          <div id="tab-vitals" class="tab-panel">
+            <div class="metric-grid" style="margin-bottom:1.25rem;">
+              <div class="metric-card">
+                <div class="metric-label">Node Daemon Status</div>
+                <div class="metric-val" style="color:var(--accent-green);" id="v-status">HEALTHY</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Memory Footprint</div>
+                <div class="metric-val" style="color:var(--accent-cyan);" id="v-storage">128 MB</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Lifetime Audits</div>
+                <div class="metric-val" style="color:var(--accent-blue);" id="v-audits">0</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Active Cost Profile</div>
+                <div class="metric-val" style="color:var(--accent-purple);" id="v-profile">BALANCED</div>
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <h3 style="font-size:1.05rem; color:#fff; margin:0;">🩺 Node Telemetry Envelope (ITLP-v1)</h3>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: ITLP-v1 Telemetry Envelope">ℹ</button>
+                </div>
+                <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="fetchTelemetryData()">🔄 Refresh Telemetry</button>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                Real-time node diagnostics, memory allocation, and token headroom status.
+              </p>
+              <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.75rem; border-radius:6px; overflow-x:auto;"><code id="telemetry-json" style="color:var(--accent-cyan); font-size:0.8rem;">{
+  "status": "HEALTHY",
+  "node_role": "LOCAL_PRIMARY_ROOT",
+  "mode": "STANDALONE",
+  "grounding_quotient": 1.00
+}</code></pre>
+            </div>
+          </div>
+
+          <!-- TAB 4: BADGES & SEED MANIFEST -->
+          <div id="tab-badges" class="tab-panel">
+            <div class="deck-card" style="margin-bottom:1.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Live Bootstrap Seed Directory (<code>peers.json</code>)</h3>
+                <button class="info-btn" onclick="window.CredenceWS.openInfoModal('seeds')" title="Info: P2P Seed Manifest &amp; Bootstrap Discovery">ℹ</button>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                Publicly accessible peer discovery seed manifest for bootstrapping decentralized P2P nodes.
+              </p>
+              <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.75rem; border-radius:6px; overflow-x:auto;"><code id="peers-json" style="color:var(--accent-cyan); font-size:0.82rem;">{
+  "version": "1.0.0",
+  "timestamp": "2026-08-20T15:30:00Z",
+  "seeds": [
+    { "node_id": "anchor-us-central1", "endpoint": "https://credence.nexus", "role": "ANCHOR" }
+  ]
+}</code></pre>
+            </div>
+
+            <div class="deck-card">
+              <div style="display:flex; align-items:center; gap:0.45rem; margin-bottom:0.5rem;">
+                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Dynamic SVG Merit Badges</h3>
+                <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Embeddable Anti-Tamper Badges">ℹ</button>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
+                Embed live, cryptographically verified quality badges into sovereign publication headers or documentation.
+              </p>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+                <div class="badge-preview-card" style="background:var(--bg-card); border:1px solid var(--border); padding:1.25rem; border-radius:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Live Score Badge (SVG)</span>
+                    <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:6px;">
+                    <!-- Real Inline SVG Badge -->
+                    <svg width="150" height="28" viewBox="0 0 150 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="150" height="28" rx="5" fill="#0f172a" stroke="#1e293b"/>
+                      <rect width="78" height="28" rx="5" fill="#1e293b"/>
+                      <text x="10" y="18" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11" font-weight="700">🛡️ credence</text>
+                      <text x="86" y="18" fill="#4ade80" font-family="ui-monospace, monospace" font-size="11" font-weight="700">10.0 / 10</text>
+                    </svg>
+                  </div>
+                  <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="snippet-score-badge" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono);" value="![Credence](https://credence.nexus/api/v1/badge/apiculture)">
+                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('snippet-score-badge').value); showToast('Copied Score Badge Markdown', 'success');">Copy</button>
+                  </div>
+                </div>
+
+                <div class="badge-preview-card" style="background:var(--bg-card); border:1px solid var(--border); padding:1.25rem; border-radius:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Attestation Verdict Badge (SVG)</span>
+                    <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:6px;">
+                    <!-- Real Inline SVG Badge -->
+                    <svg width="210" height="28" viewBox="0 0 210 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="210" height="28" rx="5" fill="#0f172a" stroke="#1e293b"/>
+                      <rect width="78" height="28" rx="5" fill="#1e293b"/>
+                      <text x="10" y="18" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11" font-weight="700">🛡️ credence</text>
+                      <text x="86" y="18" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="10" font-weight="700">FACTUAL REPORTING</text>
+                    </svg>
+                  </div>
+                  <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="snippet-verdict-badge" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono);" value="![Credence Verdict](https://credence.nexus/api/v1/badge/verdict/reuters.com)">
+                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('snippet-verdict-badge').value); showToast('Copied Verdict Badge Markdown', 'success');">Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: OPERATOR ADMIN COCKPIT -->
+          <div id="tab-admin" class="tab-panel">
+            <div id="admin-locked-view" style="display:block;">
+              <div class="deck-card" style="text-align:center; padding:3rem 1.5rem;">
+                <div style="font-size:2.5rem; margin-bottom:1rem;">🔒</div>
+                <h3 style="color:#fff; font-size:1.35rem; margin-bottom:0.5rem;">Operator Admin Deck Gated</h3>
+                <p style="color:var(--text-muted); font-size:0.92rem; max-width:480px; margin:0 auto 1.5rem;">
+                  Admin mutation controls, AI budget ceilings, and emergency stops require authenticated node operator authorization.
+                </p>
+                <button class="btn-primary" style="padding:0.6rem 1.5rem; font-size:0.9rem;" onclick="window.CredenceWS.openOperatorModal()">
+                  🔑 Authenticate with Operator Key
+                </button>
+              </div>
+            </div>
+
+            <div id="admin-unlocked-view" style="display:none;">
+              <div class="deck-card" style="margin-bottom:1.25rem; border-color:rgba(56, 189, 248, 0.3); background:rgba(56, 189, 248, 0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                  <div>
+                    <span class="ribbon-pill operator-active">🔓 OPERATOR MODE: ACTIVE</span>
+                    <span style="font-size:0.85rem; color:var(--text-muted); margin-left:0.5rem;">Gated mutations authorized for current session.</span>
+                  </div>
+                  <button class="btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.78rem;" onclick="window.CredenceWS.clearStoredToken()">🔒 Lock Operator Console</button>
+                </div>
+              </div>
+
+              <div class="admin-cockpit-grid">
+                <!-- Card 1: Token & FinOps Governor -->
+                <div class="admin-card">
+                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                    <h3 style="margin:0;">⚡ AI Token &amp; Budget Governor</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('operator_admin')" title="Info: Budget & Token Headroom">ℹ</button>
+                  </div>
+                  <p style="font-size:0.85rem; color:var(--text-muted);">
+                    Configure spend ceilings ($USD/day), hourly token velocity limits, and emergency stops.
+                  </p>
+                  <div class="form-group">
+                    <label class="form-label" for="adm-daily-budget">Daily Budget Ceiling ($USD)</label>
+                    <input type="number" id="adm-daily-budget" class="form-input" value="5.00" step="0.50" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="adm-max-tokens">Max Tokens / Hour</label>
+                    <input type="number" id="adm-max-tokens" class="form-input" value="100000" step="10000" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="adm-profile-select">Inference Engine Profile</label>
+                    <select id="adm-profile-select" class="form-input">
+                      <option value="economy">Economy (Low Cost)</option>
+                      <option value="balanced" selected>Balanced (Standard)</option>
+                      <option value="ultra">Ultra (High Precision)</option>
+                    </select>
+                  </div>
+                  <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+                    <button class="btn-primary" style="flex:1;" onclick="saveBudgetSettings()">Save Limits</button>
+                    <button class="btn-secondary" style="color:var(--accent-rose); border-color:rgba(244,63,94,0.4);" onclick="triggerEmergencyStop()">🛑 Emergency Stop</button>
+                  </div>
+                </div>
+
+                <!-- Card 2: Miracle-Gro Engine -->
+                <div class="admin-card">
+                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                    <h3 style="margin:0;">🌱 Miracle-Gro Seed Germination</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('miracle_gro')" title="Info: Miracle-Gro Cache Warming Engine">ℹ</button>
+                  </div>
+                  <p style="font-size:0.85rem; color:var(--text-muted);">
+                    Trigger cold-start seeding cycles to populate local SQLite cache with attested evaluations.
+                  </p>
+                  <div class="form-group">
+                    <label class="form-label" for="adm-burst-count">Germination Burst Size</label>
+                    <input type="number" id="adm-burst-count" class="form-input" value="5" min="1" max="25">
+                  </div>
+                  <div id="germination-status" style="font-size:0.82rem; color:var(--text-muted); margin:0.5rem 0; min-height:1.2rem;"></div>
+                  <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="triggerGerminationBurst()">🚀 Execute Germination Burst</button>
+                </div>
+
+                <!-- Card 3: Ingestion Stream Controls -->
+                <div class="admin-card">
+                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                    <h3 style="margin:0;">📡 Ingestion Stream Daemons</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('daemons')" title="Info: Background Ingestion Daemons &amp; Crawlers">ℹ</button>
+                  </div>
+                  <p style="font-size:0.85rem; color:var(--text-muted);">
+                    Manually trigger background Sifter, Roots crawler, and Boredom polling loops.
+                  </p>
+                  <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.75rem;">
+                    <button class="btn-secondary" style="text-align:left; display:flex; justify-content:space-between;" onclick="triggerSifterCycle()">
+                      <span>⚡ Run Sifter Cycle</span>
+                      <span style="color:var(--text-dim); font-size:0.75rem;">RSS/Sitemap</span>
+                    </button>
+                    <button class="btn-secondary" style="text-align:left; display:flex; justify-content:space-between;" onclick="triggerRootsExpansion()">
+                      <span>🌳 Run Roots Discovery</span>
+                      <span style="color:var(--text-dim); font-size:0.75rem;">Discovery</span>
+                    </button>
+                    <button class="btn-secondary" style="text-align:left; display:flex; justify-content:space-between;" onclick="triggerBoredomCycle()">
+                      <span>🔄 Trigger Boredom Loop</span>
+                      <span style="color:var(--text-dim); font-size:0.75rem;">Idle Pulse</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
-
-    <!-- Whole-Mesh Network Health Card -->
-    <div class="card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 138, 0.4)); border: 1px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-          <span style="font-size: 1.25rem;">🕸️</span>
-          <h2 style="margin: 0; font-size: 1.2rem; color: #fff;">Whole-Mesh Network Health & Watts-Strogatz Topology</h2>
-          <span class="badge" style="margin: 0; background: rgba(74, 222, 128, 0.2); color: #4ade80; border-color: rgba(74, 222, 128, 0.4);">13-Node Cluster Active</span>
-        </div>
-        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
-          Interactive 13-node Watts-Strogatz small-world lattice, Byzantine resilience ($3f+1, f=4$), multi-region latency matrix, and live gossip attestation stream.
-        </p>
-      </div>
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <a href="mesh.html" style="display: inline-block; background: #0284c7; color: #fff; padding: 0.65rem 1.25rem; border-radius: 6px; font-weight: 700; text-decoration: none; border: 1px solid #38bdf8; white-space: nowrap;">🕸️ View Whole Mesh &rarr;</a>
-        <a href="dashboard.html" style="display: inline-block; background: #1e293b; color: #f1f5f9; padding: 0.65rem 1.25rem; border-radius: 6px; font-weight: 600; text-decoration: none; border: 1px solid #334155; white-space: nowrap;">👤 My Node &rarr;</a>
-      </div>
-    </div>
-
-
-    <div class="card">
-      <h2>Bootstrap Seed Manifest & Node Ignition</h2>
-      <p style="color: var(--text-muted); margin-bottom: 1rem;">
-        New and recovering mesh nodes bootstrap routing tables from the cryptographically signed seed manifest:
-      </p>
-      <pre><code># Fetch verified seeds
-curl -fsSL https://seeds.credence.nexus/peers.json
-
-# Join the local mesh with seed discovery
-credence mesh --port 8765 --seeds "https://seeds.credence.nexus/peers.json"</code></pre>
-    </div>
-
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-          <h2>Epistemic Mesh Leaderboards</h2>
-          <p style="color: var(--text-muted); margin: 0;">Ranked by cryptographic consensus, verifiable citations, and compute contributions.</p>
-        </div>
-        <div id="connection-status" style="font-size: 0.85rem; color: #4ade80; background: rgba(74, 222, 128, 0.1); padding: 0.35rem 0.75rem; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.2);">
-          ● Mesh Telemetry Active
-        </div>
-      </div>
-
-      <div class="tab-bar">
-        <button class="tab-btn active" data-cat="quality" onclick="switchCategory('quality')">🏆 5-Factor Quality ($Q_i$)</button>
-        <button class="tab-btn" data-cat="philanthropy" onclick="switchCategory('philanthropy')">⚡ Compute Philanthropy</button>
-        <button class="tab-btn" data-cat="galileo" onclick="switchCategory('galileo')">🔭 Galileo Discoveries</button>
-        <button class="tab-btn" data-cat="subjects" onclick="switchCategory('subjects')">🧠 Domain Expertise</button>
-      </div>
-
-      <table id="leaderboard-table">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Node Alias</th>
-            <th>Epistemic Tier</th>
-            <th id="score-header">Score</th>
-            <th>Uptime</th>
-            <th>Grounding</th>
-            <th>Traffic</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body">
-          <tr>
-            <td><b>🥇 #1</b></td>
-            <td><code>anchor-us-central1</code></td>
-            <td><span style="color:#38bdf8;">ROOT_ANCHOR</span></td>
-            <td><b>0.9850</b></td>
-            <td>99.98%</td>
-            <td>100.0%</td>
-            <td><span class="traffic-fast">FAST_LANE</span></td>
-          </tr>
-          <tr>
-            <td><b>🥈 #2</b></td>
-            <td><code>anchor-europe-west1</code></td>
-            <td><span style="color:#c084fc;">SPECIALIST</span></td>
-            <td><b>0.9720</b></td>
-            <td>99.95%</td>
-            <td>98.5%</td>
-            <td><span class="traffic-fast">FAST_LANE</span></td>
-          </tr>
-          <tr>
-            <td><b>🥉 #3</b></td>
-            <td><code>bridge-asia-east1</code></td>
-            <td><span style="color:#60a5fa;">AUDITOR</span></td>
-            <td><b>0.9580</b></td>
-            <td>99.80%</td>
-            <td>97.0%</td>
-            <td><span class="traffic-std">STANDARD</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h2>🛡️ Verifiable Epistemic Badges</h2>
-      <p style="color: var(--text-muted);">
-        Embed dynamic, real-time SVG merit badges in your GitHub README, documentation, or sovereign organization portal:
-      </p>
-      <div class="badge-grid">
-        <div class="badge-item">
-          <div style="font-weight: bold; color: #fff;">🌱 Sprout Node</div>
-          <div style="font-size: 0.85rem; color: #94a3b8;">Completed Genesis germination and minted Ed25519 identity.</div>
-          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#4ade80;">sprout: ACTIVE</span></div>
-        </div>
-        <div class="badge-item">
-          <div style="font-weight: bold; color: #fff;">🌾 Sifter Pioneer</div>
-          <div style="font-size: 0.85rem; color: #94a3b8;">Evaluated 100+ feed items with zero fatal runtime faults.</div>
-          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#38bdf8;">sifter: 100+</span></div>
-        </div>
-        <div class="badge-item">
-          <div style="font-weight: bold; color: #fff;">⚡ Philanthropic Relay</div>
-          <div style="font-size: 0.85rem; color: #94a3b8;">Seeded 10,000+ tokens of compute to peer nodes.</div>
-          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#facc15;">seeded: 10k tok</span></div>
-        </div>
-        <div class="badge-item">
-          <div style="font-weight: bold; color: #fff;">🔭 Galileo Pioneer</div>
-          <div style="font-size: 0.85rem; color: #94a3b8;">Discovered grounded truth that corrected swarm consensus.</div>
-          <div class="badge-preview"><span style="color:#64748b;">credence |</span> <span style="color:#c084fc;">galileo: VERIFIED</span></div>
-        </div>
-      </div>
-      <div style="margin-top: 1rem;">
-        <pre><code>&lt;!-- Markdown Badge Embed Example --&gt;
-![Credence Merit](https://api.credence.nexus/api/badge/root_seed_candidate.svg?node=anchor-us-central1&theme=dark)</code></pre>
-      </div>
-    </div>
-
-    <footer>
-      <p><a href="https://credence.run">credence.run</a> &bull; <a href="https://taxonomies.credence.foundation">Taxonomy Governance</a> &bull; <a href="https://credence.report">Audit Reports</a></p>
-    </footer>
   </div>
 
-  <script type="module">
-    let currentCategory = 'quality';
-
-    window.switchCategory = async function(cat) {
-      currentCategory = cat;
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-cat') === cat);
-      });
-
-      const header = document.getElementById('score-header');
-      if (cat === 'philanthropy') header.textContent = 'Tokens Seeded';
-      else if (cat === 'galileo') header.textContent = 'Discoveries';
-      else header.textContent = 'Score';
-
-      try {
-        const res = await fetch(`/api/leaderboard?category=${encodeURIComponent(cat)}&limit=25`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.leaderboard && data.leaderboard.length > 0) {
-            renderTable(data.leaderboard, cat);
-          }
-        }
-      } catch (e) {
-        console.log('Serving offline baseline leaderboard data.');
-      }
-    };
-
-    function renderTable(entries, cat) {
-      const tbody = document.getElementById('leaderboard-body');
-      tbody.innerHTML = '';
-      entries.forEach(e => {
-        const tr = document.createElement('tr');
-        const rankStr = e.rank === 1 ? '🥇 #1' : (e.rank === 2 ? '🥈 #2' : (e.rank === 3 ? '🥉 #3' : `#${e.rank}`));
-        const scoreStr = cat === 'philanthropy' ? e.tokens_seeded.toLocaleString() : (cat === 'galileo' ? e.score : e.score.toFixed(4));
-        const trafficClass = e.traffic_class === 'FAST_LANE' ? 'traffic-fast' : (e.traffic_class === 'STANDARD' ? 'traffic-std' : 'traffic-choke');
-
-        tr.innerHTML = `
-          <td><b>${rankStr}</b></td>
-          <td><code>${e.node_alias}</code></td>
-          <td><span style="color:#38bdf8;">${e.tier}</span></td>
-          <td><b>${scoreStr}</b></td>
-          <td>${(e.uptime_ratio * 100).toFixed(1)}%</td>
-          <td>${(e.grounding_ratio * 100).toFixed(1)}%</td>
-          <td><span class="${trafficClass}">${e.traffic_class}</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Try live fetch on load
-    window.switchCategory('quality');
-  </script>
-
+  <!-- Universal 4-Pillar Footer (Strict 4 Pillars, 4 Links Each) -->
+    <!-- Universal 4-Pillar Footer (Strict 4 Pillars, 4 Links Each) -->
   <footer class="credence-footer">
     <div class="footer-container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h4>🌐 Sovereign Network</h4>
-          <ul>
-            <li><a href="https://credence.run">Platform Home</a></li>
-            <li><a href="https://credence.report">Audit Explorer</a></li>
-            <li><a href="https://credence.nexus">Mesh Directory</a></li>
-            <li><a href="https://credence.foundation">Root Key Custody</a></li>
+          <h4>Ecosystem</h4>
+          <ul class="footer-links">
+            <li><a href="https://credence.run">Home Hub</a></li>
+            <li><a href="https://docs.credence.run">Documentation</a></li>
+            <li><a href="https://credence.report">Reports Lab</a></li>
+            <li><a href="https://credence.nexus">Nexus NOC</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>🎮 Interactive & Tools</h4>
-          <ul>
-            <li><a href="https://docs.credence.run#docs/playground">Zero-Build Playgrounds</a></li>
-            <li><a href="https://credence.report/viewer.html">Multi-Mode Report Viewer</a></li>
-            <li><a href="https://docs.credence.run#docs/tutorials/03-claude-cursor-fastmcp">FastMCP Server Integration</a></li>
-            <li><a href="https://seeds.credence.nexus/peers.json">P2P Seed Manifest</a></li>
+          <h4>Governance</h4>
+          <ul class="footer-links">
+            <li><a href="https://credence.foundation">Taxonomy Foundation</a></li>
+            <li><a href="https://taxonomies.credence.foundation">Taxonomies</a></li>
+            <li><a href="https://docs.credence.run#docs/agent-invariants">Invariant Bible</a></li>
+            <li><a href="https://docs.credence.run#docs/whitepaper">Whitepaper</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>📘 Knowledge & Canon</h4>
-          <ul>
-            <li><a href="https://docs.credence.run#docs/invariants">The Invariant Bible</a></li>
-            <li><a href="https://blog.credence.run">Sovereign Blog & Essays</a></li>
-            <li><a href="https://docs.credence.run#docs/topic-index">Topic Index & Directory</a></li>
-            <li><a href="https://docs.credence.run#docs/roadmap">Roadmap & Horizons</a></li>
+          <h4>Operations</h4>
+          <ul class="footer-links">
+            <li><a href="https://credence.nexus#mesh">P2P Mesh Cluster</a></li>
+            <li><a href="https://credence.nexus#admin">Operator Admin</a></li>
+            <li><a href="https://credence.report/viewer.html">Report Viewer</a></li>
+            <li><a href="https://docs.credence.run#docs/quickstart">Developer Quickstart</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>⚖️ Governance & Source</h4>
-          <ul>
-            <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub Repository</a></li>
-            <li><a href="https://docs.credence.run#docs/changelog">Release Changelog</a></li>
-            <li><a href="https://keys.credence.foundation/root.pub">Root Public Key (root.pub)</a></li>
-            <li><a href="https://github.com/artibyrd/credence/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0 License</a></li>
+          <h4>Connect</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/artibyrd/credence">GitHub Source</a></li>
+            <li><a href="https://pypi.org/project/credence/">PyPI Package</a></li>
+            <li><a href="https://docs.credence.run#docs/roadmap">Roadmap &amp; RFCs</a></li>
+            <li><a href="https://docs.credence.run#docs/changelog">Changelog</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <div>&copy; 2026 Credence Network &bull; Zero npm dependencies &bull; 100% Zero-Build Sovereign Web</div>
+        &copy; 2026 Credence Trust Network. Sovereign epistemic auditing across the open web.
       </div>
     </div>
   </footer>
+
+  <!-- Universal Info & Shortcuts Modals Container -->
+  <div id="credence-modal-container"></div>
+
+  <script type="module">
+    import { initWorkstation, authState, fetchWithAuth, showToast } from '../assets/credence-workstation.js';
+
+    let wsController;
+    let liveTopologyData = null;
+
+    function renderAdminView() {
+      const locked = document.getElementById('admin-locked-view');
+      const unlocked = document.getElementById('admin-unlocked-view');
+      const badge = document.getElementById('admin-tab-badge');
+      if (authState.authenticated) {
+        if (locked) locked.style.display = 'none';
+        if (unlocked) unlocked.style.display = 'block';
+        if (badge) {
+          badge.textContent = 'Active';
+          badge.style.background = 'rgba(74, 222, 128, 0.2)';
+          badge.style.color = '#4ade80';
+        }
+      } else {
+        if (locked) locked.style.display = 'block';
+        if (unlocked) unlocked.style.display = 'none';
+        if (badge) {
+          badge.textContent = 'Operator';
+          badge.style.background = 'rgba(245, 158, 11, 0.2)';
+          badge.style.color = '#f59e0b';
+        }
+      }
+    }
+
+    // Dynamic Live Mesh Topology Canvas (Renders Real Nodes & Standalone Reality)
+    function initMeshCanvas(data) {
+      const canvas = document.getElementById('mesh-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 380;
+      }
+      resize();
+
+      const nodes = data?.nodes || [
+        {
+          node_id: "node_1",
+          alias: "local-root-anchor",
+          role: "LOCAL_PRIMARY_ROOT",
+          is_local: true,
+          status: "HEALTHY"
+        }
+      ];
+      const edges = data?.edges || [];
+      const nodeCount = nodes.length;
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      let animPhase = 0;
+
+      function renderFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        animPhase += 0.02;
+
+        if (nodeCount === 1) {
+          // Standalone Mode: Single High-Res Sovereign Anchor with Pulse Radar
+          const n = nodes[0];
+          
+          // Draw radar pulse rings
+          const pulse1 = (animPhase % 2);
+          const pulse2 = ((animPhase + 1) % 2);
+          
+          ctx.strokeStyle = `rgba(56, 189, 248, ${Math.max(0, 0.5 - pulse1 * 0.25)})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 40 + pulse1 * 60, 0, 2 * Math.PI);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(74, 222, 128, ${Math.max(0, 0.5 - pulse2 * 0.25)})`;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 40 + pulse2 * 60, 0, 2 * Math.PI);
+          ctx.stroke();
+
+          // Draw Primary Anchor Node
+          ctx.beginPath();
+          ctx.arc(cx, cy, 14, 0, 2 * Math.PI);
+          ctx.fillStyle = '#38bdf8';
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = '#38bdf8';
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Labels
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = 'bold 13px ui-monospace, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`🛡️ ${n.alias || 'local-root-anchor'} [PRIMARY]`, cx, cy - 26);
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '11px ui-monospace, monospace';
+          ctx.fillText('STANDALONE MODE • Awaiting Remote Seed Gossip', cx, cy + 34);
+          ctx.fillText('Quorum Formulation: N=1 (f=0 Faults)', cx, cy + 50);
+
+        } else {
+          // Peered / Federated Mode: Dynamic Connected Graph
+          const radius = Math.min(cx, cy) - 50;
+          const posMap = {};
+
+          nodes.forEach((n, idx) => {
+            const angle = (idx / nodeCount) * 2 * Math.PI;
+            posMap[n.node_id] = {
+              x: cx + radius * Math.cos(angle),
+              y: cy + radius * Math.sin(angle),
+              node: n
+            };
+          });
+
+          // Draw Edges
+          edges.forEach(e => {
+            const p1 = posMap[e.source];
+            const p2 = posMap[e.target];
+            if (p1 && p2) {
+              ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+
+          // Draw Nodes
+          Object.values(posMap).forEach(p => {
+            const isLocal = p.node.is_local;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, isLocal ? 10 : 7, 0, 2 * Math.PI);
+            ctx.fillStyle = isLocal ? '#38bdf8' : '#4ade80';
+            ctx.shadowBlur = isLocal ? 14 : 8;
+            ctx.shadowColor = isLocal ? '#38bdf8' : '#4ade80';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '10px ui-monospace, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(p.node.alias || p.node.node_id, p.x, p.y - 12);
+          });
+        }
+      }
+
+      renderFrame();
+    }
+
+    async function fetchTelemetryData() {
+      let data = null;
+      try {
+        const res = await fetch('/api/mesh/health');
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {}
+
+      if (!data) {
+        // Genuine Standalone Default Reality
+        data = {
+          mode: "STANDALONE",
+          cluster_topology: {
+            model_parameters: { nodes_count: 1, active_peers: 0 },
+            byzantine_resilience: {
+              max_byzantine_faults: 0,
+              quorum_health: "STANDALONE",
+              quorum_description: "Standalone Local Root (1 Node Online, 0 Remote Peers. Federation Quorum Requires >= 4 Nodes)"
+            }
+          },
+          nodes: [
+            {
+              node_id: "node_1",
+              alias: "local-root-anchor",
+              role: "LOCAL_PRIMARY_ROOT",
+              profile: "BALANCED",
+              quality_score: 1.00,
+              uptime_pct: 100.0,
+              grounding_quotient: 1.00,
+              status: "HEALTHY",
+              is_local: true
+            }
+          ],
+          edges: [],
+          recent_gossip_stream: []
+        };
+      }
+
+      liveTopologyData = data;
+      updateDomMetrics(data);
+      initMeshCanvas(data);
+    }
+
+    function updateDomMetrics(data) {
+      const top = data.cluster_topology || {};
+      const byz = top.byzantine_resilience || {};
+      const nodes = data.nodes || [];
+      const nodeCount = nodes.length;
+      const faults = byz.max_byzantine_faults ?? 0;
+      const mode = data.mode || "STANDALONE";
+
+      // Top Ribbon Pills
+      const ribStatus = document.getElementById('ribbon-mesh-status');
+      const ribNodes = document.getElementById('rib-nodes-val');
+      const ribByz = document.getElementById('rib-byz-val');
+      const railBadge = document.getElementById('rail-nodes-badge');
+
+      if (ribStatus) ribStatus.textContent = mode === "STANDALONE" ? "● MESH STANDALONE" : "● MESH NOC ONLINE";
+      if (ribNodes) ribNodes.textContent = nodeCount === 1 ? "1 Local Active" : `${nodeCount} Nodes Active`;
+      if (ribByz) ribByz.textContent = mode === "STANDALONE" ? "Standalone (f=0)" : `f=${faults} Tolerated (3f+1)`;
+      if (railBadge) railBadge.textContent = nodeCount === 1 ? "1 Node" : `${nodeCount} Nodes`;
+
+      // Metric Grid Cards
+      const mNodes = document.getElementById('m-nodes');
+      const mFaults = document.getElementById('m-faults');
+      const mMode = document.getElementById('m-mode');
+      const mSybil = document.getElementById('m-sybil');
+
+      if (mNodes) mNodes.textContent = nodeCount;
+      if (mFaults) mFaults.textContent = faults;
+      if (mMode) {
+        mMode.textContent = mode;
+        mMode.style.color = mode === "STANDALONE" ? "var(--accent-amber)" : "var(--accent-green)";
+      }
+      if (mSybil) mSybil.textContent = mode === "STANDALONE" ? "100.0%" : "99.8%";
+
+      // Gossip Stream
+      const streamEl = document.getElementById('gossip-stream');
+      const gossipList = data.recent_gossip_stream || [];
+      if (streamEl) {
+        if (gossipList.length === 0) {
+          streamEl.innerHTML = `
+            <div style="color:var(--text-dim); padding:0.5rem; background:rgba(255,255,255,0.02); border-radius:4px;">
+              📡 <b>Standalone Local Mode</b> &bull; Local node verified. Awaiting remote peer gossips on WebSocket port 8765.
+            </div>
+          `;
+        } else {
+          streamEl.innerHTML = gossipList.map(g => `
+            <div style="color:var(--text-muted);">
+              <span style="color:var(--accent-cyan);">[${g.timestamp ? g.timestamp.substring(11, 19) : 'LIVE'}]</span>
+              Node <b style="color:#fff;">${g.origin_node || 'local'}</b> attested <code>${g.domain}</code> (G=1.00, RFC 8785 signed)
+            </div>
+          `).join('');
+        }
+      }
+
+      // Leaderboard Table
+      const lBody = document.getElementById('leaderboard-body');
+      if (lBody) {
+        lBody.innerHTML = nodes.map((n, idx) => `
+          <tr>
+            <td><b style="color:var(--accent-amber);">#${idx + 1}</b></td>
+            <td><b style="color:#fff;">${n.alias || n.node_id}</b> ${n.is_local ? '<span style="color:var(--accent-cyan); font-size:0.75rem;">(Local Root)</span>' : ''}</td>
+            <td><b style="color:var(--accent-green);">${(n.quality_score * 10).toFixed(2)} / 10</b></td>
+            <td>${n.uptime_pct ? n.uptime_pct.toFixed(2) : '100.00'}%</td>
+            <td>100.0%</td>
+            <td>1.00</td>
+            <td><span class="ribbon-pill ready">${n.role || 'NODE'}</span></td>
+            <td><span style="color:var(--accent-green); font-weight:700;">● ${n.status || 'HEALTHY'}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Vitals Pre Tag
+      const telEl = document.getElementById('telemetry-json');
+      if (telEl) {
+        telEl.textContent = JSON.stringify({
+          service: "credence-nexus",
+          node_id: nodes[0]?.node_id || "node_1",
+          alias: nodes[0]?.alias || "local-root-anchor",
+          mode: mode,
+          nodes_online: nodeCount,
+          byzantine_fault_tolerance: faults,
+          grounding_quotient: 1.00,
+          timestamp: new Date().toISOString()
+        }, null, 2);
+      }
+    }
+
+    // Operator Action Handlers
+    window.saveBudgetSettings = async function() {
+      const budget = parseFloat(document.getElementById('adm-daily-budget').value);
+      const tokens = parseInt(document.getElementById('adm-max-tokens').value, 10);
+      const profile = document.getElementById('adm-profile-select').value;
+
+      try {
+        const res = await fetchWithAuth('/api/cost/budget', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ daily_budget_usd: budget, max_tokens_per_hour: tokens, profile: profile })
+        });
+        if (res.ok) {
+          showToast('✅ Budget settings updated successfully', 'success');
+        } else {
+          showToast('❌ Failed to update budget settings', 'error');
+        }
+      } catch (e) {
+        showToast('Error sending budget update', 'error');
+      }
+    };
+
+    window.triggerEmergencyStop = async function() {
+      if (!confirm('PULL EMERGENCY BRAKE: Immediately halt all LLM inference and freeze token spend?')) return;
+      try {
+        const res = await fetchWithAuth('/api/cost/emergency-stop', { method: 'POST' });
+        if (res.ok) {
+          showToast('🛑 EMERGENCY BRAKE TRIPPED: All inference halted', 'error');
+        }
+      } catch (e) {
+        showToast('Failed to trip emergency brake', 'error');
+      }
+    };
+
+    window.triggerGerminationBurst = async function() {
+      const burst = parseInt(document.getElementById('adm-burst-count').value, 10) || 5;
+      const statusEl = document.getElementById('germination-status');
+      if (statusEl) statusEl.textContent = '⏳ Running Miracle-Gro germination burst...';
+
+      try {
+        const res = await fetchWithAuth(`/api/germinate?burst=${burst}`, { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          if (statusEl) statusEl.textContent = `✅ Germinated ${data.audits_executed || burst} items successfully!`;
+          showToast('🌱 Node Germination Completed', 'success');
+          fetchTelemetryData();
+        } else {
+          if (statusEl) statusEl.textContent = '❌ Germination failed (Authentication required)';
+        }
+      } catch (e) {
+        if (statusEl) statusEl.textContent = 'Error triggering germination';
+      }
+    };
+
+    window.triggerSifterCycle = async function() {
+      try {
+        const res = await fetchWithAuth('/api/sifter/cycle', { method: 'POST' });
+        if (res.ok) {
+          showToast('⚡ Ingestion Sifter Cycle Completed', 'success');
+        }
+      } catch (e) {}
+    };
+
+    window.triggerRootsExpansion = async function() {
+      try {
+        const res = await fetchWithAuth('/api/roots/expand', { method: 'POST' });
+        if (res.ok) {
+          showToast('🌳 Root Domain Expansion Triggered', 'success');
+        }
+      } catch (e) {}
+    };
+
+    window.triggerBoredomCycle = async function() {
+      try {
+        const res = await fetchWithAuth('/api/boredom/cycle', { method: 'POST' });
+        if (res.ok) {
+          showToast('🔄 Boredom Cycle Completed', 'success');
+        }
+      } catch (e) {}
+    };
+
+    // Initialize Workstation
+    window.addEventListener('DOMContentLoaded', () => {
+      wsController = initWorkstation({
+        defaultTab: 'topology',
+        onTabChange: (tab) => {
+          if (tab === 'admin') renderAdminView();
+        }
+      });
+
+      renderAdminView();
+      fetchTelemetryData();
+    });
+  </script>
 </body>
 </html>

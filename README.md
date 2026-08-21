@@ -30,19 +30,24 @@ poetry install
 
 *(Or run via Docker: `docker run -d -p 8000:8000 ghcr.io/artibyrd/credence:latest`)*
 
-### 2. Configure API Key (Optional)
-
-Credence uses **Gemini 3.7 Flash** by default for deep multi-agent evaluation. Set your key in your shell:
+### 2. Configure API Key & Operator Security (Optional)
 
 ```bash
+# Multi-agent reasoning (Gemini 3.7 Flash)
 export CREDENCE_GEMINI_API_KEY="your-gemini-api-key"
+
+# Bootstrap local operator admin key for web command deck (https://credence.nexus#admin)
+just auth-bootstrap local
 ```
 
 > 💡 **Zero-Cost / Offline Mode**: If no API key is provided, Credence runs in **100% offline heuristic mode** ($0.00 cost) using structural rules.
 
-### 3. Run Your First Audit
+### 3. Run Your First Audit & Launch Workstation
 
 ```bash
+# 1-Command ignite: setup, preflight, bootstrap admin key, germinate, and verify
+just ignite
+
 # Audit any URL directly from your terminal
 credence audit https://example.com/news-story
 

@@ -1,16 +1,108 @@
 """REST API Handlers for Credence Server."""
 
-from __future__ import annotations
-
 import logging
 from typing import Any
 
-from starlette.responses import JSONResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response
 
 from credence.db import get_async_session, init_db
+from credence.server.middleware.security import _check_admin_auth, get_auth_identity
 from credence.server.middleware.telemetry import global_telemetry
 
 logger = logging.getLogger("credence.server.api")
+
+
+async def api_root_index(request: Any) -> Any:
+    """REST API: Root index endpoint providing service discovery for browsers and API consumers."""
+    from credence import __version__
+
+    accept_header = request.headers.get("accept", "") if hasattr(request, "headers") else ""
+
+    if "text/html" in accept_header:
+        html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Credence Node & FastMCP Server</title>
+  <style>
+    :root {{ --bg: #090d16; --card: #111827; --border: #1e293b; --text: #f8fafc; --text-muted: #94a3b8; --cyan: #38bdf8; --green: #4ade80; }}
+    body {{ background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; padding: 2rem; display: flex; justify-content: center; }}
+    .container {{ max-width: 720px; width: 100%; }}
+    .card {{ background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }}
+    h1 {{ font-size: 1.4rem; color: #fff; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; }}
+    .badge {{ background: rgba(74, 222, 128, 0.15); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 9999px; padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: bold; }}
+    code {{ background: #0b1120; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.85rem; color: var(--cyan); }}
+    ul {{ padding-left: 1.25rem; color: var(--text-muted); line-height: 1.7; font-size: 0.9rem; }}
+    a {{ color: var(--cyan); text-decoration: none; }}
+    a:hover {{ text-decoration: underline; }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <h1>🛡️ Credence Node Server</h1>
+        <span class="badge">● ONLINE &bull; v{__version__}</span>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0;">
+        FastMCP 2.0 Evaluation Engine &amp; REST Microservice.
+      </p>
+      <hr style="border:0; border-top:1px solid var(--border); margin:1rem 0;">
+      <h3 style="font-size:0.95rem; color:#fff; margin-bottom:0.5rem;">⚡ Core Backend Protocols</h3>
+      <ul>
+        <li><b>FastMCP 2.0 (SSE)</b>: <code>/sse</code> (AI tool evaluation stream)</li>
+        <li><b>Node Health (ITLP-v1)</b>: <a href="/health"><code>/health</code></a> | <a href="/api/health"><code>/api/health</code></a></li>
+        <li><b>Mesh Telemetry</b>: <a href="/api/mesh/stats"><code>/api/mesh/stats</code></a> | <a href="/api/mesh/network-health"><code>/api/mesh/network-health</code></a></li>
+        <li><b>Audit Reports</b>: <a href="/api/reports"><code>/api/reports</code></a></li>
+        <li><b>Auth Config</b>: <a href="/api/auth/config"><code>/api/auth/config</code></a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:0.95rem; color:#fff; margin-top:0;">🌐 Zero-Build Web Workstations</h3>
+      <p style="color:var(--text-muted); font-size:0.88rem;">
+        To preview the interactive web dashboards, run <code>just preview</code> in your terminal:
+      </p>
+      <ul>
+        <li><a href="http://localhost:8080/credence.run/" target="_blank">Home Landing Hub (http://localhost:8080/credence.run/)</a></li>
+        <li><a href="http://localhost:8080/credence.report/" target="_blank">Reports &amp; Forensics Lab (http://localhost:8080/credence.report/)</a></li>
+        <li><a href="http://localhost:8080/credence.nexus/" target="_blank">Mesh NOC &amp; Admin Command Deck (http://localhost:8080/credence.nexus/#admin)</a></li>
+        <li><a href="http://localhost:8080/credence.foundation/" target="_blank">Constitutional Vault &amp; Key Custody (http://localhost:8080/credence.foundation/)</a></li>
+        <li><a href="http://localhost:8081/#docs/quickstart" target="_blank">Documentation Portal (http://localhost:8081)</a> (via <code>just preview-docs</code>)</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>"""
+        return HTMLResponse(html_content)
+
+    return JSONResponse(
+        {
+            "service": "credence-server",
+            "status": "healthy",
+            "version": __version__,
+            "fastmcp_sse_endpoint": "/sse",
+            "endpoints": {
+                "health": "/health",
+                "api_health": "/api/health",
+                "mesh_stats": "/api/mesh/stats",
+                "mesh_network_health": "/api/mesh/network-health",
+                "reports": "/api/reports",
+                "auth_config": "/api/auth/config",
+                "auth_verify": "/api/auth/verify",
+                "leaderboard": "/api/leaderboard",
+            },
+            "web_surfaces": {
+                "preview_server": "http://localhost:8080",
+                "production": "https://credence.run",
+            },
+        }
+    )
+
+
+async def api_favicon(request: Any) -> Any:
+    """REST API: Clean favicon handler to prevent 404 noise."""
+    return Response(status_code=204, media_type="image/x-icon")
 
 
 async def api_health(request: Any) -> Any:
@@ -29,8 +121,56 @@ async def api_health(request: Any) -> Any:
     )
 
 
+async def api_auth_config(request: Any) -> Any:
+    """REST API: Retrieve public auth configuration and enabled SSO providers."""
+    from credence.config import settings
+
+    has_google = bool(settings.CREDENCE_OAUTH_GOOGLE_CLIENT_ID)
+    has_github = bool(settings.CREDENCE_OAUTH_GITHUB_CLIENT_ID)
+    has_admin_key = bool(settings.CREDENCE_ADMIN_API_KEY) or settings.ENV != "production"
+
+    return JSONResponse(
+        {
+            "oauth_google_enabled": has_google,
+            "oauth_google_client_id": settings.CREDENCE_OAUTH_GOOGLE_CLIENT_ID or "",
+            "oauth_github_enabled": has_github,
+            "oauth_github_client_id": settings.CREDENCE_OAUTH_GITHUB_CLIENT_ID or "",
+            "api_key_auth_enabled": has_admin_key,
+            "environment": settings.ENV,
+        }
+    )
+
+
+async def api_auth_verify(request: Any) -> Any:
+    """REST API: Verify operator credentials and return session status."""
+    auth_info = get_auth_identity(request)
+    if auth_info.get("authenticated", False):
+        return JSONResponse(
+            {
+                "status": "authenticated",
+                "authenticated": True,
+                "role": auth_info.get("role", "OPERATOR"),
+                "identity": auth_info.get("identity", "admin"),
+                "method": auth_info.get("method", "API_KEY"),
+            }
+        )
+    return JSONResponse(
+        {
+            "status": "unauthorized",
+            "authenticated": False,
+            "error": "Valid Administrator Bearer token or OAuth session required",
+        },
+        status_code=401,
+    )
+
+
 async def api_germinate(request: Any) -> Any:
-    """REST API: Trigger rapid node germination and Miracle-Gro burst."""
+    """REST API: Trigger rapid node germination and Miracle-Gro burst (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to trigger germination"},
+            status_code=401,
+        )
 
     from credence.germinate import germinate_node
 

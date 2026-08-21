@@ -158,6 +158,9 @@ class Settings(BaseSettings):
 
     # Administrative Security & Alert Webhooks
     CREDENCE_ADMIN_API_KEY: Optional[str] = None
+    CREDENCE_ADMIN_EMAILS: str = ""
+    CREDENCE_OAUTH_GOOGLE_CLIENT_ID: Optional[str] = None
+    CREDENCE_OAUTH_GITHUB_CLIENT_ID: Optional[str] = None
     DISCORD_ALERT_WEBHOOK_URL: Optional[str] = None
     SLACK_ALERT_WEBHOOK_URL: Optional[str] = None
 

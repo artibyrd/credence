@@ -50,7 +50,14 @@ from credence.server.api.feeds import (
     api_sifter_status,
 )
 from credence.server.api.mesh import api_mesh_network_health, api_mesh_stats
-from credence.server.api.system import api_germinate, api_health
+from credence.server.api.system import (
+    api_auth_config,
+    api_auth_verify,
+    api_favicon,
+    api_germinate,
+    api_health,
+    api_root_index,
+)
 from credence.server.api.widget import api_get_badge_data, api_get_history
 from credence.server.lifespan import combined_lifespan
 from credence.server.mcp.server import create_mcp_server
@@ -84,8 +91,12 @@ def create_server_app(enable_sifter: bool = False, enable_boredom: bool = False)
     app = mcp.streamable_http_app()
 
     rest_routes = [
+        Route("/", endpoint=api_root_index, methods=["GET", "OPTIONS"]),
+        Route("/favicon.ico", endpoint=api_favicon, methods=["GET", "OPTIONS"]),
         Route("/health", endpoint=api_health, methods=["GET"]),
         Route("/api/health", endpoint=api_health, methods=["GET"]),
+        Route("/api/auth/config", endpoint=api_auth_config, methods=["GET", "OPTIONS"]),
+        Route("/api/auth/verify", endpoint=api_auth_verify, methods=["GET", "POST", "OPTIONS"]),
         Route("/api/v1/badge/{identifier:path}", endpoint=api_get_badge_data, methods=["GET", "OPTIONS"]),
         Route("/api/badge/data/{identifier:path}", endpoint=api_get_badge_data, methods=["GET", "OPTIONS"]),
         Route("/api/v1/history/{identifier:path}", endpoint=api_get_history, methods=["GET", "OPTIONS"]),

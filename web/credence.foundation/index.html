@@ -3,173 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credence Foundation — Taxonomy Governance & Root Key Custody</title>
-  <meta name="description" content="Official taxonomy registries and root cryptographic public keys for the Credence Trust Network.">
-  <style>
-    :root {
-      --bg: #07090e; --card-bg: #12192b; --text: #f8fafc; --muted: #94a3b8;
-      --accent: #38bdf8; --border: #1e293b; --code-bg: #030712; --green: #4ade80;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem 1rem; }
-    .container { max-width: 900px; margin: 0 auto; }
-    header { text-align: center; margin-bottom: 3rem; }
-    h1 { font-size: 2.5rem; color: #fff; margin-bottom: 0.5rem; }
-    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9999px; font-size: 0.85rem; color: var(--accent); margin-bottom: 1rem; }
-    p.lead { font-size: 1.15rem; color: var(--muted); max-width: 650px; margin: 0 auto; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    h2 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent); }
-    ul.catalogs { list-style: none; }
-    ul.catalogs li { padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; border: 1px solid var(--border); }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    footer { text-align: center; margin-top: 4rem; color: var(--muted); font-size: 0.85rem; }
-
-    /* Unified Ecosystem Navigation Bar */
-    .credence-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.85rem 1.5rem;
-      background: rgba(11, 15, 25, 0.95);
-      border-bottom: 1px solid var(--border, rgba(56, 189, 248, 0.15));
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      width: 100%;
-    }
-
-    .credence-nav .brand {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #fff;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .credence-nav .badge {
-      font-size: 0.72rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: 9999px;
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--accent, #38bdf8);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      font-weight: 600;
-      margin-bottom: 0;
-    }
-
-    .credence-nav .nav-links {
-      display: flex;
-      list-style: none;
-      gap: 1.25rem;
-      align-items: center;
-      margin: 0;
-      padding: 0;
-      flex-wrap: wrap;
-    }
-
-    .credence-nav .nav-links a {
-      color: var(--muted, #94a3b8);
-      text-decoration: none;
-      font-size: 0.88rem;
-      font-weight: 500;
-      transition: color 0.15s ease;
-    }
-
-    .credence-nav .nav-links a:hover,
-    .credence-nav .nav-links a.active {
-      color: var(--accent, #38bdf8);
-      text-decoration: none;
-    }
-
-    /* Unified Cross-Domain Ecosystem Footer */
-    footer.credence-footer {
-      padding: 3.5rem 1.5rem 2rem;
-      border-top: 1px solid var(--border, rgba(56, 189, 248, 0.15));
-      background: linear-gradient(180deg, rgba(11, 15, 25, 0.95), rgba(5, 8, 15, 0.98));
-      color: var(--muted, #94a3b8);
-      font-size: 0.9rem;
-      margin-top: 4rem;
-      width: 100%;
-    }
-
-    .footer-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 2.5rem;
-      margin-bottom: 2.5rem;
-      text-align: left;
-    }
-
-    .footer-col h4 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      letter-spacing: 0.02em;
-    }
-
-    .footer-col ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    .footer-col a {
-      color: var(--muted, #94a3b8);
-      text-decoration: none;
-      font-size: 0.88rem;
-      transition: color 0.15s ease, transform 0.15s ease;
-      display: inline-block;
-    }
-
-    .footer-col a:hover {
-      color: var(--accent, #38bdf8);
-      transform: translateX(2px);
-    }
-
-    .footer-bottom {
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .footer-bottom-links {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .footer-bottom-links a {
-      color: #64748b;
-      text-decoration: none;
-    }
-
-    .footer-bottom-links a:hover {
-      color: var(--accent, #38bdf8);
-    }
-  </style>
+  <title>Credence Foundation — Constitutional Standards, Rulebooks & Trust Authority</title>
+  <meta name="description" content="Immutable taxonomy registries, standardized ethical rule definitions, hierarchical subject catalogs, and network root Ed25519 public keys.">
+  <link rel="stylesheet" href="../assets/credence-ui.css">
 </head>
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
@@ -186,120 +22,1007 @@
     </ul>
   </nav>
 
-
-  <div class="container">
-    <header>
-      <span class="badge">Governance &amp; Cryptographic Custody</span>
-      <h1>Credence Foundation</h1>
-      <p class="lead">Immutable taxonomy registries, standardized ethical rule definitions, and network root Ed25519 public keys.</p>
+  <div class="workstation-container">
+    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
+    <header class="workstation-header">
+      <span class="badge-pill">🏛️ Standards &amp; Governance Vault</span>
+      <h1 class="hero-title">Credence Foundation</h1>
+      <p class="hero-subtitle">
+        Constitutional rule catalogs, journalistic ethics standards, and cryptographic keys governing Credence audits.
+      </p>
     </header>
 
-    <div class="card">
-      <h2>Registered Taxonomy Catalogs (v1)</h2>
-      <ul class="catalogs">
-        <li>
-          <div>
-            <b>Society of Professional Journalists (SPJ) Code of Ethics</b>
-            <div style="color: var(--muted); font-size: 0.85rem;">Domain: JOURNALISTIC_ETHICS &bull; 13 Rules</div>
+    <!-- Unified Connected Workstation Frame -->
+    <div class="deck-frame">
+      <!-- Unified Workstation Command Deck -->
+      <div class="deck-shell">
+        <!-- Left Command Rail -->
+        <aside class="deck-rail">
+          <!-- Top Section: Local Page Views (Immediate Focus) -->
+          <div class="deck-rail-local">
+            <div class="deck-rail-header">Constitution Views</div>
+            <button class="deck-nav-item active" data-tab="taxonomies" onclick="window.CredenceWS.switchTab('taxonomies')">
+              <span>📜 1. Rule Catalogs</span>
+              <span class="nav-badge">3 Catalogs</span>
+            </button>
+            <button class="deck-nav-item" data-tab="custody" onclick="window.CredenceWS.switchTab('custody')">
+              <span>🔐 2. Root Key Custody</span>
+              <span class="nav-badge">root.pub</span>
+            </button>
+            <button class="deck-nav-item" data-tab="sandbox" onclick="window.CredenceWS.switchTab('sandbox')">
+              <span>🧪 3. WebCrypto Verifier</span>
+              <span class="nav-badge">RFC 8785</span>
+            </button>
+            <button class="deck-nav-item" data-tab="governance" onclick="window.CredenceWS.switchTab('governance')">
+              <span>⚖️ 4. Governance RFCs</span>
+              <span class="nav-badge">Process</span>
+            </button>
           </div>
-          <a href="/v1/journalistic-ethics.json">View JSON</a>
-        </li>
-        <li>
-          <div>
-            <b>Internet Encyclopedia of Philosophy (IEP) Fallacies</b>
-            <div style="color: var(--muted); font-size: 0.85rem;">Domain: LOGICAL_FALLACY &bull; 15 Rules</div>
-          </div>
-          <a href="/v1/logical-fallacy.json">View JSON</a>
-        </li>
-        <li>
-          <div>
-            <b>Deceptive Patterns Catalog</b>
-            <div style="color: var(--muted); font-size: 0.85rem;">Domain: DECEPTIVE_PATTERN &bull; 8 Rules</div>
-          </div>
-          <a href="/v1/deceptive-pattern.json">View JSON</a>
-        </li>
-      </ul>
-    </div>
 
-    <div class="card">
-      <h2>Hierarchical Subject Catalogs &amp; Empirical Registries</h2>
-      <ul class="catalogs">
-        <li>
-          <div>
-            <b>Apiculture &amp; Beekeeping (apiculture)</b>
-            <div style="color: var(--muted); font-size: 0.85rem;">Apiary safety, veil design, hive gear, and honey processing standards</div>
+          <!-- Lower Section: Global Ecosystem Switcher (Changes Domain) -->
+          <div class="deck-rail-global">
+            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
+            <a href="https://credence.run" class="deck-domain-link">
+              <span>Home Hub</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
+            </a>
+            <a href="https://credence.report" class="deck-domain-link">
+              <span>🛡️ Reports Lab</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">report ↗</span>
+            </a>
+            <a href="https://credence.nexus" class="deck-domain-link">
+              <span>🕸️ Nexus NOC</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">nexus ↗</span>
+            </a>
+            <a href="https://credence.foundation" class="deck-domain-link active-domain">
+              <span class="domain-name">🏛️ Foundation</span>
+              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
+            </a>
+            <a href="https://docs.credence.run" class="deck-domain-link">
+              <span>📚 Docs &amp; Tools</span>
+              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
+            </a>
           </div>
-          <span style="color: var(--green); font-size: 0.85rem;">Active</span>
-        </li>
-        <li>
-          <div>
-            <b>Canine Veterinary Care &amp; Training (veterinary.canine)</b>
-            <div style="color: var(--muted); font-size: 0.85rem;">Trachea safety, canine nutrition, behavior modification, and gear</div>
-          </div>
-          <span style="color: var(--green); font-size: 0.85rem;">Active</span>
-        </li>
-        <li>
-          <div>
-            <b>Clinical Medicine &amp; Trials (scientific.clinical)</b>
-            <div style="color: var(--muted); font-size: 0.85rem;">Consort guidelines, trial methodology, oncology, and therapeutic safety</div>
-          </div>
-          <span style="color: var(--green); font-size: 0.85rem;">Active</span>
-        </li>
-      </ul>
-    </div>
 
-    <div class="card">
-      <h2>Network Root Authority</h2>
-      <p style="color: var(--muted); margin-bottom: 0.5rem;">The official network root Ed25519 public key used to sign seed manifests and taxonomy releases:</p>
-      <pre><code>curl -fsSL https://keys.credence.foundation/root.pub</code></pre>
-    </div>
+          <!-- Bottom Pinned Operator Footer -->
+          <div class="deck-rail-admin-footer">
+            <button type="button" class="btn-secondary" style="width:100%; text-align:center; font-size:0.78rem; padding:0.4rem; margin-bottom:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;" onclick="window.CredenceWS.openShortcutsModal()">
+              <span>⌨️ Hotkeys Reference</span>
+              <span class="nav-badge" style="background:var(--bg-card); color:var(--text-dim);">[?]</span>
+            </button>
+            <a href="https://credence.nexus#admin" class="deck-admin-link">
+              <span>🛠️ Operator Admin Deck</span>
+              <span class="nav-badge">Console ↗</span>
+            </a>
+          </div>
+        </aside>
 
+        <!-- Main Deck Stage -->
+        <main class="deck-stage">
+
+                                        <!-- TAB 1: RULE TAXONOMIES -->
+          <div id="tab-taxonomies" class="tab-panel active">
+            <div class="deck-card" style="margin-bottom: 1.5rem;">
+              <div class="deck-card-header">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h2 style="font-size:1.25rem; color:#fff; margin:0;">Canonical Taxonomy Catalogs</h2>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('taxonomies')" title="Info: Rule Taxonomies">ℹ</button>
+                  </div>
+                  <p style="color:var(--text-muted); font-size:0.9rem; margin:0.25rem 0 0;">
+                    Complete deterministic rule classifications pinned by cryptographic SHA-256 integrity hashes. All 36 canonical rules across the 3 core catalogs are listed below with full descriptions.
+                  </p>
+                </div>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <a href="v1/spj_ethics.json" target="_blank" class="btn-secondary" style="font-size:0.8rem;">SPJ Ethics JSON (13 Rules) ↗</a>
+                  <a href="v1/iep_fallacies.json" target="_blank" class="btn-secondary" style="font-size:0.8rem;">IEP Fallacies JSON (15 Rules) ↗</a>
+                  <a href="v1/deceptive_patterns.json" target="_blank" class="btn-secondary" style="font-size:0.8rem;">Deceptive Patterns JSON (8 Rules) ↗</a>
+                </div>
+              </div>
+
+              <div class="tree-container" style="margin-top:0.75rem;">
+                <!-- SPJ Ethics (13 Rules) -->
+                <div class="tree-node expanded">
+                  <div class="tree-node-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <b style="color:#fff;">📰 Society of Professional Journalists (SPJ) Code of Ethics</b>
+                      <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('spj_ethics')" title="Learn about SPJ Ethics Rules">ℹ</button>
+                      <span style="color:var(--text-muted); font-size:0.78rem; margin-left:0.5rem;">Domain: JOURNALISTIC_ETHICS &bull; 13 Rules &bull; Weight: 1.2x</span>
+                    </div>
+                    <span style="color:var(--accent-cyan); font-size:0.78rem;">▼ Toggle Rules</span>
+                  </div>
+                  <div class="tree-children">
+                    <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.5rem 0;">
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-1.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Unsourced Factual Assertion</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-1.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-1.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Significant factual, scientific, or statistical claims made without citations, primary sources, or verifiable provenance.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-1.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Headline / Body Distortion</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-1.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-1.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Misleading headline disparity where the article title or social preview contradicts or grossly inflates what the body text substantiates.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-1.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Uncorroborated Anonymous Sourcing</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-1.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-1.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Damaging assertions attributed exclusively to unnamed sources without explanatory justification or multiple independent corroborating points.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-1.4</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Deceptive Context & Selective Omission</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-1.4" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-1.4')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Quoting individuals or citing data while intentionally omitting critical qualifiers, timestamps, or full context that changes the fundamental meaning.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-1.5</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Blurred Editorial Demarcation</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-1.5" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-1.5')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Op-eds, speculative commentary, or sponsored marketing presented with the visual styling and framing of objective hard news.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-1.6</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 5</span>
+                            <b style="color:#fff; font-size:0.88rem;">Satire Cloaking & Bad-Faith Camouflage</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-1.6" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-1.6')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Malicious disinformation or defamatory falsehoods masquerading as satire or parody to evade accountability (Poe's Law Override applies).
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-2.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Sensational Exploitation of Tragedy</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-2.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-2.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Gratuitous sensationalism exploiting private victims, minors, or grief for emotional engagement or ad clicks.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-2.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 5</span>
+                            <b style="color:#fff; font-size:0.88rem;">Doxxing & Unjustified Privacy Intrusion</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-2.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-2.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Publishing private phone numbers, home addresses, or private identifying documents without legitimate public interest justification.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-3.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Undisclosed Commercial or Political Conflict</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-3.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-3.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Favorable coverage of products, donors, or political candidates without disclosing financial, ownership, or affiliate ties.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-3.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 5</span>
+                            <b style="color:#fff; font-size:0.88rem;">Disguised Native Advertising</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-3.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-3.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Paid promotional marketing designed to mimic an independent investigative article.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-4.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Stealth Modification & Silent Edits</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-4.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-4.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Substantive post-publication changes to key factual assertions, numbers, or quotes without publishing an explicit, timestamped editorial correction notice.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-4.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#14532d; color:#86efac; border:1px solid #22c55e; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 2</span>
+                            <b style="color:#fff; font-size:0.88rem;">Ghost or Anonymous Publishing</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-4.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-4.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          News reports published without an author byline, editorial board masthead, or organization contact.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:0.85rem;">SPJ-4.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#14532d; color:#86efac; border:1px solid #22c55e; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 2</span>
+                            <b style="color:#fff; font-size:0.88rem;">Lack of Transparent Corrections Policy</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=SPJ-4.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('SPJ-4.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Absence of a visible corrections log, contact channel for factual disputes, or retraction standards.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- IEP Logical Fallacies (15 Rules) -->
+                <div class="tree-node" style="margin-top:0.65rem;">
+                  <div class="tree-node-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <b style="color:#fff;">🧠 Internet Encyclopedia of Philosophy (IEP) Fallacies</b>
+                      <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('iep_fallacies')" title="Learn about IEP Fallacy Rules">ℹ</button>
+                      <span style="color:var(--text-muted); font-size:0.78rem; margin-left:0.5rem;">Domain: LOGICAL_FALLACY &bull; 15 Rules &bull; Weight: 1.0x</span>
+                    </div>
+                    <span style="color:var(--accent-purple); font-size:0.78rem;">▼ Toggle Rules</span>
+                  </div>
+                  <div class="tree-children">
+                    <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.5rem 0;">
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-1.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Ad Hominem (Abusive / Circumstantial)</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-1.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-1.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Attacking an opponent's character, background, appearance, or motives instead of engaging with their substantive argument.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-1.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Tu Quoque / Whataboutism</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-1.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-1.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Deflecting criticism by accusing the accuser of hypocrisy or raising unrelated counter-allegations.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-1.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Poisoning the Well</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-1.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-1.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Preemptively presenting adverse information about an opponent to discredit anything they might say beforehand.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-1.4</b>
+                            <span class="badge" style="font-size:0.65rem; background:#14532d; color:#86efac; border:1px solid #22c55e; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 2</span>
+                            <b style="color:#fff; font-size:0.88rem;">Genetic Fallacy</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-1.4" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-1.4')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Judging the validity of an idea purely on the basis of its origin or source history rather than its merits.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-2.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Begging the Question (Petitio Principii)</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-2.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-2.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          An argument whose premises assume the truth of the conclusion they are supposed to prove.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-2.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">False Dilemma / Forced Dichotomy</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-2.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-2.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Presenting complex, nuanced situations as an either/or choice while ignoring viable middle grounds.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-2.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Loaded Question</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-2.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-2.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Asking a question containing an unproven, incriminating presumption that cannot be answered simply without admitting guilt.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-2.4</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Cherry-Picking (Texas Sharpshooter)</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-2.4" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-2.4')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Highlighting only confirming evidence or favorable outliers while ignoring vast contradictory data.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-3.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Post Hoc Ergo Propter Hoc</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-3.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-3.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Assuming that because Event B occurred after Event A, Event A must have caused Event B.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-3.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Correlation as Causation</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-3.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-3.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Treating statistical correlation between two variables as definitive proof that one causes the other.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-3.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#14532d; color:#86efac; border:1px solid #22c55e; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 2</span>
+                            <b style="color:#fff; font-size:0.88rem;">Hasty Generalization</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-3.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-3.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Drawing a broad conclusion from a sample that is too small or unrepresentative.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-3.4</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Slippery Slope</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-3.4" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-3.4')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Claiming that a minor initial step will inevitably trigger a disastrous chain reaction without proving each link.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-4.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Appeal to Fear (In Terrorem)</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-4.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-4.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Using fabricated, exaggerated, or apocalyptic terror scenarios to coerce acceptance of a claim.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-4.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Appeal to False Authority</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-4.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-4.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Citing the opinion of a celebrity, non-expert, or authority in an unrelated field as definitive proof.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-purple); font-family:var(--font-mono); font-size:0.85rem;">IEP-5.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Straw Man Argument</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=IEP-5.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('IEP-5.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Misrepresenting, exaggerating, or oversimplifying an opponent's argument to make it easier to attack.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Deceptive UI Patterns (8 Rules) -->
+                <div class="tree-node" style="margin-top:0.65rem;">
+                  <div class="tree-node-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <b style="color:#fff;">🛑 Deceptive UI Patterns Catalog</b>
+                      <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('deceptive_patterns')" title="Learn about Deceptive Patterns &amp; Drip Pricing">ℹ</button>
+                      <span style="color:var(--text-muted); font-size:0.78rem; margin-left:0.5rem;">Domain: DECEPTIVE_PATTERN &bull; 8 Rules &bull; Weight: 1.5x</span>
+                    </div>
+                    <span style="color:var(--accent-rose); font-size:0.78rem;">▼ Toggle Rules</span>
+                  </div>
+                  <div class="tree-children">
+                    <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.5rem 0;">
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-1.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Hidden Drip Pricing & Sneak-into-Basket</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-1.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-1.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Concealing mandatory fees, service surcharges, or auto-selected items until the final steps of a transaction.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-1.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Confirmshaming & Manipulative Microcopy</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-1.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-1.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Phrasing opt-out button text to guilt, insult, or shame the user into complying with the site's preferred choice.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-1.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#78350f; color:#fde68a; border:1px solid #d97706; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 3</span>
+                            <b style="color:#fff; font-size:0.88rem;">Visual Contrast Suppression</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-1.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-1.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Making crucial terms, recurring billing conditions, or opt-out links nearly invisible using ultra-low contrast or microscopic fonts.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-2.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Fake Urgency & Resetting Countdowns</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-2.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-2.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Displaying artificial timers, countdowns, or claims of impending price hikes that automatically reset upon page reload.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-2.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 4</span>
+                            <b style="color:#fff; font-size:0.88rem;">Fabricated Social Proof & Fake Activity</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-2.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-2.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Generating synthetic notifications claiming other users just purchased the item or that high demand is depleting stock.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-2.3</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 5</span>
+                            <b style="color:#fff; font-size:0.88rem;">Roach Motel / Trapped Cancellation</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-2.3" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-2.3')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Making it effortless to subscribe (1-click), but requiring phone calls, maze-like forms, or hidden menus to cancel.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-3.1</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 5</span>
+                            <b style="color:#fff; font-size:0.88rem;">Fake System Warnings & Rogue Dialogs</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-3.1" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-3.1')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Simulating native operating system error dialogs, antivirus infection alerts, or browser crash screens to frighten users.
+                        </div>
+                      </div>
+                      <div class="rule-expandable-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                          <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <b style="color:var(--accent-rose); font-family:var(--font-mono); font-size:0.85rem;">DEC-3.2</b>
+                            <span class="badge" style="font-size:0.65rem; background:#7f1d1d; color:#f87171; border:1px solid #ef4444; border-radius:9999px; padding:0.05rem 0.4rem;">Sev 5</span>
+                            <b style="color:#fff; font-size:0.88rem;">Bait and Switch</b>
+                          </div>
+                          <div style="display:flex; gap:0.35rem;">
+                            <a href="../credence.report/index.html?rule=DEC-3.2" class="btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem; text-decoration:none;">🔬 Find Real Examples ↗</a>
+                            <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="copyRuleId('DEC-3.2')">📋 Copy ID</button>
+                          </div>
+                        </div>
+                        <div class="rule-full-desc">
+                          Promising one outcome (e.g. clicking 'Close' or 'Skip') but executing an entirely different action (e.g. opening an ad or initiating checkout).
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <!-- TAB 2: ROOT KEY CUSTODY -->
+          <div id="tab-custody" class="tab-panel">
+            <div class="deck-card" style="margin-bottom:1.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                <h2 style="font-size:1.25rem; color:#fff; margin:0;">Network Root Cryptographic Authority</h2>
+                <button class="info-btn" onclick="window.CredenceWS.openInfoModal('webcrypto')" title="Info: Cryptographic Authority">ℹ</button>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                The official network root Ed25519 public key used to sign seed manifests and taxonomy releases:
+              </p>
+
+              <div style="background:var(--bg-code); padding:1rem; border-radius:6px; border:1px solid var(--border); margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <span style="font-size:0.8rem; color:var(--text-dim); text-transform:uppercase;">Root Public Key (root.pub)</span>
+                  <button class="btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText('0000000000000000000000000000000000000000000000000000000000000000'); window.CredenceWS.showToast('Copied root public key!', 'success');">📋 Copy Key</button>
+                </div>
+                <code id="root-pub-display" style="color:var(--accent-green); font-family:var(--font-mono); font-size:0.9rem; word-break:break-all;">
+                  curl -fsSL https://keys.credence.foundation/root.pub
+                </code>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+                <div style="background:var(--bg-secondary); padding:1rem; border-radius:6px; border:1px solid var(--border); cursor:pointer;" onclick="window.CredenceWS.openInfoModal('custody')" title="Learn about Ed25519 Custody">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; color:var(--text-dim);">Algorithm</span>
+                    <span style="color:var(--accent-cyan); font-size:0.75rem;">ℹ</span>
+                  </div>
+                  <div style="font-weight:700; color:#fff; font-size:1.05rem;">Ed25519 (PureEdDSA)</div>
+                </div>
+                <div style="background:var(--bg-secondary); padding:1rem; border-radius:6px; border:1px solid var(--border); cursor:pointer;" onclick="window.CredenceWS.openInfoModal('canonical_json')" title="Learn about RFC 8785 Canonical Serialization">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; color:var(--text-dim);">Canonical Envelope</span>
+                    <span style="color:var(--accent-cyan); font-size:0.75rem;">ℹ</span>
+                  </div>
+                  <div style="font-weight:700; color:#fff; font-size:1.05rem;">RFC 8785 Canonical JSON</div>
+                </div>
+                <div style="background:var(--bg-secondary); padding:1rem; border-radius:6px; border:1px solid var(--border);">
+                  <span style="font-size:0.8rem; color:var(--text-dim);">Custody Plane</span>
+                  <div style="font-weight:700; color:#fff; font-size:1.05rem;">Cloudflare R2 &bull; Edge Bound</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: WEBCRYPTO SANDBOX -->
+          <div id="tab-sandbox" class="tab-panel">
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <h2 style="font-size:1.25rem; color:#fff; margin:0;">In-Browser WebCrypto Ed25519 Verification Sandbox</h2>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('webcrypto')" title="Info: WebCrypto Sandbox">ℹ</button>
+                </div>
+                <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.75rem;" onclick="loadSampleCryptoEnvelope()">📝 Load Sample Attestation</button>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.25rem;">
+                Verify signed epistemic audit envelopes and taxonomy manifests entirely client-side using the standard W3C Web Cryptography API with zero backend calls.
+              </p>
+
+              <div class="form-group">
+                <label class="form-label" for="verify-payload">RFC 8785 Canonical JSON Payload</label>
+                <textarea id="verify-payload" class="form-input" rows="4" style="font-family:var(--font-mono); font-size:0.85rem;" placeholder='{"classification":"CLEAN","content_sha256":"0000000000000000000000000000000000000000000000000000000000000000","suspicion_score":0.0}'></textarea>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                <div class="form-group">
+                  <label class="form-label" for="verify-pubkey">Signer Ed25519 Public Key (Hex)</label>
+                  <input type="text" id="verify-pubkey" class="form-input" placeholder="e.g. 0000000000000000000000000000000000000000000000000000000000000000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="verify-sig">Ed25519 Signature (Hex)</label>
+                  <input type="text" id="verify-sig" class="form-input" placeholder="e.g. 1111111111111111111111111111111111111111111111111111111111111111...">
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn-primary" onclick="verifyClientSignature()">🔍 Verify Signature via WebCrypto</button>
+                <div id="verify-result" style="font-family:var(--font-mono); font-size:0.9rem;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: GOVERNANCE & RFC SPECS -->
+          <div id="tab-governance" class="tab-panel">
+            <div class="deck-card" style="margin-bottom:1.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <h2 style="font-size:1.25rem; color:#fff; margin:0;">Taxonomy Governance &amp; Amendment RFCs</h2>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('governance')" title="Info: Living Invariant Canon &amp; RFC Governance">ℹ</button>
+                </div>
+                <span class="ribbon-pill ready">Byzantine Quorum: ≥ 66% Consensus</span>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.25rem;">
+                The formal procedure for proposing, evaluating, and ratifying taxonomy catalog updates across the decentralized trust network.
+              </p>
+
+              <!-- Ratified Standards RFC Table -->
+              <h3 style="font-size:1rem; color:#fff; margin:1.25rem 0 0.75rem 0;">📜 Active &amp; Ratified RFC Standards</h3>
+              <div style="overflow-x:auto;">
+                <table class="dci-table" style="width:100%;">
+                  <thead>
+                    <tr>
+                      <th>RFC ID &amp; Title</th>
+                      <th>Domain</th>
+                      <th>Consensus Status</th>
+                      <th>Quorum Level</th>
+                      <th>Integrity Hash</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <strong style="color:#fff;">RFC-001: Core SPJ Journalistic Ethics Standard</strong>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">Foundational 13-rule journalistic integrity framework</div>
+                      </td>
+                      <td><code>JOURNALISTIC_ETHICS</code></td>
+                      <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.72rem;">RATIFIED</span></td>
+                      <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-green);">100.0% (13/13 Nodes)</td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:d8a2...4c01</code></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong style="color:#fff;">RFC-002: IEP Logical Fallacy Mapping</strong>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">15 formal fallacy definitions and evidentiary rules</div>
+                      </td>
+                      <td><code>LOGICAL_FALLACY</code></td>
+                      <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.72rem;">RATIFIED</span></td>
+                      <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-green);">92.3% (12/13 Nodes)</td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:e4f1...9b22</code></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong style="color:#fff;">RFC-003: Deceptive UI &amp; Drip Pricing Protections</strong>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">Consumer protection rules for e-commerce checkout flows</div>
+                      </td>
+                      <td><code>DECEPTIVE_PATTERN</code></td>
+                      <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.72rem;">RATIFIED</span></td>
+                      <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-green);">84.6% (11/13 Nodes)</td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:7b9c...aa83</code></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong style="color:#fff;">RFC-004: Domain Expertise Weighted Medians</strong>
+                        <div style="font-size:0.75rem; color:var(--text-dim);">Mathematical formula for subject-matter authority consensus</div>
+                      </td>
+                      <td><code>CONSENSUS_MATH</code></td>
+                      <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:var(--accent-amber); border:1px solid var(--accent-amber); font-size:0.72rem;">ACTIVE PROPOSAL</span></td>
+                      <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-amber);">69.2% (9/13 Nodes)</td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:3a19...55d0</code></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Ratification Protocol Steps -->
+              <h3 style="font-size:1rem; color:#fff; margin:1.75rem 0 0.75rem 0;">⚡ 3-Phase Ratification Protocol</h3>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+                <div style="background:var(--bg-secondary); padding:1rem 1.15rem; border-radius:6px; border:1px solid var(--border);">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--accent-cyan); text-transform:uppercase;">Phase 1</span>
+                  <b style="color:#fff; display:block; margin:0.25rem 0 0.35rem 0; font-size:0.95rem;">Proposal &amp; YAML Schema Gate</b>
+                  <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.45;">
+                    New rule definitions are authored in strict YAML format and must pass hermetic schema linting and synthetic test fixtures.
+                  </div>
+                </div>
+
+                <div style="background:var(--bg-secondary); padding:1rem 1.15rem; border-radius:6px; border:1px solid var(--border);">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--accent-purple); text-transform:uppercase;">Phase 2</span>
+                  <b style="color:#fff; display:block; margin:0.25rem 0 0.35rem 0; font-size:0.95rem;">Byzantine Quorum Consensus</b>
+                  <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.45;">
+                    Amendments require <b>&ge; 66% cryptographic attestation approval</b> across verified mesh anchor nodes (3f + 1 fault tolerance).
+                  </div>
+                </div>
+
+                <div style="background:var(--bg-secondary); padding:1rem 1.15rem; border-radius:6px; border:1px solid var(--border);">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--accent-green); text-transform:uppercase;">Phase 3</span>
+                  <b style="color:#fff; display:block; margin:0.25rem 0 0.35rem 0; font-size:0.95rem;">Immutable SHA-256 Pinning</b>
+                  <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.45;">
+                    Ratified catalogs receive a sequential semantic version (e.g. <code>v1.0.0</code>) and are cryptographically pinned at the edge.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
   </div>
 
+  <!-- Universal 4-Pillar Footer (Strict 4 Pillars, 4 Links Each) -->
   <footer class="credence-footer">
     <div class="footer-container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h4>🌐 Sovereign Network</h4>
-          <ul>
-            <li><a href="https://credence.run">Platform Home</a></li>
-            <li><a href="https://credence.report">Audit Explorer</a></li>
-            <li><a href="https://credence.nexus">Mesh Directory</a></li>
-            <li><a href="https://credence.foundation">Root Key Custody</a></li>
+          <h4>Ecosystem</h4>
+          <ul class="footer-links">
+            <li><a href="https://credence.run">Home Hub</a></li>
+            <li><a href="https://docs.credence.run">Documentation</a></li>
+            <li><a href="https://credence.report">Reports Lab</a></li>
+            <li><a href="https://credence.nexus">Nexus NOC</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>🎮 Interactive & Tools</h4>
-          <ul>
-            <li><a href="https://docs.credence.run#docs/playground">Zero-Build Playgrounds</a></li>
-            <li><a href="https://credence.report/viewer.html">Multi-Mode Report Viewer</a></li>
-            <li><a href="https://docs.credence.run#docs/tutorials/03-claude-cursor-fastmcp">FastMCP Server Integration</a></li>
-            <li><a href="https://seeds.credence.nexus/peers.json">P2P Seed Manifest</a></li>
+          <h4>Governance</h4>
+          <ul class="footer-links">
+            <li><a href="https://credence.foundation">Taxonomy Foundation</a></li>
+            <li><a href="https://taxonomies.credence.foundation">Taxonomies</a></li>
+            <li><a href="https://docs.credence.run#docs/agent-invariants">Invariant Bible</a></li>
+            <li><a href="https://docs.credence.run#docs/whitepaper">Whitepaper</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>📘 Knowledge & Canon</h4>
-          <ul>
-            <li><a href="https://docs.credence.run#docs/invariants">The Invariant Bible</a></li>
-            <li><a href="https://blog.credence.run">Sovereign Blog & Essays</a></li>
-            <li><a href="https://docs.credence.run#docs/topic-index">Topic Index & Directory</a></li>
-            <li><a href="https://docs.credence.run#docs/roadmap">Roadmap & Horizons</a></li>
+          <h4>Operations</h4>
+          <ul class="footer-links">
+            <li><a href="https://credence.nexus#mesh">P2P Mesh Cluster</a></li>
+            <li><a href="https://credence.nexus#admin">Operator Admin</a></li>
+            <li><a href="https://credence.report/viewer.html">Report Viewer</a></li>
+            <li><a href="https://docs.credence.run#docs/quickstart">Developer Quickstart</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>⚖️ Governance & Source</h4>
-          <ul>
-            <li><a href="https://github.com/artibyrd/credence" target="_blank" rel="noopener">GitHub Repository</a></li>
-            <li><a href="https://docs.credence.run#docs/changelog">Release Changelog</a></li>
-            <li><a href="https://keys.credence.foundation/root.pub">Root Public Key (root.pub)</a></li>
-            <li><a href="https://github.com/artibyrd/credence/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0 License</a></li>
+          <h4>Connect</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/artibyrd/credence">GitHub Source</a></li>
+            <li><a href="https://pypi.org/project/credence/">PyPI Package</a></li>
+            <li><a href="https://docs.credence.run#docs/roadmap">Roadmap &amp; RFCs</a></li>
+            <li><a href="https://docs.credence.run#docs/changelog">Changelog</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <div>&copy; 2026 Credence Network &bull; Zero npm dependencies &bull; 100% Zero-Build Sovereign Web</div>
+        &copy; 2026 Credence Trust Network. Sovereign epistemic auditing across the open web.
       </div>
     </div>
   </footer>
+
+  <script type="module">
+    import { initWorkstation, verifyEd25519Signature, showToast } from '../assets/credence-workstation.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initWorkstation({ defaultTab: 'taxonomies' });
+    });
+
+    window.copyRuleId = function(ruleId) {
+      navigator.clipboard.writeText(ruleId);
+      showToast(`Copied Rule ID: ${ruleId}`, 'success');
+    };
+
+    window.loadSampleCryptoEnvelope = function() {
+      document.getElementById('verify-payload').value = '{"classification":"CLEAN","content_sha256":"0000000000000000000000000000000000000000000000000000000000000000","protocol":"CREDENCE-RFC8785-ED25519-v1","signer":"anchor-us-central1","suspicion_score":0.0}';
+      document.getElementById('verify-pubkey').value = '1111111111111111111111111111111111111111111111111111111111111111';
+      document.getElementById('verify-sig').value = '22222222222222222222222222222222222222222222222222222222222222223333333333333333333333333333333333333333333333333333333333333333';
+      showToast('Loaded sample RFC 8785 envelope', 'success');
+    };
+
+    window.verifyClientSignature = async function() {
+      const payload = document.getElementById('verify-payload').value.trim();
+      const pubkey = document.getElementById('verify-pubkey').value.trim();
+      const sig = document.getElementById('verify-sig').value.trim();
+      const resultEl = document.getElementById('verify-result');
+
+      if (!payload || !pubkey || !sig) {
+        showToast('Please fill in payload, public key, and signature fields', 'error');
+        return;
+      }
+
+      resultEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Verifying WebCrypto signature...</span>';
+      const result = await verifyEd25519Signature(payload, sig, pubkey);
+
+      if (result.valid) {
+        resultEl.innerHTML = '<span style="color:var(--accent-green); font-weight:bold;">✅ VALID SIGNATURE (Ed25519 Verified)</span>';
+        showToast('Signature successfully verified via WebCrypto', 'success');
+      } else {
+        resultEl.innerHTML = `<span style="color:var(--accent-rose); font-weight:bold;">❌ INVALID SIGNATURE: ${result.error || 'Verification Failed'}</span>`;
+        showToast('Signature verification failed', 'error');
+      }
+    };
+  </script>
 </body>
 </html>

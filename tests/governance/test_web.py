@@ -231,3 +231,64 @@ def test_web_viewer_randomized_default_selection_and_4_tab_layout(web_dir: Path)
     assert "copyMarkdownSummary" in content
     assert "copyJsonAttestation" in content
     assert "copyBadgeSnippet" in content
+
+
+@pytest.mark.governance
+def test_web_workstation_architecture_and_admin_deck(web_dir: Path) -> None:
+    """Verify zero-build Workstation architecture, Admin Command Deck, and shared JS engine."""
+    # 1. Verify shared workstation engine
+    ws_js = web_dir / "assets" / "credence-workstation.js"
+    assert ws_js.exists(), "assets/credence-workstation.js must exist"
+    ws_content = ws_js.read_text(encoding="utf-8")
+    assert "initWorkstation" in ws_content
+    assert "checkAuthStatus" in ws_content
+    assert "fetchWithAuth" in ws_content
+    assert "verifyEd25519Signature" in ws_content
+    assert "toggleTuiMode" in ws_content
+    assert "openInfoModal" in ws_content
+    assert "closeInfoModal" in ws_content
+
+    # 2. Verify Foundation Constitutional Vault
+    found_file = web_dir / "credence.foundation" / "index.html"
+    assert found_file.exists()
+    found_content = found_file.read_text(encoding="utf-8")
+    assert "tab-taxonomies" in found_content
+    assert "tab-custody" in found_content
+    assert "tab-sandbox" in found_content
+    assert "verifyEd25519Signature" in found_content
+    assert "v1/spj_ethics.json" in found_content
+    assert "info-btn" in found_content
+
+    # 3. Verify Nexus Mesh Operations & Admin Command Deck
+    nexus_file = web_dir / "credence.nexus" / "index.html"
+    assert nexus_file.exists()
+    nexus_content = nexus_file.read_text(encoding="utf-8")
+    assert "tab-topology" in nexus_content
+    assert "tab-leaderboard" in nexus_content
+    assert "tab-vitals" in nexus_content
+    assert "tab-admin" in nexus_content
+    assert "admin-cockpit-grid" in nexus_content
+    assert "adm-daily-budget" in nexus_content
+    assert "adm-max-tokens" in nexus_content
+    assert "triggerEmergencyStop" in nexus_content
+    assert "info-btn" in nexus_content
+
+    # 4. Verify Report Epistemic Forensic Lab
+    report_file = web_dir / "credence.report" / "index.html"
+    assert report_file.exists()
+    report_content = report_file.read_text(encoding="utf-8")
+    assert "tab-inspector" in report_content
+    assert "tab-dossier" in report_content
+    assert "tab-dci" in report_content
+    assert "tab-sifter" in report_content
+    assert "article-subview-diff" in report_content
+    assert "deck-shell" in report_content
+    assert "deck-rail" in report_content
+    assert "pinned-sources-container" in report_content
+    assert "pinCurrentSource" in report_content
+    assert "info-btn" in report_content
+
+    # Verify tab order: Source Dossier (#2) precedes DCI (#3)
+    dossier_idx = report_content.find('id="rail-btn-dossier"')
+    dci_idx = report_content.find('id="rail-btn-dci"')
+    assert dossier_idx < dci_idx, "Source Dossier (#2) must logically precede DCI (#3)"

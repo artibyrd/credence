@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse
 
 from credence.db import get_async_session, init_db
 from credence.models import FeedItem, FeedSubscription
+from credence.server.middleware.security import _check_admin_auth
 
 logger = logging.getLogger("credence.server.api")
 
@@ -27,7 +28,12 @@ async def api_sifter_status(request: Any) -> Any:
 
 
 async def api_sifter_cycle(request: Any) -> Any:
-    """REST API: Trigger an immediate sifting cycle."""
+    """REST API: Trigger an immediate sifting cycle (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to trigger sifter cycle"},
+            status_code=401,
+        )
 
     from credence.feeds.sifter import run_sifting_cycle
 
@@ -83,7 +89,13 @@ async def api_feeds_stream(request: Any) -> Any:
 
 
 async def api_roots_expand(request: Any) -> Any:
-    """REST API: Trigger autonomous root expansion from cited domains."""
+    """REST API: Trigger autonomous root expansion from cited domains (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to expand roots"},
+            status_code=401,
+        )
+
     from dataclasses import asdict
 
     from credence.feeds.roots import expand_roots
@@ -131,7 +143,13 @@ async def api_roots_candidates(request: Any) -> Any:
 
 
 async def api_boredom_cycle(request: Any) -> Any:
-    """REST API: Trigger an immediate opportunistic boredom cycle."""
+    """REST API: Trigger an immediate opportunistic boredom cycle (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to trigger boredom cycle"},
+            status_code=401,
+        )
+
     from dataclasses import asdict
 
     from credence.feeds.boredom import run_boredom_cycle
