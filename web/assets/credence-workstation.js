@@ -32,10 +32,9 @@ export function getStoredToken() {
   return sessionStorage.getItem('credence_admin_token') || localStorage.getItem('credence_admin_token') || '';
 }
 
-export function setStoredToken(token, remember = false) {
-  if (remember) {
+export function setStoredToken(token, remember = true) {
+  if (token) {
     localStorage.setItem('credence_admin_token', token);
-  } else {
     sessionStorage.setItem('credence_admin_token', token);
   }
 }
@@ -57,9 +56,32 @@ export function clearStoredToken() {
 
 export async function checkAuthStatus() {
   const token = getStoredToken();
+  if (!token) {
+    authState.authenticated = false;
+    authState.role = 'ANONYMOUS';
+    authState.identity = null;
+    authState.method = null;
+    updateRibbonAuthBadge();
+    window.dispatchEvent(new CustomEvent('credence-auth-changed', { detail: authState }));
+    if (typeof window.renderAdminView === 'function') {
+      window.renderAdminView();
+    }
+    return false;
+  }
+
+  // Optimistically set active for stored token to prevent flash of locked screen
+  authState.authenticated = true;
+  authState.role = 'OPERATOR';
+  authState.identity = 'admin';
+  authState.method = 'API_KEY';
+  updateRibbonAuthBadge();
+  if (typeof window.renderAdminView === 'function') {
+    window.renderAdminView();
+  }
+
   const apiBase = getApiBaseUrl();
   try {
-    const headers = token ? { 'Authorization': `Bearer ${token}`, 'X-Credence-Admin-Key': token } : {};
+    const headers = { 'Authorization': `Bearer ${token}`, 'X-Credence-Admin-Key': token };
     const res = await fetch(`${apiBase}/api/auth/verify`, { headers });
     if (res.ok) {
       const data = await res.json();
@@ -68,17 +90,28 @@ export async function checkAuthStatus() {
       authState.identity = data.identity || 'admin';
       authState.method = data.method || 'API_KEY';
       updateRibbonAuthBadge();
+      window.dispatchEvent(new CustomEvent('credence-auth-changed', { detail: authState }));
+      if (typeof window.renderAdminView === 'function') {
+        window.renderAdminView();
+      }
       return true;
+    } else {
+      // Stored token is invalid or expired
+      clearStoredToken();
+      return false;
     }
   } catch (e) {
-    // offline or backend unreachable
+    // Offline mode: retain cached authenticated state for stored token
+    updateRibbonAuthBadge();
+    window.dispatchEvent(new CustomEvent('credence-auth-changed', { detail: authState }));
+    if (typeof window.renderAdminView === 'function') {
+      window.renderAdminView();
+    }
+    return true;
   }
-  authState.authenticated = false;
-  updateRibbonAuthBadge();
-  return false;
 }
 
-export async function loginWithKey(key, remember = false) {
+export async function loginWithKey(key, remember = true) {
   const apiBase = getApiBaseUrl();
   try {
     const res = await fetch(`${apiBase}/api/auth/verify`, {
@@ -193,8 +226,8 @@ export function injectOperatorModal() {
                 </div>
               </div>
               <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.25rem;">
-                <input type="checkbox" id="remember-session" style="cursor:pointer;">
-                <label for="remember-session" style="color:var(--text-muted); font-size:0.82rem; cursor:pointer;">Remember token in localStorage</label>
+                <input type="checkbox" id="remember-session" checked style="cursor:pointer;">
+                <label for="remember-session" style="color:var(--text-muted); font-size:0.82rem; cursor:pointer;">Remember token across sessions &amp; reloads</label>
               </div>
               <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
                 <button type="button" class="btn-secondary" onclick="window.CredenceWS.closeOperatorModal()">Cancel</button>
