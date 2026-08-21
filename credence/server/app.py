@@ -61,6 +61,7 @@ from credence.server.api.system import (
     api_favicon,
     api_germinate,
     api_health,
+    api_node_stats,
     api_root_index,
 )
 from credence.server.api.widget import api_get_badge_data, api_get_history
@@ -100,6 +101,7 @@ def create_server_app(enable_sifter: bool = False, enable_boredom: bool = False)
         Route("/favicon.ico", endpoint=api_favicon, methods=["GET", "OPTIONS"]),
         Route("/health", endpoint=api_health, methods=["GET"]),
         Route("/api/health", endpoint=api_health, methods=["GET"]),
+        Route("/api/node/stats", endpoint=api_node_stats, methods=["GET", "OPTIONS"]),
         Route("/api/auth/config", endpoint=api_auth_config, methods=["GET", "OPTIONS"]),
         Route("/api/auth/verify", endpoint=api_auth_verify, methods=["GET", "POST", "OPTIONS"]),
         Route("/api/v1/badge/{identifier:path}", endpoint=api_get_badge_data, methods=["GET", "OPTIONS"]),

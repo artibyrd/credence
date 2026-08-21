@@ -65,3 +65,37 @@ def test_boredom_status_schema_parity(api_client: TestClient):
     assert "hourly_pct" in headroom
     assert "daily_pct" in headroom
     assert "daily_spend_usd" in headroom
+
+
+@pytest.mark.unit
+def test_node_stats_schema_parity(api_client: TestClient):
+    """Verify /api/node/stats provides comprehensive performance, processing, and storage metrics."""
+    res = api_client.get("/api/node/stats")
+    assert res.status_code == 200
+    data = res.json()
+
+    assert "status" in data
+    assert "uptime_seconds" in data
+    assert "memory_mb" in data
+    assert "latencies_ms" in data
+    assert "article_processing" in data
+    assert "storage_gravity" in data
+    assert "boredom_engine" in data
+    assert "work_sharing_savings" in data
+
+    processing = data["article_processing"]
+    assert "total_audits" in processing
+    assert "total_snapshots" in processing
+    assert "audits_today" in processing
+    assert "avg_suspicion_score" in processing
+    assert "grounding_quotient" in processing
+    assert "avg_eval_duration_ms" in processing
+    assert "evaluations_per_minute" in processing
+
+    storage = data["storage_gravity"]
+    assert "database_path" in storage
+    assert "database_size_bytes" in storage
+    assert "database_size_mb" in storage
+    assert "storage_engine" in storage
+    assert "retained_backups_count" in storage
+
