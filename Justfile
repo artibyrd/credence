@@ -508,6 +508,19 @@ edge action="status": (preflight "wrangler")
             (cd web && npx wrangler login)
             ;;
         deploy)
+            if [ "${FORCE_PROD_DEPLOY:-false}" != "true" ]; then
+                echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+                echo -e "\033[1;33m⚠️  CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING\033[0m"
+                echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+                echo -e "\033[1;33m⚠️  Target Domain     : credence.run (Cloudflare Workers Anycast Router)\033[0m"
+                echo -e "\033[1;33m⚠️  Standard Process  : Deploy via GitHub Actions PR merge to 'main'.\033[0m"
+                echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+                read -r -p "Type 'DEPLOY-PROD' to confirm edge deployment: " CONFIRM_STR
+                if [ "$CONFIRM_STR" != "DEPLOY-PROD" ]; then
+                    echo -e "\033[1;31m❌ Edge deployment cancelled.\033[0m"
+                    exit 1
+                fi
+            fi
             echo "=== Deploying Cloudflare Edge Router & Web Assets ==="
             (cd web && npx wrangler deploy)
             ;;
@@ -633,6 +646,34 @@ deploy target="backend" env="dev" project_id="credence-prod-505902":
         git status -s
         exit 1
     fi
+
+    # Determine if this deploy targets production
+    IS_PROD=false
+    if [ "{{target}}" = "prod" ] || [ "{{target}}" = "all" ] || [ "{{env}}" = "prod" ] || [ "{{env}}" = "advanced" ]; then
+        IS_PROD=true
+    fi
+
+    # Safety Gate for Local Production Deployments
+    if [ "$IS_PROD" = "true" ]; then
+        if [ "${FORCE_PROD_DEPLOY:-false}" != "true" ]; then
+            echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+            echo -e "\033[1;33m⚠️  PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)\033[0m"
+            echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+            echo -e "\033[1;33m⚠️  Target Environment : PRODUCTION (credence-prod-505902 / Cloudflare Edge)\033[0m"
+            echo -e "\033[1;33m⚠️  Standard Process   : Use Pull Request merge to 'main' for production releases.\033[0m"
+            echo -e "\033[1;33m⚠️  Local Execution    : Strictly reserved for testing, diagnostics & emergency fixes.\033[0m"
+            echo -e "\033[1;33m⚠️  ========================================================================\033[0m"
+            read -r -p "Type 'DEPLOY-PROD' to confirm local production deployment: " CONFIRM_STR
+            if [ "$CONFIRM_STR" != "DEPLOY-PROD" ]; then
+                echo -e "\033[1;31m❌ Local production deployment cancelled. Rely on standard PR merge workflow.\033[0m"
+                exit 1
+            fi
+            echo -e "\033[1;32m✅ Production deployment confirmed by operator.\033[0m"
+        else
+            echo "ℹ️  FORCE_PROD_DEPLOY=true detected. Bypassing interactive production confirmation prompt."
+        fi
+    fi
+
     case "{{target}}" in
         backend)
             just preflight gcloud

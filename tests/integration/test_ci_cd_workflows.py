@@ -136,3 +136,19 @@ def test_workflow_branch_and_pr_staging_triggers() -> None:
     assert "main" in edge_on["push"].get("branches", []), "deploy-edge.yml must deploy on push to main"
 
 
+@pytest.mark.integration
+def test_local_production_deploy_safety_gate() -> None:
+    """Verify that local production deployments are strictly gated with warning banners and confirmation prompts."""
+    justfile_path = Path(__file__).resolve().parents[2] / "Justfile"
+    assert justfile_path.exists(), f"Justfile not found at {justfile_path}"
+
+    justfile_content = justfile_path.read_text(encoding="utf-8")
+
+    # Verify presence of safety checks in deploy recipe
+    assert "PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)" in justfile_content
+    assert "DEPLOY-PROD" in justfile_content
+    assert "FORCE_PROD_DEPLOY" in justfile_content
+    assert "CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING" in justfile_content
+
+
+
