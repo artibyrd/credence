@@ -10,6 +10,7 @@ Provides a zero-friction, single-call lifecycle to ignite fresh Credence nodes:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import time
@@ -206,19 +207,29 @@ async def run_germination_sifting_burst(
     if node_pubkey:
         subscriptions.sort(key=lambda s: compute_feed_affinity(node_pubkey, s.feed_url), reverse=True)
 
+    # Parallel Feed Discovery with Bounded Concurrency (Semaphore=5)
+    sem = asyncio.Semaphore(5)
+
+    async def _safe_sync_sub(sub_to_sync: FeedSubscription) -> None:
+        async with sem:
+            try:
+                await sync_single_feed(
+                    session=session,
+                    subscription=sub_to_sync,
+                    evaluate_novel=False,
+                    dry_run=False,
+                )
+            except Exception as e:
+                logger.debug("Feed sync non-fatal warning for %s: %s", sub_to_sync.feed_url, e)
+
+    # Sync active subscriptions in parallel
+    await asyncio.gather(*[_safe_sync_sub(s) for s in subscriptions])
+
     audited_count = 0
 
     for sub in subscriptions:
         if audited_count >= burst_limit:
             break
-
-        # Sync feed without auto-evaluating everything at once
-        await sync_single_feed(
-            session=session,
-            subscription=sub,
-            evaluate_novel=False,
-            dry_run=False,
-        )
 
         # Check for newly pending items
         stmt_pending = (
@@ -282,7 +293,7 @@ async def export_catalog_to_disk(
     session: AsyncSession,
     output_dir: Optional[Path] = None,
 ) -> Path:
-    """Export local database reports to static reports.json for instant Web UI parity."""
+    """Export local database reports to static reports.json and genesis_attestations.json for instant Web UI parity."""
     if output_dir is None:
         project_root = Path(__file__).resolve().parent.parent
         output_dir = project_root / "web" / "credence.report"
@@ -354,6 +365,16 @@ async def export_catalog_to_disk(
     }
 
     out_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    # Also export signed genesis attestations pack
+    try:
+        from credence.storage.backup import export_attestation_pack
+
+        nexus_seeds = output_dir.parent / "credence.nexus" / "genesis_attestations.json"
+        await export_attestation_pack(session=session, output_path=nexus_seeds)
+    except Exception as ee:
+        logger.debug("Signed attestation pack export non-fatal note: %s", ee)
+
     return out_file
 
 
@@ -365,7 +386,7 @@ async def germinate_node(
     verbose: bool = True,
     relay: Optional[Any] = None,
 ) -> GerminationSummary:
-    """Execute complete autonomous germination lifecycle for a Credence node.
+    """Execute complete autonomous germination lifecycle for a Credence node (Genesis or Incremental).
 
     Args:
         session: Active async SQLModel database session.
@@ -379,11 +400,20 @@ async def germinate_node(
         GerminationSummary containing structured performance metrics.
     """
     t_start = time.perf_counter()
+    from sqlmodel import func
+
+    # Check for existing reports
+    stmt_total_audits_init = select(func.count(col(Audit.id)))
+    initial_audits = (await session.exec(stmt_total_audits_init)).first() or 0
+    is_incremental = initial_audits > 0
 
     # 1. Epistemic Genesis: Load/Generate Node Identity
     identity = load_or_create_node_identity()
     if verbose:
-        logger.info("🔑 Step 1/5: Epistemic Genesis loaded (pubkey: %s...)", identity.public_key_hex[:16])
+        mode_label = "INCREMENTAL" if is_incremental else "FULL GENESIS"
+        logger.info(
+            "🔑 Step 1/5: Epistemic Genesis (%s) loaded (pubkey: %s...)", mode_label, identity.public_key_hex[:16]
+        )
 
     # 2. Peer Mesh Inoculation (0 Tokens)
     adopted_count = 0
@@ -392,7 +422,7 @@ async def germinate_node(
         if verbose:
             logger.info("💧 Step 2/5: Inoculated %d peer attestations from Genesis mesh (0 tokens)", adopted_count)
 
-    # 3. Soil Preparation: Sow 24 Preset Feeds
+    # 3. Soil Preparation: Sow Preset Feeds (Idempotent)
     sowed_count = await bootstrap_preset_feeds(session)
     if verbose:
         logger.info("🌱 Step 3/5: Sowed %d preset feed subscriptions across 4 tiers", sowed_count)
@@ -413,11 +443,9 @@ async def germinate_node(
     # 5. Catalog Export
     await export_catalog_to_disk(session)
     if verbose:
-        logger.info("📦 Step 5/5: Exported static web catalog reports.json")
+        logger.info("📦 Step 5/5: Exported static web catalogs (reports.json and genesis_attestations.json)")
 
     # Aggregate totals
-    from sqlmodel import func
-
     stmt_total_audits = select(func.count(col(Audit.id)))
     total_reports = (await session.exec(stmt_total_audits)).first() or 0
 
@@ -425,12 +453,10 @@ async def germinate_node(
     total_feeds = (await session.exec(stmt_subs)).first() or 0
 
     duration = time.perf_counter() - t_start
-
-    # Estimate token savings: ~2,500 tokens per full evaluation saved by mesh adoption
     tokens_saved = adopted_count * 2500
 
     summary = GerminationSummary(
-        status="germinated",
+        status="incremental_ready" if is_incremental else "germinated",
         identity_pubkey=identity.public_key_hex,
         peer_attestations_adopted=adopted_count,
         tokens_saved_mesh=tokens_saved,
@@ -442,7 +468,8 @@ async def germinate_node(
 
     if verbose:
         logger.info(
-            "🌳 Node Germinated successfully in %.2fs (Total Reports: %d, Mesh Adopted: %d, Novel: %d)",
+            "🌳 Node %s in %.2fs (Total Reports: %d, Mesh Adopted: %d, Novel: %d)",
+            "Refreshed (Incremental)" if is_incremental else "Germinated (Genesis)",
             duration,
             total_reports,
             adopted_count,
