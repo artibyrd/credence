@@ -111,6 +111,7 @@ jobs:
             --cpu="1" \
             --execution-environment="gen2" \
             --cpu-boost \
+            --clear-secrets \
             --set-env-vars="ENV=development,CREDENCE_PROFILE=${PROFILE}" \
             --allow-unauthenticated
 
