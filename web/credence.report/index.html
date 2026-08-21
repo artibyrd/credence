@@ -576,14 +576,14 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="inmaricopa.com" data-tier="Tier B" data-suspicion="18.4" data-audits="1">
-                      <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Local News &amp; Civic Coverage</span></td>
-                      <td><span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">Tier B (Low Risk)</span></td>
-                      <td style="font-family:var(--font-mono); color:#38bdf8;">18.4 / 100</td>
-                      <td>1 Audit</td>
+                    <tr data-domain="inmaricopa.com" data-tier="Tier C" data-suspicion="56.5" data-audits="5">
+                      <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Conflict of Pun-terest &bull; Case Study</span></td>
+                      <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b;">Tier C (Watchlist)</span></td>
+                      <td style="font-family:var(--font-mono); color:#f59e0b;">56.5 / 100</td>
+                      <td>5 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
-                          <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://inmaricopa.com/news/zoning-ordinance-dispute-2026')">Inspect</button>
+                          <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/')">Inspect</button>
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('inmaricopa.com')">Dossier ↗</button>
                         </div>
                       </td>
@@ -1144,26 +1144,58 @@
       },
       "inmaricopa.com": {
         domain: "inmaricopa.com",
-        title: "InMaricopa Local News",
-        desc: "Municipal Journalism & Community Reporting • Tier B Regional",
-        tierBadge: "TIER B (LOW RISK LOCAL)",
-        tierColor: "#38bdf8",
-        tierBg: "rgba(56, 189, 248, 0.15)",
-        dciScore: "81.6",
-        totalAudits: "52 Mesh Ingests",
+        title: "InMaricopa Local News (Empirical Case Study)",
+        desc: "Conflict of Pun-terest Case Study • Governance COI & Native Advertorial Forensics",
+        tierBadge: "TIER C (WATCHLIST CASE STUDY)",
+        tierColor: "#f59e0b",
+        tierBg: "rgba(245, 158, 11, 0.15)",
+        dciScore: "48.5",
+        totalAudits: "5 Live Audits",
         groundingRate: "100% (G=1.00)",
-        syndication: "● Active RSS (2h)",
-        violationsCount: "3 Minor Sourcing Gaps",
-        trajectoryStat: "30d Stability: 92.4% • Bayesian α=44, β=8",
-        trajectorySummary: "Community-focused reporting with occasional minor reliance on unnamed local administrative staff. Overall reporting maintains balanced coverage of public zoning and council disputes.",
+        syndication: "● Active RSS (15m)",
+        violationsCount: "6 Epistemic Violations (COI & Advertorial)",
+        trajectoryStat: "30d Stability: 48.5% • Bayesian α=18, β=22",
+        trajectorySummary: "Empirical case study auditing publisher-politician conflict of interest (R_COI=0.44), undisclosed native advertorials (ASI=52.0), and uncorroborated single-source police blotter pass-through.",
         articles: [
           {
-            title: "City Council Approves New Mixed-Use Zoning Ordinance Following Public Hearing",
-            url: "https://inmaricopa.com/news/zoning-ordinance-dispute-2026",
+            title: "Copper Sky Land Sale is No Scandal, Council Records Show",
+            url: "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
             date: "2026-08-20",
-            score: "18.4",
-            badge: "LOW SUSPICION",
+            score: "78.4",
+            badge: "SUSPICIOUS (COI)",
+            badgeColor: "#f59e0b"
+          },
+          {
+            title: "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
+            url: "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/",
+            date: "2026-08-20",
+            score: "82.0",
+            badge: "DECEPTIVE (ADVERTORIAL)",
+            badgeColor: "#ef4444"
+          },
+          {
+            title: "What Landlords Discover After Managing a Rental on Their Own",
+            url: "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/",
+            date: "2026-08-20",
+            score: "76.5",
+            badge: "DECEPTIVE (ADVERTORIAL)",
+            badgeColor: "#ef4444"
+          },
+          {
+            title: "Bicyclist Dead After SR 347 Crash South of City",
+            url: "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/",
+            date: "2026-08-20",
+            score: "42.0",
+            badge: "LOW SUSPICION (POLICE PR)",
             badgeColor: "#38bdf8"
+          },
+          {
+            title: "History: When John Wayne Parkway Overpass Took Shape",
+            url: "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/",
+            date: "2026-08-20",
+            score: "3.5",
+            badge: "CLEAN RETROSPECTIVE",
+            badgeColor: "#10b981"
           }
         ]
       },
@@ -1426,19 +1458,81 @@
         sha: "09b112f700000000000000000000000000000000000000000000000000000007",
         hasRevisions: false
       },
-      "https://inmaricopa.com/news/zoning-ordinance-dispute-2026": {
-        title: "City Council Approves New Mixed-Use Zoning Ordinance Following Public Hearing",
+      "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/": {
+        title: "Copper Sky Land Sale is No Scandal, Council Records Show",
         domain: "inmaricopa.com",
-        score: "18.4",
-        badge: "LOW SUSPICION • LOCAL JOURNALISM (TIER B)",
+        score: "78.4",
+        badge: "SUSPICIOUS • 3 VIOLATIONS (COI CASE STUDY)",
+        badgeColor: "#f59e0b",
+        badgeBg: "rgba(245, 158, 11, 0.15)",
+        summary: "Empirical case study: Editorial defense of municipal commercial rezoning published by outlet co-owned by voting councilmember without conflict of interest disclosure.",
+        ethics: "3.2 / 10", logic: "4.5 / 10", ui: "9.0 / 10",
+        violations: [
+          { rule: "SPJ-3.1 Undisclosed Governance Conflict of Interest", sev: "Sev 5", quote: "Councilmember Vincent Manfredi voted in favor of the commercial rezoning" },
+          { rule: "SPJ-3.2 Anonymous Byline Masking", sev: "Sev 4", quote: "By Staff Reporter" },
+          { rule: "SPJ-1.3 Uncorroborated Factual Assertion", sev: "Sev 3", quote: "City records conclusively prove that all ethical guidelines were satisfied" }
+        ],
+        sha: "e1f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef01",
+        hasRevisions: false
+      },
+      "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/": {
+        title: "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
+        domain: "inmaricopa.com",
+        score: "82.0",
+        badge: "DECEPTIVE • 2 VIOLATIONS (ADVERTORIAL)",
+        badgeColor: "#ef4444",
+        badgeBg: "rgba(239, 68, 68, 0.15)",
+        summary: "Commercial paid advertorial structured with visual cues and typography of organic civic reporting, featuring direct sales call-to-action.",
+        ethics: "2.8 / 10", logic: "5.0 / 10", ui: "3.5 / 10",
+        violations: [
+          { rule: "DEC-1.4 Native Advertorial Camouflage", sev: "Sev 5", quote: "Local residents looking for advanced skin rejuvenation can now book consultations" },
+          { rule: "SPJ-3.3 Failure to Separate News from Advertising", sev: "Sev 4", quote: "Call 520-555-SKIN to claim early bird introductory discounts" }
+        ],
+        sha: "f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123",
+        hasRevisions: false
+      },
+      "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/": {
+        title: "What Landlords Discover After Managing a Rental on Their Own",
+        domain: "inmaricopa.com",
+        score: "76.5",
+        badge: "DECEPTIVE • 2 VIOLATIONS (ADVERTORIAL)",
+        badgeColor: "#ef4444",
+        badgeBg: "rgba(239, 68, 68, 0.15)",
+        summary: "Fear-based promotional marketing camouflaged as property investment guidance without sponsored content labels.",
+        ethics: "3.5 / 10", logic: "4.8 / 10", ui: "4.0 / 10",
+        violations: [
+          { rule: "DEC-1.4 Native Advertorial Camouflage", sev: "Sev 5", quote: "Managing tenant disputes alone often leads to catastrophic financial losses" },
+          { rule: "SPJ-3.3 Commercial Sales Endorsement in News Feed", sev: "Sev 4", quote: "Partnering with Maricopa Property Management guarantees stress-free occupancy" }
+        ],
+        sha: "a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef012345",
+        hasRevisions: false
+      },
+      "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/": {
+        title: "Bicyclist Dead After SR 347 Crash South of City",
+        domain: "inmaricopa.com",
+        score: "42.0",
+        badge: "LOW SUSPICION • 1 VIOLATION (POLICE PR)",
         badgeColor: "#38bdf8",
         badgeBg: "rgba(56, 189, 248, 0.15)",
-        summary: "Local civic coverage of municipal zoning deliberations. Balanced reporting quoting council members and resident objections, with a single low-severity unnamed staff background attribution.",
-        ethics: "8.2 / 10", logic: "8.0 / 10", ui: "9.5 / 10",
+        summary: "Pass-through of departmental collision report without independent verification or crash investigation corroboration.",
+        ethics: "6.5 / 10", logic: "7.0 / 10", ui: "9.0 / 10",
         violations: [
-          { rule: "SPJ-1.3 Unnamed Background Sourcing", sev: "Sev 2", quote: "According to a city planning staffer who requested anonymity due to department policy, infrastructure studies were completed in July." }
+          { rule: "SPJ-1.1 Uncorroborated Single-Source Police PR", sev: "Sev 3", quote: "According to the Arizona Department of Public Safety collision incident report" }
         ],
-        sha: "d6a890c400000000000000000000000000000000000000000000000000000004",
+        sha: "b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef01234567",
+        hasRevisions: false
+      },
+      "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/": {
+        title: "History: When John Wayne Parkway Overpass Took Shape",
+        domain: "inmaricopa.com",
+        score: "3.5",
+        badge: "CLEAN RETROSPECTIVE • 0 VIOLATIONS (TIER C)",
+        badgeColor: "#10b981",
+        badgeBg: "rgba(16, 185, 129, 0.15)",
+        summary: "Historical community retrospective citing archival transportation records and civic milestones with balanced tone.",
+        ethics: "9.5 / 10", logic: "9.8 / 10", ui: "9.8 / 10",
+        violations: [],
+        sha: "c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789",
         hasRevisions: false
       },
       "https://texasmonthly.com/news-politics/west-texas-aquifer-depletion-2026": {

@@ -67,9 +67,11 @@ async def inoculate_from_mesh_seeds(
         Count of successfully adopted attestations.
     """
     if pack_path is None:
-        # Default to canonical web assets genesis seed pack
+        # Check in-package seeds first (for Docker container execution), then fallback to web assets
+        pkg_seed = Path(__file__).resolve().parent / "seeds" / "genesis_attestations.json"
         project_root = Path(__file__).resolve().parent.parent
-        pack_path = project_root / "web" / "credence.nexus" / "genesis_attestations.json"
+        web_seed = project_root / "web" / "credence.nexus" / "genesis_attestations.json"
+        pack_path = pkg_seed if pkg_seed.exists() else web_seed
 
     if not pack_path.exists():
         logger.warning("Genesis attestations pack not found at %s; skipping mesh inoculation", pack_path)
