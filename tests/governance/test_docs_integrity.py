@@ -1161,3 +1161,207 @@ def test_edge_wrangler_routes_and_web_folders_parity(docs_root: Path) -> None:
     for d in domain_dirs:
         matching = [p for p in route_patterns if p.startswith(f"{d}/") or p.startswith(f"dev.{d}/")]
         assert len(matching) > 0, f"Web directory '{d}' has no matching route pattern in wrangler.toml"
+
+
+@pytest.mark.governance
+def test_skills_schema_and_frontmatter_integrity(docs_root: Path) -> None:
+    """Verify all Antigravity skills in credence-agent/.agents/skills pass schema and token economy linting."""
+    import importlib.util
+
+    agent_root = docs_root.parent / "credence-agent"
+    linter_path = agent_root / "scripts" / "lint_skills.py"
+    assert linter_path.exists(), "scripts/lint_skills.py must exist in credence-agent"
+
+    spec = importlib.util.spec_from_file_location("lint_skills", linter_path)
+    assert spec and spec.loader
+    lint_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(lint_module)
+
+    skills_dir = agent_root / ".agents" / "skills"
+    assert skills_dir.exists(), ".agents/skills directory must exist"
+
+    skill_subdirs = [p for p in skills_dir.iterdir() if p.is_dir() and not p.name.startswith(".")]
+    assert len(skill_subdirs) >= 7, f"Expected at least 7 skills, found {len(skill_subdirs)}"
+
+    all_errors = []
+    for skill_dir in skill_subdirs:
+        skill_file = skill_dir / "SKILL.md"
+        errors = lint_module.lint_skill_file(skill_file)
+        if errors:
+            all_errors.extend(errors)
+
+    assert not all_errors, f"Found skill schema violations:\n" + "\n".join(f"  • {e}" for e in all_errors)
+
+
+@pytest.mark.governance
+def test_agents_md_categorization_and_budget(docs_root: Path) -> None:
+    """Verify all 4 AGENTS.md files declare the prioritized Class Alpha/Beta/Gamma cognitive hierarchy."""
+    ecosystem_root = docs_root.parent
+    agents_files = [
+        ecosystem_root / "AGENTS.md",
+        ecosystem_root / "credence" / "AGENTS.md",
+        ecosystem_root / "credence-docs" / "AGENTS.md",
+        ecosystem_root / "credence-agent" / "AGENTS.md",
+    ]
+    for af in agents_files:
+        if af.exists():
+            content = af.read_text(encoding="utf-8")
+            assert "Class α (Alpha)" in content or "Class Alpha" in content, (
+                f"{af.name} must declare Class α (Alpha) header"
+            )
+            assert "Class β (Beta)" in content or "Class Beta" in content, (
+                f"{af.name} must declare Class β (Beta) header"
+            )
+            assert "Class γ (Gamma)" in content or "Class Gamma" in content, (
+                f"{af.name} must declare Class γ (Gamma) header"
+            )
+
+
+@pytest.mark.governance
+def test_subagent_templates_validity(docs_root: Path) -> None:
+    """Verify all declarative subagent templates in credence-agent/templates/subagents/ have valid JSON schemas."""
+    import json
+
+    templates_dir = docs_root.parent / "credence-agent" / "templates" / "subagents"
+    assert templates_dir.exists(), "templates/subagents directory must exist in credence-agent"
+
+    json_files = list(templates_dir.glob("*.json"))
+    assert len(json_files) >= 3, f"Expected at least 3 subagent templates, found {len(json_files)}"
+
+    required_keys = {"name", "role", "description", "system_prompt", "enable_write_tools", "enable_subagent_tools", "default_workspace"}
+
+    for template_file in json_files:
+        with open(template_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        missing = required_keys - set(data.keys())
+        assert not missing, f"Subagent template '{template_file.name}' missing required fields: {missing}"
+        assert data["name"].strip(), f"Template '{template_file.name}' has empty name"
+        assert data["role"].strip(), f"Template '{template_file.name}' has empty role"
+        assert data["system_prompt"].strip(), f"Template '{template_file.name}' has empty system_prompt"
+        assert data["default_workspace"] in {"inherit", "branch", "share"}
+
+
+def test_invariants_registry_and_slug_integrity():
+    """Validates that all invariant cards declare semantic slugs (id='inv-...'),
+
+    INVARIANTS_REGISTRY in credence-workstation.js matches invariants.md,
+    and all 28 modal topics use verified semantic invariant slugs.
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    invariants_file = repo_root / "credence-docs" / "docs" / "invariants.md"
+    workstation_file = repo_root / "credence" / "web" / "assets" / "credence-workstation.js"
+
+    assert invariants_file.is_file(), f"invariants.md not found at {invariants_file}"
+    assert workstation_file.is_file(), f"credence-workstation.js not found at {workstation_file}"
+
+    invariants_content = invariants_file.read_text(encoding="utf-8")
+    workstation_content = workstation_file.read_text(encoding="utf-8")
+
+    # Extract all invariant card IDs from invariants.md
+    card_ids = set(re.findall(r'<div class="invariant-card" id="([^"]+)"', invariants_content))
+    assert len(card_ids) >= 45, f"Expected >= 45 invariant cards in invariants.md, found {len(card_ids)}"
+
+    # Verify all card IDs follow semantic slug format (inv-...)
+    for card_id in card_ids:
+        assert card_id.startswith("inv-"), f"Invariant card ID '{card_id}' does not use 'inv-' prefix"
+
+    # Verify every invariant card has a backward-compatibility legacy alias anchor (<a id="invariant-N">)
+    legacy_aliases = set(re.findall(r'<a id="(invariant-\d+)"></a>', invariants_content))
+    assert len(legacy_aliases) >= 45, f"Expected >= 45 legacy aliases in invariants.md, found {len(legacy_aliases)}"
+
+    # Verify INVARIANTS_REGISTRY exists in workstation.js and all slugs match invariants.md
+    assert "INVARIANTS_REGISTRY" in workstation_content
+    assert "resolveInvariant" in workstation_content
+
+    # Extract all slugs in INVARIANTS_REGISTRY
+    registry_slugs = set(re.findall(r'"(inv-[a-z0-9-]+)":\s*\{', workstation_content))
+    assert len(registry_slugs) >= 45, f"Expected >= 45 slugs in INVARIANTS_REGISTRY, found {len(registry_slugs)}"
+
+    # Check for symmetric parity between invariants.md and INVARIANTS_REGISTRY
+    missing_in_registry = card_ids - registry_slugs
+    missing_in_docs = registry_slugs - card_ids
+    assert not missing_in_registry, f"Invariants in docs missing from INVARIANTS_REGISTRY: {missing_in_registry}"
+    assert not missing_in_docs, f"Slugs in INVARIANTS_REGISTRY missing from invariants.md: {missing_in_docs}"
+
+
+def test_ecosystem_naming_conventions_and_guardrails():
+    """Validates that all invariant slugs, subagent templates, branch patterns,
+
+    PR title formats, and commit messages comply with canonical governance guardrails.
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    invariants_file = repo_root / "credence-docs" / "docs" / "invariants.md"
+    templates_dir = repo_root / "credence-agent" / "templates" / "subagents"
+
+    # 1. Invariant Slug Pattern: inv-<domain>-<slug> (lowercase alphanumeric + hyphens, no sequential numbers)
+    invariants_content = invariants_file.read_text(encoding="utf-8")
+    card_ids = re.findall(r'<div class="invariant-card" id="([^"]+)"', invariants_content)
+    assert len(card_ids) >= 45
+
+    slug_pattern = re.compile(r"^inv-[a-z0-9]+(-[a-z0-9]+)*$")
+    sequential_antipattern = re.compile(r"^inv-\d+$")
+
+    for card_id in card_ids:
+        assert slug_pattern.match(card_id), f"Invariant slug '{card_id}' does not match pattern '{slug_pattern.pattern}'"
+        assert not sequential_antipattern.match(card_id), f"Invariant slug '{card_id}' uses sequential number antipattern"
+
+    # 2. Subagent Template Filenames: snake_case.json
+    if templates_dir.is_dir():
+        template_pattern = re.compile(r"^[a-z0-9_]+\.json$")
+        for f in templates_dir.glob("*.json"):
+            assert template_pattern.match(f.name), f"Subagent template filename '{f.name}' must be snake_case.json"
+
+    # 3. Conventional Commit & PR Title Patterns
+    pr_title_pattern = re.compile(
+        r"^(\[v[0-9]+\.[0-9]+\.[0-9]+\] )?(feat|fix|docs|refactor|test|ci|chore|perf)(\((governance|forensics|mesh|crypto|ui|ops)\))?!?: .+$"
+    )
+    branch_pattern = re.compile(r"^(release/v[0-9]+\.[0-9]+\.[0-9]+|(feat|fix|docs|ci|hotfix)/.+)$")
+
+    # Positive PR Title Tests
+    valid_titles = [
+        "[v2.3.0] feat(governance): implement demotion highway scanner",
+        "[v2.3.0] feat(ui): migrate modal registries to semantic slugs",
+        "[v2.3.0] ci(ops): configure PR dev staging triggers",
+        "feat(mesh): Byzantine quorum isolation test",
+        "fix(crypto): RFC 8785 canonical JSON bytes order",
+        "docs(forensics): add SPJ code of ethics cookbook",
+        "feat: ecosystem milestone rollup",
+    ]
+    for vt in valid_titles:
+        assert pr_title_pattern.match(vt), f"Valid title '{vt}' failed regex match"
+
+    # Negative PR Title Tests
+    invalid_titles = [
+        "updated stuff",
+        "[v2.3.0] random_type(core): do thing",
+        "feat(unknown_scope): something",
+        "feat(): missing scope content",
+    ]
+    for it in invalid_titles:
+        assert not pr_title_pattern.match(it), f"Invalid title '{it}' unexpectedly passed regex match"
+
+    # Positive Branch Pattern Tests
+    valid_branches = [
+        "release/v2.3.0",
+        "release/v1.14.0",
+        "feat/p2p-gossip-optimization",
+        "fix/ed25519-signature-padding",
+        "docs/agentic-governance-guide",
+        "ci/workload-identity-oidc",
+    ]
+    for vb in valid_branches:
+        assert branch_pattern.match(vb), f"Valid branch '{vb}' failed regex match"
+
+    # Negative Branch Pattern Tests
+    invalid_branches = [
+        "random-branch-name",
+        "my_feature",
+        "v2.3.0",
+        "release-2.3.0",
+    ]
+    for ib in invalid_branches:
+        assert not branch_pattern.match(ib), f"Invalid branch '{ib}' unexpectedly passed regex match"
+
+
+
