@@ -381,9 +381,11 @@
                   <button class="btn-secondary" id="chip-cat-local" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (2)</button>
                 </div>
 
-                <!-- Selection Hub Cards Grid -->
-                <div id="selection-hub-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
-                  <!-- Populated dynamically via renderSelectionHub() -->
+                <!-- Selection Hub Cards Grid (Bounded Vertical Scrollpane) -->
+                <div class="ws-scroll-pane" style="max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                  <div id="selection-hub-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
+                    <!-- Populated dynamically via renderSelectionHub() -->
+                  </div>
                 </div>
               </div>
 
@@ -401,8 +403,10 @@
                     </div>
                   </div>
 
-                  <div id="publishers-catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
-                    <!-- Populated dynamically via renderPublishersCatalog() -->
+                  <div class="ws-scroll-pane" style="max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                    <div id="publishers-catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
+                      <!-- Populated dynamically via renderPublishersCatalog() -->
+                    </div>
                   </div>
                 </div>
 
@@ -477,7 +481,7 @@
                         <span style="font-size:0.75rem; color:var(--text-dim);" id="dossier-article-count-label">Showing all verified audits</span>
                       </div>
                     </div>
-                    <div class="ws-table-container">
+                    <div class="ws-table-container" style="max-height:520px; overflow-y:auto;">
                       <table class="dossier-articles-table" id="dossier-articles-table">
                         <thead>
                           <tr>
@@ -524,7 +528,7 @@
                 </div>
               </div>
 
-              <div class="ws-table-container">
+              <div class="ws-table-container" style="max-height:520px; overflow-y:auto;">
                 <table class="ws-table" id="dci-table">
                   <thead>
                     <tr>

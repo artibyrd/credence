@@ -1566,3 +1566,66 @@ body.tui-mode .workstation-tab-btn.active {
   border-color: rgba(56, 189, 248, 0.4);
   color: var(--accent-cyan);
 }
+
+/* Sleek Workstation Scrollpane & Custom Scrollbars */
+.ws-scroll-pane,
+.ws-table-container,
+.deck-rail,
+#search-results-list,
+#pinned-sources-container,
+#sifter-stream-feed,
+.log-terminal-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.25) rgba(0, 0, 0, 0.3);
+}
+
+.ws-scroll-pane::-webkit-scrollbar,
+.ws-table-container::-webkit-scrollbar,
+.deck-rail::-webkit-scrollbar,
+#search-results-list::-webkit-scrollbar,
+#pinned-sources-container::-webkit-scrollbar,
+#sifter-stream-feed::-webkit-scrollbar,
+.log-terminal-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ws-scroll-pane::-webkit-scrollbar-track,
+.ws-table-container::-webkit-scrollbar-track,
+.deck-rail::-webkit-scrollbar-track,
+#search-results-list::-webkit-scrollbar-track,
+#pinned-sources-container::-webkit-scrollbar-track,
+#sifter-stream-feed::-webkit-scrollbar-track,
+.log-terminal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+
+.ws-scroll-pane::-webkit-scrollbar-thumb,
+.ws-table-container::-webkit-scrollbar-thumb,
+.deck-rail::-webkit-scrollbar-thumb,
+#search-results-list::-webkit-scrollbar-thumb,
+#pinned-sources-container::-webkit-scrollbar-thumb,
+#sifter-stream-feed::-webkit-scrollbar-thumb,
+.log-terminal-body::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 4px;
+}
+
+.ws-scroll-pane::-webkit-scrollbar-thumb:hover,
+.ws-table-container::-webkit-scrollbar-thumb:hover,
+.deck-rail::-webkit-scrollbar-thumb:hover,
+#search-results-list::-webkit-scrollbar-thumb:hover,
+#pinned-sources-container::-webkit-scrollbar-thumb:hover,
+#sifter-stream-feed::-webkit-scrollbar-thumb:hover,
+.log-terminal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}
+
+.ws-table-container table thead th {
+  position: sticky;
+  top: 0;
+  background: #111b2e;
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--border);
+}
