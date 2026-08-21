@@ -522,7 +522,8 @@
       const locked = document.getElementById('admin-locked-view');
       const unlocked = document.getElementById('admin-unlocked-view');
       const badge = document.getElementById('admin-tab-badge');
-      if (authState.authenticated) {
+      const isAuth = Boolean(authState && authState.authenticated);
+      if (isAuth) {
         if (locked) locked.style.display = 'none';
         if (unlocked) unlocked.style.display = 'block';
         if (badge) {
@@ -540,6 +541,9 @@
         }
       }
     }
+
+    window.renderAdminView = renderAdminView;
+    window.addEventListener('credence-auth-changed', renderAdminView);
 
     // Dynamic Live Mesh Topology Canvas (Renders Real Nodes & Standalone Reality)
     function initMeshCanvas(data) {

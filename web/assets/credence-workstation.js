@@ -85,21 +85,18 @@ export async function loginWithKey(key, remember = false) {
       await checkAuthStatus();
       closeOperatorModal();
       showToast('✅ Operator Authenticated Successfully', 'success');
+      window.dispatchEvent(new CustomEvent('credence-auth-changed', { detail: authState }));
+      if (typeof window.renderAdminView === 'function') {
+        window.renderAdminView();
+      }
       return true;
     } else {
       showToast('❌ Invalid Admin API Key', 'error');
       return false;
     }
   } catch (e) {
-    // If backend unreachable, store locally for local mode
-    setStoredToken(key, remember);
-    authState.authenticated = true;
-    authState.role = 'OPERATOR';
-    authState.identity = 'offline-key';
-    updateRibbonAuthBadge();
-    closeOperatorModal();
-    showToast('⚠️ Stored key in local session', 'info');
-    return true;
+    showToast('❌ Could not connect to authentication server', 'error');
+    return false;
   }
 }
 
@@ -1703,6 +1700,7 @@ export function initWorkstation(config = {}) {
 // Global export for inline HTML event bindings
 window.CredenceWS = window.CredenceWS || {};
 Object.assign(window.CredenceWS, {
+  authState,
   initWorkstation,
   getApiBaseUrl,
   checkAuthStatus,
@@ -1713,6 +1711,9 @@ Object.assign(window.CredenceWS, {
   togglePasswordVisibility,
   openOperatorModal,
   closeOperatorModal,
+  clearStoredToken,
+  getStoredToken,
+  setStoredToken,
   openShortcutsModal,
   closeShortcutsModal,
   toggleShortcutsModal,
