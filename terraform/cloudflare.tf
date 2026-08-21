@@ -170,3 +170,26 @@ resource "cloudflare_record" "dev_report" {
   comment         = "Dev audit report viewer"
 }
 
+resource "cloudflare_record" "admin_run" {
+  count           = local.has_cloudflare ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_run[0].id
+  name            = "admin"
+  type            = "CNAME"
+  content         = var.domain_credence_run
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Operator Admin Cockpit workstation"
+}
+
+resource "cloudflare_record" "dev_admin_run" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_run[0].id
+  name            = "dev.admin"
+  type            = "CNAME"
+  content         = var.domain_credence_run
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev Operator Admin Cockpit workstation"
+}
+
+

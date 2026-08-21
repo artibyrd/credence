@@ -149,14 +149,17 @@ export default {
 
       // Build target asset path
       let finalPath;
-      if (reqPath === '/') {
-        finalPath = `/${prefix}/`;
+      if (reqPath === '/' || reqPath === '') {
+        finalPath = `/${prefix}/index.html`;
+      } else if (reqPath.endsWith('/')) {
+        finalPath = `/${prefix}${reqPath}index.html`;
       } else {
         finalPath = `/${prefix}${reqPath}`;
       }
 
       const assetUrl = new URL(finalPath, request.url);
       let response;
+
 
       if (env && env.ASSETS) {
         response = await env.ASSETS.fetch(new Request(assetUrl, request));
