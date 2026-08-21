@@ -113,9 +113,8 @@ async def test_7_node_multi_hop_gossip_epidemic(tmp_path: Path) -> None:
 @pytest.mark.integration
 def test_hardware_safety_governor_memory_bounds() -> None:
     """Verify system safety governor clamps cluster simulation sizes based on RAM."""
-    with patch("psutil.virtual_memory") as mock_vm:
-        mock_vm.return_value.available = 1024 * 1024 * 1024  # 1 GB
+    with patch("credence.mesh.hardware_guard.get_available_system_memory_mb", return_value=1024):
         assert recommend_cluster_size(requested=13) <= 7
 
-        mock_vm.return_value.available = 4 * 1024 * 1024 * 1024  # 4 GB
+    with patch("credence.mesh.hardware_guard.get_available_system_memory_mb", return_value=8192):
         assert recommend_cluster_size(requested=13) == 13

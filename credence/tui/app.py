@@ -171,6 +171,11 @@ class CredenceApp(App):
         ("7", "switch_to_identity", "Identity"),
         ("8", "switch_to_ops", "Ops"),
         ("9", "switch_to_mesh", "Mesh"),
+        ("m", "switch_to_mesh", "Mesh"),
+        ("o", "switch_to_ops", "Ops"),
+        ("e", "switch_to_inspector", "Evaluator"),
+        ("f", "switch_to_feeds", "Feeds"),
+        ("s", "switch_to_subjects", "Subjects"),
     ]
 
     def __init__(self, **kwargs: Any) -> None:

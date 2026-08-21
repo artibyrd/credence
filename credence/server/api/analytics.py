@@ -42,7 +42,12 @@ async def api_get_merit(request: Any) -> Any:
     await init_db()
     async with get_async_session() as s:
         card = await get_local_node_merit(s, local_pubkey=pubkey)
-        return JSONResponse(asdict(card))
+        card_dict = asdict(card)
+        card_dict["unlocked_badges"] = [
+            b.model_dump() if hasattr(b, "model_dump") else asdict(b) if hasattr(b, "__dataclass_fields__") else b
+            for b in card.unlocked_badges
+        ]
+        return JSONResponse(card_dict)
     return JSONResponse({"error": "Unavailable"}, status_code=500)
 
 

@@ -53,6 +53,11 @@ from credence.server.api.mesh import api_mesh_network_health, api_mesh_stats
 from credence.server.api.system import (
     api_auth_config,
     api_auth_verify,
+    api_db_backup,
+    api_db_export_pack,
+    api_db_import_pack,
+    api_db_restore,
+    api_db_status,
     api_favicon,
     api_germinate,
     api_health,
@@ -137,6 +142,11 @@ def create_server_app(enable_sifter: bool = False, enable_boredom: bool = False)
         Route("/api/analytics/publisher/{domain:path}", endpoint=api_publisher_analytics, methods=["GET", "OPTIONS"]),
         Route("/api/weather", endpoint=api_weather, methods=["GET", "OPTIONS"]),
         Route("/api/bounties", endpoint=api_bounties, methods=["GET", "OPTIONS"]),
+        Route("/api/db/backup", endpoint=api_db_backup, methods=["POST", "OPTIONS"]),
+        Route("/api/db/restore", endpoint=api_db_restore, methods=["POST", "OPTIONS"]),
+        Route("/api/db/status", endpoint=api_db_status, methods=["GET", "OPTIONS"]),
+        Route("/api/db/export-pack", endpoint=api_db_export_pack, methods=["GET", "POST", "OPTIONS"]),
+        Route("/api/db/import-pack", endpoint=api_db_import_pack, methods=["POST", "OPTIONS"]),
     ]
 
     for r in rest_routes:

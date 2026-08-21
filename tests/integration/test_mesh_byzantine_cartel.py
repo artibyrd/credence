@@ -62,7 +62,7 @@ def test_byzantine_sybil_cartel_resistance_3f_plus_1() -> None:
 
     # Assert robust median rejected cartel collusion
     assert consensus.consensus_score < 30.0
-    assert consensus.consensus_verdict in ("LOW_SUSPICION", "CLEAN")
+    assert consensus.classification in ("LOW_SUSPICION", "CLEAN")
     assert consensus.byzantine_nodes_trimmed_count >= 4
 
 

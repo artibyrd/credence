@@ -25,6 +25,14 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = False, enab
 
     @asynccontextmanager
     async def _lifespan(app: Starlette) -> AsyncGenerator[dict, None]:
+        # Pre-boot restore hook: checks cloud backup / local archive before init_db
+        try:
+            from credence.storage.backup import create_database_backup, restore_latest_cloud_backup
+
+            await restore_latest_cloud_backup()
+        except Exception as re:
+            logger.debug("Pre-boot cloud restore hook exception: %s", re)
+
         await init_db()
 
         # Check for zero-touch auto-germination on blank databases
@@ -83,5 +91,13 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = False, enab
                     await asyncio.wait_for(boredom_task, timeout=2.0)
                 except (asyncio.TimeoutError, asyncio.CancelledError):
                     pass
+
+            # Graceful shutdown: flush WAL and export backup snapshot
+            try:
+                from credence.storage.backup import create_database_backup
+
+                create_database_backup(upload_cloud=True)
+            except Exception as be:
+                logger.debug("Shutdown backup hook non-blocking exception: %s", be)
 
     return _lifespan

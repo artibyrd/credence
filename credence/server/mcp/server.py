@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from mcp.server.mcpserver import MCPServer
 
+from credence.server.mcp.admin_tools import _register_admin_tools
 from credence.server.mcp.consensus_tools import _register_consensus_tools
 from credence.server.mcp.cost_tools import _register_cost_tools_and_resources
 from credence.server.mcp.eval_tools import _register_eval_tools
@@ -30,6 +31,7 @@ def create_mcp_server() -> MCPServer:
     _register_feed_management_tools(server)
     _register_merit_and_analytics_tools(server)
     _register_cost_tools_and_resources(server)
+    _register_admin_tools(server)
     _register_taxonomy_resources(server)
     _register_subject_resources(server)
     _register_merit_and_analytics_resources(server)
