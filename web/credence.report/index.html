@@ -12,7 +12,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.1.7</span>
+      🛡️ Credence <span class="badge">v2.2.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -359,10 +359,10 @@
                 <!-- Sub-view Mode Switcher: Articles vs Publishers -->
                 <div class="subview-switcher">
                   <button type="button" class="subview-btn active" id="subview-btn-articles" onclick="switchBrowseSubview('articles')">
-                    📑 Curated Articles (8)
+                    📑 Curated Articles (16)
                   </button>
                   <button type="button" class="subview-btn" id="subview-btn-sources" onclick="switchBrowseSubview('sources')">
-                    🏛️ Publisher Dossiers (8)
+                    🏛️ Publisher Dossiers (16)
                   </button>
                 </div>
               </div>
@@ -374,11 +374,11 @@
                 <!-- Quick Category Filter Chips -->
                 <div style="display:flex; gap:0.4rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
                   <span style="font-size:0.75rem; color:var(--text-dim); font-weight:600;">Category:</span>
-                  <button class="btn-secondary active-chip" id="chip-cat-all" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('ALL')">All Audits (8)</button>
-                  <button class="btn-secondary" id="chip-cat-clean" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('CLEAN')">Clean Wire / Journals (2)</button>
-                  <button class="btn-secondary" id="chip-cat-violations" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('VIOLATIONS')">Flagged Violations (4)</button>
-                  <button class="btn-secondary" id="chip-cat-satire" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('SATIRE')">Satire Neutralized (1)</button>
-                  <button class="btn-secondary" id="chip-cat-local" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (1)</button>
+                  <button class="btn-secondary active-chip" id="chip-cat-all" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('ALL')">All Audits (16)</button>
+                  <button class="btn-secondary" id="chip-cat-clean" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('CLEAN')">Clean Wire / Journals (4)</button>
+                  <button class="btn-secondary" id="chip-cat-violations" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('VIOLATIONS')">Flagged Violations (8)</button>
+                  <button class="btn-secondary" id="chip-cat-satire" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('SATIRE')">Satire Neutralized (2)</button>
+                  <button class="btn-secondary" id="chip-cat-local" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (2)</button>
                 </div>
 
                 <!-- Selection Hub Cards Grid -->
@@ -397,7 +397,7 @@
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
                     <input type="text" id="publishers-filter-input" class="form-input" placeholder="Search publishers (e.g. reuters, onion, nature, maricopa)..." style="max-width:340px; font-size:0.85rem; padding:0.4rem 0.65rem;" oninput="filterPublishersCatalog(this.value)">
                     <div style="font-size:0.78rem; color:var(--text-dim);">
-                      Showing <b id="publishers-count-badge" style="color:#fff;">8 Verified Publishers</b>
+                      Showing <b id="publishers-count-badge" style="color:#fff;">16 Verified Publishers</b>
                     </div>
                   </div>
 
@@ -939,6 +939,39 @@
           }
         ]
       },
+      "apnews.com": {
+        domain: "apnews.com",
+        title: "Associated Press",
+        desc: "Independent Global News Cooperative • Factual Newsfeed Wire",
+        tierBadge: "TIER A (PRISTINE WIRE)",
+        tierColor: "#4ade80",
+        tierBg: "rgba(74, 222, 128, 0.15)",
+        dciScore: "99.6",
+        totalAudits: "389 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active Wire Feed (10m)",
+        violationsCount: "0 Violations",
+        trajectoryStat: "30d Stability: 100.0% • Bayesian α=389, β=1",
+        trajectorySummary: "Unbroken record of rigorous primary sourcing, on-the-record official verification, and immediate transparent corrections.",
+        articles: [
+          {
+            title: "Supreme Court Issues Unanimous Ruling on Digital Communications Privacy",
+            url: "https://apnews.com/article/supreme-court-digital-privacy-ruling-2026",
+            date: "2026-08-20",
+            score: "0.0",
+            badge: "CLEAN • FACTUAL",
+            badgeColor: "#4ade80"
+          },
+          {
+            title: "Pacific Agricultural Coalition Deploys Drought-Resilient Crop Strains",
+            url: "https://apnews.com/article/agriculture-climate-drought-crops-2026",
+            date: "2026-08-18",
+            score: "0.1",
+            badge: "CLEAN • FACTUAL",
+            badgeColor: "#4ade80"
+          }
+        ]
+      },
       "nature.com": {
         domain: "nature.com",
         title: "Nature Publishing Group",
@@ -972,6 +1005,81 @@
           }
         ]
       },
+      "propublica.org": {
+        domain: "propublica.org",
+        title: "ProPublica",
+        desc: "Investigative Journalism in the Public Interest • Open Datasets",
+        tierBadge: "TIER A (INVESTIGATIVE)",
+        tierColor: "#4ade80",
+        tierBg: "rgba(74, 222, 128, 0.15)",
+        dciScore: "99.4",
+        totalAudits: "164 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active Feed (1h)",
+        violationsCount: "0 Violations",
+        trajectoryStat: "30d Stability: 100.0% • Bayesian α=164, β=1",
+        trajectorySummary: "Exemplary investigative reporting backed by published public records, FOIA documents, and transparent data methodologies.",
+        articles: [
+          {
+            title: "Investigation Reveals Widespread Groundwater Contamination Near Industrial Corridors",
+            url: "https://propublica.org/article/groundwater-contamination-records-investigation",
+            date: "2026-08-19",
+            score: "0.4",
+            badge: "CLEAN • INVESTIGATIVE",
+            badgeColor: "#4ade80"
+          }
+        ]
+      },
+      "bbc.com": {
+        domain: "bbc.com",
+        title: "BBC Global News",
+        desc: "Public Service Broadcaster • International Bureau Network",
+        tierBadge: "TIER A (GLOBAL BROADCASTER)",
+        tierColor: "#4ade80",
+        tierBg: "rgba(74, 222, 128, 0.15)",
+        dciScore: "98.9",
+        totalAudits: "340 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active RSS (15m)",
+        violationsCount: "1 Minor Retraction Disclosure",
+        trajectoryStat: "30d Stability: 99.4% • Bayesian α=338, β=2",
+        trajectorySummary: "Comprehensive global bureau reporting with established editorial standards and clear correction logging.",
+        articles: [
+          {
+            title: "Mediterranean High-Speed Rail Network Expands Across Three Borders",
+            url: "https://bbc.com/news/world-europe-rail-expansion-2026",
+            date: "2026-08-19",
+            score: "0.3",
+            badge: "CLEAN • FACTUAL",
+            badgeColor: "#4ade80"
+          }
+        ]
+      },
+      "arstechnica.com": {
+        domain: "arstechnica.com",
+        title: "Ars Technica",
+        desc: "Technology Forensics, Science Policy & Infrastructure Analysis",
+        tierBadge: "TIER A (TECH ANALYSIS)",
+        tierColor: "#4ade80",
+        tierBg: "rgba(74, 222, 128, 0.15)",
+        dciScore: "98.2",
+        totalAudits: "192 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active RSS (30m)",
+        violationsCount: "0 Violations",
+        trajectoryStat: "30d Stability: 98.8% • Bayesian α=190, β=2",
+        trajectorySummary: "Detailed technical analysis with direct links to whitepapers, benchmark logs, and verified repository commits.",
+        articles: [
+          {
+            title: "Analysis of High-Efficiency Silicon Photovoltaic Cells Exceeding 34% Tandem Limit",
+            url: "https://arstechnica.com/science/2026/08/tandem-silicon-solar-breakthrough",
+            date: "2026-08-18",
+            score: "0.5",
+            badge: "CLEAN • TECH ANALYSIS",
+            badgeColor: "#4ade80"
+          }
+        ]
+      },
       "theonion.com": {
         domain: "theonion.com",
         title: "The Onion",
@@ -980,7 +1088,7 @@
         tierColor: "#c084fc",
         tierBg: "rgba(192, 132, 252, 0.15)",
         dciScore: "100.0",
-        totalAudits: "2 Local Case Studies • 145 Mesh Ingests",
+        totalAudits: "145 Mesh Ingests",
         groundingRate: "100% (G=1.00)",
         syndication: "● Active Feed (1h)",
         violationsCount: "0 Factual Violations (Poe Protected)",
@@ -1005,6 +1113,31 @@
           }
         ]
       },
+      "babylonbee.com": {
+        domain: "babylonbee.com",
+        title: "The Babylon Bee",
+        desc: "Satirical Commentary & Parody • Protected Epistemic Satire (Poe's Law)",
+        tierBadge: "SATIRE PROTECTED (POE'S LAW)",
+        tierColor: "#c084fc",
+        tierBg: "rgba(192, 132, 252, 0.15)",
+        dciScore: "98.0",
+        totalAudits: "112 Mesh Ingests",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active Feed (1h)",
+        violationsCount: "0 Factual Violations",
+        trajectoryStat: "30d Stability: 100.0% • Satire Neutrality",
+        trajectorySummary: "Political and cultural satire evaluated under Poe's Law neutrality with zero cloaking violations.",
+        articles: [
+          {
+            title: "NASA Announces Plan To Send Giant Squeegee Into Orbit To Clean Telescope Lens",
+            url: "https://babylonbee.com/news/nasa-giant-squeegee-telescope",
+            date: "2026-08-17",
+            score: "0.0",
+            badge: "SATIRE PROTECTED",
+            badgeColor: "#c084fc"
+          }
+        ]
+      },
       "inmaricopa.com": {
         domain: "inmaricopa.com",
         title: "InMaricopa Local News",
@@ -1013,7 +1146,7 @@
         tierColor: "#38bdf8",
         tierBg: "rgba(56, 189, 248, 0.15)",
         dciScore: "81.6",
-        totalAudits: "1 Local Case Study • 52 Mesh Ingests",
+        totalAudits: "52 Mesh Ingests",
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (2h)",
         violationsCount: "3 Minor Sourcing Gaps",
@@ -1030,6 +1163,56 @@
           }
         ]
       },
+      "theverge.com": {
+        domain: "theverge.com",
+        title: "The Verge",
+        desc: "Technology, Science & Digital Culture Reporting • Tier B",
+        tierBadge: "TIER B (TECH REPORTING)",
+        tierColor: "#38bdf8",
+        tierBg: "rgba(56, 189, 248, 0.15)",
+        dciScore: "84.2",
+        totalAudits: "210 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active RSS (20m)",
+        violationsCount: "5 Editorial Framing Queries",
+        trajectoryStat: "30d Stability: 91.5% • Bayesian α=192, β=18",
+        trajectorySummary: "Broad technology coverage with clear editorial voice; high attribution rigor on hardware benchmarks with occasional subjective review framing.",
+        articles: [
+          {
+            title: "Open Wireless Mesh Standards Gain Traction Among Municipal Network Operators",
+            url: "https://theverge.com/2026/8/18/open-mesh-standards-municipal",
+            date: "2026-08-18",
+            score: "12.5",
+            badge: "LOW SUSPICION",
+            badgeColor: "#38bdf8"
+          }
+        ]
+      },
+      "texasmonthly.com": {
+        domain: "texasmonthly.com",
+        title: "Texas Monthly",
+        desc: "Longform Regional Journalism & Cultural Narrative • Tier B",
+        tierBadge: "TIER B (REGIONAL LONGFORM)",
+        tierColor: "#38bdf8",
+        tierBg: "rgba(56, 189, 248, 0.15)",
+        dciScore: "89.0",
+        totalAudits: "78 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Active RSS (2h)",
+        violationsCount: "2 Minor Attribution Omissions",
+        trajectoryStat: "30d Stability: 94.8% • Bayesian α=74, β=4",
+        trajectorySummary: "High-quality investigative and narrative longform journalism covering state politics, conservation, and cultural history.",
+        articles: [
+          {
+            title: "The Vanishing Aquifer: Inside West Texas Farmers' Battle Over Deep Water Reserves",
+            url: "https://texasmonthly.com/news-politics/west-texas-aquifer-depletion-2026",
+            date: "2026-08-16",
+            score: "8.5",
+            badge: "LOW SUSPICION",
+            badgeColor: "#38bdf8"
+          }
+        ]
+      },
       "metro-sensationalist.com": {
         domain: "metro-sensationalist.com",
         title: "Metro Sensationalist Editorial",
@@ -1038,7 +1221,7 @@
         tierColor: "#f59e0b",
         tierBg: "rgba(245, 158, 11, 0.15)",
         dciScore: "38.7",
-        totalAudits: "1 Local Case Study • 38 Mesh Ingests",
+        totalAudits: "38 Mesh Ingests",
         groundingRate: "100% (G=1.00)",
         syndication: "● Ingestion Monitored (30m)",
         violationsCount: "14 Severe Fallacies & Stealth Edits",
@@ -1051,6 +1234,56 @@
             date: "2026-08-20",
             score: "61.3",
             badge: "SUSPICIOUS • 2 VIOLATIONS",
+            badgeColor: "#f59e0b"
+          }
+        ]
+      },
+      "daily-speculator.com": {
+        domain: "daily-speculator.com",
+        title: "Daily Speculator",
+        desc: "Unverified Tech Claims & Sensationalized Science • Tier C Watchlist",
+        tierBadge: "TIER C (WATCHLIST)",
+        tierColor: "#f59e0b",
+        tierBg: "rgba(245, 158, 11, 0.15)",
+        dciScore: "32.4",
+        totalAudits: "45 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Ingestion Monitored (1h)",
+        violationsCount: "18 Unsubstantiated Assertions",
+        trajectoryStat: "30d Trajectory: Declining",
+        trajectorySummary: "Repeated dissemination of revolutionary battery and fusion breakthroughs without independent laboratory confirmation or peer review.",
+        articles: [
+          {
+            title: "Scientists Reportedly Invent Infinite Energy Battery in Undisclosed Laboratory",
+            url: "https://daily-speculator.com/tech/breakthrough-battery-claim",
+            date: "2026-08-19",
+            score: "78.4",
+            badge: "SUSPICIOUS • 2 VIOLATIONS",
+            badgeColor: "#f59e0b"
+          }
+        ]
+      },
+      "partisan-post.com": {
+        domain: "partisan-post.com",
+        title: "The Partisan Post",
+        desc: "Hyperpartisan Polemics & Ad Hominem Commentary • Tier C Watchlist",
+        tierBadge: "TIER C (WATCHLIST)",
+        tierColor: "#f59e0b",
+        tierBg: "rgba(245, 158, 11, 0.15)",
+        dciScore: "35.1",
+        totalAudits: "62 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "● Ingestion Monitored (30m)",
+        violationsCount: "24 Logical Fallacies Detected",
+        trajectoryStat: "30d Trajectory: Declining",
+        trajectorySummary: "Extensive reliance on straw man arguments, ad hominem insults, and selective out-of-context quotes.",
+        articles: [
+          {
+            title: "The Unhinged Opposition: Why Critics of the Infrastructure Bill Hate Progress",
+            url: "https://partisan-post.com/opinion/senate-tax-debate",
+            date: "2026-08-18",
+            score: "68.2",
+            badge: "LOGICAL FALLACIES",
             badgeColor: "#f59e0b"
           }
         ]
@@ -1075,6 +1308,31 @@
             url: "https://malware-protection-alert.net/scan-now",
             date: "2026-08-18",
             score: "92.5",
+            badge: "DECEPTIVE UI • 3 VIOLATIONS",
+            badgeColor: "#f43f5e"
+          }
+        ]
+      },
+      "free-airdrop-claim-now.xyz": {
+        domain: "free-airdrop-claim-now.xyz",
+        title: "Phishing Airdrop Portal",
+        desc: "Cryptocurrency Phishing & Deceptive Urgent Consent • Tier D Quarantine",
+        tierBadge: "TIER D (DECEPTIVE QUARANTINE)",
+        tierColor: "#f43f5e",
+        tierBg: "rgba(244, 63, 94, 0.15)",
+        dciScore: "3.2",
+        totalAudits: "31 Audits",
+        groundingRate: "100% (G=1.00)",
+        syndication: "⚠️ Quarantined Domain",
+        violationsCount: "42 Severe Violations",
+        trajectoryStat: "Status: Blocklisted by Threat Intelligence",
+        trajectorySummary: "Malicious web3 phishing page presenting artificial scarcity countdowns and concealed wallet drainer permissions.",
+        articles: [
+          {
+            title: "CLAIM $5,000 AIRDROP: Limited Time Eligibility Window Closing Soon",
+            url: "https://free-airdrop-claim-now.xyz/claim-token-2026",
+            date: "2026-08-17",
+            score: "96.8",
             badge: "DECEPTIVE UI • 3 VIOLATIONS",
             badgeColor: "#f43f5e"
           }
@@ -1112,6 +1370,32 @@
         sha: "b4e678a200000000000000000000000000000000000000000000000000000002",
         hasRevisions: false
       },
+      "https://apnews.com/article/supreme-court-digital-privacy-ruling-2026": {
+        title: "Supreme Court Issues Unanimous Ruling on Digital Communications Privacy",
+        domain: "apnews.com",
+        score: "0.0",
+        badge: "CLEAN • FACTUAL WIRE REPORTING (TIER A)",
+        badgeColor: "#4ade80",
+        badgeBg: "rgba(74, 222, 128, 0.15)",
+        summary: "Clear, neutral wire reporting detailing unanimous Supreme Court judicial majority and concurring opinions on digital search warrants.",
+        ethics: "10.0 / 10", logic: "10.0 / 10", ui: "10.0 / 10",
+        violations: [],
+        sha: "e7f890d500000000000000000000000000000000000000000000000000000005",
+        hasRevisions: false
+      },
+      "https://propublica.org/article/groundwater-contamination-records-investigation": {
+        title: "Investigation Reveals Widespread Groundwater Contamination Near Industrial Corridors",
+        domain: "propublica.org",
+        score: "0.4",
+        badge: "CLEAN • INVESTIGATIVE REPORTING (TIER A)",
+        badgeColor: "#4ade80",
+        badgeBg: "rgba(74, 222, 128, 0.15)",
+        summary: "Exhaustive multi-month investigative report linking industrial runoff to regional aquifer contamination with downloadable public lab test data.",
+        ethics: "9.9 / 10", logic: "10.0 / 10", ui: "10.0 / 10",
+        violations: [],
+        sha: "f8a901e600000000000000000000000000000000000000000000000000000006",
+        hasRevisions: false
+      },
       "https://theonion.com/golden-retriever-elected-mayor-historic-landslide": {
         title: "Golden Retriever Elected Mayor in Historic Landslide After Promising More Park Visits",
         domain: "theonion.com",
@@ -1123,6 +1407,19 @@
         ethics: "10.0 / 10", logic: "10.0 / 10", ui: "10.0 / 10",
         violations: [],
         sha: "c5f789b300000000000000000000000000000000000000000000000000000003",
+        hasRevisions: false
+      },
+      "https://babylonbee.com/news/nasa-giant-squeegee-telescope": {
+        title: "NASA Announces Plan To Send Giant Squeegee Into Orbit To Clean Telescope Lens",
+        domain: "babylonbee.com",
+        score: "0.0",
+        badge: "SATIRE PROTECTED • POE'S LAW NEUTRALITY",
+        badgeColor: "#c084fc",
+        badgeBg: "rgba(192, 132, 252, 0.15)",
+        summary: "Lighthearted comedic parody piece protected under Poe's Law neutrality with 0.0 suspicion score. Zero cloaking evasion detected.",
+        ethics: "10.0 / 10", logic: "10.0 / 10", ui: "10.0 / 10",
+        violations: [],
+        sha: "09b112f700000000000000000000000000000000000000000000000000000007",
         hasRevisions: false
       },
       "https://inmaricopa.com/news/zoning-ordinance-dispute-2026": {
@@ -1138,6 +1435,34 @@
           { rule: "SPJ-1.3 Unnamed Background Sourcing", sev: "Sev 2", quote: "According to a city planning staffer who requested anonymity due to department policy, infrastructure studies were completed in July." }
         ],
         sha: "d6a890c400000000000000000000000000000000000000000000000000000004",
+        hasRevisions: false
+      },
+      "https://texasmonthly.com/news-politics/west-texas-aquifer-depletion-2026": {
+        title: "The Vanishing Aquifer: Inside West Texas Farmers' Battle Over Deep Water Reserves",
+        domain: "texasmonthly.com",
+        score: "8.5",
+        badge: "LOW SUSPICION • REGIONAL JOURNALISM (TIER B)",
+        badgeColor: "#38bdf8",
+        badgeBg: "rgba(56, 189, 248, 0.15)",
+        summary: "Deep-dive regional reporting on water district legal disputes with direct quotes from hydrologists and agricultural landowners.",
+        ethics: "9.2 / 10", logic: "9.0 / 10", ui: "9.8 / 10",
+        violations: [
+          { rule: "SPJ-1.3 Unnamed Background Sourcing", sev: "Sev 1", quote: "An agency analyst speaking on background noted that recharge projections have declined." }
+        ],
+        sha: "1a2233f800000000000000000000000000000000000000000000000000000008",
+        hasRevisions: false
+      },
+      "https://theverge.com/2026/8/18/open-mesh-standards-municipal": {
+        title: "Open Wireless Mesh Standards Gain Traction Among Municipal Network Operators",
+        domain: "theverge.com",
+        score: "12.5",
+        badge: "LOW SUSPICION • TECH JOURNALISM (TIER B)",
+        badgeColor: "#38bdf8",
+        badgeBg: "rgba(56, 189, 248, 0.15)",
+        summary: "Informative tech journalism analyzing municipal mesh deployment trials with hardware specs and protocol benchmarks.",
+        ethics: "8.9 / 10", logic: "8.8 / 10", ui: "9.5 / 10",
+        violations: [],
+        sha: "2b3344a900000000000000000000000000000000000000000000000000000009",
         hasRevisions: false
       },
       "https://metro-sensationalist.com/zoning-sludge-crisis": {
@@ -1167,23 +1492,6 @@
           },
           flag: "⚠️ <b>Stealth Modification Flagged (SPJ-4.1)</b>: Factual allegation altered significantly without an explicit correction notice or editor disclosure."
         }
-      },
-      "https://malware-protection-alert.net/scan-now": {
-        title: "CRITICAL SYSTEM ALERT: Immediate Antivirus Renewal Required",
-        domain: "malware-protection-alert.net",
-        score: "92.5",
-        badge: "DECEPTIVE UI • 3 VIOLATIONS (TIER C QUARANTINE)",
-        badgeColor: "#f43f5e",
-        badgeBg: "rgba(244, 63, 94, 0.15)",
-        summary: "Rogue landing page simulating operating system warning dialogs with deceptive countdown timer and concealed $99/wk recurring subscription.",
-        ethics: "1.0 / 10", logic: "2.0 / 10", ui: "0.5 / 10",
-        violations: [
-          { rule: "DEC-1.1 Hidden Drip Pricing", sev: "Sev 4", quote: "$99/wk recurring subscription charged after initial $1 trial." },
-          { rule: "DEC-1.2 Confirmshaming", sev: "Sev 3", quote: "'No thanks, I prefer risking total device infection.'" },
-          { rule: "DEC-3.1 Fake System Dialog", sev: "Sev 5", quote: "'CRITICAL SECURITY ALERT: Immediate Action Required' formatted to mimic OS dialog." }
-        ],
-        sha: "4444444444444444444444444444444444444444444444444444444444444444",
-        hasRevisions: false
       },
       "https://daily-speculator.com/tech/breakthrough-battery-claim": {
         title: "Scientists Reportedly Invent Infinite Energy Battery in Undisclosed Laboratory",
@@ -1215,6 +1523,73 @@
           { rule: "IEP-1.2 Straw Man Argument", sev: "Sev 3", quote: "They want to dismantle every road and bridge in America just to score cheap talking points." }
         ],
         sha: "6666666666666666666666666666666666666666666666666666666666666666",
+        hasRevisions: false
+      },
+      "https://health-miracle-cure.org/cure-for-everything-now": {
+        title: "Ancient Herb Discovered by Secret Himalayan Monks Completely Eliminates Joint Pain",
+        domain: "health-miracle-cure.org",
+        score: "88.6",
+        badge: "UNGROUNDED HEALTH CLAIM • 3 VIOLATIONS",
+        badgeColor: "#f43f5e",
+        badgeBg: "rgba(244, 63, 94, 0.15)",
+        summary: "Medical disinformation and ungrounded health assertions violating scientific consensus without clinical trial evidence or FDA verification.",
+        ethics: "2.0 / 10", logic: "2.5 / 10", ui: "7.0 / 10",
+        violations: [
+          { rule: "SPJ-1.1 Unsourced Factual Assertion", sev: "Sev 5", quote: "Guaranteed 100% cure for all rheumatoid conditions within 48 hours." },
+          { rule: "IEP-2.1 Hasty Generalization", sev: "Sev 4", quote: "One local resident tried the herb and threw away all prescription medications." },
+          { rule: "SPJ-2.1 Undisclosed Financial Conflict of Interest", sev: "Sev 4", quote: "Content secretly sponsored by supplement manufacturer." }
+        ],
+        sha: "7777777777777777777777777777777777777777777777777777777777777777",
+        hasRevisions: false
+      },
+      "https://malware-protection-alert.net/scan-now": {
+        title: "CRITICAL SYSTEM ALERT: Immediate Antivirus Renewal Required",
+        domain: "malware-protection-alert.net",
+        score: "92.5",
+        badge: "DECEPTIVE UI • 3 VIOLATIONS (TIER D QUARANTINE)",
+        badgeColor: "#f43f5e",
+        badgeBg: "rgba(244, 63, 94, 0.15)",
+        summary: "Rogue landing page simulating operating system warning dialogs with deceptive countdown timer and concealed $99/wk recurring subscription.",
+        ethics: "1.0 / 10", logic: "2.0 / 10", ui: "0.5 / 10",
+        violations: [
+          { rule: "DEC-1.1 Hidden Drip Pricing", sev: "Sev 4", quote: "$99/wk recurring subscription charged after initial $1 trial." },
+          { rule: "DEC-1.2 Confirmshaming", sev: "Sev 3", quote: "'No thanks, I prefer risking total device infection.'" },
+          { rule: "DEC-3.1 Fake System Dialog", sev: "Sev 5", quote: "'CRITICAL SECURITY ALERT: Immediate Action Required' formatted to mimic OS dialog." }
+        ],
+        sha: "4444444444444444444444444444444444444444444444444444444444444444",
+        hasRevisions: false
+      },
+      "https://free-airdrop-claim-now.xyz/claim-token-2026": {
+        title: "CLAIM $5,000 AIRDROP: Limited Time Eligibility Window Closing Soon",
+        domain: "free-airdrop-claim-now.xyz",
+        score: "96.8",
+        badge: "DECEPTIVE UI • 3 VIOLATIONS (TIER D QUARANTINE)",
+        badgeColor: "#f43f5e",
+        badgeBg: "rgba(244, 63, 94, 0.15)",
+        summary: "Cryptocurrency phishing scheme utilizing artificial scarcity timers, fake celebrity endorsements, and concealed smart contract approval signatures.",
+        ethics: "0.5 / 10", logic: "1.0 / 10", ui: "0.5 / 10",
+        violations: [
+          { rule: "DEC-2.2 Artificial Urgency Countdown", sev: "Sev 4", quote: "Timer reset: 'Only 3 minutes remaining to claim your tokens.'" },
+          { rule: "DEC-1.1 Hidden Drip Pricing", sev: "Sev 5", quote: "Concealed approval granting unlimited token allowance." },
+          { rule: "SPJ-1.1 Fabricated Celebrity Endorsement", sev: "Sev 5", quote: "Fake quotes attributed to prominent technologists." }
+        ],
+        sha: "8888888888888888888888888888888888888888888888888888888888888888",
+        hasRevisions: false
+      },
+      "https://celebrity-rumor-mill.com/hollywood/scandal-revelation": {
+        title: "Insiders Claim A-List Actor in Heated Backstage Feud Over Movie Contract",
+        domain: "celebrity-rumor-mill.com",
+        score: "54.2",
+        badge: "UNSOURCED RUMOR • 2 VIOLATIONS",
+        badgeColor: "#f59e0b",
+        badgeBg: "rgba(245, 158, 11, 0.15)",
+        summary: "Tabloid gossip piece relying on anonymous studio rumors without corroboration or official representative response.",
+        ethics: "5.5 / 10", logic: "6.0 / 10", ui: "8.5 / 10",
+        violations: [
+          { rule: "SPJ-1.3 Unnamed Background Sourcing", sev: "Sev 3", quote: "An anonymous caterer reported hearing raised voices in the green room." },
+          { rule: "SPJ-1.2 Headline Distortion", sev: "Sev 3", quote: "Headline asserts feud while article notes routine scheduling conflict." }
+        ],
+        sha: "9999999999999999999999999999999999999999999999999999999999999999",
         hasRevisions: false
       }
     };
@@ -1731,128 +2106,22 @@
     // =========================================================================
     
     // Complete database of verified publishers
-    const ALL_PUBLISHERS = [
-      {
-        domain: "reuters.com",
-        title: "Reuters News Agency",
-        desc: "International Wire Service • Syndicated Global Bureau Reporting",
-        tierBadge: "TIER A (PRISTINE WIRE)",
-        tierColor: "#4ade80",
-        tierBg: "rgba(74, 222, 128, 0.15)",
-        dciScore: "99.8",
-        avgSuspicion: "0.0",
-        auditsCount: 1,
-        syndication: "● Active RSS Wire (15m)",
-        violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 100.0% • Bayesian α=412, β=1",
-        trajectorySummary: "Longitudinal publisher credibility evaluated across continuous multi-year ingestion. Consistent empirical attribution and strict adherence to wire service journalistic standards."
-      },
-      {
-        domain: "nature.com",
-        title: "Nature Publishing Group",
-        desc: "Peer-Reviewed Scientific Journals • Empirical Research & Discovery",
-        tierBadge: "TIER A (PRISTINE JOURNAL)",
-        tierColor: "#4ade80",
-        tierBg: "rgba(74, 222, 128, 0.15)",
-        dciScore: "100.0",
-        avgSuspicion: "1.2",
-        auditsCount: 1,
-        syndication: "● Active DOI Feed (30m)",
-        violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 100.0% • Bayesian α=288, β=0",
-        trajectorySummary: "Gold-standard scientific publishing with formal peer review and transparent methodology disclosures. All spectroscopic data verified against primary astronomical registries."
-      },
-      {
-        domain: "theonion.com",
-        title: "The Onion",
-        desc: "Satirical Parody Publication • Protected Epistemic Satire (Poe's Law)",
-        tierBadge: "SATIRE PROTECTED (POE'S LAW)",
-        tierColor: "#c084fc",
-        tierBg: "rgba(192, 132, 252, 0.15)",
-        dciScore: "100.0",
-        avgSuspicion: "0.0",
-        auditsCount: 1,
-        syndication: "● Active Feed (1h)",
-        violationsCount: "0 Factual Violations (Poe Protected)",
-        trajectoryStat: "30d Stability: 100.0% • Satire Neutrality",
-        trajectorySummary: "Recognized parody outlet. Factual allegations evaluated for cloaking overrides (SPJ-1.6) and cleared of malicious defamatory or public health misrepresentations."
-      },
-      {
-        domain: "inmaricopa.com",
-        title: "InMaricopa Local News",
-        desc: "Municipal Journalism & Community Reporting • Tier B Regional",
-        tierBadge: "TIER B (LOW RISK LOCAL)",
-        tierColor: "#38bdf8",
-        tierBg: "rgba(56, 189, 248, 0.15)",
-        dciScore: "81.6",
-        avgSuspicion: "18.4",
-        auditsCount: 1,
-        syndication: "● Active RSS (2h)",
-        violationsCount: "1 Minor Sourcing Gap",
-        trajectoryStat: "30d Stability: 92.4% • Bayesian α=44, β=8",
-        trajectorySummary: "Community-focused reporting with occasional minor reliance on unnamed local administrative staff. Overall reporting maintains balanced coverage of public zoning and council disputes."
-      },
-      {
-        domain: "metro-sensationalist.com",
-        title: "Metro Sensationalist Editorial",
-        desc: "Clickbait Editorial & Sensationalist Commentary • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
-        dciScore: "38.7",
-        avgSuspicion: "61.3",
-        auditsCount: 1,
-        syndication: "● Ingestion Monitored (30m)",
-        violationsCount: "2 Severe Fallacies & Stealth Edit",
-        trajectoryStat: "30d Trajectory: Declining • 1 Stealth Edit Detected",
-        trajectorySummary: "Recurring pattern of uncorroborated anonymous allegations, false dilemma framing, and stealth post-publication text alterations without reader corrections (SPJ-4.1)."
-      },
-      {
-        domain: "daily-speculator.com",
-        title: "Daily Speculator Tech Desk",
-        desc: "Sensationalized Technology Hype & Unverified Leaks • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
-        dciScore: "42.1",
-        avgSuspicion: "78.4",
-        auditsCount: 1,
-        syndication: "● Ingestion Monitored (1h)",
-        violationsCount: "2 Sourcing & Headline Violations",
-        trajectoryStat: "30d Trajectory: High Volatility • Unsourced Claims",
-        trajectorySummary: "Publishes speculative technological assertions without primary lab corroboration or peer-reviewed documentation."
-      },
-      {
-        domain: "partisan-post.com",
-        title: "Partisan Post Opinion",
-        desc: "Partisan Opinion Column & Rhetorical Debates • Tier C Fallacies",
-        tierBadge: "TIER C (FALLACIES)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
-        dciScore: "46.3",
-        avgSuspicion: "68.2",
-        auditsCount: 1,
-        syndication: "● Ingestion Monitored (2h)",
-        violationsCount: "2 Rhetorical Fallacies (Ad Hominem, Straw Man)",
-        trajectoryStat: "30d Trajectory: Low Epistemic Grounding",
-        trajectorySummary: "Heavily reliant on emotive rhetorical attacks and caricatured opposing viewpoints rather than empirical counter-evidence."
-      },
-      {
-        domain: "malware-protection-alert.net",
-        title: "Rogue Antivirus Campaign",
-        desc: "Deceptive UI Patterns & Dark Pattern Conversion Funnel • Tier D Quarantine",
-        tierBadge: "TIER D (DECEPTIVE QUARANTINE)",
-        tierColor: "#f43f5e",
-        tierBg: "rgba(244, 63, 94, 0.15)",
-        dciScore: "7.5",
-        avgSuspicion: "92.5",
-        auditsCount: 1,
-        syndication: "⚠️ Quarantined URL Pattern",
-        violationsCount: "3 Dark Patterns Detected",
-        trajectoryStat: "Status: Quarantined & Blocklisted",
-        trajectorySummary: "Hostile rogue dialogs mimicking operating system prompts with hidden recurring weekly subscriptions and aggressive countdown timers."
-      }
-    ];
+    // Dynamically derived from PUBLISHER_DATABASE
+    const ALL_PUBLISHERS = Object.values(PUBLISHER_DATABASE).map(p => ({
+      domain: p.domain,
+      title: p.title,
+      desc: p.desc,
+      tierBadge: p.tierBadge,
+      tierColor: p.tierColor,
+      tierBg: p.tierBg,
+      dciScore: p.dciScore,
+      avgSuspicion: (p.articles && p.articles.length > 0) ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) : "0.0",
+      auditsCount: (p.articles && p.articles.length > 0) ? p.articles.length : 1,
+      syndication: p.syndication || "● Active RSS",
+      violationsCount: p.violationsCount || "0 Violations",
+      trajectoryStat: p.trajectoryStat || "30d Stability: 100%",
+      trajectorySummary: p.trajectorySummary || ""
+    }));
 
     function switchBrowseSubview(subview) {
       const btnArticles = document.getElementById('subview-btn-articles');
@@ -1871,6 +2140,7 @@
         if (viewArticles) viewArticles.style.display = 'none';
         if (viewSources) viewSources.style.display = 'block';
         renderPublishersCatalog();
+        renderDciTable();
       }
     }
     window.switchBrowseSubview = switchBrowseSubview;
@@ -2031,6 +2301,36 @@
       window.performMultiCriteriaSearch(true);
       showToast(`Filtered search for all audits from ${domain}`, 'info');
     };
+
+        function renderDciTable() {
+      const tbody = document.getElementById('dci-table-body');
+      if (!tbody) return;
+      
+      tbody.innerHTML = Object.values(PUBLISHER_DATABASE).map(p => {
+        const firstArt = (p.articles && p.articles[0]) ? p.articles[0] : null;
+        const inspectUrl = firstArt ? firstArt.url : `https://${p.domain}`;
+        const avgSusp = (p.articles && p.articles.length > 0) 
+          ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) 
+          : "0.0";
+        const auditCount = (p.articles && p.articles.length > 0) ? p.articles.length : 1;
+        
+        return `
+          <tr data-domain="${p.domain}" data-tier="${p.tierBadge}" data-suspicion="${avgSusp}" data-audits="${auditCount}">
+            <td><strong>${p.domain}</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">${p.title}</span></td>
+            <td><span class="badge" style="background:${p.tierBg}; color:${p.tierColor}; border:1px solid ${p.tierColor}; font-size:0.7rem;">${p.tierBadge}</span></td>
+            <td style="font-family:var(--font-mono); color:${p.tierColor}; font-weight:700;">${avgSusp} / 100</td>
+            <td>${auditCount} ${auditCount === 1 ? 'Audit' : 'Audits'}</td>
+            <td>
+              <div style="display:flex; gap:0.35rem;">
+                <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('${inspectUrl}')">Inspect</button>
+                <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${p.domain}')">Dossier ↗</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    window.renderDciTable = renderDciTable;
 
     window.filterDciTable = function(query) {
       const q = (query || '').toLowerCase();
