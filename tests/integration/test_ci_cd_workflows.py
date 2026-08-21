@@ -144,8 +144,29 @@ def test_local_production_deploy_safety_gate() -> None:
 
     justfile_content = justfile_path.read_text(encoding="utf-8")
 
-    # Verify presence of safety checks in deploy recipe
     assert "PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)" in justfile_content
     assert "DEPLOY-PROD" in justfile_content
     assert "FORCE_PROD_DEPLOY" in justfile_content
     assert "CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING" in justfile_content
+
+
+@pytest.mark.integration
+def test_codeowners_and_authorized_approvers_gating() -> None:
+    """Verify that all 3 ecosystem repositories define .github/CODEOWNERS with @artibyrd and manage_pr.py parses them."""
+    ecosystem_root = Path(__file__).resolve().parents[3]
+    repos = ["credence", "credence-docs", "credence-agent"]
+
+    for repo_name in repos:
+        codeowners_path = ecosystem_root / repo_name / ".github" / "CODEOWNERS"
+        assert codeowners_path.exists(), f"Missing .github/CODEOWNERS in {repo_name}"
+        content = codeowners_path.read_text(encoding="utf-8")
+        assert "@artibyrd" in content, f"{repo_name}/.github/CODEOWNERS must designate @artibyrd as authorized approver"
+        assert "* @artibyrd" in content, f"{repo_name}/.github/CODEOWNERS must set default root code ownership"
+
+    # Verify branch protection script sets require_code_owner_reviews
+    branch_script = ecosystem_root / "credence-agent" / "scripts" / "configure_branch_protection.py"
+    assert branch_script.exists()
+    branch_content = branch_script.read_text(encoding="utf-8")
+    assert (
+        '"require_code_owner_reviews": True' in branch_content or "'require_code_owner_reviews': True" in branch_content
+    )

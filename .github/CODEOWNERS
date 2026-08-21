@@ -1,0 +1,6 @@
+# Sovereign Code Owners & Authorized PR Approvers
+# Invariant: Human Review Before Commits ("Mk1 Eyeball")
+# Only authorized human maintainers listed here can satisfy required PR reviews before merge.
+# To expand the approver circle as new contributors join, append their GitHub handle below.
+
+* @artibyrd
