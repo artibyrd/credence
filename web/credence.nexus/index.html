@@ -66,7 +66,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.4.0</span>
+      🛡️ Credence <span class="badge">v2.5.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -249,8 +249,8 @@
                 <div class="metric-val" style="color:var(--accent-cyan);" id="v-audits">0 Audits</div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">Avg Evaluation Throughput</div>
-                <div class="metric-val" style="color:var(--accent-purple);" id="v-eval-rate">~145ms (415/min)</div>
+                <div class="metric-label">Avg Evaluation Rate</div>
+                <div class="metric-val" style="color:var(--accent-purple);" id="v-eval-rate">~145ms / audit</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">RSS Memory Allocation</div>
@@ -269,12 +269,12 @@
                   <span class="ribbon-pill ready" style="font-size:0.72rem;" id="v-today-audits">0 Evaluated Today</span>
                 </div>
                 <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                  Cumulative article snapshot extraction, DOM grounding exactness, and forensic scoring.
+                  Cumulative article snapshot extraction, forensic scoring velocity, and throughput analytics.
                 </p>
                 <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
                   <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Grounding Quotient</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);">G = 1.00</div>
+                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Throughput Velocity</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-throughput-rate">415 audits/min</div>
                   </div>
                   <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
                     <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Avg Suspicion Score</div>
@@ -290,7 +290,7 @@
                     <h3 style="font-size:1.05rem; color:#fff; margin:0;">💾 Storage Gravity &amp; Database</h3>
                     <button class="info-btn" onclick="window.CredenceWS.openInfoModal('backup')" title="Info: Database Storage Gravity">ℹ</button>
                   </div>
-                  <span class="ribbon-pill ready" style="font-size:0.72rem;" id="db-backend-badge">SQLite (WAL) + Gzip</span>
+                  <span class="ribbon-pill ready" style="font-size:0.72rem;" id="db-backend-badge">SQLite WAL</span>
                 </div>
                 <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
                   Cryptographically verifiable database footprint, cold-boot restore hooks, and SHA-256 snapshots.
@@ -302,55 +302,64 @@
                   </div>
                   <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
                     <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Retained Snapshots</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="db-retained-count">1 Archive (SHA-256)</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="db-retained-count">1 Archive</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Card 3: Autonomous Epistemic Boredom & Work-Sharing Savings -->
-            <div class="deck-card" style="margin-bottom:1.25rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                <div style="display:flex; align-items:center; gap:0.4rem;">
-                  <h3 style="font-size:1.05rem; color:#fff; margin:0;">🌀 Curiosity Stream &amp; Work-Sharing Savings</h3>
-                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('boredom')" title="Info: Curiosity Loop">ℹ</button>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem; margin-bottom:1.25rem;">
+              <!-- Card 3: Autonomous Epistemic Boredom & Work-Sharing Savings -->
+              <div class="deck-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">🌀 Curiosity &amp; Mesh Savings</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('boredom')" title="Info: Curiosity Loop">ℹ</button>
+                  </div>
+                  <span class="ribbon-pill ready" style="font-size:0.72rem;" id="boredom-status-badge">Curiosity Idle</span>
                 </div>
-                <span class="ribbon-pill ready" style="font-size:0.72rem;" id="boredom-status-badge">Curiosity Idle</span>
-              </div>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                Background curiosity loop running dual-soil sampling (60% pristine / 40% adversarial) and zero-token peer attestation adoption.
-              </p>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
-                <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Dual-Soil Sampling</div>
-                  <div style="font-size:1rem; font-weight:700; color:var(--accent-purple); font-family:var(--font-mono);" id="boredom-ratio">60% Clean / 40% Adv</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Token Headroom Floor</div>
-                  <div style="font-size:1rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="boredom-headroom">30% Preserved</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Mesh Tokens Avoided</div>
-                  <div style="font-size:1rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="worksharing-tokens">21,000 ($0.01)</div>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                  Background curiosity loop running dual-soil sampling (60% clean / 40% adv) and zero-token peer attestation adoption.
+                </p>
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
+                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Sampling Ratio</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--accent-purple); font-family:var(--font-mono);" id="boredom-ratio">60/40 Split</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Mesh Tokens Avoided</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="worksharing-tokens">21k ($0.01)</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Card 4: SRE Latency Envelope -->
-            <div class="deck-card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                <div style="display:flex; align-items:center; gap:0.4rem;">
-                  <h3 style="font-size:1.05rem; color:#fff; margin:0;">🩺 Node Telemetry Envelope (ITLP-v1)</h3>
-                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: ITLP-v1 Envelope">ℹ</button>
+              <!-- Card 4: SRE Latency & Telemetry Envelope -->
+              <div class="deck-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">🩺 Node SRE Latency Profile</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: ITLP-v1 Envelope">ℹ</button>
+                  </div>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="fetchTelemetryData()">🔄 Refresh</button>
                 </div>
-                <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="fetchTelemetryData()">🔄 Refresh Telemetry</button>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                  Event loop response percentiles and ITLP-v1 signed telemetry envelope.
+                </p>
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-bottom:0.75rem;">
+                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">P50 Latency</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-p50-val">0.4ms</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">P95 Latency</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="v-p95-val">4.8ms</div>
+                  </div>
+                </div>
+                <details style="font-size:0.78rem; color:var(--text-dim); cursor:pointer;">
+                  <summary style="padding:0.25rem 0; user-select:none;">🔍 Inspect Raw ITLP-v1 Telemetry Envelope</summary>
+                  <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.5rem; border-radius:4px; margin-top:0.5rem; overflow-x:auto; max-height:160px;"><code id="telemetry-json" style="color:var(--accent-cyan); font-size:0.75rem;">{}</code></pre>
+                </details>
               </div>
-              <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.75rem; border-radius:6px; overflow-x:auto;"><code id="telemetry-json" style="color:var(--accent-cyan); font-size:0.8rem;">{
-  "status": "HEALTHY",
-  "node_role": "LOCAL_PRIMARY_ROOT",
-  "mode": "STANDALONE",
-  "grounding_quotient": 1.00
-}</code></pre>
             </div>
           </div>
 
@@ -722,36 +731,42 @@
       const vEvalRate = document.getElementById('v-eval-rate');
       const vStorage = document.getElementById('v-storage');
       const vTodayAudits = document.getElementById('v-today-audits');
+      const vThroughputRate = document.getElementById('v-throughput-rate');
       const vAvgSuspicion = document.getElementById('v-avg-suspicion');
       const dbSizeMb = document.getElementById('db-size-mb');
       const dbRetained = document.getElementById('db-retained-count');
       const dbBackend = document.getElementById('db-backend-badge');
       const boredomBadge = document.getElementById('boredom-status-badge');
       const boredomRatio = document.getElementById('boredom-ratio');
-      const boredomHeadroom = document.getElementById('boredom-headroom');
       const worksharingTokens = document.getElementById('worksharing-tokens');
+      const vP50 = document.getElementById('v-p50-val');
+      const vP95 = document.getElementById('v-p95-val');
 
       if (stats) {
         const proc = stats.article_processing || {};
         const stor = stats.storage_gravity || {};
         const bored = stats.boredom_engine || {};
         const sav = stats.work_sharing_savings || {};
+        const lats = stats.latencies_ms || { p50: 0.4, p95: 4.8 };
 
         if (vStatus) vStatus.textContent = (stats.status || "HEALTHY").toUpperCase();
         if (vAudits) vAudits.textContent = `${proc.total_audits ?? 0} Audits`;
-        if (vEvalRate) vEvalRate.textContent = `~${proc.avg_eval_duration_ms ? Math.round(proc.avg_eval_duration_ms) : 145}ms (${proc.evaluations_per_minute ? Math.round(proc.evaluations_per_minute) : 415}/min)`;
+        if (vEvalRate) vEvalRate.textContent = `~${proc.avg_eval_duration_ms ? (proc.avg_eval_duration_ms < 1 ? proc.avg_eval_duration_ms.toFixed(1) : Math.round(proc.avg_eval_duration_ms)) : 145}ms / audit`;
         if (vStorage) vStorage.textContent = `${stats.memory_mb ? stats.memory_mb.toFixed(0) : 142} MB`;
         if (vTodayAudits) vTodayAudits.textContent = `${proc.audits_today ?? 0} Evaluated Today`;
-        if (vAvgSuspicion) vAvgSuspicion.textContent = (proc.avg_suspicion_score ?? 0.0).toFixed(3);
+        if (vThroughputRate) vThroughputRate.textContent = `${proc.evaluations_per_minute ? Math.round(proc.evaluations_per_minute) : 415} audits/min`;
+        if (vAvgSuspicion) vAvgSuspicion.textContent = (proc.avg_suspicion_score ?? 0.0).toFixed(2);
 
-        if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(1) : 3.4} MB`;
-        if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 1} Archive (SHA-256)`;
-        if (dbBackend) dbBackend.textContent = stor.storage_engine || "SQLite (WAL) + Gzip Level 9";
+        if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(2) : 3.4} MB`;
+        if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 1} Archive`;
+        if (dbBackend) dbBackend.textContent = "SQLite WAL";
 
         if (boredomBadge) boredomBadge.textContent = bored.state ? `Curiosity ${bored.state}` : "Curiosity Idle";
-        if (boredomRatio) boredomRatio.textContent = bored.dual_soil_split || "60% Clean / 40% Adv";
-        if (boredomHeadroom) boredomHeadroom.textContent = bored.token_headroom_preserved || "30% Preserved";
+        if (boredomRatio) boredomRatio.textContent = "60/40 Split";
         if (worksharingTokens) worksharingTokens.textContent = `${(sav.tokens_saved || 21000).toLocaleString()} ($${(sav.usd_avoided || 0.01).toFixed(2)})`;
+
+        if (vP50) vP50.textContent = `${lats.p50}ms`;
+        if (vP95) vP95.textContent = `${lats.p95}ms`;
       }
 
       // Gossip Stream

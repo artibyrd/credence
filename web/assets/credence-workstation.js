@@ -1,3 +1,4 @@
+export const CREDENCE_VERSION = "v2.5.0";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 

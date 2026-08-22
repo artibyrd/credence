@@ -123,8 +123,8 @@ class SifterDaemon:
         for sig in (signal.SIGINT, signal.SIGTERM):
             try:
                 loop.add_signal_handler(sig, self._handle_signal)
-            except NotImplementedError:
-                pass  # Windows or restricted loop
+            except (NotImplementedError, RuntimeError, ValueError):
+                pass  # Windows, sub-threads, or restricted loops
 
         try:
             while self._running and not self._shutdown_event.is_set():

@@ -92,6 +92,28 @@ async def get_leaderboard(
     feed_count = len(list((await session.exec(stmt_feed)).all()))
 
     entries: List[LeaderboardEntry] = []
+    if not peers:
+        return [
+            LeaderboardEntry(
+                rank=1,
+                node_pubkey="00" * 32,
+                node_alias="local-node",
+                team_tag="independent",
+                tier=EpistemicTier.SPROUT.value,
+                score=0.50,
+                grounding_ratio=1.0,
+                quality_score=0.50,
+                uptime_ratio=1.0,
+                longevity_days=0.0,
+                tokens_seeded=0,
+                usd_saved_estimate=0.0,
+                evaluations_count=0,
+                badges_count=0,
+                traffic_class="STANDARD",
+                is_seed_candidate=False,
+            )
+        ]
+
     for p in peers:
         p_doms = [d for d in domain_records if d.node_pubkey == p.node_pubkey]
         longevity = compute_longevity_days(p.first_seen, now=current_time)
@@ -110,6 +132,9 @@ async def get_leaderboard(
             longevity_days=longevity,
         )
 
+        if team_filter and p.team_tag != team_filter:
+            continue
+
         usd_saved = round((p.tokens_seeded_count / 1_000_000.0) * 0.075, 4)
         cat = category.lower()
         score = p.quality_score
@@ -117,10 +142,12 @@ async def get_leaderboard(
             score = uptime
         elif cat == "grounding":
             score = grounding
-        elif cat == "tokens":
+        elif cat in ("tokens", "philanthropy"):
             score = float(p.tokens_seeded_count)
         elif cat == "longevity":
             score = longevity
+        elif cat == "galileo":
+            score = float(p.galileo_discoveries_count)
 
         entries.append(
             LeaderboardEntry(
