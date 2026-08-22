@@ -369,3 +369,36 @@ def test_web_vanilla_js_syntax_integrity(web_dir: Path) -> None:
                 text=True,
             )
             assert res.returncode == 0, f"JS syntax error in {html_file.name} (script #{idx + 1}):\n{res.stderr}"
+
+
+@pytest.mark.governance
+def test_web_credence_widget_epistemic_integrity(web_dir: Path) -> None:
+    """Verify credence-widget.js implements genuine WebCrypto DOM hashing and zero dummy data."""
+    import subprocess
+
+    widget_file = web_dir / "assets" / "credence-widget.js"
+    assert widget_file.exists(), "web/assets/credence-widget.js must exist"
+    content = widget_file.read_text(encoding="utf-8")
+
+    # 1. Zero dummy fake fallback strings
+    assert "ed25519:e3b0c44...41a7" not in content, "Must not contain fake dummy Ed25519 fallback key"
+    assert "+2.4 pts (Improving)" not in content, "Must not contain fake static trajectory string"
+    assert "M 10 28 L 60 22 L 120 16 L 180 8" not in content, "Must not contain hardcoded fake sparkline"
+
+    # 2. Live WebCrypto DOM Hashing Integration
+    assert "crypto.subtle.digest" in content, "Must implement live WebCrypto SHA-256 DOM hashing"
+    assert "computeLiveDomHash" in content, "Must provide computeLiveDomHash method"
+
+    # 3. Modality-Specific 3-Tier Lensing
+    assert "renderNodeLens" in content, "Must provide dedicated Node Epistemic Merit lens"
+    assert "renderPublisherLens" in content, "Must provide dedicated Publisher Reputation lens"
+    assert "renderAttestationLens" in content, "Must provide dedicated Article Attestation lens"
+
+    # 4. Zero npm dependencies & pure ES Module syntax
+    res = subprocess.run(
+        ["node", "--check", "--input-type=module"],
+        input=content,
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0, f"JS syntax error in credence-widget.js:\n{res.stderr}"
