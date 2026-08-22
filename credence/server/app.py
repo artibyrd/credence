@@ -7,12 +7,14 @@ Architecture: Modular Dispatcher (<150 LOC).
 from __future__ import annotations
 
 import time
+from pathlib import Path
 from typing import Any
 
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Route
+from starlette.staticfiles import StaticFiles
 
 from credence.server.api.analytics import (
     api_bounties,
@@ -163,6 +165,26 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
 
     for r in rest_routes:
         app.router.routes.insert(0, r)
+
+    web_dir = Path(__file__).resolve().parents[2] / "web"
+    if web_dir.exists() and web_dir.is_dir():
+        if (web_dir / "assets").exists():
+            app.mount("/assets", StaticFiles(directory=str(web_dir / "assets")), name="assets")
+        if (web_dir / "credence.report").exists():
+            app.mount(
+                "/credence.report", StaticFiles(directory=str(web_dir / "credence.report"), html=True), name="report"
+            )
+        if (web_dir / "credence.foundation").exists():
+            app.mount(
+                "/credence.foundation",
+                StaticFiles(directory=str(web_dir / "credence.foundation"), html=True),
+                name="foundation",
+            )
+        if (web_dir / "credence.nexus").exists():
+            app.mount(
+                "/credence.nexus", StaticFiles(directory=str(web_dir / "credence.nexus"), html=True), name="nexus"
+            )
+        app.mount("/web", StaticFiles(directory=str(web_dir), html=True), name="web")
 
     app.add_middleware(
         CORSMiddleware,
