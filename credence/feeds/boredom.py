@@ -10,7 +10,8 @@ from __future__ import annotations
 import asyncio
 import signal
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from rich.console import Console
@@ -28,6 +29,100 @@ from credence.models import FeedItem, FeedSubscription, utc_now
 from credence.pipeline.governor import get_token_headroom_status
 
 console = Console()
+
+
+class ExcitementMode(str, Enum):
+    HYPER_EXCITED = "HYPER_EXCITED"
+    ACTIVE_BURST = "ACTIVE_BURST"
+    STEADY_MAINTENANCE = "STEADY_MAINTENANCE"
+    ADAPTIVE_BACKOFF = "ADAPTIVE_BACKOFF"
+    QUOTA_PRESERVED = "QUOTA_PRESERVED"
+
+
+@dataclass
+class CuriosityExcitementDecision:
+    """Calculated decision for an adaptive boredom heartbeat cycle."""
+
+    mode: str
+    should_audit: bool
+    audit_burst: int
+    expand_roots_appetite: int
+    excitement_score: float
+    reason: str
+
+
+def compute_curiosity_excitement(
+    total_audits: int,
+    daily_headroom_pct: float,
+    last_audit_time: Optional[datetime] = None,
+    now: Optional[datetime] = None,
+) -> CuriosityExcitementDecision:
+    """Calculate the variable Epistemic Excitement Index (E) and dynamic backoff cadence."""
+    current_time = now or datetime.now(timezone.utc)
+
+    # 1. Circuit Breaker Floor (< 30%)
+    if daily_headroom_pct < 30.0:
+        return CuriosityExcitementDecision(
+            mode=ExcitementMode.QUOTA_PRESERVED.value,
+            should_audit=False,
+            audit_burst=0,
+            expand_roots_appetite=0,
+            excitement_score=0.0,
+            reason="Token headroom is below 30% safety floor.",
+        )
+
+    # Calculate Continuous Excitement Index E in [0.0, 1.0]
+    volume_discount = min(0.80, total_audits / 250.0)
+    excitement_score = round((daily_headroom_pct / 100.0) * (1.0 - volume_discount), 3)
+
+    # 2. Phase 1: Germination & Sprout Node (< 50 audits & headroom >= 70%)
+    if total_audits < 50 and daily_headroom_pct >= 70.0:
+        return CuriosityExcitementDecision(
+            mode=ExcitementMode.HYPER_EXCITED.value,
+            should_audit=True,
+            audit_burst=5,
+            expand_roots_appetite=3,
+            excitement_score=excitement_score,
+            reason="Young node with abundant headroom — hyper-excited rapid ingestion.",
+        )
+
+    # 3. Phase 2: Maturing Node (< 200 audits & headroom >= 50%)
+    if total_audits < 200 and daily_headroom_pct >= 50.0:
+        return CuriosityExcitementDecision(
+            mode=ExcitementMode.ACTIVE_BURST.value,
+            should_audit=True,
+            audit_burst=3,
+            expand_roots_appetite=1,
+            excitement_score=excitement_score,
+            reason="Maturing node with healthy headroom — standard active curiosity burst.",
+        )
+
+    # 4. Phase 3: Established Node (>= 200 audits)
+    if last_audit_time:
+        if last_audit_time.tzinfo is None:
+            last_audit_time = last_audit_time.replace(tzinfo=timezone.utc)
+        minutes_elapsed = (current_time - last_audit_time).total_seconds() / 60.0
+    else:
+        minutes_elapsed = 999.0
+
+    if minutes_elapsed >= 30.0:
+        return CuriosityExcitementDecision(
+            mode=ExcitementMode.STEADY_MAINTENANCE.value,
+            should_audit=True,
+            audit_burst=2,
+            expand_roots_appetite=1,
+            excitement_score=excitement_score,
+            reason="Established node — periodic maintenance audit window reached.",
+        )
+
+    return CuriosityExcitementDecision(
+        mode=ExcitementMode.ADAPTIVE_BACKOFF.value,
+        should_audit=False,
+        audit_burst=0,
+        expand_roots_appetite=0,
+        excitement_score=excitement_score,
+        reason=f"Established node in backoff cooldown ({minutes_elapsed:.1f}m / 30m elapsed).",
+    )
 
 
 @dataclass

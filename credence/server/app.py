@@ -33,6 +33,13 @@ from credence.server.api.cost import (
     api_cost_resume,
     api_cost_telemetry,
 )
+from credence.server.api.database import (
+    api_db_backup,
+    api_db_export_pack,
+    api_db_import_pack,
+    api_db_restore,
+    api_db_status,
+)
 from credence.server.api.domains import (
     api_domain_appeal,
     api_domain_quarantine,
@@ -53,11 +60,7 @@ from credence.server.api.mesh import api_mesh_network_health, api_mesh_stats
 from credence.server.api.system import (
     api_auth_config,
     api_auth_verify,
-    api_db_backup,
-    api_db_export_pack,
-    api_db_import_pack,
-    api_db_restore,
-    api_db_status,
+    api_cron_boredom,
     api_favicon,
     api_germinate,
     api_health,
@@ -122,6 +125,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/cost/resume", endpoint=api_cost_resume, methods=["POST", "OPTIONS"]),
         Route("/api/audit", endpoint=api_audit_url, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/germinate", endpoint=api_germinate, methods=["POST", "GET", "OPTIONS"]),
+        Route("/cron/boredom", endpoint=api_cron_boredom, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/sifter/status", endpoint=api_sifter_status, methods=["GET", "OPTIONS"]),
         Route("/api/sifter/cycle", endpoint=api_sifter_cycle, methods=["POST", "OPTIONS"]),
         Route("/api/roots/expand", endpoint=api_roots_expand, methods=["POST", "GET", "OPTIONS"]),
