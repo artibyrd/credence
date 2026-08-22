@@ -41,8 +41,9 @@ def test_zero_npm_invariant(docs_root: Path) -> None:
 
 @pytest.mark.governance
 def test_ecosystem_version_parity(docs_root: Path) -> None:
-    """Verify universal semantic version parity across all ecosystem repositories and web surfaces."""
+    """Verify universal semantic version parity across all ecosystem repositories, runtime JS engines, and all 11 web surfaces."""
     import json
+    import re
     import tomllib
 
     ecosystem_root = docs_root.parent
@@ -55,6 +56,7 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
     with open(pyproject_path, "rb") as f:
         pyproject_data = tomllib.load(f)
     canonical_version = pyproject_data["tool"]["poetry"]["version"]
+    expected_tag = f"v{canonical_version}"
 
     # 2. Python __version__ in credence/__init__.py
     init_path = credence_root / "credence" / "__init__.py"
@@ -68,14 +70,14 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
     docs_index_path = docs_root / "index.html"
     assert docs_index_path.exists()
     docs_index_content = docs_index_path.read_text(encoding="utf-8")
-    assert f"v{canonical_version}" in docs_index_content, f"credence-docs/index.html missing badge v{canonical_version}"
+    assert expected_tag in docs_index_content, f"credence-docs/index.html missing badge {expected_tag}"
 
-    # 4. credence-docs/app.js brandBadge fallback
+    # 4. credence-docs/app.js CURRENT_ECOSYSTEM_VERSION
     docs_app_path = docs_root / "app.js"
     assert docs_app_path.exists()
     docs_app_content = docs_app_path.read_text(encoding="utf-8")
     assert f"'v{canonical_version}'" in docs_app_content or f'"v{canonical_version}"' in docs_app_content, (
-        f"credence-docs/app.js brandBadge does not match v{canonical_version}"
+        f"credence-docs/app.js brandBadge does not match {expected_tag}"
     )
 
     # 5. credence-docs/docs/changelog.md latest release header
@@ -86,16 +88,30 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
         f"docs/changelog.md missing release section ## [{canonical_version}]"
     )
 
-    # 6. credence.run index.html brand & hero badge-pill
-    web_run_index = credence_root / "web" / "credence.run" / "index.html"
-    if web_run_index.exists():
-        web_content = web_run_index.read_text(encoding="utf-8")
-        assert f"v{canonical_version}" in web_content, f"web/credence.run/index.html missing badge v{canonical_version}"
-        assert f"v{canonical_version} Stable" in web_content, (
-            f"web/credence.run/index.html missing hero pill v{canonical_version} Stable"
-        )
+    # 6. Runtime JS engine CREDENCE_VERSION in credence-workstation.js
+    ws_js_path = credence_root / "web" / "assets" / "credence-workstation.js"
+    assert ws_js_path.exists()
+    ws_js_content = ws_js_path.read_text(encoding="utf-8")
+    assert f'export const CREDENCE_VERSION = "{expected_tag}";' in ws_js_content, (
+        f"credence-workstation.js CREDENCE_VERSION does not match {expected_tag}"
+    )
 
-    # 7. credence-agent/plugin.json
+    # 7. Scan ALL HTML files across web/ for navbar brand badge parity
+    web_dir = credence_root / "web"
+    html_files = list(web_dir.rglob("*.html"))
+    assert len(html_files) >= 10, f"Expected at least 10 HTML surfaces in web/, found {len(html_files)}"
+
+    for html_file in html_files:
+        content = html_file.read_text(encoding="utf-8")
+        if '<nav class="credence-nav">' in content and "🛡️ Credence" in content:
+            badge_match = re.search(r'🛡️ Credence\s*<span class="badge">([^<]+)</span>', content)
+            if badge_match:
+                found_version = badge_match.group(1).strip()
+                assert found_version == expected_tag, (
+                    f"Version mismatch in {html_file.relative_to(credence_root)}: found '{found_version}', expected '{expected_tag}'"
+                )
+
+    # 8. credence-agent/plugin.json
     plugin_path = agent_root / "plugin.json"
     if plugin_path.exists():
         plugin_data = json.loads(plugin_path.read_text(encoding="utf-8"))

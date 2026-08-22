@@ -204,7 +204,8 @@ def generate_svg_badge(
     elif "galileo" in badge_id or "specialist" in badge_id:
         bg_right = "#7c3aed"
 
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="220" height="28" role="img" aria-label="{badge_title}: {score_or_val}">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="220" height="28" role="img" aria-label="{node_alias} - {badge_title}: {score_or_val}">
+  <title>{node_alias} - {badge_title}</title>
   <g shape-rendering="crispEdges">
     <rect width="130" height="28" fill="{bg_left}"/>
     <rect x="130" width="90" height="28" fill="{bg_right}"/>

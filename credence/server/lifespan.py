@@ -12,15 +12,15 @@ from sqlmodel import col, func, select
 from starlette.applications import Starlette
 
 from credence.db import get_async_session, init_db
-from credence.models import Audit, FeedSubscription
+from credence.models import FeedSubscription
 
 logger = logging.getLogger("credence.server.lifespan")
 
 
-def combined_lifespan(app_instance: Starlette, enable_sifter: bool = False, enable_boredom: bool = False):
+def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enable_boredom: bool = True):
     """Generate combined async lifespan context manager."""
-    should_sift = enable_sifter or os.environ.get("CREDENCE_SIFTER_ENABLED", "").lower() in ("1", "true")
-    should_boredom = enable_boredom or os.environ.get("CREDENCE_BOREDOM_ENABLED", "").lower() in ("1", "true")
+    should_sift = enable_sifter and os.environ.get("CREDENCE_SIFTER_ENABLED", "true").lower() not in ("0", "false")
+    should_boredom = enable_boredom and os.environ.get("CREDENCE_BOREDOM_ENABLED", "true").lower() not in ("0", "false")
     original_lifespan = getattr(app_instance.router, "lifespan_context", None)
 
     @asynccontextmanager
@@ -39,13 +39,11 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = False, enab
         async def _run_background_germination() -> None:
             try:
                 async with get_async_session() as session:
-                    stmt_a = select(func.count(col(Audit.id)))
-                    total_a = (await session.exec(stmt_a)).first() or 0
                     stmt_f = select(func.count(col(FeedSubscription.id)))
                     total_f = (await session.exec(stmt_f)).first() or 0
 
-                    if total_a == 0 and total_f == 0:
-                        logger.info("🌱 Blank node detected — auto-germinating identity and feeds...")
+                    if total_f == 0:
+                        logger.info("🌱 Cold node detected — auto-germinating identity and syndicated feeds...")
                         from credence.germinate import germinate_node
 
                         await germinate_node(session=session, burst_items=3, sync_mesh=True, verbose=True)

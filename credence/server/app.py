@@ -91,7 +91,7 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
             global_telemetry.record_request(status_code, request.url.path, dt_ms, error_msg)
 
 
-def create_server_app(enable_sifter: bool = False, enable_boredom: bool = False) -> Starlette:
+def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -> Starlette:
     """Instantiate and assemble the full Credence FastMCP + REST Starlette application."""
     mcp = create_mcp_server()
     app = mcp.streamable_http_app()
