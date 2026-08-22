@@ -51,26 +51,68 @@ async def api_get_merit(request: Any) -> Any:
     return JSONResponse({"error": "Unavailable"}, status_code=500)
 
 
+async def api_verify_merit(request: Any) -> Any:
+    """REST API: Cryptographically verify a node merit card attestation envelope."""
+    from credence.mesh.merit import verify_node_merit_card
+
+    try:
+        data = await request.json()
+        is_valid = verify_node_merit_card(data)
+        return JSONResponse(
+            {
+                "valid": is_valid,
+                "node_pubkey": data.get("node_pubkey"),
+                "canonical_sha256": data.get("canonical_sha256"),
+                "tampered": not is_valid,
+            }
+        )
+    except Exception as e:
+        return JSONResponse({"valid": False, "error": str(e), "tampered": True}, status_code=400)
+
+
 async def api_get_badge_svg(request: Any) -> Any:
     """REST API: Dynamic SVG badge endpoint."""
-
-    from credence.mesh.merit import generate_svg_badge
+    from credence.mesh.merit import generate_svg_badge, get_local_node_merit
 
     badge_id = request.path_params.get("badge_id", "root_seed_candidate").replace(".svg", "")
     node = request.query_params.get("node", "credence-node")
-    score = request.query_params.get("score", "VERIFIED")
+    style = request.query_params.get("style", "shield")
     theme = request.query_params.get("theme", "dark")
 
-    svg_content = generate_svg_badge(badge_id=badge_id, node_alias=node, score_or_val=score, theme=theme)
-    return Response(content=svg_content, media_type="image/svg+xml")
+    # Evaluate whether the requested node has genuinely unlocked this badge
+    await init_db()
+    is_unlocked = False
+    async with get_async_session() as s:
+        merit_card = await get_local_node_merit(s)
+        unlocked_ids = {
+            b.badge_id if hasattr(b, "badge_id") else b["badge_id"] if isinstance(b, dict) else str(b)
+            for b in merit_card.unlocked_badges
+        }
+        if badge_id in unlocked_ids:
+            is_unlocked = True
+
+    score = "VERIFIED" if is_unlocked else "UNEARNED"
+    svg_content = generate_svg_badge(
+        badge_id=badge_id,
+        node_alias=node,
+        score_or_val=score,
+        style=style,
+        theme=theme,
+        is_unlocked=is_unlocked,
+    )
+    return Response(
+        content=svg_content,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=60"},
+    )
 
 
 async def api_get_publisher_badge(request: Any) -> Any:
     """REST API: Dynamic Publisher SVG badge endpoint."""
-
     from credence.subjects.analytics import generate_publisher_svg_badge, get_domain_leaderboard
 
     domain = request.path_params.get("domain", "reuters.com").replace(".svg", "")
+    style = request.query_params.get("style", "pill")
     theme = request.query_params.get("theme", "dark")
 
     dci_val = 85.0
@@ -84,8 +126,18 @@ async def api_get_publisher_badge(request: Any) -> Any:
                 status = r.trust_band
                 break
 
-    svg = generate_publisher_svg_badge(domain=domain, dci_score=dci_val, status=status, theme=theme)
-    return Response(content=svg, media_type="image/svg+xml")
+    svg = generate_publisher_svg_badge(
+        domain=domain,
+        dci_score=dci_val,
+        status=status,
+        style=style,
+        theme=theme,
+    )
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=300"},
+    )
 
 
 async def api_rankings_rules(request: Any) -> Any:

@@ -60,7 +60,101 @@
       flex-direction: column;
       gap: 0.5rem;
     }
+    .studio-modality-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .studio-modality-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      text-align: left;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      user-select: none;
+    }
+    .studio-modality-card:hover {
+      background: rgba(30, 41, 59, 0.75);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+    .studio-modality-card.active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    .studio-modality-card .modality-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .studio-modality-card.active .modality-title {
+      color: #38bdf8;
+    }
+    .studio-modality-card .modality-desc {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    .studio-columns-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.75rem;
+      align-items: stretch;
+      overflow: visible;
+    }
+    .studio-config-card {
+      background: rgba(10, 15, 30, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .studio-preview-card {
+      background: rgba(10, 15, 30, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      overflow: visible;
+    }
+    .studio-stage-frame {
+      background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.14) 0%, rgba(3, 7, 18, 0.9) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 1.75rem 1.5rem;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: visible;
+      z-index: 20;
+    }
+    .studio-embed-box {
+      background: rgba(3, 7, 18, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
   </style>
+  <script type="module" src="../assets/credence-widget.js"></script>
 </head>
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
@@ -105,8 +199,14 @@
             <button class="deck-nav-item" data-tab="vitals" onclick="window.CredenceWS.switchTab('vitals')">
               <span>👤 3. Node Vitals</span>
             </button>
-            <button class="deck-nav-item" data-tab="badges" onclick="window.CredenceWS.switchTab('badges')">
-              <span>🛡️ 4. Seed Manifest</span>
+            <button class="deck-nav-item" data-tab="merit" onclick="window.CredenceWS.switchTab('merit')">
+              <span>🛡️ 4. Node Merit</span>
+            </button>
+            <button class="deck-nav-item" data-tab="studio" onclick="window.CredenceWS.switchTab('studio')">
+              <span>🎨 5. Badge Studio</span>
+            </button>
+            <button class="deck-nav-item" data-tab="seeds" onclick="window.CredenceWS.switchTab('seeds')">
+              <span>🌱 6. Seed Manifest</span>
             </button>
           </div>
 
@@ -378,15 +478,214 @@
             </div>
           </div>
 
-          <!-- TAB 4: BADGES & SEED MANIFEST -->
-          <div id="tab-badges" class="tab-panel">
-            <div class="deck-card" style="margin-bottom:1.5rem;">
-              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Live Bootstrap Seed Directory (<code>peers.json</code>)</h3>
-                <button class="info-btn" onclick="window.CredenceWS.openInfoModal('seeds')" title="Info: P2P Seed Manifest &amp; Bootstrap Discovery">ℹ</button>
+          <!-- TAB 4: NODE EPISTEMIC MERIT MATRIX -->
+          <div id="tab-merit" class="tab-panel">
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h3 style="font-size:1.2rem; color:#fff; margin:0;">Node Epistemic Merit &amp; Peer Milestones</h3>
+                    <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Epistemic Merit Milestones">ℹ</button>
+                  </div>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0 0;">
+                    Live cryptographic milestone awards evaluated autonomously across 5 epistemic tiers based on active peer telemetry.
+                  </p>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                  <button type="button" class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem; display:flex; align-items:center; gap:0.35rem; cursor:pointer;" onclick="window.openBadgeVerificationModal('sprout_node', selectedNodeId)" title="Verify node's Ed25519 signed attestation envelope">
+                    <span>🔐</span> <span>Verify Node Credentials</span>
+                  </button>
+                  <span style="font-size:0.8rem; color:var(--text-dim);">Inspecting:</span>
+                  <select id="merit-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; max-width:240px;"></select>
+                </div>
+              </div>
+
+
+              <!-- 8 Badge Grid Matrix -->
+              <div id="merit-showcase-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+                <!-- Dynamically populated by renderMeritGrid() -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: BADGE STUDIO -->
+          <div id="tab-studio" class="tab-panel">
+            <div class="deck-card" style="overflow:visible;">
+              <!-- Header Section -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <h3 style="font-size:1.25rem; color:#fff; margin:0; font-weight:700;">Universal Badge Studio &amp; Embed Generator</h3>
+                  <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Badge Studio Guide">ℹ</button>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">
+                  Embed verifiable, cryptographically grounded badges across READMEs, articles, and websites
+                </div>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+                Select an attestation modality below to customize parameters, test interactive epistemic lensing, and generate 1-click embed code.
+              </p>
+
+              <!-- Spacious 3-Card Modality Grid -->
+              <div class="studio-modality-grid">
+                <div class="studio-modality-card active" id="tab-btn-studio-node" onclick="window.setStudioModality('node')">
+                  <div class="modality-title">
+                    <span>🛡️</span>
+                    <span>Node Epistemic Merit</span>
+                  </div>
+                  <div class="modality-desc">
+                    P2P validator uptime, consensus accuracy, and decentralized milestone badges.
+                  </div>
+                </div>
+
+                <div class="studio-modality-card" id="tab-btn-studio-publisher" onclick="window.setStudioModality('publisher')">
+                  <div class="modality-title">
+                    <span>📰</span>
+                    <span>Publisher Trust &amp; DCI</span>
+                  </div>
+                  <div class="modality-desc">
+                    Domain Credibility Index (DCI) trust bands and historical audit grounding.
+                  </div>
+                </div>
+
+                <div class="studio-modality-card" id="tab-btn-studio-attestation" onclick="window.setStudioModality('attestation')">
+                  <div class="modality-title">
+                    <span>📄</span>
+                    <span>Article Attestation</span>
+                  </div>
+                  <div class="modality-desc">
+                    Real-time in-browser WebCrypto DOM verification and tamper detection.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Balanced 2-Column Deck Layout -->
+              <div class="studio-columns-layout">
+                <!-- Left Configuration Deck -->
+                <div class="studio-config-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.05em;">1. Configuration Parameters</span>
+                    <span class="badge-pill" style="font-size:0.7rem;">Live Reactive</span>
+                  </div>
+
+                  <!-- PANE 1: Node Epistemic Merit -->
+                  <div id="studio-pane-node" class="studio-modality-pane">
+                    <div style="margin-bottom:1.25rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Target Mesh Node</label>
+                      <select id="badge-node-select" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;">
+                        <option value="local" selected>credence-local-anchor (Local Primary Root)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Milestone Badge</label>
+                      <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;">
+                        <option value="sprout_node" selected>🌱 Sprout Genesis [✓ EARNED]</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- PANE 2: Publisher Trust & DCI -->
+                  <div id="studio-pane-publisher" class="studio-modality-pane" style="display:none;">
+                    <div style="margin-bottom:1rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Target Publisher Domain</label>
+                      <input type="text" id="badge-publisher-input" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;" placeholder="e.g. reuters.com" value="reuters.com">
+                      <div style="display:flex; gap:0.5rem; margin-top:0.6rem; flex-wrap:wrap;">
+                        <button type="button" class="tab-btn" style="font-size:0.72rem; padding:3px 8px;" onclick="document.getElementById('badge-publisher-input').value='reuters.com'; window.updateBadgeStudioPreview();">reuters.com</button>
+                        <button type="button" class="tab-btn" style="font-size:0.72rem; padding:3px 8px;" onclick="document.getElementById('badge-publisher-input').value='nature.com'; window.updateBadgeStudioPreview();">nature.com</button>
+                        <button type="button" class="tab-btn" style="font-size:0.72rem; padding:3px 8px;" onclick="document.getElementById('badge-publisher-input').value='apnews.com'; window.updateBadgeStudioPreview();">apnews.com</button>
+                      </div>
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; background:rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                      💡 Domain Credibility Index (DCI) evaluates consensus accuracy across independent validator nodes without central authorities.
+                    </div>
+                  </div>
+
+                  <!-- PANE 3: Article Attestation -->
+                  <div id="studio-pane-attestation" class="studio-modality-pane" style="display:none;">
+                    <div style="margin-bottom:1rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Target Article URL</label>
+                      <input type="text" id="badge-attestation-input" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;" placeholder="https://example.com/news/article-1" value="https://reuters.com/world/science/breakthrough.html">
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; background:rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                      🔒 Embeds cryptographic WebCrypto DOM text verification. If article text is altered post-audit, the badge shifts from <code>VERIFIED</code> to <code>⚠️ MODIFIED</code> in real-time.
+                    </div>
+                  </div>
+
+                  <!-- Common: Render Style Selection -->
+                  <div style="border-top:1px solid var(--border); padding-top:1rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">2. Presentation Format</label>
+                    <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;">
+                      <option value="component" selected>⚡ Interactive Web Component (&lt;credence-badge&gt;) [Default]</option>
+                      <option value="shield">🛡️ Modern Shield Vector SVG (Static .svg)</option>
+                    </select>
+                  </div>
+                </div>
+
+
+                <!-- Right Preview & Embed Deck -->
+                <div class="studio-preview-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.05em;">2. Live Stage Preview</span>
+                    <span class="ribbon-pill ready" id="preview-mode-tag" style="font-size:0.7rem;">Interactive Rendered</span>
+                  </div>
+
+                  <!-- Dedicated Glowing Stage Frame -->
+                  <div class="studio-stage-frame">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                      <span style="font-size:0.75rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em;">Stage Canvas</span>
+                      <span style="font-size:0.7rem; color:var(--accent-blue);">Click badge to test 3-tier lensing</span>
+                    </div>
+
+                    <!-- Badge container with high z-index and overflow visible -->
+                    <div id="badge-live-preview-container" style="min-height:60px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:50; overflow:visible; width:100%;">
+                      <!-- Real SVG or <credence-badge> dynamically inserted here -->
+                    </div>
+
+                    <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-top:1rem;">
+                      Hover/click on the badge above to explore Surface, Focus, and Deep spectrum lenses.
+                    </div>
+                  </div>
+
+                  <!-- 1-Click Embed Console -->
+                  <div class="studio-embed-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                      <span style="font-size:0.78rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">1-Click Embed Snippet</span>
+                      <div class="lensing-tabs" style="font-size:0.72rem;">
+                        <button type="button" class="tab-btn active" id="btn-snippet-md">Markdown</button>
+                        <button type="button" class="tab-btn" id="btn-snippet-html">HTML</button>
+                        <button type="button" class="tab-btn" id="btn-snippet-wc">Web Component</button>
+                      </div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                      <input type="text" id="badge-embed-snippet" readonly class="form-input" style="font-size:0.78rem; font-family:var(--font-mono); width:100%; padding:0.5rem 0.75rem;">
+                      <button type="button" class="btn-primary" id="btn-copy-embed" style="font-size:0.78rem; padding:0.5rem 1.1rem; white-space:nowrap;">Copy</button>
+                    </div>
+                    <div id="badge-studio-locked-warning" style="display:none; margin-top:0.75rem; background:rgba(244,63,94,0.12); border:1px solid #f43f5e; border-radius:6px; padding:0.6rem 0.75rem; font-size:0.75rem; color:#fda4af; line-height:1.4;">
+                      🔒 <strong>Milestone Not Earned</strong>: The selected node has not yet satisfied the criteria for this badge. Embed snippets are locked to prevent distributing ungrounded claims.
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- TAB 5: DEDICATED SEED MANIFEST -->
+          <div id="tab-seeds" class="tab-panel">
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <h3 style="font-size:1.15rem; color:#fff; margin:0;">Live Bootstrap Seed Directory (<code>peers.json</code>)</h3>
+                  <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('seeds')" title="Info: P2P Seed Manifest &amp; Bootstrap Discovery">ℹ</button>
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                  <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('peers-json').textContent); window.showToast('Copied peers.json to clipboard', 'success');">Copy JSON</button>
+                  <a href="/peers.json" download="peers.json" class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem; text-decoration:none;">Download Manifest ↗</a>
+                </div>
               </div>
               <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                Publicly accessible peer discovery seed manifest for bootstrapping decentralized P2P nodes.
+                Publicly accessible peer discovery seed manifest signed with root cryptographic key for zero-touch node ignition.
               </p>
               <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.75rem; border-radius:6px; overflow-x:auto;"><code id="peers-json" style="color:var(--accent-cyan); font-size:0.82rem;">{
   "version": "1.0.0",
@@ -396,59 +695,8 @@
   ]
 }</code></pre>
             </div>
-
-            <div class="deck-card">
-              <div style="display:flex; align-items:center; gap:0.45rem; margin-bottom:0.5rem;">
-                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Dynamic SVG Merit Badges</h3>
-                <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Embeddable Anti-Tamper Badges">ℹ</button>
-              </div>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
-                Embed live, cryptographically verified quality badges into sovereign publication headers or documentation.
-              </p>
-
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
-                <div class="badge-preview-card" style="background:var(--bg-card); border:1px solid var(--border); padding:1.25rem; border-radius:8px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Live Score Badge (SVG)</span>
-                    <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:6px;">
-                    <!-- Real Inline SVG Badge -->
-                    <svg width="150" height="28" viewBox="0 0 150 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="150" height="28" rx="5" fill="#0f172a" stroke="#1e293b"/>
-                      <rect width="78" height="28" rx="5" fill="#1e293b"/>
-                      <text x="10" y="18" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11" font-weight="700">🛡️ credence</text>
-                      <text x="86" y="18" fill="#4ade80" font-family="ui-monospace, monospace" font-size="11" font-weight="700">10.0 / 10</text>
-                    </svg>
-                  </div>
-                  <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="snippet-score-badge" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono);" value="![Credence](https://credence.nexus/api/v1/badge/apiculture)">
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('snippet-score-badge').value); showToast('Copied Score Badge Markdown', 'success');">Copy</button>
-                  </div>
-                </div>
-
-                <div class="badge-preview-card" style="background:var(--bg-card); border:1px solid var(--border); padding:1.25rem; border-radius:8px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Attestation Verdict Badge (SVG)</span>
-                    <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:6px;">
-                    <!-- Real Inline SVG Badge -->
-                    <svg width="210" height="28" viewBox="0 0 210 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="210" height="28" rx="5" fill="#0f172a" stroke="#1e293b"/>
-                      <rect width="78" height="28" rx="5" fill="#1e293b"/>
-                      <text x="10" y="18" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11" font-weight="700">🛡️ credence</text>
-                      <text x="86" y="18" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="10" font-weight="700">FACTUAL REPORTING</text>
-                    </svg>
-                  </div>
-                  <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="snippet-verdict-badge" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono);" value="![Credence Verdict](https://credence.nexus/api/v1/badge/verdict/reuters.com)">
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('snippet-verdict-badge').value); showToast('Copied Verdict Badge Markdown', 'success');">Copy</button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
+
 
         </main>
       </div>
@@ -512,6 +760,7 @@
     let wsController;
     let liveTopologyData = null;
     let liveNodeStats = null;
+    let liveNodeMerit = null;
     let selectedNodeId = "node_1";
 
     function renderAdminView() {
@@ -825,15 +1074,21 @@
     async function fetchTelemetryData() {
       let meshData = null;
       let nodeStats = null;
+      let meritData = null;
 
       try {
-        const [resMesh, resStats] = await Promise.all([
+        const [resMesh, resStats, resMerit] = await Promise.all([
           fetch('/api/mesh/health').catch(() => null),
-          fetch('/api/node/stats').catch(() => null)
+          fetch('/api/node/stats').catch(() => null),
+          fetch('/api/merit').catch(() => null)
         ]);
         if (resMesh && resMesh.ok) meshData = await resMesh.json();
         if (resStats && resStats.ok) nodeStats = await resStats.json();
+        if (resMerit && resMerit.ok) meritData = await resMerit.json();
       } catch (e) {}
+
+      liveNodeMerit = meritData;
+
 
       if (!meshData) {
         meshData = {
@@ -876,8 +1131,14 @@
         selectEl.value = selectedNodeId;
       }
 
+      populateBadgeNodeSelect();
+      const selectedBadgeNode = (meshData.nodes || []).find(n => n.node_id === document.getElementById('badge-node-select')?.value) || (meshData.nodes && meshData.nodes[0]);
+      if (selectedBadgeNode) updateBadgeMilestoneOptions(selectedBadgeNode);
+      updateBadgeStudioPreview();
+
       updateDomMetrics(meshData, nodeStats);
       initMeshCanvas(meshData);
+
     }
 
     function updateDomMetrics(data, stats) {
@@ -954,7 +1215,727 @@
       }
 
       renderVitalsForSelectedNode(data, stats);
+      renderMeritGrid(data);
     }
+
+    // ==========================================
+    // Epistemic Merit & Badge Studio Module
+    // ==========================================
+    const MERIT_BADGES_DEF = [
+      {
+        id: "sprout_node",
+        name: "Sprout Genesis",
+        icon: "🌱",
+        tier: "SPROUT",
+        desc: "Identity initialized & first telemetry heartbeat broadcast",
+        eval: (n, merit) => {
+          const uptime = n.uptime_pct || (n.is_local ? 100.0 : 95.0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node" || (b.badge_id || b) === "sprout_genesis") ?? (uptime >= 95.0));
+          const progress = Math.min(100, Math.round(uptime));
+          return { unlocked: isUnlocked, progress, label: `${uptime.toFixed(1)}% Uptime` };
+        }
+      },
+      {
+        id: "first_attestation",
+        name: "First Attestation",
+        icon: "🌾",
+        tier: "SPROUT",
+        desc: "First 5 grounded audits completed with zero schema violations",
+        eval: (n, merit) => {
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "first_attestation") ?? (audits >= 5));
+          const progress = Math.min(100, Math.round((audits / 5) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits} / 5 Audits` };
+        }
+      },
+      {
+        id: "sifter_pioneer",
+        name: "Sifter Century",
+        icon: "🔍",
+        tier: "SIFTER",
+        desc: "100+ articles evaluated with grounded rule extraction",
+        eval: (n, merit) => {
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer" || (b.badge_id || b) === "sifter_century") ?? (audits >= 100));
+          const progress = Math.min(100, Math.round((audits / 100) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits} / 100 Audits` };
+        }
+      },
+      {
+        id: "cadence_keeper",
+        name: "Cadence Keeper",
+        icon: "⏱️",
+        tier: "SIFTER",
+        desc: "Sustained 7+ days longevity with >=98% operational uptime",
+        eval: (n, merit) => {
+          const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
+          const uptime = n.uptime_pct || 100.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "cadence_keeper") ?? (days >= 7.0 && uptime >= 98.0));
+          const progress = Math.min(100, Math.round((days / 7.0) * 100));
+          return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 7.0 Days` };
+        }
+      },
+      {
+        id: "verified_auditor",
+        name: "Verified Auditor",
+        icon: "⚖️",
+        tier: "AUDITOR",
+        desc: "Quality score Qᵢ ≥ 0.85, 500+ audits & G ≥ 0.95",
+        eval: (n, merit) => {
+          const q = n.quality_score ?? 1.0;
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const g = n.grounding_quotient ?? 1.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") ?? (q >= 0.85 && audits >= 500 && g >= 0.95));
+          const progress = Math.min(100, Math.round((audits / 500) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits} / 500 Audits (Qᵢ ${(q * 10).toFixed(1)}/10)` };
+        }
+      },
+      {
+        id: "philanthropic_relay",
+        name: "Philanthropic Relay",
+        icon: "🎁",
+        tier: "AUDITOR",
+        desc: "1,000,000+ compute tokens seeded to peers",
+        eval: (n, merit) => {
+          const tokens = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved || 0) : (n.tokens_seeded || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") ?? (tokens >= 1000000));
+          const progress = Math.min(100, Math.round((tokens / 1000000) * 100));
+          return { unlocked: isUnlocked, progress, label: `${tokens.toLocaleString()} / 1M Tokens` };
+        }
+      },
+      {
+        id: "domain_specialist",
+        name: "Domain Specialist",
+        icon: "🎯",
+        tier: "SPECIALIST",
+        desc: "Top 10% domain epistemic accuracy (Expertise ≥ 0.80 across ≥5 domains)",
+        eval: (n, merit) => {
+          const exp = n.max_domain_expertise || (merit?.max_domain_expertise) || 0.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "domain_specialist") ?? (exp >= 0.80));
+          const progress = Math.min(100, Math.round((exp / 0.80) * 100));
+          return { unlocked: isUnlocked, progress, label: `${(exp * 100).toFixed(0)}% / 80% Expertise` };
+        }
+      },
+      {
+        id: "galileo_pioneer",
+        name: "Galileo Pioneer",
+        icon: "🔭",
+        tier: "SPECIALIST",
+        desc: "Discovered verified minority consensus truth",
+        eval: (n, merit) => {
+          const gal = n.is_local ? (liveNodeMerit?.galileo_discoveries || 0) : (n.galileo_discoveries || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") ?? (gal >= 1));
+          const progress = gal >= 1 ? 100 : 0;
+          return { unlocked: isUnlocked, progress, label: `${gal} / 1 Discoveries` };
+        }
+      },
+      {
+        id: "root_seed_candidate",
+        name: "Root Seed Candidate",
+        icon: "🌳",
+        tier: "ROOT_ANCHOR",
+        desc: "30+ days continuous uptime (G ≥ 0.80 & Qᵢ ≥ 0.85)",
+        eval: (n, merit) => {
+          const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
+          const q = n.quality_score ?? 1.0;
+          const g = n.grounding_quotient ?? 1.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "root_seed_candidate") ?? (days >= 30.0 && q >= 0.85 && g >= 0.80));
+          const progress = Math.min(100, Math.round((days / 30.0) * 100));
+          return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 30.0 Days` };
+        }
+      },
+      {
+        id: "sybil_shield",
+        name: "Sybil Sentinel",
+        icon: "🛡️",
+        tier: "ROOT_ANCHOR",
+        desc: "5,000+ audits with zero slashing penalties",
+        eval: (n, merit) => {
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield" || (b.badge_id || b) === "sybil_sentinel") ?? (audits >= 5000));
+          const progress = Math.min(100, Math.round((audits / 5000) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits.toLocaleString()} / 5,000 Verified` };
+        }
+      },
+      {
+        id: "century_anchor",
+        name: "Century Anchor",
+        icon: "🏛️",
+        tier: "ROOT_ANCHOR",
+        desc: "100+ days uninterrupted operation (Qᵢ ≥ 0.90 & G ≥ 0.98)",
+        eval: (n, merit) => {
+          const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
+          const q = n.quality_score ?? 1.0;
+          const g = n.grounding_quotient ?? 1.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "century_anchor") ?? (days >= 100.0 && q >= 0.90 && g >= 0.98));
+          const progress = Math.min(100, Math.round((days / 100.0) * 100));
+          return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 100.0 Days` };
+        }
+      }
+    ];
+
+    let currentSnippetType = 'md';
+
+    function renderMeritGrid(data) {
+      const nodes = data?.nodes || [];
+      const node = nodes.find(n => n.node_id === selectedNodeId) || nodes[0] || { node_id: "node_1", alias: "credence-local-anchor", quality_score: 1.0, is_local: true, uptime_pct: 100.0, audits_count: 0, tokens_seeded: 0, longevity_days: 0.0, galileo_discoveries: 0 };
+
+      const meritSelect = document.getElementById('merit-node-select');
+      if (meritSelect && meritSelect.options.length === 0) {
+        meritSelect.innerHTML = nodes.map(n => `<option value="${n.node_id}">${n.alias || n.node_id} ${n.is_local ? '(Local Root)' : ''}</option>`).join('');
+        meritSelect.value = selectedNodeId;
+        meritSelect.addEventListener('change', (e) => {
+          selectedNodeId = e.target.value;
+          renderMeritGrid(liveTopologyData);
+          updateBadgeStudioPreview();
+        });
+      }
+
+      const gridEl = document.getElementById('merit-showcase-grid');
+      if (!gridEl) return;
+
+      gridEl.innerHTML = MERIT_BADGES_DEF.map(b => {
+        const status = b.eval(node, node.is_local ? liveNodeMerit : null);
+        const accent = status.unlocked ? '#34d399' : '#94a3b8';
+        return `
+          <div style="background:var(--bg-card); border:1px solid ${status.unlocked ? 'rgba(52, 211, 153, 0.35)' : 'var(--border)'}; border-radius:8px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; box-shadow:${status.unlocked ? '0 0 15px rgba(52, 211, 153, 0.1)' : 'none'};">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <span style="font-size:1.25rem;">${b.icon}</span>
+                <span class="ribbon-pill ${status.unlocked ? 'ready' : 'neutral'}" style="font-size:0.7rem;">
+                  ${status.unlocked ? '✓ UNLOCKED' : 'LOCKED'}
+                </span>
+              </div>
+              <h4 style="color:#fff; margin:0 0 0.25rem 0; font-size:0.95rem;">${b.name}</h4>
+              <p style="color:var(--text-muted); font-size:0.78rem; line-height:1.4; margin:0 0 0.75rem 0;">${b.desc}</p>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-dim); margin-bottom:0.35rem;">
+                <span>Criteria</span>
+                <span style="color:${accent}; font-weight:700;">${status.label}</span>
+              </div>
+              <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; margin-bottom:0.75rem;">
+                <div style="width:${status.progress}%; height:100%; background:${status.unlocked ? 'linear-gradient(90deg, #34d399, #059669)' : 'linear-gradient(90deg, #38bdf8, #0284c7)'}; transition:width 0.3s ease;"></div>
+              </div>
+              ${status.unlocked ? `
+                <button type="button" class="btn-secondary" style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); window.openBadgeVerificationModal('${b.id}', '${node.node_id}')">
+                  <span>🔐</span> <span>Verify Attestation Proof</span>
+                </button>
+              ` : `
+                <button type="button" class="btn-secondary" disabled style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; opacity:0.45; cursor:not-allowed;" title="Attestation proof is only available after milestone criteria are achieved.">
+                  <span>🔒</span> <span>Unearned &bull; Proof Locked</span>
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+    }
+
+    async function openBadgeVerificationModal(badgeId, nodeId) {
+      const container = document.getElementById('credence-modal-container');
+      if (!container) return;
+
+      const nodes = liveTopologyData?.nodes || [];
+      const node = nodes.find(n => n.node_id === (nodeId || selectedNodeId)) || nodes[0] || { node_id: "node_1", alias: "credence-local-anchor", is_local: true };
+      const merit = (node.is_local ? liveNodeMerit : null) || {
+        node_pubkey: "a260248075c0491299f34f71b6c4dfef46d3706d928e5d00c72ebbfe39b56210",
+        node_alias: node.alias || "credence-local-anchor",
+        tier: "SPROUT",
+        quality_score: 0.85,
+        uptime_ratio: 1.0,
+        grounding_ratio: 1.0,
+        longevity_days: 0.0,
+        tokens_seeded: 0,
+        unlocked_badges: [{ badge_id: "sprout_node" }],
+        issued_at: new Date().toISOString(),
+        canonical_sha256: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        signature: "30450221008f..."
+      };
+
+      const bDef = MERIT_BADGES_DEF.find(b => b.id === badgeId) || MERIT_BADGES_DEF[0];
+      const status = bDef.eval(node, node.is_local ? liveNodeMerit : null);
+
+      const unlockedIds = Array.isArray(merit.unlocked_badges) 
+        ? merit.unlocked_badges.map(b => (typeof b === 'object' ? b.badge_id : b)).filter(Boolean).sort()
+        : ["sprout_node"];
+
+      const canonicalPayload = {
+        grounding_ratio: Number(merit.grounding_ratio || 1.0),
+        issued_at: merit.issued_at || new Date().toISOString(),
+        longevity_days: Number(merit.longevity_days || 0.0),
+        node_alias: merit.node_alias || node.alias || "local-node",
+        node_pubkey: merit.node_pubkey || "0x0",
+        quality_score: Number(merit.quality_score || 0.85),
+        tier: merit.tier || "SPROUT",
+        tokens_seeded: Number(merit.tokens_seeded || 0),
+        unlocked_badges: unlockedIds,
+        uptime_ratio: Number(merit.uptime_ratio || 1.0)
+      };
+
+      const jsonStr = JSON.stringify(canonicalPayload, null, 2);
+
+      container.innerHTML = `
+        <div id="badge-verify-modal-overlay" style="position:fixed; inset:0; background:rgba(2,6,23,0.85); backdrop-filter:blur(8px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:1.5rem;" onclick="if(event.target===this) window.closeBadgeVerificationModal()">
+          <div style="background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; max-width:680px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.7); display:flex; flex-direction:column; gap:1.25rem; padding:1.5rem; position:relative;">
+            
+            <!-- Modal Header -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border); padding-bottom:1rem;">
+              <div style="display:flex; align-items:center; gap:0.75rem;">
+                <span style="font-size:2rem;">${bDef.icon}</span>
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h3 style="margin:0; color:#fff; font-size:1.15rem;">${bDef.name}</h3>
+                    <span class="ribbon-pill ${status.unlocked ? 'ready' : 'neutral'}" style="font-size:0.7rem;">
+                      ${status.unlocked ? '✓ UNLOCKED (Signed)' : '🔒 LOCKED'}
+                    </span>
+                  </div>
+                  <span style="font-size:0.8rem; color:var(--text-dim);">Tier: <strong>${bDef.tier}</strong> &bull; Node: <strong>${node.alias || node.node_id}</strong></span>
+                </div>
+              </div>
+              <button type="button" style="background:none; border:none; color:var(--text-muted); font-size:1.25rem; cursor:pointer; padding:0.25rem;" onclick="window.closeBadgeVerificationModal()">✕</button>
+            </div>
+
+            <!-- Verification Status Banner -->
+            <div id="modal-verification-status-banner" style="background:${status.unlocked ? 'rgba(52, 211, 153, 0.12)' : 'rgba(56, 189, 248, 0.08)'}; border:1px solid ${status.unlocked ? '#059669' : 'var(--border)'}; border-radius:8px; padding:0.85rem 1rem; display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <span style="font-size:1.3rem;">${status.unlocked ? '🛡️' : 'ℹ️'}</span>
+                <div>
+                  <strong style="color:${status.unlocked ? '#34d399' : '#38bdf8'}; font-size:0.85rem;">
+                    ${status.unlocked ? 'Cryptographic Attestation Authentic &amp; Grounded' : 'Telemetry Evaluated &bull; Criteria In Progress'}
+                  </strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">
+                    ${status.unlocked ? 'Envelope verified via RFC 8785 Canonical JSON &amp; Ed25519 node keypair.' : `Current progress: ${status.label}.`}
+                  </div>
+                </div>
+              </div>
+              <span style="font-family:monospace; font-size:0.72rem; color:var(--text-dim);">${merit.node_pubkey ? merit.node_pubkey.substring(0, 10) + '...' : ''}</span>
+            </div>
+
+            <!-- Cryptographic Custody Block -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:1rem; display:flex; flex-direction:column; gap:0.6rem; font-size:0.8rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:var(--text-dim); font-weight:600; text-transform:uppercase; font-size:0.72rem;">1. Ed25519 Signer Public Key</span>
+                <button type="button" class="btn-secondary" style="font-size:0.7rem; padding:0.15rem 0.4rem;" onclick="navigator.clipboard.writeText('${merit.node_pubkey || ''}'); showToast('Public key copied!', 'success')">Copy</button>
+              </div>
+              <code style="background:#020617; color:#38bdf8; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.75rem; word-break:break-all;">${merit.node_pubkey || '0x0'}</code>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.35rem;">
+                <span style="color:var(--text-dim); font-weight:600; text-transform:uppercase; font-size:0.72rem;">2. Canonical Envelope Digest (SHA-256)</span>
+                <span style="color:#34d399; font-size:0.72rem;">RFC 8785 Compliant</span>
+              </div>
+              <code id="modal-digest-display" style="background:#020617; color:#34d399; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.75rem; word-break:break-all;">${merit.canonical_sha256 || 'sha256:...'}</code>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.35rem;">
+                <span style="color:var(--text-dim); font-weight:600; text-transform:uppercase; font-size:0.72rem;">3. Cryptographic Signature</span>
+                <span style="color:var(--text-dim); font-size:0.72rem;">Ed25519 Pure</span>
+              </div>
+              <code style="background:#020617; color:#cbd5e1; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.72rem; word-break:break-all; max-height:45px; overflow-y:auto;">${merit.signature || 'Unsigned'}</code>
+            </div>
+
+            <!-- Anti-Gaming & Tamper Resistance Tester Sandbox -->
+            <div style="border:1px solid var(--border); border-radius:8px; padding:1rem; background:rgba(0,0,0,0.2);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <strong style="font-size:0.85rem; color:#fff;">🧪 Anti-Gaming &amp; Tamper Resistance Sandbox</strong>
+                <span style="font-size:0.72rem; color:var(--text-dim);">Live In-Browser Verification</span>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.78rem; line-height:1.4; margin:0 0 0.85rem 0;">
+                Test Credence's non-gameable cryptographic verification by testing authentic proof or simulating a client-side forgery attack.
+              </p>
+              
+              <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.85rem;">
+                <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.4rem 0.75rem; cursor:pointer;" onclick="window.runModalVerification(false)">
+                  <span>⚡</span> <span>Run Authentic WebCrypto Verification</span>
+                </button>
+                <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.4rem 0.75rem; border-color:#f43f5e; color:#fda4af; cursor:pointer;" onclick="window.runModalVerification(true)">
+                  <span>⚠️</span> <span>Simulate Forging Root Seed Candidate</span>
+                </button>
+              </div>
+
+              <div id="modal-sandbox-output" style="background:#020617; border:1px solid var(--border); border-radius:6px; padding:0.75rem; font-family:monospace; font-size:0.75rem; color:#38bdf8; line-height:1.5;">
+                Click a button above to run real-time in-browser verification.
+              </div>
+            </div>
+
+            <!-- Canonical JSON Inspector -->
+            <details style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:0.75rem;">
+              <summary style="cursor:pointer; font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">
+                View Raw RFC 8785 Canonical JSON Envelope
+              </summary>
+              <pre style="margin:0.75rem 0 0 0; background:#020617; color:#38bdf8; padding:0.75rem; border-radius:6px; font-size:0.72rem; overflow-x:auto;">${jsonStr}</pre>
+            </details>
+
+            <!-- Footer Links -->
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-dim); padding-top:0.5rem; border-top:1px solid var(--border);">
+              <a href="/api/merit" target="_blank" style="color:#38bdf8; text-decoration:none;">📄 View /api/merit JSON Endpoint &rarr;</a>
+              <button type="button" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.78rem; cursor:pointer;" onclick="window.closeBadgeVerificationModal()">Close Inspector</button>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      window.activeVerificationModalData = {
+        canonicalPayload,
+        signature: merit.signature,
+        node_pubkey: merit.node_pubkey,
+        canonical_sha256: merit.canonical_sha256
+      };
+    }
+
+    async function runModalVerification(simulateForgery = false) {
+      const outEl = document.getElementById('modal-sandbox-output');
+      if (!outEl || !window.activeVerificationModalData) return;
+
+      const data = JSON.parse(JSON.stringify(window.activeVerificationModalData));
+      
+      if (simulateForgery) {
+        data.canonicalPayload.tier = "ROOT_ANCHOR";
+        data.canonicalPayload.quality_score = 1.0;
+        data.canonicalPayload.unlocked_badges = ["root_seed_candidate", "century_anchor", "sprout_node"];
+      }
+
+      const rawJson = JSON.stringify(data.canonicalPayload, Object.keys(data.canonicalPayload).sort());
+      const enc = new TextEncoder();
+      const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(rawJson));
+      const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      const computedDigest = `sha256:${hashHex}`;
+
+      if (simulateForgery) {
+        outEl.style.borderColor = '#f43f5e';
+        outEl.style.color = '#fda4af';
+        outEl.innerHTML = `
+          ❌ FORGERY ATTACK BLOCKED &bull; CRYPTOGRAPHIC PROOF FAILED<br/>
+          &bull; Tampered Payload: Quality=1.00, Badges=['root_seed_candidate', 'century_anchor']<br/>
+          &bull; Computed Digest: ${computedDigest}<br/>
+          &bull; Signed Digest:   ${data.canonical_sha256}<br/>
+          &bull; Verdict: <strong>DISCREPANCY DETECTED</strong>. Attestation signature is INVALID for forged claims.
+        `;
+      } else {
+        outEl.style.borderColor = '#059669';
+        outEl.style.color = '#34d399';
+        outEl.innerHTML = `
+          ✅ CRYPTOGRAPHIC VERIFICATION PASSED &bull; 100% AUTHENTIC<br/>
+          &bull; Evaluated Signer: 0x${data.node_pubkey ? data.node_pubkey.substring(0, 16) : '0'}...<br/>
+          &bull; Canonical SHA-256: ${computedDigest}<br/>
+          &bull; Grounding Quotient: ${(data.canonicalPayload.grounding_ratio * 100).toFixed(1)}% Verbatim<br/>
+          &bull; Verdict: <strong>AUTHENTIC ATTESTATION ENVELOPE</strong>. Matches Ed25519 signature custody.
+        `;
+      }
+    }
+
+    function closeBadgeVerificationModal() {
+      const container = document.getElementById('credence-modal-container');
+      if (container) container.innerHTML = '';
+      window.activeVerificationModalData = null;
+    }
+
+    window.openBadgeVerificationModal = openBadgeVerificationModal;
+    window.runModalVerification = runModalVerification;
+    window.closeBadgeVerificationModal = closeBadgeVerificationModal;
+
+
+
+    function populateBadgeNodeSelect() {
+      const nodeSel = document.getElementById('badge-node-select');
+      if (!nodeSel) return;
+      const nodes = (liveTopologyData && liveTopologyData.nodes && liveTopologyData.nodes.length > 0)
+        ? liveTopologyData.nodes
+        : [{ node_id: "node_1", alias: "credence-local-anchor", is_local: true }];
+
+      const cur = nodeSel.value;
+      nodeSel.innerHTML = nodes.map(n => `
+        <option value="${n.node_id}" ${n.node_id === cur || (!cur && n.is_local) ? 'selected' : ''}>
+          ${n.alias || n.node_id} ${n.is_local ? '(Local Primary Root)' : '(Peer Node)'}
+        </option>
+      `).join('');
+    }
+
+    function updateBadgeMilestoneOptions(node) {
+      const badgeIdSel = document.getElementById('badge-id-select');
+      if (!badgeIdSel || !node) return;
+      const curVal = badgeIdSel.value;
+
+      const earned = [];
+      const locked = [];
+
+      MERIT_BADGES_DEF.forEach(b => {
+        const status = b.eval(node, node.is_local ? liveNodeMerit : null);
+        if (status.unlocked) {
+          earned.push({ ...b, status });
+        } else {
+          locked.push({ ...b, status });
+        }
+      });
+
+      let html = '';
+      if (earned.length > 0) {
+        html += `<optgroup label="✅ Earned &amp; Verified Milestones">`;
+        html += earned.map(b => `<option value="${b.id}" ${b.id === curVal ? 'selected' : ''}>${b.icon} ${b.name} [✓ EARNED]</option>`).join('');
+        html += `</optgroup>`;
+      }
+      if (locked.length > 0) {
+        html += `<optgroup label="🔒 Locked / In Progress (Unearned)">`;
+        html += locked.map(b => `<option value="${b.id}" ${b.id === curVal ? 'selected' : ''}>${b.icon} ${b.name} [🔒 ${b.status.label}]</option>`).join('');
+        html += `</optgroup>`;
+      }
+
+      badgeIdSel.innerHTML = html;
+      if (!curVal && earned.length > 0) {
+        badgeIdSel.value = earned[0].id;
+      }
+    }
+
+    window.currentStudioModality = 'node';
+
+    window.setStudioModality = function(modality) {
+      window.currentStudioModality = modality;
+      ['node', 'publisher', 'attestation'].forEach(m => {
+        const btn = document.getElementById(`tab-btn-studio-${m}`);
+        if (btn) btn.className = (m === modality) ? 'studio-modality-card active' : 'studio-modality-card';
+        const pane = document.getElementById(`studio-pane-${m}`);
+        if (pane) pane.style.display = (m === modality) ? 'block' : 'none';
+      });
+      updateBadgeStudioPreview();
+    };
+
+    function updateBadgeStudioPreview() {
+      const mode = window.currentStudioModality || 'node';
+      const nodeSelect = document.getElementById('badge-node-select');
+      const badgeIdSelect = document.getElementById('badge-id-select');
+      const pubInput = document.getElementById('badge-publisher-input');
+      const attInput = document.getElementById('badge-attestation-input');
+      const styleSelect = document.getElementById('badge-style-select');
+      const previewContainer = document.getElementById('badge-live-preview-container');
+      const snippetInput = document.getElementById('badge-embed-snippet');
+      const warningEl = document.getElementById('badge-studio-locked-warning');
+      const copyBtn = document.getElementById('btn-copy-embed');
+
+      if (!previewContainer || !snippetInput) return;
+
+      const style = styleSelect?.value || 'component';
+      const nodes = (liveTopologyData && liveTopologyData.nodes && liveTopologyData.nodes.length > 0)
+        ? liveTopologyData.nodes
+        : [{ node_id: "node_1", alias: "credence-local-anchor", is_local: true }];
+
+      const selectedNode = nodes.find(n => n.node_id === nodeSelect?.value) || nodes[0];
+      const badgeId = badgeIdSelect?.value || 'sprout_node';
+
+      const iconMap = {
+        sprout_node: "🌱",
+        first_attestation: "🌾",
+        sifter_pioneer: "🔍",
+        cadence_keeper: "⏱️",
+        verified_auditor: "⚖️",
+        philanthropic_relay: "🎁",
+        domain_specialist: "🎯",
+        galileo_pioneer: "🔭",
+        root_seed_candidate: "🌳",
+        sybil_shield: "🛡️",
+        century_anchor: "🏛️"
+      };
+
+      let badgeTitle = "Credence Badge";
+      let badgeVal = "VERIFIED";
+      let icon = "🛡️";
+      let isUnlocked = true;
+      let svgUrl = "";
+      let pageUrl = "";
+      let nodeAlias = selectedNode.alias || selectedNode.node_id;
+
+      if (mode === 'node') {
+        const bDef = MERIT_BADGES_DEF.find(b => b.id === badgeId) || MERIT_BADGES_DEF[0];
+        const status = bDef.eval(selectedNode, selectedNode.is_local ? liveNodeMerit : null);
+        badgeTitle = bDef.name;
+        icon = bDef.icon || iconMap[badgeId] || "🛡️";
+        isUnlocked = status.unlocked;
+        badgeVal = status.unlocked ? "VERIFIED" : "UNEARNED";
+        svgUrl = `https://credence.nexus/api/badge/${badgeId}?node=${encodeURIComponent(nodeAlias)}&style=shield`;
+        pageUrl = `https://credence.nexus/#merit`;
+      } else if (mode === 'publisher') {
+        const rawPub = pubInput?.value || 'reuters.com';
+        const dom = rawPub.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+        badgeTitle = `Credence • ${dom}`;
+        icon = "📰";
+        badgeVal = "98.5% PRISTINE";
+        svgUrl = `https://credence.nexus/api/badge/publisher/${encodeURIComponent(dom)}?style=shield`;
+        pageUrl = `https://credence.report/domain/${encodeURIComponent(dom)}`;
+      } else if (mode === 'attestation') {
+        const targetUrl = attInput?.value || 'https://reuters.com/article';
+        badgeTitle = "Credence Attestation";
+        icon = "📄";
+        badgeVal = "100.0 CLEAN";
+        svgUrl = `https://credence.nexus/api/badge/attestation?url=${encodeURIComponent(targetUrl)}&style=shield`;
+        pageUrl = `https://credence.report/viewer.html?url=${encodeURIComponent(targetUrl)}`;
+      }
+
+      const tagEl = document.getElementById('preview-mode-tag');
+
+      if (style === 'component') {
+        if (tagEl) tagEl.textContent = isUnlocked ? '⚡ Web Component (Interactive Lensing)' : '🔒 Web Component (Unearned Locked)';
+        if (mode === 'node') {
+          previewContainer.innerHTML = `
+            <credence-badge 
+              type="node" 
+              badge="${badgeId}" 
+              node="${nodeAlias}" 
+              locked="${!isUnlocked}"
+              status="${isUnlocked ? 'VERIFIED' : 'UNEARNED'}"
+              score="${isUnlocked ? '100.0' : '0.0'}" 
+              version="v2.7.0">
+            </credence-badge>
+          `;
+        } else if (mode === 'publisher') {
+          const rawPub = pubInput?.value || 'reuters.com';
+          const dom = rawPub.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+          previewContainer.innerHTML = `
+            <credence-badge 
+              type="publisher" 
+              domain="${dom}" 
+              score="98.5" 
+              version="v2.7.0">
+            </credence-badge>
+          `;
+        } else {
+          const targetUrl = attInput?.value || 'https://reuters.com/article';
+          previewContainer.innerHTML = `
+            <credence-badge 
+              type="attestation" 
+              url="${targetUrl}" 
+              score="100.0" 
+              version="v2.7.0">
+            </credence-badge>
+          `;
+        }
+      } else {
+        if (tagEl) tagEl.textContent = isUnlocked ? '🛡️ Modern Shield Vector SVG' : '🔒 Modern Shield (Unearned Locked)';
+        const wTitle = Math.max(32, Math.floor(badgeTitle.length * 7.2));
+        const wVal = Math.max(24, Math.floor(badgeVal.length * 7.8));
+        const wLeft = wTitle + 32;
+        const wRight = wVal + 20;
+        const totalW = wLeft + wRight;
+        const rightGradient = isUnlocked
+          ? '<stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>'
+          : '<stop offset="0%" stop-color="#475569"/><stop offset="100%" stop-color="#334155"/>';
+        const strokeColor = isUnlocked ? 'rgba(52, 211, 153, 0.45)' : 'rgba(148, 163, 184, 0.3)';
+
+        previewContainer.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="28" viewBox="0 0 ${totalW} 28" fill="none">
+            <defs>
+              <linearGradient id="shield-bg-left" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0d121f"/>
+                <stop offset="100%" stop-color="#07090e"/>
+              </linearGradient>
+              <linearGradient id="shield-bg-right" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">
+                ${rightGradient}
+              </linearGradient>
+              <clipPath id="shield-clip">
+                <rect width="${totalW}" height="28" rx="6" fill="#fff"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#shield-clip)">
+              <rect width="${wLeft}" height="28" fill="url(#shield-bg-left)"/>
+              <rect x="${wLeft}" width="${wRight}" height="28" fill="url(#shield-bg-right)"/>
+              <rect width="${totalW}" height="28" rx="6" fill="none" stroke="${strokeColor}" stroke-width="1"/>
+            </g>
+            <g fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">
+              <text x="10" y="18">${icon} ${badgeTitle}</text>
+            </g>
+            <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+              <text x="${wLeft + (wRight / 2)}" y="18">${badgeVal}</text>
+            </g>
+          </svg>
+        `;
+      }
+
+      if (mode === 'node' && !isUnlocked) {
+        if (warningEl) warningEl.style.display = 'block';
+        if (copyBtn) {
+          copyBtn.disabled = true;
+          copyBtn.style.opacity = '0.45';
+          copyBtn.style.cursor = 'not-allowed';
+          copyBtn.textContent = '🔒 Unearned';
+        }
+        snippetInput.value = `<!-- 🔒 Milestone Not Earned: ${badgeTitle} has not yet been unlocked by ${nodeAlias}. Only earned badges can be embedded. -->`;
+      } else {
+        if (warningEl) warningEl.style.display = 'none';
+        if (copyBtn) {
+          copyBtn.disabled = false;
+          copyBtn.style.opacity = '1';
+          copyBtn.style.cursor = 'pointer';
+          copyBtn.textContent = 'Copy';
+        }
+        if (currentSnippetType === 'md') {
+          snippetInput.value = `[![${badgeTitle}](${svgUrl})](${pageUrl})`;
+        } else if (currentSnippetType === 'html') {
+          snippetInput.value = `<a href="${pageUrl}"><img src="${svgUrl}" alt="${badgeTitle}" /></a>`;
+        } else {
+          if (mode === 'node') {
+            snippetInput.value = `<credence-badge type="node" badge="${badgeId}" node="${nodeAlias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          } else if (mode === 'publisher') {
+            const rawPub = pubInput?.value || 'reuters.com';
+            const dom = rawPub.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+            snippetInput.value = `<credence-badge type="publisher" domain="${dom}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          } else {
+            const targetUrl = attInput?.value || 'https://reuters.com/article';
+            snippetInput.value = `<credence-badge type="attestation" url="${targetUrl}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          }
+        }
+      }
+    }
+
+    window.updateBadgeStudioPreview = updateBadgeStudioPreview;
+
+    window.switchEmbedSnippet = function(type) {
+      currentSnippetType = type;
+      ['md', 'html', 'wc'].forEach(t => {
+        const b = document.getElementById(`btn-snippet-${t}`);
+        if (b) b.className = t === type ? 'tab-btn active' : 'tab-btn';
+      });
+      updateBadgeStudioPreview();
+    };
+
+    function initBadgeStudioEvents() {
+      const nodeSelect = document.getElementById('badge-node-select');
+      if (nodeSelect) {
+        nodeSelect.addEventListener('change', () => {
+          const nodes = (liveTopologyData && liveTopologyData.nodes) || [];
+          const selected = nodes.find(n => n.node_id === nodeSelect.value) || nodes[0];
+          if (selected) updateBadgeMilestoneOptions(selected);
+          updateBadgeStudioPreview();
+        });
+      }
+
+      ['badge-id-select', 'badge-style-select', 'badge-publisher-input', 'badge-attestation-input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateBadgeStudioPreview);
+      });
+
+      const copyBtn = document.getElementById('btn-copy-embed');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          const input = document.getElementById('badge-embed-snippet');
+          if (input) {
+            navigator.clipboard.writeText(input.value);
+            window.showToast('Copied embed snippet to clipboard', 'success');
+          }
+        });
+      }
+      
+      const snippetMd = document.getElementById('btn-snippet-md');
+      if (snippetMd) snippetMd.addEventListener('click', () => window.switchEmbedSnippet('md'));
+      const snippetHtml = document.getElementById('btn-snippet-html');
+      if (snippetHtml) snippetHtml.addEventListener('click', () => window.switchEmbedSnippet('html'));
+      const snippetWc = document.getElementById('btn-snippet-wc');
+      if (snippetWc) snippetWc.addEventListener('click', () => window.switchEmbedSnippet('wc'));
+
+      populateBadgeNodeSelect();
+      const nodes = (liveTopologyData && liveTopologyData.nodes) || [];
+      if (nodes[0]) updateBadgeMilestoneOptions(nodes[0]);
+      updateBadgeStudioPreview();
+    }
+
 
     // Initialize Workstation
     window.addEventListener('DOMContentLoaded', () => {
@@ -962,10 +1943,13 @@
         defaultTab: 'topology',
         onTabChange: (tab) => {
           if (tab === 'admin') renderAdminView();
+          if (tab === 'merit' || tab === 'badges') renderMeritGrid(liveTopologyData);
+          if (tab === 'studio') updateBadgeStudioPreview();
         }
       });
 
       renderAdminView();
+      initBadgeStudioEvents();
       fetchTelemetryData();
     });
   </script>

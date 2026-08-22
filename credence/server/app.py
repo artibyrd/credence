@@ -25,6 +25,7 @@ from credence.server.api.analytics import (
     api_list_publishers,
     api_publisher_analytics,
     api_rankings_rules,
+    api_verify_merit,
     api_weather,
 )
 from credence.server.api.audits import api_audit_url, api_get_report, api_reports
@@ -147,6 +148,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
         Route("/api/leaderboard", endpoint=api_leaderboard, methods=["GET", "OPTIONS"]),
         Route("/api/merit", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
+        Route("/api/merit/verify", endpoint=api_verify_merit, methods=["POST", "OPTIONS"]),
         Route("/api/merit/{identifier:path}", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
         Route("/api/badge/publisher/{domain:path}", endpoint=api_get_publisher_badge, methods=["GET", "OPTIONS"]),
         Route("/api/badge/{badge_id:path}", endpoint=api_get_badge_svg, methods=["GET", "OPTIONS"]),
@@ -163,7 +165,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/db/import-pack", endpoint=api_db_import_pack, methods=["POST", "OPTIONS"]),
     ]
 
-    for r in rest_routes:
+    for r in reversed(rest_routes):
         app.router.routes.insert(0, r)
 
     parents = Path(__file__).resolve().parents

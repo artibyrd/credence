@@ -311,3 +311,27 @@ async def test_cli_roots_and_boredom(db_session: Any) -> None:
     await cli_domain(action="reputation", domain="theonion.com", format_type="human")
     await cli_domain(action="reputation", domain="theonion.com", format_type="json")
     await cli_domain(action="appeal", domain="theonion.com")
+
+
+@pytest.mark.unit
+def test_cli_badge_export(tmp_path: Path) -> None:
+    """Verify credence badge export produces valid SVG file."""
+    import xml.etree.ElementTree as ET
+
+    from credence.cli.commands.analytics import cli_badge_export
+
+    out_file = tmp_path / "test_badge.svg"
+    cli_badge_export(
+        badge_id="verified_auditor",
+        output_path=str(out_file),
+        node="validator-01",
+        score="99.8%",
+        style="pill",
+        theme="dark",
+    )
+    assert out_file.exists()
+    content = out_file.read_text(encoding="utf-8")
+    assert "validator-01" in content
+    assert "99.8%" in content
+    tree = ET.fromstring(content)
+    assert tree.tag.endswith("svg")

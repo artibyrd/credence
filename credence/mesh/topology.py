@@ -47,6 +47,20 @@ async def compute_network_mesh_health(
         except Exception:
             peer_records = []
 
+    local_merit_badges = ["sprout_node"]
+    local_longevity = 0.0
+    local_galileo = 0
+    if session:
+        try:
+            from credence.mesh.merit import get_local_node_merit
+
+            merit_card = await get_local_node_merit(session, now=now)
+            local_merit_badges = [b.badge_id for b in merit_card.unlocked_badges]
+            local_longevity = merit_card.longevity_days
+            local_galileo = merit_card.galileo_discoveries
+        except Exception:
+            pass
+
     # 3. Construct Genuine Nodes Roster
     local_node_entry = {
         "node_id": "node_1",
@@ -62,8 +76,11 @@ async def compute_network_mesh_health(
         "grounding_quotient": 1.00,
         "memory_mb": my_memory_mb,
         "status": "HEALTHY",
-        "is_seed": True,
+        "is_seed": False,
         "is_local": True,
+        "longevity_days": local_longevity,
+        "galileo_discoveries": local_galileo,
+        "unlocked_badges": local_merit_badges,
         "peers": [f"node_{i + 2}" for i in range(len(peer_records))],
         "latencies_ms": {f"node_{i + 2}": round(p.average_latency_ms, 1) for i, p in enumerate(peer_records)},
         "audits_count": my_node_audits,
@@ -73,8 +90,12 @@ async def compute_network_mesh_health(
     nodes = [local_node_entry]
     edges = []
 
+    from credence.mesh.badges import compute_longevity_days, evaluate_node_badges
+
     for idx, p in enumerate(peer_records, start=2):
         nid = f"node_{idx}"
+        p_longevity = compute_longevity_days(p.first_seen, now=now)
+        p_badges = evaluate_node_badges(p, [], now=now)
         nodes.append(
             {
                 "node_id": nid,
@@ -92,12 +113,16 @@ async def compute_network_mesh_health(
                 "status": "HEALTHY" if p.traffic_class in ("FAST_LANE", "STANDARD") else "QUARANTINED",
                 "is_seed": p.is_seed_candidate,
                 "is_local": False,
+                "longevity_days": round(p_longevity, 1),
+                "galileo_discoveries": p.galileo_discoveries_count,
+                "unlocked_badges": [b.badge_id for b in p_badges],
                 "peers": ["node_1"],
                 "latencies_ms": {"node_1": round(p.average_latency_ms, 1)},
                 "audits_count": p.total_attestations_evaluated,
                 "tokens_seeded": p.tokens_seeded_count,
             }
         )
+
         edges.append(
             {
                 "source": "node_1",

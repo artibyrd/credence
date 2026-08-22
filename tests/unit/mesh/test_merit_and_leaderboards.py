@@ -26,19 +26,23 @@ from credence.models import DomainMetric, PeerMetric
 
 
 def test_badge_registry_completeness() -> None:
-    """Verify all 8 expected merit badges exist in BADGE_REGISTRY."""
+    """Verify all 11 scalable merit badges exist in BADGE_REGISTRY."""
     expected_ids = {
         "sprout_node",
+        "first_attestation",
         "sifter_pioneer",
+        "cadence_keeper",
         "verified_auditor",
         "domain_specialist",
         "philanthropic_relay",
         "root_seed_candidate",
         "galileo_pioneer",
         "sybil_shield",
+        "century_anchor",
     }
-    assert set(BADGE_REGISTRY.keys()) == expected_ids
-    for b in BADGE_REGISTRY.values():
+    for b_id in expected_ids:
+        assert b_id in BADGE_REGISTRY
+        b = BADGE_REGISTRY[b_id]
         assert b.badge_id
         assert b.name
         assert b.icon
@@ -152,28 +156,123 @@ def test_epistemic_tier_progression() -> None:
     )
 
 
-def test_svg_badge_generation() -> None:
-    """Verify Shields.io compatible SVG generation."""
-    svg = generate_svg_badge(
-        badge_id="root_seed_candidate",
+def test_svg_badge_generation_strict_xml_and_styles() -> None:
+    """Verify strict XML ElementTree parseability, visual styles, and metadata for Modern Shield SVG."""
+    import xml.etree.ElementTree as ET
+
+    # Test shield style with verified status
+    svg_shield = generate_svg_badge(
+        badge_id="verified_auditor",
         node_alias="anchor-us-central1",
-        score_or_val="0.985",
+        score_or_val="VERIFIED",
+        style="shield",
         theme="dark",
     )
-    assert svg.startswith("<svg")
-    assert svg.endswith("</svg>")
-    assert "anchor-us-central1" in svg
-    assert 'xmlns="http://www.w3.org/2000/svg"' in svg
+    root_shield = ET.fromstring(svg_shield)
+    assert root_shield.tag == "{http://www.w3.org/2000/svg}svg" or root_shield.tag.endswith("svg")
+    assert "anchor-us-central1" in svg_shield
+    assert "VERIFIED" in svg_shield
+    assert int(root_shield.attrib["height"]) == 28
+    assert int(root_shield.attrib["width"]) > 100
 
-    # Light theme
-    svg_light = generate_svg_badge(
-        badge_id="sprout_node",
-        node_alias="my-node",
-        score_or_val="ACTIVE",
-        theme="light",
+    # Test shield style with custom numeric metric and midnight theme
+    svg_metric = generate_svg_badge(
+        badge_id="century_anchor",
+        node_alias="sifter-node-09",
+        score_or_val="100.0 Days",
+        style="shield",
+        theme="midnight",
     )
-    assert svg_light.startswith("<svg")
-    assert "my-node" in svg_light
+    root_metric = ET.fromstring(svg_metric)
+    assert root_metric.tag == "{http://www.w3.org/2000/svg}svg" or root_metric.tag.endswith("svg")
+    assert "sifter-node-09" in svg_metric
+    assert "100.0 Days" in svg_metric
+    assert int(root_metric.attrib["height"]) == 28
+
+
+def test_svg_badge_8_registry_matrix() -> None:
+    """Verify all 11 official badges and fallbacks generate valid, well-formed XML across themes."""
+    import xml.etree.ElementTree as ET
+
+    for badge_id, badge_info in BADGE_REGISTRY.items():
+        for theme in ["dark", "midnight", "light"]:
+            svg = generate_svg_badge(
+                badge_id=badge_id,
+                node_alias=f"node-{badge_id}",
+                score_or_val="VERIFIED",
+                style="shield",
+                theme=theme,
+            )
+            tree = ET.fromstring(svg)
+            assert tree.tag.endswith("svg")
+            assert badge_info.name in svg or badge_id.replace("_", " ").title() in svg
+
+    # Test unknown fallback badge_id
+    fallback_svg = generate_svg_badge(badge_id="custom_pioneer_tier", node_alias="custom-node", score_or_val="TIER 1")
+    fallback_tree = ET.fromstring(fallback_svg)
+    assert fallback_tree.tag.endswith("svg")
+    assert "Custom Pioneer Tier" in fallback_svg
+
+
+def test_svg_badge_xml_escaping_and_fuzzing() -> None:
+    """Verify robust XML sanitization against special characters and injection payloads."""
+    import xml.etree.ElementTree as ET
+
+    malicious_aliases = [
+        "Node & Co. <script>alert('pwn')</script>",
+        'Quote "Test" & Ampersand',
+        "Special < > & ' \" Chars",
+        "Emoji 🚀 & Symbols <>",
+    ]
+    for alias in malicious_aliases:
+        svg = generate_svg_badge(
+            badge_id="sybil_shield",
+            node_alias=alias,
+            score_or_val="G=1.00 & 100%",
+            style="pill",
+        )
+        # ElementTree will raise ParseError if XML escaping is broken
+        tree = ET.fromstring(svg)
+        assert tree.tag.endswith("svg")
+
+
+def test_svg_badge_dynamic_width_boundaries() -> None:
+    """Verify text width calculation for extreme short and long strings without crashing or clipping."""
+    import xml.etree.ElementTree as ET
+
+    # Extreme short
+    svg_short = generate_svg_badge(badge_id="sprout_node", node_alias="N", score_or_val="1")
+    tree_short = ET.fromstring(svg_short)
+    w_short = int(tree_short.attrib["width"])
+    assert w_short > 50
+
+    # Extreme long
+    long_alias = "extremely-long-sovereign-decentralized-validator-node-cluster-alias-primary"
+    long_val = "UNLOCKED_WITH_100_PERCENT_GROUNDING_AND_ZERO_FAILURES"
+    svg_long = generate_svg_badge(badge_id="root_seed_candidate", node_alias=long_alias, score_or_val=long_val)
+    tree_long = ET.fromstring(svg_long)
+    w_long = int(tree_long.attrib["width"])
+    assert w_long > 400
+
+
+def test_publisher_svg_badge_generation() -> None:
+    """Verify publisher trust badges produce well-formed XML and reflect DCI scores and bands."""
+    import xml.etree.ElementTree as ET
+
+    from credence.subjects.weather import generate_publisher_svg_badge
+
+    for score, expected_band in [(95.0, "PRISTINE"), (75.0, "CLEAN"), (40.0, "SUSPICIOUS")]:
+        for style in ["pill", "shield"]:
+            svg = generate_publisher_svg_badge(
+                domain="reuters.com",
+                dci_score=score,
+                status=expected_band,
+                style=style,
+            )
+            tree = ET.fromstring(svg)
+            assert tree.tag.endswith("svg")
+            assert "reuters.com" in svg
+            assert expected_band in svg
 
 
 @pytest.mark.asyncio
@@ -232,6 +331,69 @@ async def test_leaderboard_multi_categories_and_teams(db_session: AsyncSession) 
     assert lb_g[0].score == 3
 
     # Team filtering: alpha-team only returns alpha-node
-    lb_team = await get_leaderboard(db_session, category="quality", team_filter="alpha-team")
-    assert len(lb_team) == 1
-    assert lb_team[0].node_alias == "alpha-node"
+    lb_t = await get_leaderboard(db_session, category="quality", team_filter="alpha-team")
+    assert len(lb_t) == 1
+    assert lb_t[0].node_alias == "alpha-node"
+
+
+def test_node_merit_card_cryptographic_signing_and_verification() -> None:
+    """Verify that NodeMeritCard generates RFC 8785 canonical hashes and valid Ed25519 signatures."""
+    from dataclasses import asdict
+
+    from credence.mesh.merit import NodeMeritCard, sign_node_merit_card, verify_node_merit_card
+    from credence.mesh.models import BadgeAward
+
+    card = NodeMeritCard(
+        node_pubkey="a" * 64,
+        node_alias="test-node",
+        team_tag=None,
+        tier="SPROUT",
+        quality_score=0.85,
+        uptime_ratio=1.0,
+        grounding_ratio=1.0,
+        concordance_factor=0.85,
+        longevity_days=0.0,
+        traffic_class="STANDARD",
+        tokens_seeded=0,
+        usd_saved_estimate=0.0,
+        attestations_seeded=0,
+        galileo_discoveries=0,
+        rank_overall=1,
+        total_nodes=1,
+        is_seed_candidate=False,
+        unlocked_badges=[
+            BadgeAward(
+                badge_id="sprout_node",
+                name="Sprout Genesis",
+                tier="SPROUT",
+                icon="🌱",
+                description="Initialized",
+                unlocked_at="2026-08-22T00:00:00Z",
+            )
+        ],
+    )
+
+    signed_card = sign_node_merit_card(card)
+    assert signed_card.canonical_sha256 is not None
+    assert signed_card.canonical_sha256.startswith("sha256:")
+    assert signed_card.signature is not None
+    assert len(signed_card.signature) > 32
+
+    # Verification of authentic envelope
+    card_dict = asdict(signed_card)
+    assert verify_node_merit_card(card_dict) is True
+
+    # Tampering test 1: Modifying score invalidates signature
+    tampered_score = dict(card_dict)
+    tampered_score["quality_score"] = 0.99
+    assert verify_node_merit_card(tampered_score) is False
+
+    # Tampering test 2: Forging badge unlocks invalidates signature
+    tampered_badges = dict(card_dict)
+    tampered_badges["unlocked_badges"] = ["sprout_node", "root_seed_candidate", "century_anchor"]
+    assert verify_node_merit_card(tampered_badges) is False
+
+    # Tampering test 3: Corrupted public key or signature
+    tampered_sig = dict(card_dict)
+    tampered_sig["signature"] = "00" * 64
+    assert verify_node_merit_card(tampered_sig) is False

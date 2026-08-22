@@ -335,6 +335,51 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
             cycle_data = res_b_cycle.json()
             assert "headroom_daily_pct" in cycle_data
 
+        # 8. Merit and Cryptographic Verification endpoints
+        res_merit = await client.get("/api/merit")
+        assert res_merit.status_code == 200
+        merit_data = res_merit.json()
+        assert "tier" in merit_data
+        assert "node_pubkey" in merit_data
+        assert "canonical_sha256" in merit_data
+        assert "signature" in merit_data
+        assert merit_data["canonical_sha256"].startswith("sha256:")
+
+        # Verify authentic merit payload via REST
+        res_verify = await client.post("/api/merit/verify", json=merit_data)
+        assert res_verify.status_code == 200
+        verify_data = res_verify.json()
+        assert verify_data["valid"] is True
+        assert verify_data["tampered"] is False
+
+        # Verify tampered payload is detected and rejected
+        tampered_merit = dict(merit_data)
+        tampered_merit["tier"] = "ROOT_ANCHOR"
+        res_tampered = await client.post("/api/merit/verify", json=tampered_merit)
+        assert res_tampered.status_code == 200
+        tampered_data = res_tampered.json()
+        assert tampered_data["valid"] is False
+        assert tampered_data["tampered"] is True
+
+        # 9. Dynamic SVG Badge endpoints
+        # Earned badge (Sprout Genesis) -> returns 200 SVG with VERIFIED
+        res_badge_earned = await client.get("/api/badge/sprout_node?node=local-node")
+        assert res_badge_earned.status_code == 200
+        assert "image/svg+xml" in res_badge_earned.headers["content-type"]
+        assert "VERIFIED" in res_badge_earned.text
+
+        # Unearned badge (Century Anchor) -> returns 200 SVG with UNEARNED (no false claims)
+        res_badge_unearned = await client.get("/api/badge/century_anchor?node=local-node")
+        assert res_badge_unearned.status_code == 200
+        assert "image/svg+xml" in res_badge_unearned.headers["content-type"]
+        assert "UNEARNED" in res_badge_unearned.text
+        assert "VERIFIED" not in res_badge_unearned.text
+
+        # Publisher badge
+        res_pub_badge = await client.get("/api/badge/publisher/reuters.com")
+        assert res_pub_badge.status_code == 200
+        assert "image/svg+xml" in res_pub_badge.headers["content-type"]
+
 
 @pytest.mark.unit
 async def test_server_telemetry_tracker_and_alerts() -> None:
