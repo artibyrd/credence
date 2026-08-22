@@ -566,7 +566,13 @@
       if (!str) return "";
       return String(str)
         .replace(/&/g, "&amp;")
-         // Curated Multidimensional Mock Corpus for Instant Discovery & Deterministic Canonical Verification
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Curated Multidimensional Mock Corpus for Instant Discovery & Deterministic Canonical Verification
     const MOCK_CORPUS = [
       {
         id: "reuters-clean-energy",
@@ -1001,6 +1007,88 @@ City council members expressed optimism regarding the new administration's forei
 
       loadReportByHash(q);
     };
+
+    // Clean Empty State when no query parameter is provided
+    function renderEmptyState() {
+      activeReport = null;
+      document.title = "Epistemic Audit Viewer — Credence Trust Network";
+
+      const histLink = document.getElementById("header-history-link");
+      if (histLink) {
+        histLink.href = "history.html";
+      }
+
+      document.getElementById("page-title").textContent = "Epistemic Audit Viewer";
+      document.getElementById("target-url").textContent = "No URL specified — enter a URL/hash above or select from Explore";
+
+      const scoreEl = document.getElementById("suspicion-score");
+      const badgeEl = document.getElementById("classification-badge");
+      scoreEl.className = "score-big";
+      badgeEl.className = "verdict-tag";
+      scoreEl.textContent = "--";
+      badgeEl.textContent = "READY FOR AUDIT";
+
+      document.getElementById("density-index").textContent = "Density: -- / 1k words";
+      document.getElementById("eval-method-badge").textContent = "LLM Multi-Agent Evaluator • Ready for Input";
+
+      document.getElementById("exec-summary-text").innerHTML = "Enter a webpage URL or SHA-256 content hash in the search bar above to inspect a verified attestation, or explore sample audits from the toolbar (Recent, Top Clean, Most Flagged, Satire).";
+      document.getElementById("trust-signals-container").innerHTML = `
+        <span class="signal-tag" style="background: rgba(148,163,184,0.1); border-color: rgba(148,163,184,0.3); color: #cbd5e1;">ℹ️ Awaiting URL Input</span>
+        <span class="signal-tag" style="background: rgba(148,163,184,0.1); border-color: rgba(148,163,184,0.3); color: #cbd5e1;">🔒 RFC 8785 Ed25519 Ready</span>
+      `;
+
+      // Reset dimensions
+      document.getElementById("dim-ethics-score").textContent = "-- / 100";
+      document.getElementById("dim-fallacy-score").textContent = "-- / 100";
+      document.getElementById("dim-deceptive-score").textContent = "-- / 100";
+      document.getElementById("dim-ethics-bar").style.width = "0%";
+      document.getElementById("dim-fallacy-bar").style.width = "0%";
+      document.getElementById("dim-deceptive-bar").style.width = "0%";
+
+      // Reset metadata
+      document.getElementById("meta-sha256").textContent = "--";
+      document.getElementById("meta-simhash").textContent = "--";
+      document.getElementById("meta-node-pubkey").textContent = "--";
+      document.getElementById("meta-timestamp").textContent = "--";
+      document.getElementById("crypto-pubkey").textContent = "--";
+      document.getElementById("crypto-signature").textContent = "--";
+
+      // Reset findings & reader
+      document.getElementById("tab-findings-count").textContent = "0";
+      document.getElementById("violations-container").innerHTML = `
+        <li style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍</div>
+          <strong>No Report Loaded</strong>
+          <p style="font-size: 0.85rem; margin-top: 0.35rem;">Enter a URL or content hash above to inspect itemized ethical and logical findings.</p>
+        </li>
+      `;
+      document.getElementById("reader-article-body").innerHTML = `
+        <div style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📖</div>
+          <strong>No Article Ingested</strong>
+          <p style="font-size: 0.85rem; margin-top: 0.35rem;">Enter a URL in the search bar above to read verified source text with highlighted forensic findings.</p>
+        </div>
+      `;
+
+      // Reset exports
+      document.getElementById("export-md-preview").textContent = "# Credence Epistemic Audit\n\nNo report loaded. Enter a URL or SHA-256 above to generate a summary.";
+      document.getElementById("export-json-preview").textContent = "{\n  \"status\": \"waiting_for_input\",\n  \"message\": \"Enter URL or content SHA-256 above to view RFC 8785 signed JSON attestation\"\n}";
+      document.getElementById("raw-json-display").textContent = "{\n  \"status\": \"waiting_for_input\",\n  \"message\": \"Enter URL or content SHA-256 above to view raw attestation envelope\"\n}";
+
+      // Reset compact view
+      document.getElementById("compact-title").textContent = "Epistemic Audit Viewer";
+      document.getElementById("compact-url").textContent = "No URL specified";
+      document.getElementById("compact-verdict-pill").className = "sig-pill";
+      document.getElementById("compact-verdict-pill").textContent = "WAITING";
+      document.getElementById("compact-score").textContent = "-- / 100.0";
+      document.getElementById("compact-density").textContent = "--";
+      document.getElementById("compact-conf").textContent = "--";
+      document.getElementById("compact-sha").textContent = "--";
+      document.getElementById("compact-exec-text").textContent = "Enter a URL or content SHA-256 above to inspect an audit report.";
+      document.getElementById("compact-findings-body").innerHTML = `<tr><td colspan="5" style="color: var(--text-muted); padding: 1.5rem; text-align: center;">No audit report loaded.</td></tr>`;
+      
+      document.getElementById("header-query").value = "";
+    }
 
     // Main Report Renderer across all 3 view modes
     function renderReport(report) {
@@ -1808,12 +1896,8 @@ ${summaryContent}
         return;
       }
 
-      // Default selection: Deterministically pick primary canonical benchmark report (MOCK_CORPUS[0]) on initial load
-      const selected = MOCK_CORPUS[0];
-      if (selected) {
-        document.getElementById("header-query").value = selected.content_sha256 || selected.id || "";
-        renderReport(selected);
-      }
+      // When no query parameter is provided, render clean empty state waiting for user input
+      renderEmptyState();
     });
   </script>
 
