@@ -511,33 +511,6 @@
 
     let wsController;
     let liveTopologyData = null;
-
-    function renderAdminView() {
-      const locked = document.getElementById('admin-locked-view');
-      const unlocked = document.getElementById('admin-unlocked-view');
-      const badge = document.getElementById('admin-tab-badge');
-      const isAuth = Boolean(authState && authState.authenticated);
-      if (isAuth) {
-        if (locked) locked.style.display = 'none';
-        if (unlocked) unlocked.style.display = 'block';
-        if (badge) {
-          badge.textContent = 'Active';
-          badge.style.background = 'rgba(74, 222, 128, 0.2)';
-          badge.style.color = '#4ade80';
-        }
-      } else {
-        if (locked) locked.style.display = 'block';
-        if (unlocked) unlocked.style.display = 'none';
-        if (badge) {
-          badge.textContent = 'Operator';
-          badge.style.background = 'rgba(245, 158, 11, 0.2)';
-          badge.style.color = '#f59e0b';
-        }
-      }
-    }
-
-    let wsController;
-    let liveTopologyData = null;
     let liveNodeStats = null;
     let selectedNodeId = "node_1";
 
