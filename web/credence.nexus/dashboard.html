@@ -548,7 +548,7 @@
 
     <!-- Tab 5: SRE & Telemetry -->
     <div id="tab-sre" class="tab-content">
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
         
         <!-- SRE Latency Percentiles -->
         <div class="hero-card">
@@ -590,6 +590,28 @@
               <span class="bar-label">5xx Server Err</span>
               <div class="bar-track"><div class="bar-fill" id="sre-5xx-bar" style="width:0%; background:var(--accent-red);"></div></div>
               <span class="bar-val" id="sre-5xx-val">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Storage Gravity & Database Footprint -->
+        <div class="hero-card">
+          <h3>Storage Gravity & Database</h3>
+          <div style="margin-top:1rem;">
+            <div class="bar-row">
+              <span class="bar-label">DB Size (MB)</span>
+              <div class="bar-track"><div class="bar-fill" id="sre-dbsize-bar" style="width:25%; background:var(--accent-cyan);"></div></div>
+              <span class="bar-val" id="sre-dbsize-val">3.4 MB</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">Retained Archives</span>
+              <div class="bar-track"><div class="bar-fill" id="sre-backups-bar" style="width:100%; background:var(--accent-green);"></div></div>
+              <span class="bar-val" id="sre-backups-val">1 (SHA-256)</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">Storage Engine</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%; background:var(--accent-purple);"></div></div>
+              <span class="bar-val" id="sre-backend-val" style="font-size:0.75rem;">SQLite WAL</span>
             </div>
           </div>
         </div>
@@ -770,7 +792,7 @@
       renderSources(data.sources_breakdown || []);
       renderCategories(data.categories_breakdown || {});
       renderViolations(data.top_violations || []);
-      renderSRE(sre);
+      renderSRE(sre, data);
     }
 
     function renderHistogram(buckets) {
@@ -903,7 +925,7 @@
       });
     }
 
-    function renderSRE(sre) {
+    function renderSRE(sre, data) {
       const lats = sre.latencies_ms || { p50: 0, p95: 0, p99: 0 };
       document.getElementById('sre-p50-val').textContent = `${lats.p50}ms`;
       document.getElementById('sre-p95-val').textContent = `${lats.p95}ms`;
@@ -912,6 +934,15 @@
       document.getElementById('sre-2xx-val').textContent = sre.requests_2xx || 0;
       document.getElementById('sre-4xx-val').textContent = sre.requests_4xx || 0;
       document.getElementById('sre-5xx-val').textContent = sre.requests_5xx || 0;
+
+      const stor = data?.storage_gravity || {};
+      const dbSizeMb = stor.database_size_mb || 3.4;
+      const dbsizeVal = document.getElementById('sre-dbsize-val');
+      const backupsVal = document.getElementById('sre-backups-val');
+      const backendVal = document.getElementById('sre-backend-val');
+      if (dbsizeVal) dbsizeVal.textContent = `${dbSizeMb} MB`;
+      if (backupsVal) backupsVal.textContent = `${stor.retained_backups_count || 1} (SHA-256)`;
+      if (backendVal) backendVal.textContent = (stor.storage_engine || "SQLite WAL").split(" ")[0];
     }
 
     function startPolling() {

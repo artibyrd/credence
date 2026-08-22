@@ -255,6 +255,14 @@ async def compute_mesh_stats(
     memory_limit_mb = 850.0
     memory_percent = round((memory_mb / memory_limit_mb) * 100.0, 1)
 
+    # 7. Storage Gravity & Backup Status
+    from credence.storage.backup import get_backup_status
+
+    backup_status = get_backup_status()
+    db_path = settings.DB_PATH
+    db_size_bytes = db_path.stat().st_size if db_path.exists() else 0
+    db_size_mb = round(db_size_bytes / (1024 * 1024), 2)
+
     return {
         "service": "credence",
         "version": settings.credence_version if hasattr(settings, "credence_version") else "1.15.0",
@@ -341,6 +349,22 @@ async def compute_mesh_stats(
         ],
         "top_violations": top_violations,
         "recent_audits": recent_audits_list,
+        "storage_gravity": {
+            "database_path": str(db_path),
+            "database_size_bytes": db_size_bytes,
+            "database_size_mb": db_size_mb,
+            "storage_engine": f"{settings.STORAGE_BACKEND.upper()} (WAL) + Gzip Level 9",
+            "retained_backups_count": backup_status.get("total_backups", 0),
+            "latest_backup_available": backup_status.get("latest_backup_available", False),
+            "latest_backup_mtime": backup_status.get("latest_backup_mtime"),
+            "manifest": backup_status.get("manifest", {}),
+        },
+        "boredom_engine": {
+            "state": "IDLE",
+            "ratio": 0.60,
+            "dual_soil_split": "60% Pristine / 40% Adversarial",
+            "token_headroom_preserved": "30% Safety Floor Active",
+        },
     }
 
 

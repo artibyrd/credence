@@ -134,7 +134,8 @@ async def api_get_report(request: Any) -> Any:
     return JSONResponse(
         report_dict,
         headers={
-            "Cache-Control": "public, max-age=31536000, immutable",
-            "CDN-Cache-Control": "public, max-age=31536000, immutable",
+            "Cache-Control": "public, max-age=2592000, immutable",
+            "CDN-Cache-Control": "public, max-age=2592000, immutable",
+            "ETag": f'W/"sha256:{identifier}"',
         },
     )
