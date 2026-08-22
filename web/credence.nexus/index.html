@@ -60,6 +60,99 @@
       flex-direction: column;
       gap: 0.5rem;
     }
+    .studio-modality-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .studio-modality-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      text-align: left;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      user-select: none;
+    }
+    .studio-modality-card:hover {
+      background: rgba(30, 41, 59, 0.75);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+    .studio-modality-card.active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    .studio-modality-card .modality-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .studio-modality-card.active .modality-title {
+      color: #38bdf8;
+    }
+    .studio-modality-card .modality-desc {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    .studio-columns-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.75rem;
+      align-items: stretch;
+      overflow: visible;
+    }
+    .studio-config-card {
+      background: rgba(10, 15, 30, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .studio-preview-card {
+      background: rgba(10, 15, 30, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      overflow: visible;
+    }
+    .studio-stage-frame {
+      background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.14) 0%, rgba(3, 7, 18, 0.9) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 1.75rem 1.5rem;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: visible;
+      z-index: 20;
+    }
+    .studio-embed-box {
+      background: rgba(3, 7, 18, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
   </style>
   <script type="module" src="../assets/credence-widget.js"></script>
 </head>
@@ -418,44 +511,74 @@
           <!-- TAB 4: BADGE STUDIO -->
           <div id="tab-studio" class="tab-panel">
             <div class="deck-card" style="overflow:visible;">
+              <!-- Header Section -->
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
                 <div style="display:flex; align-items:center; gap:0.5rem;">
-                  <h3 style="font-size:1.2rem; color:#fff; margin:0;">Universal Badge Studio &amp; Embed Generator</h3>
+                  <h3 style="font-size:1.25rem; color:#fff; margin:0; font-weight:700;">Universal Badge Studio &amp; Embed Generator</h3>
                   <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Badge Studio Guide">ℹ</button>
                 </div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">
-                  Embed verifiable badges across Markdown, HTML, and Web Components
+                <div style="font-size:0.8rem; color:var(--text-muted);">
+                  Embed verifiable, cryptographically grounded badges across READMEs, articles, and websites
                 </div>
               </div>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
-                Select a modality below to configure, preview, and generate 1-click embed snippets for GitHub READMEs, publication mastheads, or active websites.
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+                Select an attestation modality below to customize parameters, test interactive epistemic lensing, and generate 1-click embed code.
               </p>
 
-              <!-- Modality Selection Tabs -->
-              <div style="display:flex; justify-content:flex-start; margin-bottom:1.25rem;">
-                <div class="lensing-tabs" style="font-size:0.8rem; padding:4px; background:rgba(15,23,42,0.7); border:1px solid var(--border); border-radius:8px; display:inline-flex; gap:4px;">
-                  <button type="button" class="tab-btn active" id="tab-btn-studio-node" onclick="window.setStudioModality('node')">🛡️ Node Epistemic Merit</button>
-                  <button type="button" class="tab-btn" id="tab-btn-studio-publisher" onclick="window.setStudioModality('publisher')">📰 Publisher Trust &amp; DCI</button>
-                  <button type="button" class="tab-btn" id="tab-btn-studio-attestation" onclick="window.setStudioModality('attestation')">📄 Article Attestation</button>
+              <!-- Spacious 3-Card Modality Grid -->
+              <div class="studio-modality-grid">
+                <div class="studio-modality-card active" id="tab-btn-studio-node" onclick="window.setStudioModality('node')">
+                  <div class="modality-title">
+                    <span>🛡️</span>
+                    <span>Node Epistemic Merit</span>
+                  </div>
+                  <div class="modality-desc">
+                    P2P validator uptime, consensus accuracy, and decentralized milestone badges.
+                  </div>
+                </div>
+
+                <div class="studio-modality-card" id="tab-btn-studio-publisher" onclick="window.setStudioModality('publisher')">
+                  <div class="modality-title">
+                    <span>📰</span>
+                    <span>Publisher Trust &amp; DCI</span>
+                  </div>
+                  <div class="modality-desc">
+                    Domain Credibility Index (DCI) trust bands and historical audit grounding.
+                  </div>
+                </div>
+
+                <div class="studio-modality-card" id="tab-btn-studio-attestation" onclick="window.setStudioModality('attestation')">
+                  <div class="modality-title">
+                    <span>📄</span>
+                    <span>Article Attestation</span>
+                  </div>
+                  <div class="modality-desc">
+                    Real-time in-browser WebCrypto DOM verification and tamper detection.
+                  </div>
                 </div>
               </div>
 
-              <div style="display:grid; grid-template-columns:minmax(280px, 340px) 1fr; gap:1.75rem; align-items:start; overflow:visible;">
-                <!-- Left Configuration Column -->
-                <div style="display:flex; flex-direction:column; gap:1.1rem; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:1.25rem;">
-                  
+              <!-- Balanced 2-Column Deck Layout -->
+              <div class="studio-columns-layout">
+                <!-- Left Configuration Deck -->
+                <div class="studio-config-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.05em;">1. Configuration Parameters</span>
+                    <span class="badge-pill" style="font-size:0.7rem;">Live Reactive</span>
+                  </div>
+
                   <!-- PANE 1: Node Epistemic Merit -->
                   <div id="studio-pane-node" class="studio-modality-pane">
-                    <div style="margin-bottom:1rem;">
-                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Target Mesh Node</label>
-                      <select id="badge-node-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                    <div style="margin-bottom:1.25rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Target Mesh Node</label>
+                      <select id="badge-node-select" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;">
                         <option value="local" selected>credence-local-anchor (Local Primary Root)</option>
                       </select>
                     </div>
 
                     <div>
-                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Milestone Badge</label>
-                      <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Milestone Badge</label>
+                      <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;">
                         <option value="sprout_node" selected>🌱 Sprout Genesis [✓ EARNED]</option>
                       </select>
                     </div>
@@ -464,34 +587,34 @@
                   <!-- PANE 2: Publisher Trust & DCI -->
                   <div id="studio-pane-publisher" class="studio-modality-pane" style="display:none;">
                     <div style="margin-bottom:1rem;">
-                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Target Publisher Domain</label>
-                      <input type="text" id="badge-publisher-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="e.g. reuters.com" value="reuters.com">
-                      <div style="display:flex; gap:0.4rem; margin-top:0.5rem; flex-wrap:wrap;">
-                        <button type="button" class="tab-btn" style="font-size:0.7rem; padding:2px 6px;" onclick="document.getElementById('badge-publisher-input').value='reuters.com'; window.updateBadgeStudioPreview();">reuters.com</button>
-                        <button type="button" class="tab-btn" style="font-size:0.7rem; padding:2px 6px;" onclick="document.getElementById('badge-publisher-input').value='nature.com'; window.updateBadgeStudioPreview();">nature.com</button>
-                        <button type="button" class="tab-btn" style="font-size:0.7rem; padding:2px 6px;" onclick="document.getElementById('badge-publisher-input').value='apnews.com'; window.updateBadgeStudioPreview();">apnews.com</button>
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Target Publisher Domain</label>
+                      <input type="text" id="badge-publisher-input" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;" placeholder="e.g. reuters.com" value="reuters.com">
+                      <div style="display:flex; gap:0.5rem; margin-top:0.6rem; flex-wrap:wrap;">
+                        <button type="button" class="tab-btn" style="font-size:0.72rem; padding:3px 8px;" onclick="document.getElementById('badge-publisher-input').value='reuters.com'; window.updateBadgeStudioPreview();">reuters.com</button>
+                        <button type="button" class="tab-btn" style="font-size:0.72rem; padding:3px 8px;" onclick="document.getElementById('badge-publisher-input').value='nature.com'; window.updateBadgeStudioPreview();">nature.com</button>
+                        <button type="button" class="tab-btn" style="font-size:0.72rem; padding:3px 8px;" onclick="document.getElementById('badge-publisher-input').value='apnews.com'; window.updateBadgeStudioPreview();">apnews.com</button>
                       </div>
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                      Displays the publisher's Domain Credibility Index (DCI) trust band computed from verified article audits.
+                    <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; background:rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                      💡 Domain Credibility Index (DCI) evaluates consensus accuracy across independent validator nodes without central authorities.
                     </div>
                   </div>
 
                   <!-- PANE 3: Article Attestation -->
                   <div id="studio-pane-attestation" class="studio-modality-pane" style="display:none;">
                     <div style="margin-bottom:1rem;">
-                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Target Article URL</label>
-                      <input type="text" id="badge-attestation-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="https://example.com/news/article-1" value="https://reuters.com/world/science/breakthrough.html">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">Target Article URL</label>
+                      <input type="text" id="badge-attestation-input" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;" placeholder="https://example.com/news/article-1" value="https://reuters.com/world/science/breakthrough.html">
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                      Embeds live in-browser WebCrypto DOM verification. If page text is altered post-audit, the badge shifts from <code>VERIFIED</code> to <code>⚠️ MODIFIED</code>.
+                    <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; background:rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                      🔒 Embeds cryptographic WebCrypto DOM text verification. If article text is altered post-audit, the badge shifts from <code>VERIFIED</code> to <code>⚠️ MODIFIED</code> in real-time.
                     </div>
                   </div>
 
                   <!-- Common: Render Style Selection -->
-                  <div style="border-top:1px solid var(--border); padding-top:0.75rem;">
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">Render Style</label>
-                    <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                  <div style="border-top:1px solid var(--border); padding-top:1rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.4rem; text-transform:uppercase;">2. Presentation Format</label>
+                    <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem; padding:0.6rem 0.75rem;">
                       <option value="component" selected>⚡ Interactive Web Component (&lt;credence-badge&gt;) [Default]</option>
                       <option value="shield">🛡️ Modern Shield Vector SVG (Static .svg)</option>
                     </select>
@@ -499,34 +622,43 @@
                 </div>
 
 
-                <!-- Right Live Preview & Embed Console -->
-                <div style="display:flex; flex-direction:column; gap:1.25rem; overflow:visible;">
-                  <!-- Top: Dedicated Live Preview Stage (With Ample Vertical Clearance) -->
-                  <div style="background:radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.08) 0%, rgba(3, 7, 18, 0.8) 100%); border:1px solid var(--border); border-radius:8px; padding:1.5rem; min-height:280px; position:relative; overflow:visible; z-index:20;">
+                <!-- Right Preview & Embed Deck -->
+                <div class="studio-preview-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+                    <span style="font-size:0.85rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.05em;">2. Live Stage Preview</span>
+                    <span class="ribbon-pill ready" id="preview-mode-tag" style="font-size:0.7rem;">Interactive Rendered</span>
+                  </div>
+
+                  <!-- Dedicated Glowing Stage Frame -->
+                  <div class="studio-stage-frame">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                      <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em;">Interactive Stage Preview</span>
-                      <span class="ribbon-pill ready" id="preview-mode-tag" style="font-size:0.7rem;">Vector Rendered</span>
+                      <span style="font-size:0.75rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em;">Stage Canvas</span>
+                      <span style="font-size:0.7rem; color:var(--accent-blue);">Click badge to test 3-tier lensing</span>
                     </div>
 
                     <!-- Badge container with high z-index and overflow visible -->
-                    <div id="badge-live-preview-container" style="min-height:56px; display:inline-flex; align-items:center; position:relative; z-index:50; overflow:visible;">
+                    <div id="badge-live-preview-container" style="min-height:60px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:50; overflow:visible; width:100%;">
                       <!-- Real SVG or <credence-badge> dynamically inserted here -->
+                    </div>
+
+                    <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-top:1rem;">
+                      Hover/click on the badge above to explore Surface, Focus, and Deep spectrum lenses.
                     </div>
                   </div>
 
-                  <!-- Bottom: 1-Click Embed Snippets Console -->
-                  <div style="background:rgba(0,0,0,0.35); border:1px solid var(--border); border-radius:8px; padding:1.25rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem; flex-wrap:wrap; gap:0.5rem;">
-                      <span style="font-size:0.78rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">1-Click Embed Snippets</span>
-                      <div class="lensing-tabs" style="font-size:0.7rem;">
+                  <!-- 1-Click Embed Console -->
+                  <div class="studio-embed-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                      <span style="font-size:0.78rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">1-Click Embed Snippet</span>
+                      <div class="lensing-tabs" style="font-size:0.72rem;">
                         <button type="button" class="tab-btn active" id="btn-snippet-md">Markdown</button>
                         <button type="button" class="tab-btn" id="btn-snippet-html">HTML</button>
                         <button type="button" class="tab-btn" id="btn-snippet-wc">Web Component</button>
                       </div>
                     </div>
                     <div style="display:flex; gap:0.5rem;">
-                      <input type="text" id="badge-embed-snippet" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono); width:100%;">
-                      <button type="button" class="btn-primary" id="btn-copy-embed" style="font-size:0.75rem; padding:0.25rem 0.85rem; white-space:nowrap;">Copy</button>
+                      <input type="text" id="badge-embed-snippet" readonly class="form-input" style="font-size:0.78rem; font-family:var(--font-mono); width:100%; padding:0.5rem 0.75rem;">
+                      <button type="button" class="btn-primary" id="btn-copy-embed" style="font-size:0.78rem; padding:0.5rem 1.1rem; white-space:nowrap;">Copy</button>
                     </div>
                     <div id="badge-studio-locked-warning" style="display:none; margin-top:0.75rem; background:rgba(244,63,94,0.12); border:1px solid #f43f5e; border-radius:6px; padding:0.6rem 0.75rem; font-size:0.75rem; color:#fda4af; line-height:1.4;">
                       🔒 <strong>Milestone Not Earned</strong>: The selected node has not yet satisfied the criteria for this badge. Embed snippets are locked to prevent distributing ungrounded claims.
@@ -1561,7 +1693,7 @@
       window.currentStudioModality = modality;
       ['node', 'publisher', 'attestation'].forEach(m => {
         const btn = document.getElementById(`tab-btn-studio-${m}`);
-        if (btn) btn.className = (m === modality) ? 'tab-btn active' : 'tab-btn';
+        if (btn) btn.className = (m === modality) ? 'studio-modality-card active' : 'studio-modality-card';
         const pane = document.getElementById(`studio-pane-${m}`);
         if (pane) pane.style.display = (m === modality) ? 'block' : 'none';
       });
