@@ -410,3 +410,28 @@ def test_web_credence_widget_epistemic_integrity(web_dir: Path) -> None:
         text=True,
     )
     assert res.returncode == 0, f"JS syntax error in credence-widget.js:\n{res.stderr}"
+
+
+@pytest.mark.governance
+def test_zero_mock_production_boundary(web_dir: Path) -> None:
+    """Assert zero synthetic mock data, dummy keys, or fallback placeholder arrays exist in production web workstations."""
+    banned_tokens = [
+        "MOCK_NODES",
+        "mock_nodes",
+        "MOCK_REPORTS",
+        "mock_reports",
+        "dummy_key",
+        "fake_key",
+        "ed25519:e3b0c44...41a7",
+        "+2.4 pts (Improving)",
+        "synthetic_digest",
+        "placeholder_sparkline",
+    ]
+    for ext in ["*.js", "*.html"]:
+        for file_path in web_dir.rglob(ext):
+            content = file_path.read_text(encoding="utf-8")
+            for token in banned_tokens:
+                assert token not in content, (
+                    f"Violation of inv-production-telemetry-boundary: Banned mock token '{token}' "
+                    f"found in production web surface: {file_path.relative_to(web_dir.parent)}"
+                )
