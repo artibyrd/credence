@@ -360,129 +360,29 @@ class CredenceBadge extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host {
-          display: inline-block;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          position: relative;
-          vertical-align: middle;
-          font-size: 13px;
-        }
-        .credence-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 4px 12px;
-          border-radius: 9999px;
-          font-weight: 600;
-          font-size: 12px;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 1px solid rgba(56, 189, 248, 0.3);
-          background: rgba(15, 23, 42, 0.85);
-          backdrop-filter: blur(8px);
-          color: #f8fafc;
-          user-select: none;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        .credence-pill:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
-          border-color: #38bdf8;
-        }
+        :host { display: inline-block; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; position: relative; vertical-align: middle; font-size: 13px; }
+        .credence-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s ease; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); color: #f8fafc; user-select: none; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+        .credence-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35); border-color: #38bdf8; }
         .badge-clean { border-color: rgba(16, 185, 129, 0.4); color: #34d399; }
-        .badge-clean:hover { box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); }
         .badge-caution { border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; }
         .badge-flagged { border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
         .badge-modified { border-color: rgba(249, 115, 22, 0.4); color: #fb923c; }
-
-        .popover {
-          position: absolute;
-          top: calc(100% + 8px);
-          left: 0;
-          width: 320px;
-          max-height: min(440px, 85vh);
-          overflow-y: auto;
-          background: #0f172a;
-          border: 1px solid rgba(56, 189, 248, 0.3);
-          border-radius: 12px;
-          padding: 14px;
-          box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(56, 189, 248, 0.2);
-          z-index: 99999;
-          display: ${popoverOpen ? 'block' : 'none'};
-          color: #e2e8f0;
-          backdrop-filter: blur(12px);
-          box-sizing: border-box;
-        }
-        .popover-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 12px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          padding-bottom: 8px;
-        }
-        .lensing-tabs {
-          display: flex;
-          gap: 4px;
-          background: #1e293b;
-          padding: 2px;
-          border-radius: 6px;
-        }
-        .tab-btn {
-          background: none;
-          border: none;
-          color: #94a3b8;
-          padding: 3px 8px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .tab-btn.active {
-          background: #38bdf8;
-          color: #0f172a;
-        }
-        .lens-content {
-          font-size: 12px;
-          line-height: 1.5;
-        }
-        .score-circle {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin: 8px 0;
-        }
-        .score-val {
-          font-size: 22px;
-          font-weight: 800;
-        }
-        .forensic-code {
-          font-family: monospace;
-          background: #020617;
-          padding: 6px;
-          border-radius: 4px;
-          font-size: 10px;
-          color: #38bdf8;
-          word-break: break-all;
-          margin: 4px 0;
-        }
-        .close-btn {
-          background: none;
-          border: none;
-          color: #94a3b8;
-          cursor: pointer;
-          font-size: 14px;
-          padding: 0;
-        }
+        .popover { position: absolute; top: calc(100% + 8px); left: 0; width: 320px; max-height: min(440px, 85vh); overflow-y: auto; background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 14px; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(56, 189, 248, 0.2); z-index: 99999; display: ${popoverOpen ? 'block' : 'none'}; color: #e2e8f0; backdrop-filter: blur(12px); box-sizing: border-box; }
+        .popover-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; }
+        .lensing-tabs { display: flex; gap: 4px; background: #1e293b; padding: 2px; border-radius: 6px; }
+        .tab-btn { background: none; border: none; color: #94a3b8; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
+        .tab-btn.active { background: #38bdf8; color: #0f172a; }
+        .lens-content { font-size: 12px; line-height: 1.5; }
+        .score-circle { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+        .score-val { font-size: 22px; font-weight: 800; }
+        .forensic-code { font-family: monospace; background: #020617; padding: 6px; border-radius: 4px; font-size: 10px; color: #38bdf8; word-break: break-all; margin: 4px 0; }
+        .close-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 0; }
       </style>
-
       <div class="credence-pill ${badgeClass}" id="badgePill">
         <span>${icon}</span>
         <span>${label}</span>
         <span style="opacity: 0.6; font-size: 10px;">🔍</span>
       </div>
-
       <div class="popover" id="badgePopover">
         <div class="popover-header">
           <div class="lensing-tabs">
@@ -492,10 +392,7 @@ class CredenceBadge extends HTMLElement {
           </div>
           <button class="close-btn" id="closeBtn">✕</button>
         </div>
-
-        <div class="lens-content">
-          ${lensHtml}
-        </div>
+        <div class="lens-content">${lensHtml}</div>
       </div>
     `;
 
@@ -515,4 +412,5 @@ class CredenceBadge extends HTMLElement {
 if (!customElements.get('credence-badge')) {
   customElements.define('credence-badge', CredenceBadge);
 }
+
 
