@@ -1253,13 +1253,20 @@
               <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; margin-bottom:0.75rem;">
                 <div style="width:${status.progress}%; height:100%; background:${status.unlocked ? 'linear-gradient(90deg, #34d399, #059669)' : 'linear-gradient(90deg, #38bdf8, #0284c7)'}; transition:width 0.3s ease;"></div>
               </div>
-              <button type="button" class="btn-secondary" style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); window.openBadgeVerificationModal('${b.id}', '${node.node_id}')">
-                <span>🔐</span> <span>Verify Attestation Proof</span>
-              </button>
+              ${status.unlocked ? `
+                <button type="button" class="btn-secondary" style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); window.openBadgeVerificationModal('${b.id}', '${node.node_id}')">
+                  <span>🔐</span> <span>Verify Attestation Proof</span>
+                </button>
+              ` : `
+                <button type="button" class="btn-secondary" disabled style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; opacity:0.45; cursor:not-allowed;" title="Attestation proof is only available after milestone criteria are achieved.">
+                  <span>🔒</span> <span>Unearned &bull; Proof Locked</span>
+                </button>
+              `}
             </div>
           </div>
         `;
       }).join('');
+
     }
 
     async function openBadgeVerificationModal(badgeId, nodeId) {
