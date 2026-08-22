@@ -2,10 +2,6 @@ name = "credence"
 compatibility_date = "2026-08-17"
 main = "_worker.js"
 
-[assets]
-directory = "."
-binding = "ASSETS"
-
 # Top-level (Production Default) Routes: ONLY Production Apex & Prod Subdomains
 routes = [
   # credence.run zone
@@ -26,6 +22,10 @@ routes = [
   # credence.report zone
   { pattern = "credence.report/*", zone_name = "credence.report" }
 ]
+
+[assets]
+directory = "."
+binding = "ASSETS"
 
 [vars]
 PROD_BACKEND_URL = "https://credence-server-psgqr4nwoq-uc.a.run.app"

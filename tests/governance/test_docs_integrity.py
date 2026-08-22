@@ -1155,9 +1155,11 @@ def test_edge_wrangler_routes_and_web_folders_parity(docs_root: Path) -> None:
     assert data.get("assets", {}).get("binding") == "ASSETS"
 
     routes = data.get("routes", [])
-    assert len(routes) >= 15, f"Expected at least 15 edge routes, found {len(routes)}"
+    dev_routes = data.get("env", {}).get("dev", {}).get("routes", [])
+    all_routes = routes + dev_routes
+    assert len(all_routes) >= 15, f"Expected at least 15 edge routes, found {len(all_routes)}"
 
-    route_patterns = {r["pattern"] for r in routes if "pattern" in r}
+    route_patterns = {r["pattern"] for r in all_routes if "pattern" in r}
 
     # Verify primary apex and subdomains are explicitly bound
     expected_patterns = [
