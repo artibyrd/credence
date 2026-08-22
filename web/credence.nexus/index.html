@@ -439,21 +439,27 @@
                   </div>
 
                   <div id="badge-input-node-group">
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Select Milestone</label>
-                    <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                      <option value="sprout_node">🌱 Sprout Genesis (Tier 1: Sprout)</option>
-                      <option value="first_attestation">🌾 First Attestation (Tier 1: Sprout)</option>
-                      <option value="sifter_pioneer">🔍 Sifter Century (Tier 2: Sifter)</option>
-                      <option value="cadence_keeper">⏱️ Cadence Keeper (Tier 2: Sifter)</option>
-                      <option value="verified_auditor" selected>⚖️ Verified Auditor (Tier 3: Auditor)</option>
-                      <option value="philanthropic_relay">🎁 Philanthropic Relay (Tier 3: Auditor)</option>
-                      <option value="domain_specialist">🎯 Domain Specialist (Tier 4: Specialist)</option>
-                      <option value="galileo_pioneer">🔭 Galileo Pioneer (Tier 4: Specialist)</option>
-                      <option value="root_seed_candidate">🌳 Root Seed Candidate (Tier 5: Root Anchor)</option>
-                      <option value="sybil_shield">🛡️ Sybil Sentinel (Tier 5: Root Anchor)</option>
-                      <option value="century_anchor">🏛️ Century Anchor (Tier 5: Root Anchor)</option>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Target Mesh Node</label>
+                    <select id="badge-node-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                      <option value="local" selected>credence-local-anchor (Local Primary Root)</option>
                     </select>
+                  </div>
 
+                  <div id="badge-input-milestone-group">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">3. Milestone Badge</label>
+                    <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                      <option value="sprout_node" selected>🌱 Sprout Genesis</option>
+                      <option value="first_attestation">🌾 First Attestation</option>
+                      <option value="sifter_pioneer">🔍 Sifter Century</option>
+                      <option value="cadence_keeper">⏱️ Cadence Keeper</option>
+                      <option value="verified_auditor">⚖️ Verified Auditor</option>
+                      <option value="philanthropic_relay">🎁 Philanthropic Relay</option>
+                      <option value="domain_specialist">🎯 Domain Specialist</option>
+                      <option value="galileo_pioneer">🔭 Galileo Pioneer</option>
+                      <option value="root_seed_candidate">🌳 Root Seed Candidate</option>
+                      <option value="sybil_shield">🛡️ Sybil Sentinel</option>
+                      <option value="century_anchor">🏛️ Century Anchor</option>
+                    </select>
                   </div>
 
                   <div id="badge-input-target-group" style="display:none;">
@@ -462,20 +468,14 @@
                   </div>
 
                   <div>
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">3. Render Style</label>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">Render Style</label>
                     <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                      <option value="glass" selected>Doc Glass Pill (Docs Style)</option>
-                      <option value="pill">Dual-Capsule Cyber Pill</option>
-                      <option value="shield">Modern Shield (Shield)</option>
-                      <option value="component">Interactive Web Component (&lt;credence-badge&gt;)</option>
+                      <option value="component" selected>⚡ Interactive Web Component (&lt;credence-badge&gt;) [Default]</option>
+                      <option value="shield">🛡️ Modern Shield Vector SVG (Static .svg)</option>
                     </select>
                   </div>
-
-                  <div>
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">4. Node Alias / Label</label>
-                    <input type="text" id="badge-alias-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="credence-node" value="credence-node">
-                  </div>
                 </div>
+
 
                 <!-- Right Live Preview & Embed Console -->
                 <div style="display:flex; flex-direction:column; gap:1.25rem; overflow:visible;">
@@ -973,8 +973,14 @@
         selectEl.value = selectedNodeId;
       }
 
+      populateBadgeNodeSelect();
+      const selectedBadgeNode = (meshData.nodes || []).find(n => n.node_id === document.getElementById('badge-node-select')?.value) || (meshData.nodes && meshData.nodes[0]);
+      if (selectedBadgeNode) updateBadgeMilestoneOptions(selectedBadgeNode);
+      updateBadgeStudioPreview();
+
       updateDomMetrics(meshData, nodeStats);
       initMeshCanvas(meshData);
+
     }
 
     function updateDomMetrics(data, stats) {
@@ -1473,135 +1479,174 @@
 
 
 
+    function populateBadgeNodeSelect() {
+      const nodeSel = document.getElementById('badge-node-select');
+      if (!nodeSel) return;
+      const nodes = (liveTopologyData && liveTopologyData.nodes && liveTopologyData.nodes.length > 0)
+        ? liveTopologyData.nodes
+        : [{ node_id: "node_1", alias: "credence-local-anchor", is_local: true }];
+
+      const cur = nodeSel.value;
+      nodeSel.innerHTML = nodes.map(n => `
+        <option value="${n.node_id}" ${n.node_id === cur || (!cur && n.is_local) ? 'selected' : ''}>
+          ${n.alias || n.node_id} ${n.is_local ? '(Local Primary Root)' : '(Peer Node)'}
+        </option>
+      `).join('');
+    }
+
+    function updateBadgeMilestoneOptions(node) {
+      const badgeIdSel = document.getElementById('badge-id-select');
+      if (!badgeIdSel || !node) return;
+      const curVal = badgeIdSel.value;
+      badgeIdSel.innerHTML = MERIT_BADGES_DEF.map(b => {
+        const status = b.eval(node, node.is_local ? liveNodeMerit : null);
+        const statusTag = status.unlocked ? '✓ UNLOCKED' : `🔒 ${status.label}`;
+        return `<option value="${b.id}" ${b.id === curVal ? 'selected' : ''}>${b.icon} ${b.name} [${statusTag}]</option>`;
+      }).join('');
+    }
+
     function updateBadgeStudioPreview() {
       const modeSelect = document.getElementById('badge-mode-select');
+      const nodeSelect = document.getElementById('badge-node-select');
       const badgeIdSelect = document.getElementById('badge-id-select');
       const targetInput = document.getElementById('badge-target-input');
       const styleSelect = document.getElementById('badge-style-select');
-      const aliasInput = document.getElementById('badge-alias-input');
       const previewContainer = document.getElementById('badge-live-preview-container');
       const snippetInput = document.getElementById('badge-embed-snippet');
 
       if (!modeSelect || !previewContainer || !snippetInput) return;
 
       const mode = modeSelect.value;
-      const style = styleSelect?.value || 'pill';
-      const alias = aliasInput?.value || 'credence-node';
-      const badgeId = badgeIdSelect?.value || 'verified_auditor';
+      const style = styleSelect?.value || 'component';
+      const nodes = (liveTopologyData && liveTopologyData.nodes && liveTopologyData.nodes.length > 0)
+        ? liveTopologyData.nodes
+        : [{ node_id: "node_1", alias: "credence-local-anchor", is_local: true }];
+
+      const selectedNode = nodes.find(n => n.node_id === nodeSelect?.value) || nodes[0];
       const target = targetInput?.value || 'reuters.com';
+      const badgeId = badgeIdSelect?.value || 'sprout_node';
 
-      let svgUrl = `https://credence.nexus/api/badge/${badgeId}?node=${encodeURIComponent(alias)}&style=${style}`;
-      let pageUrl = `https://credence.nexus`;
-      let badgeTitle = badgeId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      let badgeVal = "VERIFIED";
-
-      if (mode === 'publisher') {
-        const dom = target.replace(/https?:\/\//, '').split('/')[0] || 'reuters.com';
-        svgUrl = `https://credence.nexus/api/badge/publisher/${encodeURIComponent(dom)}?style=${style}`;
-        pageUrl = `https://credence.report/domain/${encodeURIComponent(dom)}`;
-        badgeTitle = `Credence • ${dom}`;
-        badgeVal = "98.5% PRISTINE";
-      } else if (mode === 'attestation') {
-        svgUrl = `https://credence.nexus/api/badge/attestation?url=${encodeURIComponent(target)}&style=${style}`;
-        pageUrl = `https://credence.report/viewer.html?url=${encodeURIComponent(target)}`;
-        badgeTitle = "Credence Attestation";
-        badgeVal = "100.0 CLEAN";
-      }
-
-      // Render crisp inline preview SVG matching the server engine
       const iconMap = {
-        verified_auditor: "⚖️",
         sprout_node: "🌱",
         first_attestation: "🌾",
         sifter_pioneer: "🔍",
         cadence_keeper: "⏱️",
-        domain_specialist: "🎯",
+        verified_auditor: "⚖️",
         philanthropic_relay: "🎁",
-        root_seed_candidate: "🌳",
+        domain_specialist: "🎯",
         galileo_pioneer: "🔭",
+        root_seed_candidate: "🌳",
         sybil_shield: "🛡️",
         century_anchor: "🏛️"
       };
 
-      const icon = mode === 'publisher' ? '📰' : (iconMap[badgeId] || '🛡️');
+      let badgeTitle = "Credence Badge";
+      let badgeVal = "VERIFIED";
+      let icon = "🛡️";
+      let isUnlocked = true;
+      let svgUrl = "";
+      let pageUrl = "";
+      let nodeAlias = selectedNode.alias || selectedNode.node_id;
+
+      if (mode === 'node') {
+        const bDef = MERIT_BADGES_DEF.find(b => b.id === badgeId) || MERIT_BADGES_DEF[0];
+        const status = bDef.eval(selectedNode, selectedNode.is_local ? liveNodeMerit : null);
+        badgeTitle = bDef.name;
+        icon = bDef.icon || iconMap[badgeId] || "🛡️";
+        isUnlocked = status.unlocked;
+        badgeVal = status.unlocked ? "VERIFIED" : `${status.label} LOCKED`;
+        svgUrl = `https://credence.nexus/api/badge/${badgeId}?node=${encodeURIComponent(nodeAlias)}&style=shield`;
+        pageUrl = `https://credence.nexus/#merit`;
+      } else if (mode === 'publisher') {
+        const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+        badgeTitle = `Credence • ${dom}`;
+        icon = "📰";
+        badgeVal = "98.5% PRISTINE";
+        svgUrl = `https://credence.nexus/api/badge/publisher/${encodeURIComponent(dom)}?style=shield`;
+        pageUrl = `https://credence.report/domain/${encodeURIComponent(dom)}`;
+      } else if (mode === 'attestation') {
+        badgeTitle = "Credence Attestation";
+        icon = "📄";
+        badgeVal = "100.0 CLEAN";
+        svgUrl = `https://credence.nexus/api/badge/attestation?url=${encodeURIComponent(target)}&style=shield`;
+        pageUrl = `https://credence.report/viewer.html?url=${encodeURIComponent(target)}`;
+      }
+
       const tagEl = document.getElementById('preview-mode-tag');
 
       if (style === 'component') {
-        if (tagEl) tagEl.textContent = '⚡ Web Component';
-        const pubDomain = mode === 'publisher' ? target.replace(/^https?:\/\//, '').split('/')[0] : '';
-        previewContainer.innerHTML = `
-          <credence-badge 
-            type="${mode}" 
-            badge="${badgeId}" 
-            node="${alias}" 
-            domain="${pubDomain}"
-            url="${target}"
-            score="100.0" 
-            version="v2.7.0">
-          </credence-badge>
-        `;
-      } else if (style === 'glass') {
-        if (tagEl) tagEl.textContent = 'Doc Glass Vector';
-        const totalW = 230;
+        if (tagEl) tagEl.textContent = '⚡ Web Component (Interactive Lensing)';
+        if (mode === 'node') {
+          previewContainer.innerHTML = `
+            <credence-badge 
+              type="node" 
+              badge="${badgeId}" 
+              node="${nodeAlias}" 
+              score="${isUnlocked ? '100.0' : '0.0'}" 
+              version="v2.7.0">
+            </credence-badge>
+          `;
+        } else if (mode === 'publisher') {
+          const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+          previewContainer.innerHTML = `
+            <credence-badge 
+              type="publisher" 
+              domain="${dom}" 
+              score="98.5" 
+              version="v2.7.0">
+            </credence-badge>
+          `;
+        } else {
+          previewContainer.innerHTML = `
+            <credence-badge 
+              type="attestation" 
+              url="${target}" 
+              score="100.0" 
+              version="v2.7.0">
+            </credence-badge>
+          `;
+        }
+      } else {
+        // Modern Shield Vector (.svg)
+        if (tagEl) tagEl.textContent = '🛡️ Modern Shield Vector SVG';
+        const wTitle = Math.max(32, Math.floor(badgeTitle.length * 7.2));
+        const wVal = Math.max(24, Math.floor(badgeVal.length * 7.8));
+        const wLeft = wTitle + 32;
+        const wRight = wVal + 20;
+        const totalW = wLeft + wRight;
+        const rightGradient = isUnlocked
+          ? '<stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>'
+          : '<stop offset="0%" stop-color="#475569"/><stop offset="100%" stop-color="#334155"/>';
+        const strokeColor = isUnlocked ? 'rgba(52, 211, 153, 0.45)' : 'rgba(148, 163, 184, 0.3)';
+
         previewContainer.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="28" viewBox="0 0 ${totalW} 28" fill="none">
             <defs>
-              <linearGradient id="prev-glass-bg" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">
+              <linearGradient id="shield-bg-left" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#0d121f"/>
                 <stop offset="100%" stop-color="#07090e"/>
               </linearGradient>
+              <linearGradient id="shield-bg-right" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">
+                ${rightGradient}
+              </linearGradient>
+              <clipPath id="shield-clip">
+                <rect width="${totalW}" height="28" rx="6" fill="#fff"/>
+              </clipPath>
             </defs>
-            <rect width="${totalW}" height="28" rx="14" fill="url(#prev-glass-bg)" stroke="rgba(56, 189, 248, 0.45)" stroke-width="1"/>
-            <g fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">
-              <text x="12" y="18">${icon} ${badgeTitle} <tspan fill="rgba(56, 189, 248, 0.5)" font-weight="700">·</tspan> <tspan fill="#38bdf8" font-weight="700">${badgeVal}</tspan></text>
-            </g>
-          </svg>
-        `;
-      } else if (style === 'shield') {
-        if (tagEl) tagEl.textContent = 'Shield Vector';
-        const totalW = 230;
-        previewContainer.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="28" viewBox="0 0 ${totalW} 28" fill="none">
-            <defs>
-              <linearGradient id="prev-bg-left" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0d121f"/><stop offset="100%" stop-color="#07090e"/></linearGradient>
-              <linearGradient id="prev-bg-right" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/></linearGradient>
-              <clipPath id="prev-clip"><rect width="${totalW}" height="28" rx="6" fill="#fff"/></clipPath>
-            </defs>
-            <g clip-path="url(#prev-clip)">
-              <rect width="135" height="28" fill="url(#prev-bg-left)"/>
-              <rect x="135" width="95" height="28" fill="url(#prev-bg-right)"/>
-              <rect width="${totalW}" height="28" rx="6" fill="none" stroke="rgba(52, 211, 153, 0.45)" stroke-width="1"/>
+            <g clip-path="url(#shield-clip)">
+              <rect width="${wLeft}" height="28" fill="url(#shield-bg-left)"/>
+              <rect x="${wLeft}" width="${wRight}" height="28" fill="url(#shield-bg-right)"/>
+              <rect width="${totalW}" height="28" rx="6" fill="none" stroke="${strokeColor}" stroke-width="1"/>
             </g>
             <g fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">
               <text x="10" y="18">${icon} ${badgeTitle}</text>
             </g>
             <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
-              <text x="182.5" y="18">${badgeVal}</text>
-            </g>
-          </svg>
-        `;
-      } else {
-        // Dual-Capsule Pill
-        if (tagEl) tagEl.textContent = 'Dual-Capsule Vector';
-        const totalW = 210;
-        previewContainer.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="28" viewBox="0 0 ${totalW} 28" fill="none">
-            <defs>
-              <linearGradient id="prev-pill-bg" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0d121f"/><stop offset="100%" stop-color="#07090e"/></linearGradient>
-              <linearGradient id="prev-pill-accent" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/></linearGradient>
-            </defs>
-            <rect width="${totalW}" height="28" rx="14" fill="url(#prev-pill-bg)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1"/>
-            <rect x="125" y="3" width="79" height="22" rx="11" fill="url(#prev-pill-accent)"/>
-            <g fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">
-              <text x="12" y="18">${icon} ${badgeTitle}</text>
-            </g>
-            <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
-              <text x="164.5" y="18">${badgeVal}</text>
+              <text x="${wLeft + (wRight / 2)}" y="18">${badgeVal}</text>
             </g>
           </svg>
         `;
       }
-
 
       // Update 1-Click Embed Snippet
       if (currentSnippetType === 'md') {
@@ -1609,7 +1654,14 @@
       } else if (currentSnippetType === 'html') {
         snippetInput.value = `<a href="${pageUrl}"><img src="${svgUrl}" alt="${badgeTitle}" /></a>`;
       } else {
-        snippetInput.value = `<credence-badge type="${mode}" badge="${badgeId}" node="${alias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+        if (mode === 'node') {
+          snippetInput.value = `<credence-badge type="node" badge="${badgeId}" node="${nodeAlias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+        } else if (mode === 'publisher') {
+          const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+          snippetInput.value = `<credence-badge type="publisher" domain="${dom}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+        } else {
+          snippetInput.value = `<credence-badge type="attestation" url="${target}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+        }
       }
     }
 
@@ -1624,7 +1676,9 @@
 
     function initBadgeStudioEvents() {
       const modeSelect = document.getElementById('badge-mode-select');
+      const nodeSelect = document.getElementById('badge-node-select');
       const nodeGroup = document.getElementById('badge-input-node-group');
+      const milestoneGroup = document.getElementById('badge-input-milestone-group');
       const targetGroup = document.getElementById('badge-input-target-group');
       const targetLabel = document.getElementById('badge-target-label');
       const targetInput = document.getElementById('badge-target-input');
@@ -1634,18 +1688,29 @@
           const m = modeSelect.value;
           if (m === 'node') {
             if (nodeGroup) nodeGroup.style.display = 'block';
+            if (milestoneGroup) milestoneGroup.style.display = 'block';
             if (targetGroup) targetGroup.style.display = 'none';
           } else {
             if (nodeGroup) nodeGroup.style.display = 'none';
+            if (milestoneGroup) milestoneGroup.style.display = 'none';
             if (targetGroup) targetGroup.style.display = 'block';
-            if (targetLabel) targetLabel.textContent = m === 'publisher' ? '2. Publisher Domain' : '2. Article Content URL';
+            if (targetLabel) targetLabel.textContent = m === 'publisher' ? '2. Target Publisher Domain' : '2. Target Article Content URL';
             if (targetInput) targetInput.placeholder = m === 'publisher' ? 'e.g. reuters.com' : 'e.g. https://domain.com/article';
           }
           updateBadgeStudioPreview();
         });
       }
 
-      ['badge-id-select', 'badge-style-select', 'badge-alias-input', 'badge-target-input'].forEach(id => {
+      if (nodeSelect) {
+        nodeSelect.addEventListener('change', () => {
+          const nodes = (liveTopologyData && liveTopologyData.nodes) || [];
+          const selected = nodes.find(n => n.node_id === nodeSelect.value) || nodes[0];
+          if (selected) updateBadgeMilestoneOptions(selected);
+          updateBadgeStudioPreview();
+        });
+      }
+
+      ['badge-id-select', 'badge-style-select', 'badge-target-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', updateBadgeStudioPreview);
       });
@@ -1668,8 +1733,12 @@
       const snippetWc = document.getElementById('btn-snippet-wc');
       if (snippetWc) snippetWc.addEventListener('click', () => window.switchEmbedSnippet('wc'));
 
+      populateBadgeNodeSelect();
+      const nodes = (liveTopologyData && liveTopologyData.nodes) || [];
+      if (nodes[0]) updateBadgeMilestoneOptions(nodes[0]);
       updateBadgeStudioPreview();
     }
+
 
     // Initialize Workstation
     window.addEventListener('DOMContentLoaded', () => {

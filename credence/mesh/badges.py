@@ -95,70 +95,17 @@ def generate_svg_badge(
     w_title_text = max(30, int(len(raw_title) * char_w_title))
     w_val_text = max(24, int(len(raw_val) * char_w_val))
 
-    slug = re.sub(r"[^a-zA-Z0-9_-]", "-", f"{badge_id}-{style}-{theme}").lower()
+    # Modern Shield vector layout (Crisp dual-tone container with precise text bounding)
+    char_w_title = 7.2
+    char_w_val = 7.8
+    w_title_text = max(32, int(len(raw_title) * char_w_title))
+    w_val_text = max(24, int(len(raw_val) * char_w_val))
 
-    if style.lower() in ("glass", "meta", "compact"):
-        # Unified Doc Header Glass Pill (Matches <credence-badge> & .meta-badge in documentation)
-        total_w = w_title_text + w_val_text + 60
-        return (
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="28" '
-            f'viewBox="0 0 {total_w} 28" fill="none" role="img" '
-            f'aria-label="{node_escaped} - {title_escaped}: {val_escaped}">\n'
-            f"  <title>{node_escaped} - {title_escaped}: {val_escaped}</title>\n"
-            f"  <defs>\n"
-            f'    <linearGradient id="bg-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
-            f'      <stop offset="0%" stop-color="{theme_cfg["bg_top"]}"/>\n'
-            f'      <stop offset="100%" stop-color="{theme_cfg["bg_bottom"]}"/>\n'
-            f"    </linearGradient>\n"
-            f"  </defs>\n"
-            f'  <rect width="{total_w}" height="28" rx="14" fill="url(#bg-{slug})" stroke="{border_color}" stroke-width="1"/>\n'
-            f'  <g fill="{theme_cfg["text"]}" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="11" font-weight="600" text-rendering="geometricPrecision">\n'
-            f'    <text x="12" y="18">{icon_escaped} {title_escaped} <tspan fill="{border_color}" font-weight="700">·</tspan> <tspan fill="{accent_start}" font-weight="700">{val_escaped}</tspan></text>\n'
-            f"  </g>\n"
-            f"</svg>"
-        )
+    slug = re.sub(r"[^a-zA-Z0-9_-]", "-", f"{badge_id}-shield-{theme}").lower()
 
-    if style.lower() == "shield":
-        w_left = w_title_text + 32  # 10px padding + 16px icon + 6px gap
-        w_val = w_val_text + 20
-        total_w = w_left + w_val
-
-        return (
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="28" '
-            f'viewBox="0 0 {total_w} 28" fill="none" role="img" '
-            f'aria-label="{node_escaped} - {title_escaped}: {val_escaped}">\n'
-            f"  <title>{node_escaped} - {title_escaped}: {val_escaped}</title>\n"
-            f"  <defs>\n"
-            f'    <linearGradient id="bg-left-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
-            f'      <stop offset="0%" stop-color="{theme_cfg["bg_top"]}"/>\n'
-            f'      <stop offset="100%" stop-color="{theme_cfg["bg_bottom"]}"/>\n'
-            f"    </linearGradient>\n"
-            f'    <linearGradient id="bg-right-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
-            f'      <stop offset="0%" stop-color="{accent_start}"/>\n'
-            f'      <stop offset="100%" stop-color="{accent_end}"/>\n'
-            f"    </linearGradient>\n"
-            f'    <clipPath id="clip-{slug}">\n'
-            f'      <rect width="{total_w}" height="28" rx="6" fill="#fff"/>\n'
-            f"    </clipPath>\n"
-            f"  </defs>\n"
-            f'  <g clip-path="url(#clip-{slug})">\n'
-            f'    <rect width="{w_left}" height="28" fill="url(#bg-left-{slug})"/>\n'
-            f'    <rect x="{w_left}" width="{w_val}" height="28" fill="url(#bg-right-{slug})"/>\n'
-            f'    <rect width="{total_w}" height="28" rx="6" fill="none" stroke="{border_color}" stroke-width="1"/>\n'
-            f"  </g>\n"
-            f'  <g fill="{theme_cfg["text"]}" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="11" font-weight="600" text-rendering="geometricPrecision">\n'
-            f'    <text x="10" y="18">{icon_escaped} {title_escaped}</text>\n'
-            f"  </g>\n"
-            f'  <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle" text-rendering="geometricPrecision">\n'
-            f'    <text x="{w_left + (w_val / 2):.1f}" y="18">{val_escaped}</text>\n'
-            f"  </g>\n"
-            f"</svg>"
-        )
-
-    # Default: "pill" (Dual-Capsule Cyber Pill with right-side sub-capsule)
-    w_left = w_title_text + 34  # 12px padding + 16px icon + 6px gap
-    w_val = w_val_text + 20
-    total_w = w_left + w_val + 6  # +6 margin for end gap
+    w_left = w_title_text + 32  # 10px padding + 16px icon + 6px gap
+    w_val = w_val_text + 20  # 10px left/right padding
+    total_w = w_left + w_val
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="28" '
@@ -166,19 +113,25 @@ def generate_svg_badge(
         f'aria-label="{node_escaped} - {title_escaped}: {val_escaped}">\n'
         f"  <title>{node_escaped} - {title_escaped}: {val_escaped}</title>\n"
         f"  <defs>\n"
-        f'    <linearGradient id="bg-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
+        f'    <linearGradient id="bg-left-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
         f'      <stop offset="0%" stop-color="{theme_cfg["bg_top"]}"/>\n'
         f'      <stop offset="100%" stop-color="{theme_cfg["bg_bottom"]}"/>\n'
         f"    </linearGradient>\n"
-        f'    <linearGradient id="accent-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
+        f'    <linearGradient id="bg-right-{slug}" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse">\n'
         f'      <stop offset="0%" stop-color="{accent_start}"/>\n'
         f'      <stop offset="100%" stop-color="{accent_end}"/>\n'
         f"    </linearGradient>\n"
+        f'    <clipPath id="clip-{slug}">\n'
+        f'      <rect width="{total_w}" height="28" rx="6" fill="#fff"/>\n'
+        f"    </clipPath>\n"
         f"  </defs>\n"
-        f'  <rect width="{total_w}" height="28" rx="14" fill="url(#bg-{slug})" stroke="{border_color}" stroke-width="1"/>\n'
-        f'  <rect x="{w_left}" y="3" width="{w_val}" height="22" rx="11" fill="url(#accent-{slug})"/>\n'
+        f'  <g clip-path="url(#clip-{slug})">\n'
+        f'    <rect width="{w_left}" height="28" fill="url(#bg-left-{slug})"/>\n'
+        f'    <rect x="{w_left}" width="{w_val}" height="28" fill="url(#bg-right-{slug})"/>\n'
+        f'    <rect width="{total_w}" height="28" rx="6" fill="none" stroke="{border_color}" stroke-width="1"/>\n'
+        f"  </g>\n"
         f'  <g fill="{theme_cfg["text"]}" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="11" font-weight="600" text-rendering="geometricPrecision">\n'
-        f'    <text x="12" y="18">{icon_escaped} {title_escaped}</text>\n'
+        f'    <text x="10" y="18">{icon_escaped} {title_escaped}</text>\n'
         f"  </g>\n"
         f'  <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle" text-rendering="geometricPrecision">\n'
         f'    <text x="{w_left + (w_val / 2):.1f}" y="18">{val_escaped}</text>\n'

@@ -157,70 +157,55 @@ def test_epistemic_tier_progression() -> None:
 
 
 def test_svg_badge_generation_strict_xml_and_styles() -> None:
-    """Verify strict XML ElementTree parseability, visual styles, and metadata across styles."""
+    """Verify strict XML ElementTree parseability, visual styles, and metadata for Modern Shield SVG."""
     import xml.etree.ElementTree as ET
 
-    # Test glass style (Doc header style)
-    svg_glass = generate_svg_badge(
-        badge_id="verified_auditor",
-        node_alias="anchor-us-central1",
-        score_or_val="100.0 Clean",
-        style="glass",
-        theme="dark",
-    )
-    root_glass = ET.fromstring(svg_glass)
-    assert root_glass.tag == "{http://www.w3.org/2000/svg}svg" or root_glass.tag.endswith("svg")
-    assert "anchor-us-central1" in svg_glass
-    assert "100.0 Clean" in svg_glass
-    assert int(root_glass.attrib["height"]) == 28
-
-    # Test pill style
-    svg_pill = generate_svg_badge(
-        badge_id="root_seed_candidate",
-        node_alias="anchor-us-central1",
-        score_or_val="0.985",
-        style="pill",
-        theme="dark",
-    )
-    root_pill = ET.fromstring(svg_pill)
-    assert root_pill.tag == "{http://www.w3.org/2000/svg}svg" or root_pill.tag.endswith("svg")
-    assert "anchor-us-central1" in svg_pill
-    assert "0.985" in svg_pill
-    assert int(root_pill.attrib["height"]) == 28
-    assert int(root_pill.attrib["width"]) > 100
-
-    # Test shield style
+    # Test shield style with verified status
     svg_shield = generate_svg_badge(
         badge_id="verified_auditor",
-        node_alias="sifter-node-09",
-        score_or_val="99.4%",
+        node_alias="anchor-us-central1",
+        score_or_val="VERIFIED",
         style="shield",
-        theme="midnight",
+        theme="dark",
     )
     root_shield = ET.fromstring(svg_shield)
     assert root_shield.tag == "{http://www.w3.org/2000/svg}svg" or root_shield.tag.endswith("svg")
-    assert "sifter-node-09" in svg_shield
-    assert "99.4%" in svg_shield
+    assert "anchor-us-central1" in svg_shield
+    assert "VERIFIED" in svg_shield
     assert int(root_shield.attrib["height"]) == 28
+    assert int(root_shield.attrib["width"]) > 100
+
+    # Test shield style with custom numeric metric and midnight theme
+    svg_metric = generate_svg_badge(
+        badge_id="century_anchor",
+        node_alias="sifter-node-09",
+        score_or_val="100.0 Days",
+        style="shield",
+        theme="midnight",
+    )
+    root_metric = ET.fromstring(svg_metric)
+    assert root_metric.tag == "{http://www.w3.org/2000/svg}svg" or root_metric.tag.endswith("svg")
+    assert "sifter-node-09" in svg_metric
+    assert "100.0 Days" in svg_metric
+    assert int(root_metric.attrib["height"]) == 28
 
 
 def test_svg_badge_8_registry_matrix() -> None:
-    """Verify all 8 official badges and fallbacks generate valid, well-formed XML across styles."""
+    """Verify all 11 official badges and fallbacks generate valid, well-formed XML across themes."""
     import xml.etree.ElementTree as ET
 
     for badge_id, badge_info in BADGE_REGISTRY.items():
-        for style in ["glass", "pill", "shield"]:
-            for theme in ["dark", "midnight", "light"]:
-                svg = generate_svg_badge(
-                    badge_id=badge_id,
-                    node_alias=f"node-{badge_id}",
-                    score_or_val="VERIFIED",
-                    style=style,
-                    theme=theme,
-                )
-                tree = ET.fromstring(svg)
-                assert tree.tag.endswith("svg")
-                assert badge_info.name in svg or badge_id.replace("_", " ").title() in svg
+        for theme in ["dark", "midnight", "light"]:
+            svg = generate_svg_badge(
+                badge_id=badge_id,
+                node_alias=f"node-{badge_id}",
+                score_or_val="VERIFIED",
+                style="shield",
+                theme=theme,
+            )
+            tree = ET.fromstring(svg)
+            assert tree.tag.endswith("svg")
+            assert badge_info.name in svg or badge_id.replace("_", " ").title() in svg
 
     # Test unknown fallback badge_id
     fallback_svg = generate_svg_badge(badge_id="custom_pioneer_tier", node_alias="custom-node", score_or_val="TIER 1")
