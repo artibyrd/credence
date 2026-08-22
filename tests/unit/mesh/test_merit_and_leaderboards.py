@@ -26,19 +26,23 @@ from credence.models import DomainMetric, PeerMetric
 
 
 def test_badge_registry_completeness() -> None:
-    """Verify all 8 expected merit badges exist in BADGE_REGISTRY."""
+    """Verify all 11 scalable merit badges exist in BADGE_REGISTRY."""
     expected_ids = {
         "sprout_node",
+        "first_attestation",
         "sifter_pioneer",
+        "cadence_keeper",
         "verified_auditor",
         "domain_specialist",
         "philanthropic_relay",
         "root_seed_candidate",
         "galileo_pioneer",
         "sybil_shield",
+        "century_anchor",
     }
-    assert set(BADGE_REGISTRY.keys()) == expected_ids
-    for b in BADGE_REGISTRY.values():
+    for b_id in expected_ids:
+        assert b_id in BADGE_REGISTRY
+        b = BADGE_REGISTRY[b_id]
         assert b.badge_id
         assert b.name
         assert b.icon

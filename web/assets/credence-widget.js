@@ -114,14 +114,21 @@ class CredenceBadge extends HTMLElement {
 
     const BADGE_ICONS = {
       sprout_node: '🌱',
+      sprout_genesis: '🌱',
+      first_attestation: '🌾',
       sifter_pioneer: '🔍',
+      sifter_century: '🔍',
+      cadence_keeper: '⏱️',
       verified_auditor: '⚖️',
-      domain_specialist: '🎯',
       philanthropic_relay: '🎁',
-      root_seed_candidate: '🌳',
+      domain_specialist: '🎯',
       galileo_pioneer: '🔭',
-      sybil_shield: '🛡️'
+      root_seed_candidate: '🌳',
+      sybil_shield: '🛡️',
+      sybil_sentinel: '🛡️',
+      century_anchor: '🏛️'
     };
+
 
     let badgeClass = 'badge-clean';
     let icon = '🛡️';

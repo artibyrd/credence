@@ -437,15 +437,19 @@
                   <div id="badge-input-node-group">
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Select Milestone</label>
                     <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                      <option value="verified_auditor">⚖️ Verified Auditor</option>
-                      <option value="sprout_node">🌱 Sprout Node</option>
-                      <option value="sifter_pioneer">🔍 Sifter Pioneer</option>
-                      <option value="domain_specialist">🎯 Domain Specialist</option>
-                      <option value="philanthropic_relay">🎁 Philanthropic Relay</option>
-                      <option value="root_seed_candidate">🌳 Root Seed Candidate</option>
-                      <option value="galileo_pioneer">🔭 Galileo Pioneer</option>
-                      <option value="sybil_shield">🛡️ Sybil Shield</option>
+                      <option value="sprout_node">🌱 Sprout Genesis (Tier 1: Sprout)</option>
+                      <option value="first_attestation">🌾 First Attestation (Tier 1: Sprout)</option>
+                      <option value="sifter_pioneer">🔍 Sifter Century (Tier 2: Sifter)</option>
+                      <option value="cadence_keeper">⏱️ Cadence Keeper (Tier 2: Sifter)</option>
+                      <option value="verified_auditor" selected>⚖️ Verified Auditor (Tier 3: Auditor)</option>
+                      <option value="philanthropic_relay">🎁 Philanthropic Relay (Tier 3: Auditor)</option>
+                      <option value="domain_specialist">🎯 Domain Specialist (Tier 4: Specialist)</option>
+                      <option value="galileo_pioneer">🔭 Galileo Pioneer (Tier 4: Specialist)</option>
+                      <option value="root_seed_candidate">🌳 Root Seed Candidate (Tier 5: Root Anchor)</option>
+                      <option value="sybil_shield">🛡️ Sybil Sentinel (Tier 5: Root Anchor)</option>
+                      <option value="century_anchor">🏛️ Century Anchor (Tier 5: Root Anchor)</option>
                     </select>
+
                   </div>
 
                   <div id="badge-input-target-group" style="display:none;">
@@ -1052,28 +1056,55 @@
     const MERIT_BADGES_DEF = [
       {
         id: "sprout_node",
-        name: "Sprout Node",
+        name: "Sprout Genesis",
         icon: "🌱",
         tier: "SPROUT",
-        desc: "First 24h of telemetry & 95%+ uptime",
+        desc: "Identity initialized & first telemetry heartbeat broadcast",
         eval: (n, merit) => {
           const uptime = n.uptime_pct || (n.is_local ? 100.0 : 95.0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node") ?? (uptime >= 95.0));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node" || (b.badge_id || b) === "sprout_genesis") ?? (uptime >= 95.0));
           const progress = Math.min(100, Math.round(uptime));
           return { unlocked: isUnlocked, progress, label: `${uptime.toFixed(1)}% Uptime` };
         }
       },
       {
-        id: "sifter_pioneer",
-        name: "Sifter Pioneer",
-        icon: "🔍",
-        tier: "SIFTER",
-        desc: "100+ articles evaluated without hallucination",
+        id: "first_attestation",
+        name: "First Attestation",
+        icon: "🌾",
+        tier: "SPROUT",
+        desc: "First 5 grounded audits completed with zero schema violations",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer") ?? (audits >= 100));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "first_attestation") ?? (audits >= 5));
+          const progress = Math.min(100, Math.round((audits / 5) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits} / 5 Audits` };
+        }
+      },
+      {
+        id: "sifter_pioneer",
+        name: "Sifter Century",
+        icon: "🔍",
+        tier: "SIFTER",
+        desc: "100+ articles evaluated with grounded rule extraction",
+        eval: (n, merit) => {
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer" || (b.badge_id || b) === "sifter_century") ?? (audits >= 100));
           const progress = Math.min(100, Math.round((audits / 100) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 100 Audits` };
+        }
+      },
+      {
+        id: "cadence_keeper",
+        name: "Cadence Keeper",
+        icon: "⏱️",
+        tier: "SIFTER",
+        desc: "Sustained 7+ days longevity with >=98% operational uptime",
+        eval: (n, merit) => {
+          const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
+          const uptime = n.uptime_pct || 100.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "cadence_keeper") ?? (days >= 7.0 && uptime >= 98.0));
+          const progress = Math.min(100, Math.round((days / 7.0) * 100));
+          return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 7.0 Days` };
         }
       },
       {
@@ -1081,14 +1112,27 @@
         name: "Verified Auditor",
         icon: "⚖️",
         tier: "AUDITOR",
-        desc: "Quality score Qᵢ ≥ 0.90, 500+ audits & G ≥ 0.95",
+        desc: "Quality score Qᵢ ≥ 0.85, 500+ audits & G ≥ 0.95",
         eval: (n, merit) => {
           const q = n.quality_score ?? 1.0;
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") ?? (q >= 0.90 && audits >= 500 && g >= 0.95));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") ?? (q >= 0.85 && audits >= 500 && g >= 0.95));
           const progress = Math.min(100, Math.round((audits / 500) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 500 Audits (Qᵢ ${(q * 10).toFixed(1)}/10)` };
+        }
+      },
+      {
+        id: "philanthropic_relay",
+        name: "Philanthropic Relay",
+        icon: "🎁",
+        tier: "AUDITOR",
+        desc: "1,000,000+ compute tokens seeded to peers",
+        eval: (n, merit) => {
+          const tokens = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved || 0) : (n.tokens_seeded || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") ?? (tokens >= 1000000));
+          const progress = Math.min(100, Math.round((tokens / 1000000) * 100));
+          return { unlocked: isUnlocked, progress, label: `${tokens.toLocaleString()} / 1M Tokens` };
         }
       },
       {
@@ -1105,16 +1149,16 @@
         }
       },
       {
-        id: "philanthropic_relay",
-        name: "Philanthropic Relay",
-        icon: "🎁",
+        id: "galileo_pioneer",
+        name: "Galileo Pioneer",
+        icon: "🔭",
         tier: "SPECIALIST",
-        desc: "1,000,000+ compute tokens seeded to peers",
+        desc: "Discovered verified minority consensus truth",
         eval: (n, merit) => {
-          const tokens = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved || 0) : (n.tokens_seeded || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") ?? (tokens >= 1000000));
-          const progress = Math.min(100, Math.round((tokens / 1000000) * 100));
-          return { unlocked: isUnlocked, progress, label: `${tokens.toLocaleString()} / 1M Tokens` };
+          const gal = n.is_local ? (liveNodeMerit?.galileo_discoveries || 0) : (n.galileo_discoveries || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") ?? (gal >= 1));
+          const progress = gal >= 1 ? 100 : 0;
+          return { unlocked: isUnlocked, progress, label: `${gal} / 1 Discoveries` };
         }
       },
       {
@@ -1133,29 +1177,31 @@
         }
       },
       {
-        id: "galileo_pioneer",
-        name: "Galileo Pioneer",
-        icon: "🔭",
-        tier: "ROOT_ANCHOR",
-        desc: "Discovered verified minority consensus truth",
-        eval: (n, merit) => {
-          const gal = n.is_local ? (liveNodeMerit?.galileo_discoveries || 0) : (n.galileo_discoveries || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") ?? (gal >= 1));
-          const progress = gal >= 1 ? 100 : 0;
-          return { unlocked: isUnlocked, progress, label: `${gal} / 1 Discoveries` };
-        }
-      },
-      {
         id: "sybil_shield",
-        name: "Sybil Shield",
+        name: "Sybil Sentinel",
         icon: "🛡️",
         tier: "ROOT_ANCHOR",
         desc: "5,000+ audits with zero slashing penalties",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield") ?? (audits >= 5000));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield" || (b.badge_id || b) === "sybil_sentinel") ?? (audits >= 5000));
           const progress = Math.min(100, Math.round((audits / 5000) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits.toLocaleString()} / 5,000 Verified` };
+        }
+      },
+      {
+        id: "century_anchor",
+        name: "Century Anchor",
+        icon: "🏛️",
+        tier: "ROOT_ANCHOR",
+        desc: "100+ days uninterrupted operation (Qᵢ ≥ 0.90 & G ≥ 0.98)",
+        eval: (n, merit) => {
+          const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
+          const q = n.quality_score ?? 1.0;
+          const g = n.grounding_quotient ?? 1.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "century_anchor") ?? (days >= 100.0 && q >= 0.90 && g >= 0.98));
+          const progress = Math.min(100, Math.round((days / 100.0) * 100));
+          return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 100.0 Days` };
         }
       }
     ];
@@ -1246,7 +1292,20 @@
       }
 
       // Render crisp inline preview SVG matching the server engine
-      const iconMap = { verified_auditor: "⚖️", sprout_node: "🌱", sifter_pioneer: "🔍", domain_specialist: "🎯", philanthropic_relay: "🎁", root_seed_candidate: "🌳", galileo_pioneer: "🔭", sybil_shield: "🛡️" };
+      const iconMap = {
+        verified_auditor: "⚖️",
+        sprout_node: "🌱",
+        first_attestation: "🌾",
+        sifter_pioneer: "🔍",
+        cadence_keeper: "⏱️",
+        domain_specialist: "🎯",
+        philanthropic_relay: "🎁",
+        root_seed_candidate: "🌳",
+        galileo_pioneer: "🔭",
+        sybil_shield: "🛡️",
+        century_anchor: "🏛️"
+      };
+
       const icon = mode === 'publisher' ? '📰' : (iconMap[badgeId] || '🛡️');
       const tagEl = document.getElementById('preview-mode-tag');
 

@@ -49,11 +49,11 @@ BADGE_ACCENTS: Dict[str, Tuple[str, str, str]] = {
 def _get_badge_palette(badge_id: str) -> Tuple[str, str, str]:
     """Resolve accent start, accent end, and border glow for a given badge or tier identifier."""
     b_id = badge_id.lower()
-    if any(k in b_id for k in ("root", "seed", "sybil", "pristine")):
+    if any(k in b_id for k in ("century", "root", "seed", "sybil", "pristine")):
         return BADGE_ACCENTS["emerald"]
     if any(k in b_id for k in ("galileo", "specialist", "astroturf")):
         return BADGE_ACCENTS["violet"]
-    if any(k in b_id for k in ("relay", "philanthropic", "moderate", "attention")):
+    if any(k in b_id for k in ("relay", "philanthropic", "cadence", "moderate", "attention")):
         return BADGE_ACCENTS["amber"]
     if any(k in b_id for k in ("flagged", "deceptive", "modified")):
         return BADGE_ACCENTS["rose"]
@@ -231,11 +231,11 @@ def determine_node_tier(
     """Determine a node's Epistemic Tier based on mathematical milestones."""
     if quality_score >= 0.85 and longevity_days >= 30.0 and grounding_ratio >= 0.80:
         return EpistemicTier.ROOT_ANCHOR
-    if max_domain_expertise >= 0.80:
+    if max_domain_expertise >= 0.80 and quality_score >= 0.75 and evaluations_count >= 50:
         return EpistemicTier.SPECIALIST
-    if quality_score >= 0.70 and evaluations_count >= 50 and grounding_ratio >= 0.90:
+    if quality_score >= 0.70 and evaluations_count >= 50 and grounding_ratio >= 0.85:
         return EpistemicTier.AUDITOR
-    if evaluations_count >= 10:
+    if evaluations_count >= 10 and quality_score >= 0.60 and grounding_ratio >= 0.70:
         return EpistemicTier.SIFTER
     return EpistemicTier.SPROUT
 
@@ -266,10 +266,31 @@ def evaluate_node_badges(
         return awards
 
     longevity = compute_longevity_days(peer_record.first_seen, now=current_time)
+    uptime = compute_half_life_uptime(
+        peer_record.successful_heartbeats,
+        peer_record.total_heartbeats_sent,
+        peer_record.last_seen,
+        now=current_time,
+    )
     total_q = max(1, peer_record.total_citations_count)
     grounding_ratio = peer_record.grounded_citations_count / total_q
+    total_evals = peer_record.total_attestations_evaluated + feed_items_count
 
-    if (peer_record.total_attestations_evaluated + feed_items_count) >= 100:
+    # Tier 1 (SPROUT) - Welcome & First Ingestion
+    if total_evals >= 5:
+        awards.append(
+            BadgeAward(
+                badge_id="first_attestation",
+                name=BADGE_REGISTRY["first_attestation"].name,
+                tier=BADGE_REGISTRY["first_attestation"].tier.value,
+                icon=BADGE_REGISTRY["first_attestation"].icon,
+                description=BADGE_REGISTRY["first_attestation"].description,
+                unlocked_at=now_iso,
+            )
+        )
+
+    # Tier 2 (SIFTER) - Operational Cadence & Volume
+    if total_evals >= 100:
         awards.append(
             BadgeAward(
                 badge_id="sifter_pioneer",
@@ -281,7 +302,20 @@ def evaluate_node_badges(
             )
         )
 
-    if peer_record.quality_score >= 0.70 and peer_record.total_citations_count >= 100 and grounding_ratio >= 0.95:
+    if longevity >= 7.0 and uptime >= 0.98:
+        awards.append(
+            BadgeAward(
+                badge_id="cadence_keeper",
+                name=BADGE_REGISTRY["cadence_keeper"].name,
+                tier=BADGE_REGISTRY["cadence_keeper"].tier.value,
+                icon=BADGE_REGISTRY["cadence_keeper"].icon,
+                description=BADGE_REGISTRY["cadence_keeper"].description,
+                unlocked_at=now_iso,
+            )
+        )
+
+    # Tier 3 (AUDITOR) - Epistemic Rigor & Swarm Philanthropy
+    if peer_record.quality_score >= 0.70 and total_evals >= 100 and grounding_ratio >= 0.95:
         awards.append(
             BadgeAward(
                 badge_id="verified_auditor",
@@ -293,6 +327,19 @@ def evaluate_node_badges(
             )
         )
 
+    if peer_record.tokens_seeded_count >= 1_000_000:
+        awards.append(
+            BadgeAward(
+                badge_id="philanthropic_relay",
+                name=BADGE_REGISTRY["philanthropic_relay"].name,
+                tier=BADGE_REGISTRY["philanthropic_relay"].tier.value,
+                icon=BADGE_REGISTRY["philanthropic_relay"].icon,
+                description=BADGE_REGISTRY["philanthropic_relay"].description,
+                unlocked_at=now_iso,
+            )
+        )
+
+    # Tier 4 (SPECIALIST) - Domain Authority & Scientific Discovery
     for d in domain_records:
         if d.expertise_score >= 0.80 and d.unique_domains_count >= 5:
             awards.append(
@@ -307,18 +354,19 @@ def evaluate_node_badges(
             )
             break
 
-    if peer_record.tokens_seeded_count >= 1_000_000:
+    if peer_record.galileo_discoveries_count >= 1:
         awards.append(
             BadgeAward(
-                badge_id="philanthropic_relay",
-                name=BADGE_REGISTRY["philanthropic_relay"].name,
-                tier=BADGE_REGISTRY["philanthropic_relay"].tier.value,
-                icon=BADGE_REGISTRY["philanthropic_relay"].icon,
-                description=BADGE_REGISTRY["philanthropic_relay"].description,
+                badge_id="galileo_pioneer",
+                name=BADGE_REGISTRY["galileo_pioneer"].name,
+                tier=BADGE_REGISTRY["galileo_pioneer"].tier.value,
+                icon=BADGE_REGISTRY["galileo_pioneer"].icon,
+                description=BADGE_REGISTRY["galileo_pioneer"].description,
                 unlocked_at=now_iso,
             )
         )
 
+    # Tier 5 (ROOT_ANCHOR) - Prestige Sentinel & Sovereign Foundation
     if (
         peer_record.quality_score >= 0.85
         and longevity >= 30.0
@@ -336,18 +384,6 @@ def evaluate_node_badges(
             )
         )
 
-    if peer_record.galileo_discoveries_count >= 1:
-        awards.append(
-            BadgeAward(
-                badge_id="galileo_pioneer",
-                name=BADGE_REGISTRY["galileo_pioneer"].name,
-                tier=BADGE_REGISTRY["galileo_pioneer"].tier.value,
-                icon=BADGE_REGISTRY["galileo_pioneer"].icon,
-                description=BADGE_REGISTRY["galileo_pioneer"].description,
-                unlocked_at=now_iso,
-            )
-        )
-
     total_slashes = sum(d.slashing_count for d in domain_records)
     if peer_record.total_attestations_evaluated >= 5000 and total_slashes == 0:
         awards.append(
@@ -357,6 +393,23 @@ def evaluate_node_badges(
                 tier=BADGE_REGISTRY["sybil_shield"].tier.value,
                 icon=BADGE_REGISTRY["sybil_shield"].icon,
                 description=BADGE_REGISTRY["sybil_shield"].description,
+                unlocked_at=now_iso,
+            )
+        )
+
+    if (
+        longevity >= 100.0
+        and peer_record.quality_score >= 0.90
+        and grounding_ratio >= 0.98
+        and getattr(peer_record, "has_valid_catalog_hashes", True)
+    ):
+        awards.append(
+            BadgeAward(
+                badge_id="century_anchor",
+                name=BADGE_REGISTRY["century_anchor"].name,
+                tier=BADGE_REGISTRY["century_anchor"].tier.value,
+                icon=BADGE_REGISTRY["century_anchor"].icon,
+                description=BADGE_REGISTRY["century_anchor"].description,
                 unlocked_at=now_iso,
             )
         )
