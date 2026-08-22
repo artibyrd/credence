@@ -346,7 +346,7 @@
   <!-- Unified Ecosystem Navigation Bar (5 Invariant Links) -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.5.1</span>
+      🛡️ Credence <span class="badge">v2.6.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -412,6 +412,7 @@
           <div class="status-dot" id="swarm-status-dot"></div>
           <h2 style="margin:0; font-size:1.35rem; color:#fff;" id="swarm-headline">Live Swarm: 1 Node Online (Standalone)</h2>
           <span class="pill pill-cyan" id="mode-pill">STANDALONE MODE</span>
+          <span class="pill pill-cyan" id="hunger-pill">🔥 HUNGER: ACTIVE</span>
           <span class="pill pill-green" id="byz-pill">Local Evaluation Active</span>
         </div>
         <div style="font-size:0.85rem; color:var(--text-muted);" id="last-updated-text">Last Updated: Just now</div>
@@ -792,6 +793,11 @@
       document.getElementById('kpi-nodes-count').textContent = `${nodeCount} Node${nodeCount > 1 ? 's' : ''}`;
       document.getElementById('kpi-peers-sub').textContent = `${data.active_peers_count || 0} Connected Remote Peers`;
       document.getElementById('kpi-edges-sub').textContent = `${(data.edges || []).length} P2P Relay Links Active`;
+      if (data.mesh_dynamics && data.mesh_dynamics.peer_hunger) {
+        const hungerPill = document.getElementById('hunger-pill');
+        if (hungerPill) hungerPill.textContent = `🔥 HUNGER: ${data.mesh_dynamics.peer_hunger}`;
+        document.getElementById('kpi-edges-sub').textContent = `Target k=${data.mesh_dynamics.target_peer_degree || 4} • Cap: ${data.mesh_dynamics.dynamic_max_peers || 48}`;
+      }
 
       document.getElementById('kpi-quorum-health').textContent = `f = ${byz.max_byzantine_faults || 0} Faults`;
       document.getElementById('kpi-byz-sub').textContent = byz.quorum_description || 'Local Evaluation Only';

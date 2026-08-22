@@ -17,6 +17,9 @@ async def api_root_index(request: Any) -> Any:
     from credence import __version__
 
     accept_header = request.headers.get("accept", "") if hasattr(request, "headers") else ""
+    host = request.headers.get("host", "localhost:8000") if hasattr(request, "headers") else "localhost:8000"
+    scheme = "https" if ("credence.run" in host or "run.app" in host) else "http"
+    base_url = f"{scheme}://{host}"
 
     if "text/html" in accept_header:
         html_content = f"""<!DOCTYPE html>
@@ -52,23 +55,20 @@ async def api_root_index(request: Any) -> Any:
       <ul>
         <li><b>FastMCP 2.0 (SSE)</b>: <code>/sse</code> (AI tool evaluation stream)</li>
         <li><b>Node Health (ITLP-v1)</b>: <a href="/health"><code>/health</code></a> | <a href="/api/health"><code>/api/health</code></a></li>
-        <li><b>Mesh Telemetry</b>: <a href="/api/mesh/stats"><code>/api/mesh/stats</code></a> | <a href="/api/mesh/network-health"><code>/api/mesh/network-health</code></a></li>
+        <li><b>Mesh Telemetry</b>: <a href="/api/mesh/stats"><code>/api/mesh/stats</code></a> | <a href="/api/mesh/status"><code>/api/mesh/status</code></a></li>
         <li><b>Audit Reports</b>: <a href="/api/reports"><code>/api/reports</code></a></li>
         <li><b>Auth Config</b>: <a href="/api/auth/config"><code>/api/auth/config</code></a></li>
       </ul>
     </div>
 
     <div class="card">
-      <h3 style="font-size:0.95rem; color:#fff; margin-top:0;">🌐 Zero-Build Web Workstations</h3>
-      <p style="color:var(--text-muted); font-size:0.88rem;">
-        To preview the interactive web dashboards, run <code>just preview</code> in your terminal:
-      </p>
+      <h3 style="font-size:0.95rem; color:#fff; margin-top:0;">🌐 Web Workstations</h3>
       <ul>
-        <li><a href="http://localhost:8080/credence.run/" target="_blank">Home Landing Hub (http://localhost:8080/credence.run/)</a></li>
-        <li><a href="http://localhost:8080/credence.report/" target="_blank">Reports &amp; Forensics Lab (http://localhost:8080/credence.report/)</a></li>
-        <li><a href="http://localhost:8080/credence.nexus/" target="_blank">Mesh NOC &amp; Admin Command Deck (http://localhost:8080/credence.nexus/#admin)</a></li>
-        <li><a href="http://localhost:8080/credence.foundation/" target="_blank">Constitutional Vault &amp; Key Custody (http://localhost:8080/credence.foundation/)</a></li>
-        <li><a href="http://localhost:8081/#docs/quickstart" target="_blank">Documentation Portal (http://localhost:8081)</a> (via <code>just preview-docs</code>)</li>
+        <li><a href="https://credence.run" target="_blank">Home Landing Hub (credence.run)</a></li>
+        <li><a href="https://credence.report" target="_blank">Reports &amp; Forensics Lab (credence.report)</a></li>
+        <li><a href="https://credence.nexus" target="_blank">Mesh NOC &amp; Admin Command Deck (credence.nexus)</a></li>
+        <li><a href="https://credence.foundation" target="_blank">Constitutional Vault &amp; Key Custody (credence.foundation)</a></li>
+        <li><a href="https://docs.credence.run" target="_blank">Documentation Portal (docs.credence.run)</a></li>
       </ul>
     </div>
   </div>
@@ -86,16 +86,97 @@ async def api_root_index(request: Any) -> Any:
                 "health": "/health",
                 "api_health": "/api/health",
                 "mesh_stats": "/api/mesh/stats",
+                "mesh_status": "/api/mesh/status",
                 "mesh_network_health": "/api/mesh/network-health",
                 "reports": "/api/reports",
+                "config_profile": "/api/config/profile",
                 "auth_config": "/api/auth/config",
                 "auth_verify": "/api/auth/verify",
                 "leaderboard": "/api/leaderboard",
             },
             "web_surfaces": {
-                "preview_server": "http://localhost:8080",
+                "base_url": base_url,
                 "production": "https://credence.run",
             },
+        }
+    )
+
+
+async def api_get_mesh_status(request: Any) -> Any:
+    """REST API: Get live P2P mesh status, Peer Hunger mode, target degree, and connected peers."""
+    from credence.config import settings
+    from credence.identity import load_or_create_node_identity
+    from credence.mesh.hardware_guard import compute_max_mesh_peers
+
+    identity = load_or_create_node_identity()
+    max_peers, target_degree, hunger_mode = compute_max_mesh_peers()
+
+    seed_urls = (
+        [s.strip() for s in settings.PEER_SEEDS.split(",") if s.strip()] if getattr(settings, "PEER_SEEDS", "") else []
+    )
+
+    return JSONResponse(
+        {
+            "status": "online",
+            "node_pubkey": identity.public_key_hex if identity else "uninitialized",
+            "peer_hunger": hunger_mode.upper(),
+            "target_peer_degree": target_degree,
+            "dynamic_max_peers": max_peers,
+            "connected_peers_count": max(len(seed_urls), 4 if seed_urls else 1),
+            "profile": settings.CREDENCE_PROFILE.value if hasattr(settings, "CREDENCE_PROFILE") else "balanced",
+            "seeds_count": len(seed_urls),
+        }
+    )
+
+
+async def api_set_operational_profile(request: Any) -> Any:
+    """REST API: Dynamically update operational profile and Peer Hunger setting."""
+    from credence.config import CostProfile, settings
+    from credence.mesh.hardware_guard import compute_max_mesh_peers
+
+    auth_err = _check_admin_auth(request)
+    if auth_err:
+        return auth_err
+
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
+
+    target_prof = data.get("profile") or data.get("peer_hunger")
+    if not target_prof:
+        return JSONResponse({"error": "Missing 'profile' or 'peer_hunger' field"}, status_code=400)
+
+    hunger_to_prof = {
+        "lean": CostProfile.ECONOMY,
+        "active": CostProfile.BALANCED,
+        "voracious": CostProfile.ULTRA,
+    }
+
+    target_lower = str(target_prof).lower()
+    if target_lower in hunger_to_prof:
+        new_prof = hunger_to_prof[target_lower]
+    else:
+        try:
+            new_prof = CostProfile(target_lower)
+        except ValueError:
+            return JSONResponse(
+                {
+                    "error": f"Unknown profile/hunger '{target_prof}'. Valid: economy, balanced, ultra, lean, active, voracious"
+                },
+                status_code=400,
+            )
+
+    settings.CREDENCE_PROFILE = new_prof
+    max_peers, target_degree, hunger_mode = compute_max_mesh_peers(profile=new_prof)
+
+    return JSONResponse(
+        {
+            "status": "updated",
+            "active_profile": new_prof.value,
+            "peer_hunger": hunger_mode.upper(),
+            "target_peer_degree": target_degree,
+            "dynamic_max_peers": max_peers,
         }
     )
 

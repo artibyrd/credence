@@ -217,6 +217,19 @@ class MeshGossipRelay:
 
     async def _handle_inbound_connection(self, websocket: Any) -> None:
         """Handle incoming WebSocket peer connection."""
+        from credence.mesh.hardware_guard import compute_max_mesh_peers
+
+        max_peers, _, hunger = compute_max_mesh_peers()
+        if len(self.peers) >= max_peers:
+            logger.warning(
+                "Rejecting inbound peer connection: dynamic capacity reached (%d/%d, hunger=%s)",
+                len(self.peers),
+                max_peers,
+                hunger,
+            )
+            await websocket.close(code=1008, reason="Mesh dynamic peer capacity reached")
+            return
+
         remote = f"{websocket.remote_address[0]}:{websocket.remote_address[1]}"
         peer = PeerConnection(websocket=websocket, remote_address=remote, is_inbound=True)
         peer_id = f"inbound-{remote}"
@@ -242,7 +255,9 @@ class MeshGossipRelay:
                     logger.warning(f"Peer {peer_id} exceeded rate limit. Dropping message.")
                     continue
                 await self._process_raw_message(peer, message)
-        except (websockets.exceptions.ConnectionClosed, asyncio.CancelledError, GeneratorExit):
+        except asyncio.CancelledError:
+            raise
+        except (websockets.exceptions.ConnectionClosed, GeneratorExit):
             pass
         except Exception as e:
             logger.debug(f"Error handling peer {peer_id}: {e}")

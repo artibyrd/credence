@@ -6,6 +6,7 @@ from kernel OOM panics when launching local multi-node P2P mesh clusters.
 
 from __future__ import annotations
 
+import math
 import os
 from typing import Any, Optional
 
@@ -95,3 +96,74 @@ def _orig_recommend_cluster_size(requested_nodes: Optional[int] = None, force: b
             return safe_max
 
     return target
+
+
+def compute_max_mesh_peers(
+    profile: Optional[Any] = None,
+    available_memory_mb: Optional[int] = None,
+    cluster_size: Optional[int] = None,
+    nofile_soft_limit: Optional[int] = None,
+) -> tuple[int, int, str]:
+    """Dynamically compute optimal P2P mesh peer capacity, target degree, and hunger mode.
+
+    Derives dynamic bounds from:
+    1. Operational Cost Profile Hunger Preset (LEAN, ACTIVE, VORACIOUS)
+    2. OS File Descriptor Soft Limits (RLIMIT_NOFILE, allocating <= 40% to P2P sockets)
+    3. Available Host RAM Headroom (<1GB -> 12, 1-4GB -> 48, >4GB -> 256)
+    4. Watts-Strogatz Small-World Topology Bound (k >= max(2, ceil(2 * ln(N))))
+
+    Returns:
+        Tuple of (max_peer_capacity, target_peer_degree, peer_hunger_mode)
+    """
+    from credence.config import COST_PROFILES, CostProfile, settings
+
+    raw_prof = profile or getattr(settings, "CREDENCE_PROFILE", CostProfile.BALANCED)
+    if isinstance(raw_prof, str):
+        try:
+            active_prof = CostProfile(raw_prof.lower())
+        except ValueError:
+            active_prof = CostProfile.BALANCED
+    elif isinstance(raw_prof, CostProfile):
+        active_prof = raw_prof
+    else:
+        active_prof = CostProfile.BALANCED
+
+    prof_cfg = COST_PROFILES.get(active_prof, COST_PROFILES[CostProfile.BALANCED])
+
+    # 1. Profile preset limits
+    profile_cap = prof_cfg.max_peer_connections
+    target_degree = prof_cfg.target_peer_degree
+    hunger_mode = prof_cfg.peer_hunger
+
+    # 2. File descriptor headroom
+    if nofile_soft_limit is None:
+        try:
+            import resource
+
+            soft_limit, _ = resource.getrlimit(resource.RLIMIT_NOFILE)
+            nofile_soft_limit = soft_limit
+        except (ImportError, Exception):
+            nofile_soft_limit = 1024
+
+    # Reserve 60% of FDs for SQLite WAL, HTTP REST APIs, and runtime logging
+    fd_capacity = max(4, int(nofile_soft_limit * 0.40))
+
+    # 3. Available system memory tier
+    avail_mb = available_memory_mb if available_memory_mb is not None else get_available_system_memory_mb()
+    if avail_mb < 1024:
+        mem_capacity = 12
+    elif avail_mb < 4096:
+        mem_capacity = 48
+    else:
+        mem_capacity = 256
+
+    # Dynamic maximum peers is the conservative intersection of all resource constraints
+    dynamic_max = min(profile_cap, fd_capacity, mem_capacity)
+
+    # 4. Watts-Strogatz graph topology lower bound
+    if cluster_size and cluster_size > 1:
+        topo_min = max(2, math.ceil(2 * math.log(cluster_size)))
+        target_degree = max(target_degree, topo_min)
+        dynamic_max = max(dynamic_max, target_degree)
+
+    return dynamic_max, target_degree, hunger_mode

@@ -148,7 +148,7 @@ async def test_calculate_mesh_stats_aggregations() -> None:
 
 def test_rest_mesh_stats_endpoint() -> None:
     """Test REST API GET /api/v1/mesh/stats returns valid schema and HTTP 200."""
-    app = create_server_app()
+    app = create_server_app(enable_sifter=False, enable_boredom=False)
     with TestClient(app) as client:
         # Test /api/v1/mesh/stats
         response_v1 = client.get("/api/v1/mesh/stats")
@@ -278,7 +278,7 @@ async def test_calculate_network_mesh_health_topology() -> None:
 
 def test_rest_mesh_network_health_endpoint() -> None:
     """Test REST API GET /api/v1/mesh/network-health and /api/mesh/network-health."""
-    app = create_server_app()
+    app = create_server_app(enable_sifter=False, enable_boredom=False)
     with TestClient(app) as client:
         res1 = client.get("/api/v1/mesh/network-health")
         assert res1.status_code == 200

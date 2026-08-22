@@ -90,11 +90,11 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                 except (asyncio.TimeoutError, asyncio.CancelledError):
                     pass
 
-            # Graceful shutdown: flush WAL and export backup snapshot
+            # Graceful shutdown: flush WAL and export backup snapshot asynchronously
             try:
                 from credence.storage.backup import create_database_backup
 
-                create_database_backup(upload_cloud=True)
+                await asyncio.to_thread(create_database_backup, upload_cloud=False)
             except Exception as be:
                 logger.debug("Shutdown backup hook non-blocking exception: %s", be)
 

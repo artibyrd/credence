@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from mcp.server.mcpserver import MCPServer
 
+from credence import __version__
 from credence.server.mcp.admin_tools import _register_admin_tools
 from credence.server.mcp.consensus_tools import _register_consensus_tools
 from credence.server.mcp.cost_tools import _register_cost_tools_and_resources
@@ -21,7 +22,7 @@ def create_mcp_server() -> MCPServer:
     server = MCPServer(
         name="credence",
         instructions="Autonomous Epistemic Evaluation Engine, FastMCP Server, and Trust Network.",
-        version="2.0.0",
+        version=__version__,
     )
     _register_eval_tools(server)
     _register_query_tools(server)
