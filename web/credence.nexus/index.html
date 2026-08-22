@@ -107,10 +107,13 @@
               <span>👤 3. Node Vitals</span>
             </button>
             <button class="deck-nav-item" data-tab="merit" onclick="window.CredenceWS.switchTab('merit')">
-              <span>🛡️ 4. Merit &amp; Badges</span>
+              <span>🛡️ 4. Node Merit</span>
+            </button>
+            <button class="deck-nav-item" data-tab="studio" onclick="window.CredenceWS.switchTab('studio')">
+              <span>🎨 5. Badge Studio</span>
             </button>
             <button class="deck-nav-item" data-tab="seeds" onclick="window.CredenceWS.switchTab('seeds')">
-              <span>🌱 5. Seed Manifest</span>
+              <span>🌱 6. Seed Manifest</span>
             </button>
           </div>
 
@@ -382,23 +385,22 @@
             </div>
           </div>
 
-          <!-- TAB 4: EPISTEMIC MERIT & BADGE STUDIO -->
+          <!-- TAB 4: NODE EPISTEMIC MERIT MATRIX -->
           <div id="tab-merit" class="tab-panel">
-            <!-- Section 1: Live Node Merit Showcase Grid (8 Badges) -->
-            <div class="deck-card" style="margin-bottom:1.5rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Epistemic Merit Badges &amp; Peer Milestones</h3>
+                    <h3 style="font-size:1.2rem; color:#fff; margin:0;">Node Epistemic Merit &amp; Peer Milestones</h3>
                     <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Epistemic Merit Milestones">ℹ</button>
                   </div>
                   <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0 0;">
-                    Live cryptographic milestone awards evaluated autonomously across 5 epistemic tiers.
+                    Live cryptographic milestone awards evaluated autonomously across 5 epistemic tiers based on active peer telemetry.
                   </p>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
-                  <span style="font-size:0.8rem; color:var(--text-dim);">Inspecting:</span>
-                  <select id="merit-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; max-width:220px;"></select>
+                  <span style="font-size:0.8rem; color:var(--text-dim);">Inspecting Node:</span>
+                  <select id="merit-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; max-width:240px;"></select>
                 </div>
               </div>
 
@@ -407,20 +409,22 @@
                 <!-- Dynamically populated by renderMeritGrid() -->
               </div>
             </div>
+          </div>
 
-            <!-- Section 2: Interactive Badge Customizer & Embed Generator -->
-            <div class="deck-card">
+          <!-- TAB 5: DEDICATED UNIVERSAL BADGE STUDIO -->
+          <div id="tab-studio" class="tab-panel">
+            <div class="deck-card" style="overflow:visible;">
               <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Universal Badge Studio &amp; Embed Generator</h3>
+                <h3 style="font-size:1.2rem; color:#fff; margin:0;">Universal Badge Studio &amp; Embed Generator</h3>
                 <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Badge Studio Guide">ℹ</button>
               </div>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
-                Customize, preview, and generate 1-click embed snippets for GitHub READMEs, publication mastheads, or active websites.
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+                Design, preview, and generate 1-click embed snippets for GitHub READMEs, publication mastheads, or active websites.
               </p>
 
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
-                <!-- Left Controls Column -->
-                <div style="display:flex; flex-direction:column; gap:1rem;">
+              <div style="display:grid; grid-template-columns:minmax(280px, 340px) 1fr; gap:1.75rem; align-items:start; overflow:visible;">
+                <!-- Left Configuration Column -->
+                <div style="display:flex; flex-direction:column; gap:1.1rem; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:1.25rem;">
                   <div>
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Badge Modality</label>
                     <select id="badge-mode-select" class="form-input" style="width:100%; font-size:0.85rem;">
@@ -431,7 +435,7 @@
                   </div>
 
                   <div id="badge-input-node-group">
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Select Merit Badge</label>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Select Milestone</label>
                     <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
                       <option value="verified_auditor">⚖️ Verified Auditor</option>
                       <option value="sprout_node">🌱 Sprout Node</option>
@@ -449,38 +453,40 @@
                     <input type="text" id="badge-target-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="e.g. reuters.com" value="reuters.com">
                   </div>
 
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-                    <div>
-                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">3. Render Style</label>
-                      <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                        <option value="glass" selected>Doc Glass Pill (Docs Style)</option>
-                        <option value="pill">Dual-Capsule Cyber Pill</option>
-                        <option value="shield">Modern Shield (Shield)</option>
-                        <option value="component">Interactive Web Component</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">4. Node Alias / Label</label>
-                      <input type="text" id="badge-alias-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="credence-node" value="credence-node">
-                    </div>
+                  <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">3. Render Style</label>
+                    <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                      <option value="glass" selected>Doc Glass Pill (Docs Style)</option>
+                      <option value="pill">Dual-Capsule Cyber Pill</option>
+                      <option value="shield">Modern Shield (Shield)</option>
+                      <option value="component">Interactive Web Component (&lt;credence-badge&gt;)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">4. Node Alias / Label</label>
+                    <input type="text" id="badge-alias-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="credence-node" value="credence-node">
                   </div>
                 </div>
 
-                <!-- Right Live Preview Column -->
-                <div style="background:rgba(0,0,0,0.35); border:1px solid var(--border); border-radius:8px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
-                  <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                      <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Live Badge Preview</span>
+                <!-- Right Live Preview & Embed Console -->
+                <div style="display:flex; flex-direction:column; gap:1.25rem; overflow:visible;">
+                  <!-- Top: Dedicated Live Preview Stage (With Ample Vertical Clearance) -->
+                  <div style="background:radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.08) 0%, rgba(3, 7, 18, 0.8) 100%); border:1px solid var(--border); border-radius:8px; padding:1.5rem; min-height:280px; position:relative; overflow:visible; z-index:20;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                      <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em;">Interactive Stage Preview</span>
                       <span class="ribbon-pill ready" id="preview-mode-tag" style="font-size:0.7rem;">Vector Rendered</span>
                     </div>
-                    <div id="badge-live-preview-container" style="min-height:56px; display:flex; align-items:center; padding:0.75rem; background:rgba(3,7,18,0.6); border-radius:6px; border:1px solid rgba(255,255,255,0.05); margin-bottom:1rem;">
+
+                    <!-- Badge container with high z-index and overflow visible -->
+                    <div id="badge-live-preview-container" style="min-height:56px; display:inline-flex; align-items:center; position:relative; z-index:50; overflow:visible;">
                       <!-- Real SVG or <credence-badge> dynamically inserted here -->
                     </div>
                   </div>
 
-                  <!-- 1-Click Embed Snippet Generator -->
-                  <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <!-- Bottom: 1-Click Embed Snippets Console -->
+                  <div style="background:rgba(0,0,0,0.35); border:1px solid var(--border); border-radius:8px; padding:1.25rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem; flex-wrap:wrap; gap:0.5rem;">
                       <span style="font-size:0.78rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">1-Click Embed Snippets</span>
                       <div class="lensing-tabs" style="font-size:0.7rem;">
                         <button type="button" class="tab-btn active" id="btn-snippet-md">Markdown</button>
@@ -497,6 +503,7 @@
               </div>
             </div>
           </div>
+
 
           <!-- TAB 5: DEDICATED SEED MANIFEST -->
           <div id="tab-seeds" class="tab-panel">
@@ -1286,10 +1293,8 @@
         defaultTab: 'topology',
         onTabChange: (tab) => {
           if (tab === 'admin') renderAdminView();
-          if (tab === 'merit' || tab === 'badges') {
-            renderMeritGrid(liveTopologyData);
-            updateBadgeStudioPreview();
-          }
+          if (tab === 'merit' || tab === 'badges') renderMeritGrid(liveTopologyData);
+          if (tab === 'studio') updateBadgeStudioPreview();
         }
       });
 

@@ -200,6 +200,8 @@ class CredenceBadge extends HTMLElement {
           top: calc(100% + 8px);
           left: 0;
           width: 320px;
+          max-height: min(440px, 85vh);
+          overflow-y: auto;
           background: #0f172a;
           border: 1px solid rgba(56, 189, 248, 0.3);
           border-radius: 12px;
@@ -209,6 +211,7 @@ class CredenceBadge extends HTMLElement {
           display: ${popoverOpen ? 'block' : 'none'};
           color: #e2e8f0;
           backdrop-filter: blur(12px);
+          box-sizing: border-box;
         }
         .popover-header {
           display: flex;
