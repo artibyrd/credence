@@ -506,7 +506,11 @@
                       <input type="text" id="badge-embed-snippet" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono); width:100%;">
                       <button type="button" class="btn-primary" id="btn-copy-embed" style="font-size:0.75rem; padding:0.25rem 0.85rem; white-space:nowrap;">Copy</button>
                     </div>
+                    <div id="badge-studio-locked-warning" style="display:none; margin-top:0.75rem; background:rgba(244,63,94,0.12); border:1px solid #f43f5e; border-radius:6px; padding:0.6rem 0.75rem; font-size:0.75rem; color:#fda4af; line-height:1.4;">
+                      🔒 <strong>Milestone Not Earned</strong>: The selected node has not yet satisfied the criteria for this badge. Embed snippets are locked to prevent distributing ungrounded claims.
+                    </div>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -1498,11 +1502,35 @@
       const badgeIdSel = document.getElementById('badge-id-select');
       if (!badgeIdSel || !node) return;
       const curVal = badgeIdSel.value;
-      badgeIdSel.innerHTML = MERIT_BADGES_DEF.map(b => {
+
+      const earned = [];
+      const locked = [];
+
+      MERIT_BADGES_DEF.forEach(b => {
         const status = b.eval(node, node.is_local ? liveNodeMerit : null);
-        const statusTag = status.unlocked ? '✓ UNLOCKED' : `🔒 ${status.label}`;
-        return `<option value="${b.id}" ${b.id === curVal ? 'selected' : ''}>${b.icon} ${b.name} [${statusTag}]</option>`;
-      }).join('');
+        if (status.unlocked) {
+          earned.push({ ...b, status });
+        } else {
+          locked.push({ ...b, status });
+        }
+      });
+
+      let html = '';
+      if (earned.length > 0) {
+        html += `<optgroup label="✅ Earned &amp; Verified Milestones">`;
+        html += earned.map(b => `<option value="${b.id}" ${b.id === curVal ? 'selected' : ''}>${b.icon} ${b.name} [✓ EARNED]</option>`).join('');
+        html += `</optgroup>`;
+      }
+      if (locked.length > 0) {
+        html += `<optgroup label="🔒 Locked / In Progress (Unearned)">`;
+        html += locked.map(b => `<option value="${b.id}" ${b.id === curVal ? 'selected' : ''}>${b.icon} ${b.name} [🔒 ${b.status.label}]</option>`).join('');
+        html += `</optgroup>`;
+      }
+
+      badgeIdSel.innerHTML = html;
+      if (!curVal && earned.length > 0) {
+        badgeIdSel.value = earned[0].id;
+      }
     }
 
     function updateBadgeStudioPreview() {
@@ -1513,6 +1541,8 @@
       const styleSelect = document.getElementById('badge-style-select');
       const previewContainer = document.getElementById('badge-live-preview-container');
       const snippetInput = document.getElementById('badge-embed-snippet');
+      const warningEl = document.getElementById('badge-studio-locked-warning');
+      const copyBtn = document.getElementById('btn-copy-embed');
 
       if (!modeSelect || !previewContainer || !snippetInput) return;
 
@@ -1554,7 +1584,7 @@
         badgeTitle = bDef.name;
         icon = bDef.icon || iconMap[badgeId] || "🛡️";
         isUnlocked = status.unlocked;
-        badgeVal = status.unlocked ? "VERIFIED" : `${status.label} LOCKED`;
+        badgeVal = status.unlocked ? "VERIFIED" : "UNEARNED";
         svgUrl = `https://credence.nexus/api/badge/${badgeId}?node=${encodeURIComponent(nodeAlias)}&style=shield`;
         pageUrl = `https://credence.nexus/#merit`;
       } else if (mode === 'publisher') {
@@ -1575,13 +1605,15 @@
       const tagEl = document.getElementById('preview-mode-tag');
 
       if (style === 'component') {
-        if (tagEl) tagEl.textContent = '⚡ Web Component (Interactive Lensing)';
+        if (tagEl) tagEl.textContent = isUnlocked ? '⚡ Web Component (Interactive Lensing)' : '🔒 Web Component (Unearned Locked)';
         if (mode === 'node') {
           previewContainer.innerHTML = `
             <credence-badge 
               type="node" 
               badge="${badgeId}" 
               node="${nodeAlias}" 
+              locked="${!isUnlocked}"
+              status="${isUnlocked ? 'VERIFIED' : 'UNEARNED'}"
               score="${isUnlocked ? '100.0' : '0.0'}" 
               version="v2.7.0">
             </credence-badge>
@@ -1608,7 +1640,7 @@
         }
       } else {
         // Modern Shield Vector (.svg)
-        if (tagEl) tagEl.textContent = '🛡️ Modern Shield Vector SVG';
+        if (tagEl) tagEl.textContent = isUnlocked ? '🛡️ Modern Shield Vector SVG' : '🔒 Modern Shield (Unearned Locked)';
         const wTitle = Math.max(32, Math.floor(badgeTitle.length * 7.2));
         const wVal = Math.max(24, Math.floor(badgeVal.length * 7.8));
         const wLeft = wTitle + 32;
@@ -1648,22 +1680,42 @@
         `;
       }
 
-      // Update 1-Click Embed Snippet
-      if (currentSnippetType === 'md') {
-        snippetInput.value = `[![${badgeTitle}](${svgUrl})](${pageUrl})`;
-      } else if (currentSnippetType === 'html') {
-        snippetInput.value = `<a href="${pageUrl}"><img src="${svgUrl}" alt="${badgeTitle}" /></a>`;
+      // Handle Unearned vs Earned Embed Code
+      if (mode === 'node' && !isUnlocked) {
+        if (warningEl) warningEl.style.display = 'block';
+        if (copyBtn) {
+          copyBtn.disabled = true;
+          copyBtn.style.opacity = '0.45';
+          copyBtn.style.cursor = 'not-allowed';
+          copyBtn.textContent = '🔒 Unearned';
+        }
+        snippetInput.value = `<!-- 🔒 Milestone Not Earned: ${badgeTitle} has not yet been unlocked by ${nodeAlias}. Only earned badges can be embedded. -->`;
       } else {
-        if (mode === 'node') {
-          snippetInput.value = `<credence-badge type="node" badge="${badgeId}" node="${nodeAlias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
-        } else if (mode === 'publisher') {
-          const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
-          snippetInput.value = `<credence-badge type="publisher" domain="${dom}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+        if (warningEl) warningEl.style.display = 'none';
+        if (copyBtn) {
+          copyBtn.disabled = false;
+          copyBtn.style.opacity = '1';
+          copyBtn.style.cursor = 'pointer';
+          copyBtn.textContent = 'Copy';
+        }
+        // Update 1-Click Embed Snippet
+        if (currentSnippetType === 'md') {
+          snippetInput.value = `[![${badgeTitle}](${svgUrl})](${pageUrl})`;
+        } else if (currentSnippetType === 'html') {
+          snippetInput.value = `<a href="${pageUrl}"><img src="${svgUrl}" alt="${badgeTitle}" /></a>`;
         } else {
-          snippetInput.value = `<credence-badge type="attestation" url="${target}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          if (mode === 'node') {
+            snippetInput.value = `<credence-badge type="node" badge="${badgeId}" node="${nodeAlias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          } else if (mode === 'publisher') {
+            const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+            snippetInput.value = `<credence-badge type="publisher" domain="${dom}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          } else {
+            snippetInput.value = `<credence-badge type="attestation" url="${target}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+          }
         }
       }
     }
+
 
     window.switchEmbedSnippet = function(type) {
       currentSnippetType = type;

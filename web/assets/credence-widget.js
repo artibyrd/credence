@@ -138,9 +138,16 @@ class CredenceBadge extends HTMLElement {
       const bKey = badgeId || 'verified_auditor';
       icon = BADGE_ICONS[bKey] || '🛡️';
       const bName = bKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      label = `${nodeAlias} · ${bName}`;
-      badgeClass = 'badge-clean';
+      const isLocked = this.getAttribute('locked') === 'true' || status === 'UNEARNED' || score === 0.0;
+      if (isLocked) {
+        label = `${nodeAlias} · ${bName} [🔒 UNEARNED]`;
+        badgeClass = 'badge-caution';
+      } else {
+        label = `${nodeAlias} · ${bName} · VERIFIED`;
+        badgeClass = 'badge-clean';
+      }
     } else if (type === 'publisher') {
+
       icon = '📰';
       const domName = domain || 'domain.com';
       const band = score >= 85 ? 'PRISTINE' : (score >= 70 ? 'CLEAN' : (score >= 50 ? 'MODERATE' : 'SUSPICIOUS'));

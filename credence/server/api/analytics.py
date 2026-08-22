@@ -72,25 +72,38 @@ async def api_verify_merit(request: Any) -> Any:
 
 async def api_get_badge_svg(request: Any) -> Any:
     """REST API: Dynamic SVG badge endpoint."""
-    from credence.mesh.merit import generate_svg_badge
+    from credence.mesh.merit import generate_svg_badge, get_local_node_merit
 
     badge_id = request.path_params.get("badge_id", "root_seed_candidate").replace(".svg", "")
     node = request.query_params.get("node", "credence-node")
-    score = request.query_params.get("score", "VERIFIED")
-    style = request.query_params.get("style", "pill")
+    style = request.query_params.get("style", "shield")
     theme = request.query_params.get("theme", "dark")
 
+    # Evaluate whether the requested node has genuinely unlocked this badge
+    await init_db()
+    is_unlocked = False
+    async with get_async_session() as s:
+        merit_card = await get_local_node_merit(s)
+        unlocked_ids = {
+            b.badge_id if hasattr(b, "badge_id") else b["badge_id"] if isinstance(b, dict) else str(b)
+            for b in merit_card.unlocked_badges
+        }
+        if badge_id in unlocked_ids:
+            is_unlocked = True
+
+    score = "VERIFIED" if is_unlocked else "UNEARNED"
     svg_content = generate_svg_badge(
         badge_id=badge_id,
         node_alias=node,
         score_or_val=score,
         style=style,
         theme=theme,
+        is_unlocked=is_unlocked,
     )
     return Response(
         content=svg_content,
         media_type="image/svg+xml",
-        headers={"Cache-Control": "public, max-age=300"},
+        headers={"Cache-Control": "public, max-age=60"},
     )
 
 

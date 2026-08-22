@@ -66,10 +66,11 @@ def generate_svg_badge(
     badge_id: str,
     node_alias: str = "credence-node",
     score_or_val: Any = "VERIFIED",
-    style: str = "pill",
+    style: str = "shield",
     theme: str = "dark",
     custom_title: Optional[str] = None,
     custom_icon: Optional[str] = None,
+    is_unlocked: Optional[bool] = None,
 ) -> str:
     """Generate a vector SVG badge with Cyber Dark styling tokens and dynamic width arithmetic."""
     badge = BADGE_REGISTRY.get(badge_id)
@@ -79,6 +80,12 @@ def generate_svg_badge(
     raw_icon = custom_icon if custom_icon is not None else (badge.icon if badge else "🛡️")
     raw_val = str(score_or_val)
 
+    unlocked = (
+        is_unlocked
+        if is_unlocked is not None
+        else ("LOCKED" not in raw_val.upper() and "UNEARNED" not in raw_val.upper())
+    )
+
     # Safe XML character escaping
     title_escaped = html.escape(raw_title)
     node_escaped = html.escape(node_alias)
@@ -86,14 +93,12 @@ def generate_svg_badge(
     icon_escaped = html.escape(raw_icon)
 
     theme_cfg = BADGE_THEMES.get(theme.lower(), BADGE_THEMES["dark"])
-    accent_start, accent_end, accent_border = _get_badge_palette(badge_id)
-    border_color = accent_border if theme.lower() == "dark" else theme_cfg["border"]
-
-    # Dynamic text width calculation (~7.2px per regular char, ~7.8px per bold char, +18px for icon)
-    char_w_title = 7.1
-    char_w_val = 7.7
-    w_title_text = max(30, int(len(raw_title) * char_w_title))
-    w_val_text = max(24, int(len(raw_val) * char_w_val))
+    if unlocked:
+        accent_start, accent_end, accent_border = _get_badge_palette(badge_id)
+        border_color = accent_border if theme.lower() == "dark" else theme_cfg["border"]
+    else:
+        accent_start, accent_end = "#475569", "#334155"
+        border_color = "rgba(148, 163, 184, 0.3)"
 
     # Modern Shield vector layout (Crisp dual-tone container with precise text bounding)
     char_w_title = 7.2

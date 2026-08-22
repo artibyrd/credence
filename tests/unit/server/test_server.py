@@ -361,6 +361,25 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
         assert tampered_data["valid"] is False
         assert tampered_data["tampered"] is True
 
+        # 9. Dynamic SVG Badge endpoints
+        # Earned badge (Sprout Genesis) -> returns 200 SVG with VERIFIED
+        res_badge_earned = await client.get("/api/badge/sprout_node?node=local-node")
+        assert res_badge_earned.status_code == 200
+        assert "image/svg+xml" in res_badge_earned.headers["content-type"]
+        assert "VERIFIED" in res_badge_earned.text
+
+        # Unearned badge (Century Anchor) -> returns 200 SVG with UNEARNED (no false claims)
+        res_badge_unearned = await client.get("/api/badge/century_anchor?node=local-node")
+        assert res_badge_unearned.status_code == 200
+        assert "image/svg+xml" in res_badge_unearned.headers["content-type"]
+        assert "UNEARNED" in res_badge_unearned.text
+        assert "VERIFIED" not in res_badge_unearned.text
+
+        # Publisher badge
+        res_pub_badge = await client.get("/api/badge/publisher/reuters.com")
+        assert res_pub_badge.status_code == 200
+        assert "image/svg+xml" in res_pub_badge.headers["content-type"]
+
 
 @pytest.mark.unit
 async def test_server_telemetry_tracker_and_alerts() -> None:
