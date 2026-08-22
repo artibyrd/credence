@@ -27,6 +27,13 @@ resource "google_storage_bucket_iam_member" "seeds_public_read" {
   member = "allUsers"
 }
 
+# Grant Cloud Run Service Account least-privilege read/write objectAdmin access to the seeds & backups bucket
+resource "google_storage_bucket_iam_member" "seeds_sa_admin" {
+  bucket = google_storage_bucket.seeds_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
+
 # 2. Google Cloud Storage Bucket for Static Taxonomies & Public Keys
 resource "google_storage_bucket" "taxonomies_bucket" {
   name                        = "${var.project_id}-taxonomies-foundation"

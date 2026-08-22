@@ -277,6 +277,62 @@ async def test_cold_boot_pre_restore_hook_lifecycle(temp_db_dir: Path, monkeypat
     assert restored is True
     assert target_db.exists()
 
-    # Subsequent run skips because DB is populated
-    restored_again = await restore_latest_cloud_backup(target_db_path=target_db)
+    # Populate DB with more than 10 audits to verify skipping
+    async with AsyncSession(engine) as session:
+        for i in range(12):
+            s = Snapshot(
+                url=f"https://example.com/item{i}",
+                content_sha256=f"sha256:{i:064d}",
+                simhash_64=f"0x{i:016x}",
+            )
+            session.add(s)
+            await session.commit()
+            await session.refresh(s)
+            a = Audit(snapshot_id=s.id, content_sha256=s.content_sha256, suspicion_score=10.0, classification="CLEAN")
+            session.add(a)
+        await session.commit()
+
+    # Subsequent run skips because DB is populated with >10 audits
+    restored_again = await restore_latest_cloud_backup(target_db_path=seed_db)
     assert restored_again is False
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_async_database_backup_creation(temp_db_dir: Path, monkeypatch):
+    """Verify asynchronous database backup creation and manifest generation."""
+    from credence.storage.backup import create_database_backup_async
+
+    test_db = temp_db_dir / "async_test.db"
+    backup_dir = temp_db_dir / "backups"
+    monkeypatch.setattr(settings, "DB_PATH", test_db)
+    monkeypatch.setattr(settings, "CREDENCE_BACKUP_DIR", backup_dir)
+
+    engine = get_engine(f"sqlite+aiosqlite:///{test_db}")
+    await init_db(engine)
+
+    async with AsyncSession(engine) as session:
+        snap = Snapshot(
+            url="https://example.com/async_item",
+            content_sha256="sha256:5555555555555555555555555555555555555555555555555555555555555555",
+            simhash_64="0x1212121212121212",
+            title="Async Article",
+        )
+        session.add(snap)
+        await session.commit()
+        await session.refresh(snap)
+
+        audit = Audit(
+            snapshot_id=snap.id,
+            content_sha256=snap.content_sha256,
+            suspicion_score=5.0,
+            classification="CLEAN",
+        )
+        session.add(audit)
+        await session.commit()
+
+    meta = await create_database_backup_async(db_path=test_db, upload_cloud=False)
+    assert meta.audit_count == 1
+    assert meta.snapshot_count == 1
+    assert (backup_dir / "credence_latest.db.gz").exists()
+    assert (backup_dir / "credence_latest.db.manifest.json").exists()

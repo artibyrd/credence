@@ -331,11 +331,11 @@ async def api_cron_boredom(request: Any) -> Any:
 
         # Auto-export database backup snapshot
         try:
-            from credence.storage.backup import create_database_backup
+            from credence.storage.backup import create_database_backup_async
 
-            create_database_backup(upload_cloud=True)
-        except Exception:
-            pass
+            await create_database_backup_async(upload_cloud=True)
+        except Exception as be:
+            logger.debug("api_cron_boredom backup exception: %s", be)
 
         return JSONResponse(
             {

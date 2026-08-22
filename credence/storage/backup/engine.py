@@ -6,7 +6,6 @@ import asyncio
 import gzip
 import json
 import logging
-import os
 import shutil
 import sqlite3
 import tempfile
@@ -98,8 +97,8 @@ def create_database_backup(
     sha256_hash = compute_file_sha256(target_gz)
     archive_size = target_gz.stat().st_size
 
-    active_backend = storage_backend or settings.STORAGE_BACKEND or "local"
-    bucket = backup_bucket or settings.CREDENCE_BACKUP_BUCKET or os.getenv("GCS_BACKUP_BUCKET")
+    active_backend = storage_backend or settings.effective_storage_backend
+    bucket = backup_bucket or settings.effective_backup_bucket
 
     metadata = BackupMetadata(
         backup_id=backup_id,
@@ -130,6 +129,118 @@ def create_database_backup(
                 asyncio.run(upload_to_cloud_storage(target_gz, manifest_file, bucket, active_backend))
         except Exception as ce:
             logger.debug("Cloud backup upload scheduled or non-blocking: %s", ce)
+
+    rotate_local_backups(backup_dir, retain_count=5)
+
+    logger.info(
+        "💾 Created atomic database backup: %s (%d bytes, sha256:%s..., %d audits)",
+        target_gz.name,
+        archive_size,
+        sha256_hash[:12],
+        audit_cnt,
+    )
+    return metadata
+
+
+async def create_database_backup_async(
+    db_path: Optional[Path] = None,
+    output_path: Optional[Path] = None,
+    storage_backend: Optional[str] = None,
+    upload_cloud: bool = True,
+    backup_bucket: Optional[str] = None,
+) -> BackupMetadata:
+    """Create atomic database snapshot and await cloud upload completion asynchronously."""
+    source_db = db_path or settings.DB_PATH
+    if not source_db.exists():
+        raise FileNotFoundError(f"Database file not found at {source_db}")
+
+    backup_dir = settings.CREDENCE_BACKUP_DIR
+    backup_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp_slug = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    backup_id = f"backup_{timestamp_slug}"
+
+    if output_path is None:
+        target_gz = backup_dir / f"credence_{timestamp_slug}.db.gz"
+        latest_gz = backup_dir / "credence_latest.db.gz"
+    else:
+        target_gz = output_path
+        latest_gz = target_gz.parent / "credence_latest.db.gz"
+
+    target_gz.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp_db:
+        tmp_db_path = Path(tmp_db.name)
+
+    def _sync_sqlite_backup() -> tuple[int, int, int]:
+        src_conn = sqlite3.connect(str(source_db))
+        src_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+
+        dst_conn = sqlite3.connect(str(tmp_db_path))
+        src_conn.backup(dst_conn)
+        dst_conn.close()
+
+        cur = src_conn.cursor()
+        try:
+            cur.execute("SELECT count(*) FROM audit;")
+            audit_cnt = cur.fetchone()[0]
+        except sqlite3.OperationalError:
+            audit_cnt = 0
+
+        try:
+            cur.execute("SELECT count(*) FROM snapshot;")
+            snap_cnt = cur.fetchone()[0]
+        except sqlite3.OperationalError:
+            snap_cnt = 0
+
+        src_conn.close()
+        uncompressed_size = tmp_db_path.stat().st_size
+
+        with open(tmp_db_path, "rb") as f_in, gzip.open(target_gz, "wb", compresslevel=9) as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+        if target_gz != latest_gz:
+            shutil.copyfile(target_gz, latest_gz)
+
+        return audit_cnt, snap_cnt, uncompressed_size
+
+    try:
+        audit_cnt, snap_cnt, uncompressed_size = await asyncio.to_thread(_sync_sqlite_backup)
+    finally:
+        if tmp_db_path.exists():
+            tmp_db_path.unlink()
+
+    sha256_hash = compute_file_sha256(target_gz)
+    archive_size = target_gz.stat().st_size
+
+    active_backend = storage_backend or settings.effective_storage_backend
+    bucket = backup_bucket or settings.effective_backup_bucket
+
+    metadata = BackupMetadata(
+        backup_id=backup_id,
+        file_name=target_gz.name,
+        size_bytes=archive_size,
+        uncompressed_bytes=uncompressed_size,
+        sha256_hash=sha256_hash,
+        audit_count=audit_cnt,
+        snapshot_count=snap_cnt,
+        storage_backend=active_backend,
+    )
+
+    metadata = sign_backup_metadata(metadata)
+
+    manifest_file = target_gz.with_suffix(".manifest.json")
+    manifest_file.write_text(metadata.model_dump_json(indent=2), encoding="utf-8")
+
+    latest_manifest = latest_gz.with_suffix(".manifest.json")
+    if manifest_file != latest_manifest:
+        shutil.copyfile(manifest_file, latest_manifest)
+
+    if upload_cloud and bucket:
+        try:
+            await upload_to_cloud_storage(target_gz, manifest_file, bucket, active_backend)
+        except Exception as ce:
+            logger.debug("Cloud backup upload exception: %s", ce)
 
     rotate_local_backups(backup_dir, retain_count=5)
 
@@ -261,15 +372,26 @@ async def restore_latest_cloud_backup(
 ) -> bool:
     """Cold-boot pre-boot hook called before init_db()."""
     target_db = target_db_path or settings.DB_PATH
-    bucket = bucket_name or settings.CREDENCE_BACKUP_BUCKET or os.getenv("GCS_BACKUP_BUCKET")
-    backend = storage_backend or settings.STORAGE_BACKEND or ("gcs" if bucket else "local")
+    bucket = bucket_name or settings.effective_backup_bucket
+    backend = storage_backend or settings.effective_storage_backend
 
+    # If database file exists, verify whether it has accumulated audit data beyond basic genesis
     if target_db.exists() and target_db.stat().st_size > 16384:
-        logger.debug(
-            "Target database already exists with valid data (%d bytes); skipping cloud restore",
-            target_db.stat().st_size,
-        )
-        return False
+        try:
+            conn = sqlite3.connect(str(target_db))
+            cur = conn.cursor()
+            cur.execute("SELECT count(*) FROM audit;")
+            cnt = cur.fetchone()[0]
+            conn.close()
+            if cnt > 10:
+                logger.debug(
+                    "Target database already exists with valid data (%d audits, %d bytes); skipping cloud restore",
+                    cnt,
+                    target_db.stat().st_size,
+                )
+                return False
+        except Exception:
+            pass
 
     backup_dir = settings.CREDENCE_BACKUP_DIR
     local_latest = backup_dir / "credence_latest.db.gz"
@@ -321,8 +443,8 @@ def get_backup_status() -> Dict[str, Any]:
 
     return {
         "backup_enabled": settings.CREDENCE_BACKUP_ENABLED,
-        "storage_backend": settings.STORAGE_BACKEND,
-        "cloud_bucket": settings.CREDENCE_BACKUP_BUCKET,
+        "storage_backend": settings.effective_storage_backend,
+        "cloud_bucket": settings.effective_backup_bucket,
         "local_backup_dir": str(backup_dir),
         "total_backups": len(all_backups),
         "latest_backup_available": has_latest,

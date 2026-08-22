@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
@@ -29,24 +30,43 @@ async def upload_to_cloud_storage(
     ):
         clean_bucket = bucket_name.replace("gs://", "").strip("/")
         cloud_uri = f"gs://{clean_bucket}/backups/{remote_name}"
-        try:
-            from google.cloud import storage as gcs_storage  # type: ignore[import-not-found]
 
-            client = gcs_storage.Client()
-            bucket = client.bucket(clean_bucket)
-            blob = bucket.blob(f"backups/{remote_name}")
-            blob.upload_from_filename(str(local_file))
+        def _sync_gcs_upload() -> Optional[str]:
+            try:
+                from google.cloud import storage as gcs_storage  # type: ignore[import-not-found]
 
-            if manifest_file and manifest_file.exists():
-                m_blob = bucket.blob(f"backups/{manifest_name}")
-                m_blob.upload_from_filename(str(manifest_file))
+                client = gcs_storage.Client()
+                bucket = client.bucket(clean_bucket)
 
-            logger.info("Successfully uploaded backup to GCS: %s", cloud_uri)
-            return cloud_uri
-        except ImportError:
-            logger.debug("google-cloud-storage not installed; trying fallback")
-        except Exception as ge:
-            logger.warning("GCS direct client upload failed: %s", ge)
+                # 1. Upload timestamped snapshot
+                blob = bucket.blob(f"backups/{remote_name}")
+                blob.upload_from_filename(str(local_file))
+
+                if manifest_file and manifest_file.exists():
+                    m_blob = bucket.blob(f"backups/{manifest_name}")
+                    m_blob.upload_from_filename(str(manifest_file))
+
+                # 2. Upload latest pointer copies
+                latest_gz = local_file.parent / "credence_latest.db.gz"
+                if latest_gz.exists():
+                    l_blob = bucket.blob("backups/credence_latest.db.gz")
+                    l_blob.upload_from_filename(str(latest_gz))
+
+                latest_manifest = latest_gz.with_suffix(".manifest.json")
+                if latest_manifest.exists():
+                    lm_blob = bucket.blob(f"backups/{latest_manifest.name}")
+                    lm_blob.upload_from_filename(str(latest_manifest))
+
+                logger.info("Successfully uploaded backup and latest pointer to GCS: %s", cloud_uri)
+                return cloud_uri
+            except ImportError:
+                logger.debug("google-cloud-storage not installed; skipping GCS upload")
+                return None
+            except Exception as ge:
+                logger.warning("GCS direct client upload failed: %s", ge)
+                return None
+
+        return await asyncio.to_thread(_sync_gcs_upload)
 
     if storage_backend == "s3" or settings.STORAGE_BACKEND == "s3":
         try:
@@ -66,6 +86,21 @@ async def upload_to_cloud_storage(
                 await s3.put_blob(
                     f"backups/{manifest_name}", manifest_file.read_bytes(), content_type="application/json"
                 )
+
+            # Upload latest pointers to S3
+            latest_gz = local_file.parent / "credence_latest.db.gz"
+            if latest_gz.exists():
+                await s3.put_blob(
+                    "backups/credence_latest.db.gz", latest_gz.read_bytes(), content_type="application/gzip"
+                )
+            latest_manifest = latest_gz.with_suffix(".manifest.json")
+            if latest_manifest.exists():
+                await s3.put_blob(
+                    f"backups/{latest_manifest.name}",
+                    latest_manifest.read_bytes(),
+                    content_type="application/json",
+                )
+
             logger.info("Successfully uploaded backup to S3: %s", uri)
             return uri
         except Exception as se:
@@ -88,24 +123,42 @@ async def download_from_cloud_storage(
         or "credence" in bucket_name
     ):
         clean_bucket = bucket_name.replace("gs://", "").strip("/")
-        try:
-            from google.cloud import storage as gcs_storage  # type: ignore[import-not-found]
 
-            client = gcs_storage.Client()
-            bucket = client.bucket(clean_bucket)
-            blob = bucket.blob(f"backups/{remote_filename}")
-            if not blob.exists():
-                logger.info("No cloud backup found at gs://%s/backups/%s", clean_bucket, remote_filename)
+        def _sync_gcs_download() -> bool:
+            try:
+                from google.cloud import storage as gcs_storage  # type: ignore[import-not-found]
+
+                client = gcs_storage.Client()
+                bucket = client.bucket(clean_bucket)
+                blob = bucket.blob(f"backups/{remote_filename}")
+
+                if not blob.exists():
+                    logger.info(
+                        "File gs://%s/backups/%s not found; scanning for newest backup snapshot...",
+                        clean_bucket,
+                        remote_filename,
+                    )
+                    blobs = list(client.list_blobs(clean_bucket, prefix="backups/credence_"))
+                    gz_blobs = [b for b in blobs if b.name.endswith(".db.gz")]
+                    if not gz_blobs:
+                        logger.info("No backup snapshots found in gs://%s/backups/", clean_bucket)
+                        return False
+                    gz_blobs.sort(key=lambda b: b.updated or b.time_created or 0, reverse=True)
+                    blob = gz_blobs[0]
+                    logger.info("Found newest timestamped cloud backup: gs://%s/%s", clean_bucket, blob.name)
+
+                target_local_path.parent.mkdir(parents=True, exist_ok=True)
+                blob.download_to_filename(str(target_local_path))
+                logger.info("Successfully downloaded backup from gs://%s/%s", clean_bucket, blob.name)
+                return True
+            except ImportError:
+                logger.debug("google-cloud-storage not installed for download")
+                return False
+            except Exception as ge:
+                logger.warning("GCS download failed: %s", ge)
                 return False
 
-            target_local_path.parent.mkdir(parents=True, exist_ok=True)
-            blob.download_to_filename(str(target_local_path))
-            logger.info("Successfully downloaded backup from gs://%s/backups/%s", clean_bucket, remote_filename)
-            return True
-        except ImportError:
-            logger.debug("google-cloud-storage not installed for download")
-        except Exception as ge:
-            logger.warning("GCS download failed: %s", ge)
+        return await asyncio.to_thread(_sync_gcs_download)
 
     if storage_backend == "s3" or settings.STORAGE_BACKEND == "s3":
         try:

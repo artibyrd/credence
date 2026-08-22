@@ -130,7 +130,7 @@ jobs:
             --cpu="1" \
             --execution-environment="gen2" \
             --cpu-boost \
-            --set-env-vars="ENV=${ENV_NAME},CREDENCE_PROFILE=${PROFILE}" \
+            --set-env-vars="ENV=${ENV_NAME},CREDENCE_PROFILE=${PROFILE},CREDENCE_BACKUP_BUCKET=${PROJECT_ID}-seeds-nexus,STORAGE_BACKEND=gcs" \
             --allow-unauthenticated
 
       - name: Verify Live Service Health

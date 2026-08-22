@@ -176,6 +176,34 @@ class Settings(BaseSettings):
     CREDENCE_BOREDOM_ENABLED: bool = True
     CREDENCE_SIFTER_ENABLED: bool = False
 
+    @property
+    def effective_backup_bucket(self) -> Optional[str]:
+        """Resolve effective Google Cloud Storage or S3 backup bucket."""
+        if self.CREDENCE_BACKUP_BUCKET:
+            return self.CREDENCE_BACKUP_BUCKET
+        import os
+
+        gcs_env = os.getenv("GCS_BACKUP_BUCKET") or os.getenv("CREDENCE_BACKUP_BUCKET")
+        if gcs_env:
+            return gcs_env
+        gcp_project = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT_ID")
+        if gcp_project:
+            return f"{gcp_project}-seeds-nexus"
+        return None
+
+    @property
+    def effective_storage_backend(self) -> str:
+        """Resolve active storage backend: gcs | s3 | local."""
+        if self.STORAGE_BACKEND and self.STORAGE_BACKEND != "local":
+            return self.STORAGE_BACKEND
+        import os
+
+        if os.getenv("K_SERVICE") or os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT_ID"):
+            return "gcs"
+        if self.S3_BUCKET_NAME or os.getenv("AWS_EXECUTION_ENV"):
+            return "s3"
+        return "local"
+
     # Distributed Cache & State Store (Redis / Valkey)
     REDIS_URL: Optional[str] = None
 
