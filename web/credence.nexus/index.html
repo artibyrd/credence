@@ -40,17 +40,18 @@
       background: var(--bg-code);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1rem;
+      padding: 0.75rem;
       position: relative;
-      margin-bottom: 1.25rem;
-      min-height: 380px;
+      margin-bottom: 1rem;
+      min-height: 240px;
+      max-height: 280px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     #mesh-canvas {
       width: 100%;
-      height: 380px;
+      height: 260px;
       display: block;
     }
     .badge-preview-card {
@@ -189,8 +190,7 @@
         </div>
       </div>
       <div class="masthead-actions">
-        <button class="btn-hud-toggle" onclick="window.CredenceWS.toggleTuiMode()" title="Toggle Monospace TUI Scanline HUD Mode">📟 Scanline HUD</button>
-        <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem;" onclick="window.CredenceWS.openShortcutsModal()" title="Keyboard shortcuts">⌨️ Hotkeys [?]</button>
+        <span class="ribbon-pill ready">● Live Mesh Quorum</span>
       </div>
     </header>
 

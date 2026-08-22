@@ -350,7 +350,7 @@ export function injectShortcutsModal() {
         </div>
         <div class="operator-modal-body" style="font-family:var(--font-mono); font-size:0.85rem;">
           <div style="display:grid; grid-template-columns:120px 1fr; gap:0.75rem 1rem; align-items:center;">
-            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">1 – 5</kbd></div>
+            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">1 – 6</kbd></div>
             <div style="color:var(--text-main);">Switch Workstation Tabs</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">/</kbd></div>
             <div style="color:var(--text-main);">Focus Search / Audit Input</div>
@@ -358,8 +358,6 @@ export function injectShortcutsModal() {
             <div style="color:var(--text-main);">Cycle Epistemic Lensing Mode</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">r</kbd></div>
             <div style="color:var(--text-main);">Load Random Scenario / Peer</div>
-            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">t</kbd></div>
-            <div style="color:var(--text-main);">Toggle Terminal Monospace HUD</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">?</kbd></div>
             <div style="color:var(--text-main);">Show / Hide Shortcuts Modal</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">Esc</kbd></div>
@@ -1560,25 +1558,12 @@ export function closeInfoModal() {
 // -----------------------------------------------------------------------------
 
 export function toggleTuiMode() {
-  const isTui = document.body.classList.toggle('tui-mode');
-  localStorage.setItem('credence_tui_mode', isTui ? 'true' : 'false');
-  const btn = document.getElementById('btn-tui-toggle');
-  if (btn) {
-    btn.classList.toggle('active', isTui);
-    btn.innerHTML = isTui ? '📟 HUD: MONO' : '📟 HUD: SLATE';
-  }
-  showToast(isTui ? '📟 TUI Monospace HUD Mode Active' : '🖥️ Slate Dashboard Mode Active', 'info');
+  // Theme toggle removed by design
 }
 
 export function initTuiMode() {
-  if (localStorage.getItem('credence_tui_mode') === 'true') {
-    document.body.classList.add('tui-mode');
-    const btn = document.getElementById('btn-tui-toggle');
-    if (btn) {
-      btn.classList.add('active');
-      btn.innerHTML = '📟 HUD: MONO';
-    }
-  }
+  document.body.classList.remove('tui-mode');
+  localStorage.removeItem('credence_tui_mode');
 }
 
 // -----------------------------------------------------------------------------
@@ -1663,12 +1648,13 @@ if (typeof document !== 'undefined') {
 // -----------------------------------------------------------------------------
 
 export function initWorkstation(config = {}) {
+  const options = typeof config === 'string' ? { defaultTab: config } : (config || {});
   const {
     tabButtonsSelector = '[data-tab], .deck-nav-item, .workstation-tab-btn, .deck-admin-link',
     tabPanelsSelector = '.tab-panel',
     defaultTab = null,
     onTabChange = null,
-  } = config;
+  } = options;
 
   initTuiMode();
   injectOperatorModal();
@@ -1745,11 +1731,6 @@ export function initWorkstation(config = {}) {
     if (e.key === '?') {
       e.preventDefault();
       toggleShortcutsModal();
-      return;
-    }
-
-    if (e.key === 't' || e.key === 'T') {
-      toggleTuiMode();
       return;
     }
 
