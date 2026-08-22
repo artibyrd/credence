@@ -98,4 +98,3 @@ def test_node_stats_schema_parity(api_client: TestClient):
     assert "database_size_mb" in storage
     assert "storage_engine" in storage
     assert "retained_backups_count" in storage
-
