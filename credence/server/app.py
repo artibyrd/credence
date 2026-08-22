@@ -178,6 +178,14 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
     if web_dir:
         if (web_dir / "assets").exists():
             app.mount("/assets", StaticFiles(directory=str(web_dir / "assets")), name="assets")
+        if (web_dir / "credence.run").exists():
+            app.mount("/credence.run", StaticFiles(directory=str(web_dir / "credence.run"), html=True), name="run")
+        if (web_dir / "admin.credence.run").exists():
+            app.mount(
+                "/admin.credence.run",
+                StaticFiles(directory=str(web_dir / "admin.credence.run"), html=True),
+                name="admin",
+            )
         if (web_dir / "credence.report").exists():
             app.mount(
                 "/credence.report", StaticFiles(directory=str(web_dir / "credence.report"), html=True), name="report"
