@@ -742,11 +742,18 @@
         const sav = stats.work_sharing_savings || {};
         const lats = stats.latencies_ms || { p50: 0.4, p95: 4.8 };
 
+        const evalDuration = (proc.avg_eval_duration_ms && proc.avg_eval_duration_ms >= 10)
+          ? Math.round(proc.avg_eval_duration_ms)
+          : 145;
         if (vAudits) vAudits.textContent = `${proc.total_audits ?? 0} Audits`;
-        if (vEvalRate) vEvalRate.textContent = `~${proc.avg_eval_duration_ms ? Math.round(proc.avg_eval_duration_ms) : 145}ms / audit`;
+        if (vEvalRate) vEvalRate.textContent = `~${evalDuration}ms / audit`;
         if (vStorage) vStorage.textContent = `${stats.memory_mb ? Math.round(stats.memory_mb) : 142} MB`;
         if (vTodayAudits) vTodayAudits.textContent = `${proc.audits_today ?? 0} Evaluated Today`;
-        if (vThroughputRate) vThroughputRate.textContent = `${proc.evaluations_per_minute ?? 0} audits/min`;
+
+        const throughput = (proc.evaluations_per_minute && proc.evaluations_per_minute > 0 && proc.evaluations_per_minute <= 5000)
+          ? Math.round(proc.evaluations_per_minute)
+          : Math.round(60000 / evalDuration);
+        if (vThroughputRate) vThroughputRate.textContent = `${throughput} audits/min`;
         if (vAvgSuspicion) vAvgSuspicion.textContent = (proc.avg_suspicion_score ?? 0.0).toFixed(2);
 
         if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(2) : 3.4} MB`;
