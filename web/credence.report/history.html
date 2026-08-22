@@ -154,11 +154,58 @@
   </div>
 
   <script>
+    // Known article titles dictionary for seamless temporal lookup
+    const ARTICLE_LOOKUP = {
+      'https://reuters.com/world/energy/clean-grid-transition-2026': 'Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports',
+      'https://nature.com/articles/s41586-026-exoplanet-atmosphere': 'Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b',
+      'https://theonion.com/golden-retriever-elected-mayor-historic-landslide': 'Golden Retriever Elected Mayor in Historic Landslide (Satire)',
+      'https://inmaricopa.com/city-council-approves-budget-2026': 'City Council Approves $180M Municipal Infrastructure Budget',
+      'https://metro-sensationalist.com/shocking-miracle-cure-discovered': 'Miracle Elixir Reverses Aging in 3 Days, Scientists Stunned',
+      'https://malware-protection-alert.net/urgent-security-warning': 'CRITICAL ALERT: Your System Is Infected! Call Immediately',
+      'https://example.com/climate-study': 'Investigating Climate Data Anomalies & Multi-Decadal Trends'
+    };
+
     // URL param parser
     const params = new URLSearchParams(window.location.search);
-    const targetUrl = params.get('url') || 'https://example.com/climate-study';
+    const targetUrl = params.get('url') || params.get('q') || 'https://example.com/climate-study';
+    
+    // Resolve Title
+    let matchedTitle = ARTICLE_LOOKUP[targetUrl];
+    if (!matchedTitle) {
+      for (const [k, v] of Object.entries(ARTICLE_LOOKUP)) {
+        if (targetUrl.includes(k) || k.includes(targetUrl)) {
+          matchedTitle = v;
+          break;
+        }
+      }
+    }
+    if (!matchedTitle) {
+      try {
+        const u = new URL(targetUrl.startsWith('http') ? targetUrl : 'https://' + targetUrl);
+        const slug = u.pathname.split('/').filter(Boolean).pop() || u.hostname;
+        matchedTitle = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      } catch (e) {
+        matchedTitle = targetUrl;
+      }
+    }
+
+    document.getElementById('articleTitle').textContent = matchedTitle;
     document.getElementById('articleUrl').textContent = targetUrl;
-    document.getElementById('btnBackToViewer').href = 'viewer.html?url=' + encodeURIComponent(targetUrl);
+    document.getElementById('btnBackToViewer').href = 'viewer.html?q=' + encodeURIComponent(targetUrl);
+
+    // Interactive Scrubber
+    const slider = document.getElementById('timelineSlider');
+    if (slider) {
+      slider.oninput = function() {
+        const val = parseInt(this.value, 10);
+        document.getElementById('revNode1').style.fontWeight = val === 1 ? '700' : 'normal';
+        document.getElementById('revNode1').style.color = val === 1 ? '#38bdf8' : '#94a3b8';
+        document.getElementById('revNode2').style.fontWeight = val === 2 ? '700' : 'normal';
+        document.getElementById('revNode2').style.color = val === 2 ? '#38bdf8' : '#94a3b8';
+        document.getElementById('revNode3').style.fontWeight = val === 3 ? '700' : 'normal';
+        document.getElementById('revNode3').style.color = val === 3 ? '#34d399' : '#94a3b8';
+      };
+    }
   </script>
   <script type="module" src="../assets/credence-workstation.js"></script>
 </body>

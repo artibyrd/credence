@@ -204,14 +204,14 @@ def test_web_viewer_css_tab_and_hash_integrity(web_dir: Path) -> None:
 
 
 @pytest.mark.governance
-def test_web_viewer_randomized_default_selection_and_4_tab_layout(web_dir: Path) -> None:
-    """Verify viewer.html randomizes default report selection on load and provides 4 streamlined workspaces."""
+def test_web_viewer_deterministic_default_selection_and_4_tab_layout(web_dir: Path) -> None:
+    """Verify viewer.html deterministically selects canonical report on load and provides 4 streamlined workspaces."""
     viewer_file = web_dir / "credence.report" / "viewer.html"
     content = viewer_file.read_text(encoding="utf-8")
 
-    # Randomized default report selection
-    assert "Math.random() * dynamicCorpus.length" in content
-    assert "Math.random() * MOCK_CORPUS.length" in content
+    # Deterministic default report selection
+    assert "dynamicCorpus[0]" in content
+    assert "MOCK_CORPUS[0]" in content
 
     # 4-Tab consolidated navigation
     assert "tab-overview" in content

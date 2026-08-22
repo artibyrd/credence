@@ -35,7 +35,7 @@ async def compute_network_mesh_health(
     my_uptime_pct = 99.98
     my_tokens_saved = local_stats.get("mesh_dynamics", {}).get("compute_savings", {}).get("tokens_saved_estimate", 0)
 
-    local_alias = getattr(settings, "NODE_ALIAS", "local-root-anchor")
+    local_alias = getattr(settings, "effective_node_alias", getattr(settings, "NODE_ALIAS", "credence-local-anchor"))
     local_profile = settings.CREDENCE_PROFILE.value.upper() if hasattr(settings, "CREDENCE_PROFILE") else "BALANCED"
 
     # 2. Query live/cached peer records from SQLite

@@ -43,19 +43,15 @@
             <div class="deck-rail-header">Constitution Views</div>
             <button class="deck-nav-item active" data-tab="taxonomies" onclick="window.CredenceWS.switchTab('taxonomies')">
               <span>📜 1. Rule Catalogs</span>
-              <span class="nav-badge">3 Catalogs</span>
             </button>
             <button class="deck-nav-item" data-tab="custody" onclick="window.CredenceWS.switchTab('custody')">
               <span>🔐 2. Root Key Custody</span>
-              <span class="nav-badge">root.pub</span>
             </button>
             <button class="deck-nav-item" data-tab="sandbox" onclick="window.CredenceWS.switchTab('sandbox')">
               <span>🧪 3. WebCrypto Verifier</span>
-              <span class="nav-badge">RFC 8785</span>
             </button>
             <button class="deck-nav-item" data-tab="governance" onclick="window.CredenceWS.switchTab('governance')">
               <span>⚖️ 4. Governance RFCs</span>
-              <span class="nav-badge">Process</span>
             </button>
           </div>
 
@@ -116,16 +112,18 @@
                 </div>
               </div>
 
-              <div class="tree-container" style="margin-top:0.75rem;">
+              <div class="tree-container ws-scroll-pane" style="margin-top:0.75rem; max-height:620px; overflow-y:auto;">
                 <!-- SPJ Ethics (13 Rules) -->
-                <div class="tree-node expanded">
+                <div class="tree-node">
                   <div class="tree-node-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div style="display:flex; align-items:center; gap:0.4rem;">
-                      <b style="color:#fff;">📰 Society of Professional Journalists (SPJ) Code of Ethics</b>
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex:1; min-width:0;">
+                      <b style="color:#fff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📰 Society of Professional Journalists (SPJ) Code of Ethics</b>
                       <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('spj_ethics')" title="Learn about SPJ Ethics Rules">ℹ</button>
-                      <span style="color:var(--text-muted); font-size:0.78rem; margin-left:0.5rem;">Domain: JOURNALISTIC_ETHICS &bull; 13 Rules &bull; Weight: 1.2x</span>
                     </div>
-                    <span style="color:var(--accent-cyan); font-size:0.78rem;">▼ Toggle Rules</span>
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
+                      <span class="badge" style="background:rgba(56, 189, 248, 0.12); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.25); font-size:0.72rem; font-family:var(--font-mono);">JOURNALISTIC_ETHICS &bull; 13 Rules &bull; 1.2x</span>
+                      <span style="color:var(--accent-cyan); font-size:0.78rem; font-weight:600;">▼ Toggle</span>
+                    </div>
                   </div>
                   <div class="tree-children">
                     <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.5rem 0;">
@@ -344,12 +342,14 @@
                 <!-- IEP Logical Fallacies (15 Rules) -->
                 <div class="tree-node" style="margin-top:0.65rem;">
                   <div class="tree-node-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div style="display:flex; align-items:center; gap:0.4rem;">
-                      <b style="color:#fff;">🧠 Internet Encyclopedia of Philosophy (IEP) Fallacies</b>
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex:1; min-width:0;">
+                      <b style="color:#fff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🧠 Internet Encyclopedia of Philosophy (IEP) Fallacies</b>
                       <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('iep_fallacies')" title="Learn about IEP Fallacy Rules">ℹ</button>
-                      <span style="color:var(--text-muted); font-size:0.78rem; margin-left:0.5rem;">Domain: LOGICAL_FALLACY &bull; 15 Rules &bull; Weight: 1.0x</span>
                     </div>
-                    <span style="color:var(--accent-purple); font-size:0.78rem;">▼ Toggle Rules</span>
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
+                      <span class="badge" style="background:rgba(192, 132, 252, 0.12); color:var(--accent-purple); border:1px solid rgba(192, 132, 252, 0.25); font-size:0.72rem; font-family:var(--font-mono);">LOGICAL_FALLACY &bull; 15 Rules &bull; 1.0x</span>
+                      <span style="color:var(--accent-purple); font-size:0.78rem; font-weight:600;">▼ Toggle</span>
+                    </div>
                   </div>
                   <div class="tree-children">
                     <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.5rem 0;">
@@ -600,12 +600,14 @@
                 <!-- Deceptive UI Patterns (8 Rules) -->
                 <div class="tree-node" style="margin-top:0.65rem;">
                   <div class="tree-node-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div style="display:flex; align-items:center; gap:0.4rem;">
-                      <b style="color:#fff;">🛑 Deceptive UI Patterns Catalog</b>
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex:1; min-width:0;">
+                      <b style="color:#fff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🛑 Deceptive UI Patterns Catalog</b>
                       <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('deceptive_patterns')" title="Learn about Deceptive Patterns &amp; Drip Pricing">ℹ</button>
-                      <span style="color:var(--text-muted); font-size:0.78rem; margin-left:0.5rem;">Domain: DECEPTIVE_PATTERN &bull; 8 Rules &bull; Weight: 1.5x</span>
                     </div>
-                    <span style="color:var(--accent-rose); font-size:0.78rem;">▼ Toggle Rules</span>
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
+                      <span class="badge" style="background:rgba(244, 63, 94, 0.12); color:var(--accent-rose); border:1px solid rgba(244, 63, 94, 0.25); font-size:0.72rem; font-family:var(--font-mono);">DECEPTIVE_PATTERN &bull; 8 Rules &bull; 1.5x</span>
+                      <span style="color:var(--accent-rose); font-size:0.78rem; font-weight:600;">▼ Toggle</span>
+                    </div>
                   </div>
                   <div class="tree-children">
                     <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.5rem 0;">

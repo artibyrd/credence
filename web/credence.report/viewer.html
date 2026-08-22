@@ -46,7 +46,7 @@
     </ul>
   </nav>
 
-  <div class="container">
+  <div class="container" style="padding-top: 2rem;">
     <header>
       <div class="header-top">
         <a href="index.html" class="header-brand">
@@ -61,7 +61,7 @@
             <button id="btn-mode-compact" class="mode-btn" onclick="setViewMode('compact')">🔬 Focus</button>
             <button id="btn-mode-raw" class="mode-btn" onclick="setViewMode('raw')">🌌 Deep Spectrum</button>
           </div>
-          <a href="history.html" class="btn-secondary" style="font-size: 0.85rem;">📜 History &amp; Diff</a>
+          <a href="history.html" id="header-history-link" class="btn-secondary" style="font-size: 0.85rem;">📜 History &amp; Diff</a>
           <a href="index.html" class="btn-secondary" style="font-size: 0.85rem;">&larr; Search Hub</a>
         </div>
       </div>
@@ -1023,6 +1023,11 @@ City council members expressed optimism regarding the new administration's forei
       // Update OpenGraph Title
       document.title = `${report.title || 'Epistemic Audit Report'} — Credence Epistemic Audit`;
 
+      const histLink = document.getElementById("header-history-link");
+      if (histLink && report.url) {
+        histLink.href = `history.html?url=${encodeURIComponent(report.url)}`;
+      }
+
       const suspScore = typeof report.suspicion_score === "number" ? report.suspicion_score : 0.0;
       const density = typeof report.suspicion_density === "number" ? report.suspicion_density : 0.0;
       const conf = typeof report.confidence_score === "number" ? report.confidence_score : 0.95;
@@ -1817,14 +1822,12 @@ ${summaryContent}
         return;
       }
 
-      // Default selection: Pick a random report from corpus on initial load
-      let selected;
+      // Default selection: Deterministically pick primary canonical benchmark report from corpus on initial load
+      let selected = null;
       if (dynamicCorpus.length > 0) {
-        const randIdx = Math.floor(Math.random() * dynamicCorpus.length);
-        selected = dynamicCorpus[randIdx];
+        selected = dynamicCorpus[0];
       } else if (MOCK_CORPUS.length > 0) {
-        const randIdx = Math.floor(Math.random() * MOCK_CORPUS.length);
-        selected = MOCK_CORPUS[randIdx];
+        selected = MOCK_CORPUS[0];
       }
       if (selected) {
         document.getElementById("header-query").value = selected.content_sha256 || selected.id || "";
