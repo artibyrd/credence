@@ -399,6 +399,14 @@ class BoredomDaemon:
                         cost_profile=self.cost_profile,
                     )
                     self._render_cycle_summary(summary)
+
+                    if summary.pending_items_audited > 0 or summary.mesh_attestations_adopted > 0:
+                        try:
+                            from credence.storage.backup import create_database_backup_async
+
+                            await create_database_backup_async(upload_cloud=True)
+                        except Exception:
+                            pass
                 if once:
                     break
                 try:

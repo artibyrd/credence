@@ -27,9 +27,11 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
     async def _lifespan(app: Starlette) -> AsyncGenerator[dict, None]:
         # Pre-boot restore hook: checks cloud backup / local archive before init_db
         try:
-            from credence.storage.backup import create_database_backup, restore_latest_cloud_backup
+            from credence.storage.backup import restore_latest_cloud_backup
 
-            await restore_latest_cloud_backup()
+            restored = await restore_latest_cloud_backup()
+            if restored:
+                logger.info("🚀 Pre-boot cloud restore completed successfully prior to init_db")
         except Exception as re:
             logger.debug("Pre-boot cloud restore hook exception: %s", re)
 
@@ -51,6 +53,21 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                 logger.warning("Auto-germination background task encountered error: %s", e)
 
         _germinate_task = asyncio.create_task(_run_background_germination())
+
+        # Periodic background database backup task (every 30 minutes)
+        async def _run_periodic_backups() -> None:
+            while True:
+                try:
+                    await asyncio.sleep(1800)
+                    from credence.storage.backup import create_database_backup_async
+
+                    await create_database_backup_async(upload_cloud=True)
+                except asyncio.CancelledError:
+                    break
+                except Exception as pe:
+                    logger.debug("Periodic backup task exception: %s", pe)
+
+        _backup_task = asyncio.create_task(_run_periodic_backups())
 
         sifter_daemon = None
         sifter_task = None
@@ -77,6 +94,8 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
         finally:
             if _germinate_task and not _germinate_task.done():
                 _germinate_task.cancel()
+            if _backup_task and not _backup_task.done():
+                _backup_task.cancel()
             if sifter_daemon and sifter_task:
                 sifter_daemon.stop()
                 try:
@@ -90,12 +109,12 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                 except (asyncio.TimeoutError, asyncio.CancelledError):
                     pass
 
-            # Graceful shutdown: flush WAL and export backup snapshot asynchronously
+            # Graceful shutdown: flush WAL and export backup snapshot to cloud
             try:
-                from credence.storage.backup import create_database_backup
+                from credence.storage.backup import create_database_backup_async
 
-                await asyncio.to_thread(create_database_backup, upload_cloud=False)
+                await create_database_backup_async(upload_cloud=True)
             except Exception as be:
-                logger.debug("Shutdown backup hook non-blocking exception: %s", be)
+                logger.debug("Shutdown backup hook exception: %s", be)
 
     return _lifespan

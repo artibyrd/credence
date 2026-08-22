@@ -105,6 +105,14 @@ resource "google_cloud_run_v2_service" "credence" {
         name  = "CREDENCE_OAUTH_GOOGLE_CLIENT_ID"
         value = var.oauth_google_client_id
       }
+      env {
+        name  = "CREDENCE_BACKUP_BUCKET"
+        value = google_storage_bucket.seeds_bucket.name
+      }
+      env {
+        name  = "STORAGE_BACKEND"
+        value = "gcs"
+      }
 
       startup_probe {
         initial_delay_seconds = 0

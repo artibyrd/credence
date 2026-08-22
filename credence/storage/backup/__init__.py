@@ -2,6 +2,7 @@
 
 from credence.storage.backup.engine import (
     create_database_backup,
+    create_database_backup_async,
     get_backup_status,
     restore_database_backup,
     restore_latest_cloud_backup,
@@ -30,6 +31,7 @@ __all__ = [
     "RestoreMetadata",
     "compute_file_sha256",
     "create_database_backup",
+    "create_database_backup_async",
     "download_from_cloud_storage",
     "export_attestation_pack",
     "get_backup_status",
