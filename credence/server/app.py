@@ -166,8 +166,14 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
     for r in rest_routes:
         app.router.routes.insert(0, r)
 
-    web_dir = Path(__file__).resolve().parents[2] / "web"
-    if web_dir.exists() and web_dir.is_dir():
+    candidate_dirs = [
+        Path("/app/web"),
+        Path.cwd() / "web",
+        Path(__file__).resolve().parents[2] / "web",
+        Path(__file__).resolve().parents[4] / "web",
+    ]
+    web_dir = next((p for p in candidate_dirs if p.exists() and p.is_dir()), None)
+    if web_dir:
         if (web_dir / "assets").exists():
             app.mount("/assets", StaticFiles(directory=str(web_dir / "assets")), name="assets")
         if (web_dir / "credence.report").exists():
