@@ -4,8 +4,6 @@ Governed by Invariant 8: Universal 4-Way Feature Parity.
 Architecture: Decoupled Weather & Forensic Profiling Engine (<480 LOC).
 """
 
-from __future__ import annotations
-
 import math
 from collections import Counter, defaultdict
 from typing import Any, Dict, List, Optional
@@ -139,36 +137,22 @@ def generate_publisher_svg_badge(
     domain: str,
     dci_score: float,
     status: str = "VERIFIED CLEAN",
+    style: str = "pill",
     theme: str = "dark",
 ) -> str:
-    """Generate an embeddable SVG trust badge for reputable newsrooms."""
-    bg_left = "#0f172a" if theme == "dark" else "#1e293b"
-    bg_right = "#059669" if dci_score >= 70.0 else ("#d97706" if dci_score >= 45.0 else "#dc2626")
+    """Generate an embeddable SVG trust badge for reputable newsrooms with Cyber Dark styling."""
+    from credence.mesh.badges import generate_svg_badge
 
-    label_text = f"Credence • {domain}"
     pct_str = f"{dci_score:.1f}%" if dci_score != int(dci_score) else f"{int(dci_score)}%"
-    val_text = f"🛡️ {pct_str} {status}"
-
-    char_w = 7.5
-    w_left = max(90, int(len(label_text) * char_w + 16))
-    w_right = max(80, int(len(val_text) * char_w + 20))
-    total_w = w_left + w_right
-
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="28" role="img" aria-label="{label_text}: {val_text}">
-  <title>{label_text}: {val_text}</title>
-  <clipPath id="r">
-    <rect width="{total_w}" height="28" rx="6" fill="#fff"/>
-  </clipPath>
-  <g clip-path="url(#r)">
-    <rect width="{w_left}" height="28" fill="{bg_left}"/>
-    <rect x="{w_left}" width="{w_right}" height="28" fill="{bg_right}"/>
-  </g>
-  <g fill="#f8fafc" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="600">
-    <text x="{w_left / 2}" y="18" fill="#e2e8f0">{label_text}</text>
-    <text x="{w_left + (w_right / 2)}" y="18" fill="#ffffff">{val_text}</text>
-  </g>
-</svg>"""
-    return svg.strip()
+    band_key = "pristine" if dci_score >= 85.0 else ("moderate" if dci_score >= 50.0 else "deceptive")
+    return generate_svg_badge(
+        badge_id=band_key,
+        node_alias=domain,
+        score_or_val=f"{pct_str} {status}",
+        style=style,
+        theme=theme,
+        custom_title=f"Credence • {domain}",
+    )
 
 
 async def get_publisher_analytics(

@@ -298,6 +298,28 @@ def test_web_workstation_architecture_and_admin_deck(web_dir: Path) -> None:
 
 
 @pytest.mark.governance
+def test_nexus_merit_badge_studio_governance(web_dir: Path) -> None:
+    """Verify credence.nexus provides the Epistemic Merit 8-badge showcase and Universal Badge Studio."""
+    nexus_file = web_dir / "credence.nexus" / "index.html"
+    assert nexus_file.exists()
+    content = nexus_file.read_text(encoding="utf-8")
+
+    # 8-badge Merit matrix showcase
+    assert "merit-showcase-grid" in content
+    assert "merit-node-select" in content
+    assert "sprout_node" in content
+    assert "verified_auditor" in content
+
+    # Universal Badge Studio
+    assert "badge-mode-select" in content
+    assert "badge-id-select" in content
+    assert "badge-style-select" in content
+    assert "badge-live-preview-container" in content
+    assert "badge-embed-snippet" in content
+    assert "btn-copy-embed" in content
+
+
+@pytest.mark.governance
 def test_web_foundation_anti_truncation_invariant(web_dir: Path) -> None:
     """Verify credence.foundation taxonomy catalog headers never truncate text with ellipsis."""
     found_file = web_dir / "credence.foundation" / "index.html"
@@ -319,14 +341,28 @@ def test_web_vanilla_js_syntax_integrity(web_dir: Path) -> None:
 
     for html_file in web_dir.glob("*/*.html"):
         content = html_file.read_text(encoding="utf-8")
-        script_matches = re.findall(r"<script(?:\s+type=[\"']module[\"'])?>(.*?)</script>", content, re.DOTALL)
-        for idx, script_body in enumerate(script_matches):
-            clean_script = script_body.strip()
-            if not clean_script:
+        script_matches = re.finditer(r"<script(?P<attrs>[^>]*)>(?P<body>.*?)</script>", content, re.DOTALL)
+        for idx, match in enumerate(script_matches):
+            attrs = match.group("attrs")
+            clean_script = match.group("body").strip()
+            if not clean_script or "src=" in attrs:
                 continue
-            # Run node syntax verification via vm.Script
+
+            if "application/ld+json" in attrs or "application/json" in attrs:
+                try:
+                    json.loads(clean_script)
+                except Exception as e:
+                    pytest.fail(f"Invalid JSON in {html_file.name} (script #{idx + 1}): {e}")
+                continue
+
+            is_module = 'type="module"' in attrs or "type='module'" in attrs
+            cmd = ["node", "--check"]
+            if is_module:
+                cmd.extend(["--input-type=module"])
+
             res = subprocess.run(
-                ["node", "-e", f"new (require('vm')).Script({json.dumps(clean_script)});"],
+                cmd,
+                input=clean_script,
                 capture_output=True,
                 text=True,
             )

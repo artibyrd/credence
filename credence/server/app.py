@@ -163,7 +163,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/db/import-pack", endpoint=api_db_import_pack, methods=["POST", "OPTIONS"]),
     ]
 
-    for r in rest_routes:
+    for r in reversed(rest_routes):
         app.router.routes.insert(0, r)
 
     parents = Path(__file__).resolve().parents

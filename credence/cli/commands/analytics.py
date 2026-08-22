@@ -68,12 +68,23 @@ def cli_badge_export(
     badge_id: str = "root_seed_candidate",
     output_path: Optional[str] = None,
     node: str = "credence-node",
+    score: str = "VERIFIED",
+    style: str = "pill",
+    theme: str = "dark",
     *args: Any,
     **kwargs: Any,
 ) -> None:
-    svg_content = generate_svg_badge(badge_id=badge_id, node_alias=node, score_or_val="VERIFIED")
+    svg_content = generate_svg_badge(
+        badge_id=badge_id,
+        node_alias=node,
+        score_or_val=score,
+        style=style,
+        theme=theme,
+    )
     if output_path:
         target = Path(output_path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(svg_content, encoding="utf-8")
-        console.print(f"[green]Exported badge SVG to {output_path}[/green]")
+        console.print(f"[green]✓ Exported {style} badge SVG to {output_path}[/green]")
+    else:
+        print(svg_content)

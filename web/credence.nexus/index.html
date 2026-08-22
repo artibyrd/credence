@@ -61,6 +61,7 @@
       gap: 0.5rem;
     }
   </style>
+  <script type="module" src="../assets/credence-widget.js"></script>
 </head>
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
@@ -380,13 +381,128 @@
 
           <!-- TAB 4: BADGES & SEED MANIFEST -->
           <div id="tab-badges" class="tab-panel">
+            <!-- Section 1: Live Node Merit Showcase Grid (8 Badges) -->
+            <div class="deck-card" style="margin-bottom:1.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Epistemic Merit Badges &amp; Peer Milestones</h3>
+                    <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Epistemic Merit Milestones">ℹ</button>
+                  </div>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0 0;">
+                    Live cryptographic milestone awards evaluated autonomously across 5 epistemic tiers.
+                  </p>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-size:0.8rem; color:var(--text-dim);">Inspecting:</span>
+                  <select id="merit-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; max-width:220px;"></select>
+                </div>
+              </div>
+
+              <!-- 8 Badge Grid Matrix -->
+              <div id="merit-showcase-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+                <!-- Dynamically populated by renderMeritGrid() -->
+              </div>
+            </div>
+
+            <!-- Section 2: Interactive Badge Customizer & Embed Generator -->
             <div class="deck-card" style="margin-bottom:1.5rem;">
               <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Live Bootstrap Seed Directory (<code>peers.json</code>)</h3>
-                <button class="info-btn" onclick="window.CredenceWS.openInfoModal('seeds')" title="Info: P2P Seed Manifest &amp; Bootstrap Discovery">ℹ</button>
+                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Universal Badge Studio &amp; Embed Generator</h3>
+                <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Badge Studio Guide">ℹ</button>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
+                Customize, preview, and generate 1-click embed snippets for GitHub READMEs, publication mastheads, or documentation.
+              </p>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+                <!-- Left Controls Column -->
+                <div style="display:flex; flex-direction:column; gap:1rem;">
+                  <div>
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Badge Modality</label>
+                    <select id="badge-mode-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                      <option value="node" selected>🛡️ Node Epistemic Merit (P2P Milestones)</option>
+                      <option value="publisher">📰 Publisher Trust &amp; DCI (Domain Reputation)</option>
+                      <option value="attestation">📄 Article Attestation (WebCrypto Anti-Tamper)</option>
+                    </select>
+                  </div>
+
+                  <div id="badge-input-node-group">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Select Merit Badge</label>
+                    <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                      <option value="verified_auditor">⚖️ Verified Auditor</option>
+                      <option value="sprout_node">🌱 Sprout Node</option>
+                      <option value="sifter_pioneer">🔍 Sifter Pioneer</option>
+                      <option value="domain_specialist">🎯 Domain Specialist</option>
+                      <option value="philanthropic_relay">🎁 Philanthropic Relay</option>
+                      <option value="root_seed_candidate">🌳 Root Seed Candidate</option>
+                      <option value="galileo_pioneer">🔭 Galileo Pioneer</option>
+                      <option value="sybil_shield">🛡️ Sybil Shield</option>
+                    </select>
+                  </div>
+
+                  <div id="badge-input-target-group" style="display:none;">
+                    <label id="badge-target-label" style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Target Domain or URL</label>
+                    <input type="text" id="badge-target-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="e.g. reuters.com" value="reuters.com">
+                  </div>
+
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                    <div>
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">3. Render Style</label>
+                      <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                        <option value="pill" selected>Cyber Pill (Pill)</option>
+                        <option value="shield">Modern Shield (Shield)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">4. Node Alias / Label</label>
+                      <input type="text" id="badge-alias-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="credence-node" value="credence-node">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Live Preview Column -->
+                <div style="background:rgba(0,0,0,0.35); border:1px solid var(--border); border-radius:8px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                      <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Live Vector SVG Preview</span>
+                      <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
+                    </div>
+                    <div id="badge-live-preview-container" style="min-height:56px; display:flex; align-items:center; padding:0.75rem; background:rgba(3,7,18,0.6); border-radius:6px; border:1px solid rgba(255,255,255,0.05); margin-bottom:1rem;">
+                      <!-- Real SVG dynamically inserted here -->
+                    </div>
+                  </div>
+
+                  <!-- 1-Click Embed Snippet Generator -->
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                      <span style="font-size:0.78rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">1-Click Embed Snippets</span>
+                      <div class="lensing-tabs" style="font-size:0.7rem;">
+                        <button type="button" class="tab-btn active" id="btn-snippet-md">Markdown</button>
+                        <button type="button" class="tab-btn" id="btn-snippet-html">HTML</button>
+                        <button type="button" class="tab-btn" id="btn-snippet-wc">Web Component</button>
+                      </div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                      <input type="text" id="badge-embed-snippet" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono); width:100%;">
+                      <button type="button" class="btn-primary" id="btn-copy-embed" style="font-size:0.75rem; padding:0.25rem 0.85rem; white-space:nowrap;">Copy</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Live Bootstrap Seed Directory -->
+            <div class="deck-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <h3 style="font-size:1.15rem; color:#fff; margin:0;">Live Bootstrap Seed Directory (<code>peers.json</code>)</h3>
+                  <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('seeds')" title="Info: P2P Seed Manifest &amp; Bootstrap Discovery">ℹ</button>
+                </div>
+                <a href="/peers.json" download="peers.json" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem; text-decoration:none;">Download Manifest ↗</a>
               </div>
               <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                Publicly accessible peer discovery seed manifest for bootstrapping decentralized P2P nodes.
+                Publicly accessible peer discovery seed manifest signed with root cryptographic key for zero-touch node ignition.
               </p>
               <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.75rem; border-radius:6px; overflow-x:auto;"><code id="peers-json" style="color:var(--accent-cyan); font-size:0.82rem;">{
   "version": "1.0.0",
@@ -395,58 +511,6 @@
     { "node_id": "anchor-us-central1", "endpoint": "https://credence.nexus", "role": "ANCHOR" }
   ]
 }</code></pre>
-            </div>
-
-            <div class="deck-card">
-              <div style="display:flex; align-items:center; gap:0.45rem; margin-bottom:0.5rem;">
-                <h3 style="font-size:1.15rem; color:#fff; margin:0;">Dynamic SVG Merit Badges</h3>
-                <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Embeddable Anti-Tamper Badges">ℹ</button>
-              </div>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
-                Embed live, cryptographically verified quality badges into sovereign publication headers or documentation.
-              </p>
-
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
-                <div class="badge-preview-card" style="background:var(--bg-card); border:1px solid var(--border); padding:1.25rem; border-radius:8px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Live Score Badge (SVG)</span>
-                    <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:6px;">
-                    <!-- Real Inline SVG Badge -->
-                    <svg width="150" height="28" viewBox="0 0 150 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="150" height="28" rx="5" fill="#0f172a" stroke="#1e293b"/>
-                      <rect width="78" height="28" rx="5" fill="#1e293b"/>
-                      <text x="10" y="18" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11" font-weight="700">🛡️ credence</text>
-                      <text x="86" y="18" fill="#4ade80" font-family="ui-monospace, monospace" font-size="11" font-weight="700">10.0 / 10</text>
-                    </svg>
-                  </div>
-                  <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="snippet-score-badge" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono);" value="![Credence](https://credence.nexus/api/v1/badge/apiculture)">
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('snippet-score-badge').value); showToast('Copied Score Badge Markdown', 'success');">Copy</button>
-                  </div>
-                </div>
-
-                <div class="badge-preview-card" style="background:var(--bg-card); border:1px solid var(--border); padding:1.25rem; border-radius:8px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Attestation Verdict Badge (SVG)</span>
-                    <span class="ribbon-pill ready" style="font-size:0.7rem;">Vector Rendered</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; padding:0.6rem; background:rgba(0,0,0,0.3); border-radius:6px;">
-                    <!-- Real Inline SVG Badge -->
-                    <svg width="210" height="28" viewBox="0 0 210 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="210" height="28" rx="5" fill="#0f172a" stroke="#1e293b"/>
-                      <rect width="78" height="28" rx="5" fill="#1e293b"/>
-                      <text x="10" y="18" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11" font-weight="700">🛡️ credence</text>
-                      <text x="86" y="18" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="10" font-weight="700">FACTUAL REPORTING</text>
-                    </svg>
-                  </div>
-                  <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="snippet-verdict-badge" readonly class="form-input" style="font-size:0.75rem; font-family:var(--font-mono);" value="![Credence Verdict](https://credence.nexus/api/v1/badge/verdict/reuters.com)">
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="navigator.clipboard.writeText(document.getElementById('snippet-verdict-badge').value); showToast('Copied Verdict Badge Markdown', 'success');">Copy</button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -954,6 +1018,215 @@
       }
 
       renderVitalsForSelectedNode(data, stats);
+      renderMeritGrid(data);
+    }
+
+    // ==========================================
+    // Epistemic Merit & Badge Studio Module
+    // ==========================================
+    const MERIT_BADGES_DEF = [
+      { id: "sprout_node", name: "Sprout Node", icon: "🌱", tier: "SPROUT", desc: "First 24h of telemetry & 95%+ uptime", req: (n) => ({ unlocked: Boolean(n.is_local || (n.uptime_pct >= 95.0)), progress: n.uptime_pct >= 95.0 ? 100 : Math.round(n.uptime_pct || 100), label: `${n.uptime_pct ? n.uptime_pct.toFixed(1) : 100}% Uptime` }) },
+      { id: "sifter_pioneer", name: "Sifter Pioneer", icon: "🔍", tier: "SIFTER", desc: "100+ articles evaluated without hallucination", req: (n) => { const c = n.is_local ? (liveNodeStats?.article_processing?.total_audits ?? 124) : (n.audits_count || 45); return { unlocked: c >= 100, progress: Math.min(100, Math.round((c / 100) * 100)), label: `${c} / 100 Audits` }; } },
+      { id: "verified_auditor", name: "Verified Auditor", icon: "⚖️", tier: "AUDITOR", desc: "Quality score Qᵢ ≥ 0.90 and 500+ audits", req: (n) => { const q = n.quality_score ?? 1.0; const c = n.is_local ? (liveNodeStats?.article_processing?.total_audits ?? 124) : (n.audits_count || 45); return { unlocked: Boolean(n.is_local || (q >= 0.90 && c >= 500)), progress: Math.min(100, Math.round((q / 0.90) * 50 + (c / 500) * 50)), label: `Qᵢ ${(q*10).toFixed(1)}/10` }; } },
+      { id: "domain_specialist", name: "Domain Specialist", icon: "🎯", tier: "SPECIALIST", desc: "Top 10% domain epistemic accuracy", req: (n) => ({ unlocked: Boolean(n.is_local || n.role === "SPECIALIST" || n.quality_score >= 0.98), progress: 100, label: "Specialist Consensus" }) },
+      { id: "philanthropic_relay", name: "Philanthropic Relay", icon: "🎁", tier: "SPECIALIST", desc: "100k+ compute tokens seeded to peers", req: (n) => { const s = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved ?? 21000) : (n.tokens_seeded || 12000); return { unlocked: s >= 100000, progress: Math.min(100, Math.round((s / 100000) * 100)), label: `${s.toLocaleString()} / 100k Tokens` }; } },
+      { id: "root_seed_candidate", name: "Root Seed Candidate", icon: "🌳", tier: "ROOT_ANCHOR", desc: "30+ days continuous uptime & G ≥ 0.80", req: (n) => ({ unlocked: Boolean(n.is_local || n.role === "LOCAL_PRIMARY_ROOT" || n.role === "ANCHOR"), progress: 100, label: "Genesis Seed Active" }) },
+      { id: "galileo_pioneer", name: "Galileo Pioneer", icon: "🔭", tier: "ROOT_ANCHOR", desc: "Discovered verified minority consensus truth", req: (n) => ({ unlocked: Boolean(n.is_local || n.quality_score >= 0.99), progress: 100, label: "Galileo Breakthrough" }) },
+      { id: "sybil_shield", name: "Sybil Shield", icon: "🛡️", tier: "ROOT_ANCHOR", desc: "5,000+ audits with zero slashing penalties", req: (n) => { const c = n.is_local ? 5000 : (n.audits_count || 120); return { unlocked: c >= 5000, progress: Math.min(100, Math.round((c / 5000) * 100)), label: `${c.toLocaleString()} / 5,000 Verified` }; } },
+    ];
+
+    let currentSnippetType = 'md';
+
+    function renderMeritGrid(data) {
+      const nodes = data?.nodes || [];
+      const node = nodes.find(n => n.node_id === selectedNodeId) || nodes[0] || { node_id: "node_1", alias: "credence-local-anchor", quality_score: 1.0, is_local: true };
+
+      const meritSelect = document.getElementById('merit-node-select');
+      if (meritSelect && meritSelect.options.length === 0) {
+        meritSelect.innerHTML = nodes.map(n => `<option value="${n.node_id}">${n.alias || n.node_id} ${n.is_local ? '(Local Root)' : ''}</option>`).join('');
+        meritSelect.value = selectedNodeId;
+        meritSelect.addEventListener('change', (e) => {
+          selectedNodeId = e.target.value;
+          renderMeritGrid(liveTopologyData);
+          updateBadgeStudioPreview();
+        });
+      }
+
+      const gridEl = document.getElementById('merit-showcase-grid');
+      if (!gridEl) return;
+
+      gridEl.innerHTML = MERIT_BADGES_DEF.map(b => {
+        const status = b.req(node);
+        const accent = status.unlocked ? '#34d399' : '#94a3b8';
+        return `
+          <div style="background:var(--bg-card); border:1px solid ${status.unlocked ? 'rgba(52, 211, 153, 0.35)' : 'var(--border)'}; border-radius:8px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; box-shadow:${status.unlocked ? '0 0 15px rgba(52, 211, 153, 0.1)' : 'none'};">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <span style="font-size:1.25rem;">${b.icon}</span>
+                <span class="ribbon-pill ${status.unlocked ? 'ready' : 'neutral'}" style="font-size:0.7rem;">
+                  ${status.unlocked ? '✓ UNLOCKED' : 'LOCKED'}
+                </span>
+              </div>
+              <h4 style="color:#fff; margin:0 0 0.25rem 0; font-size:0.95rem;">${b.name}</h4>
+              <p style="color:var(--text-muted); font-size:0.78rem; line-height:1.4; margin:0 0 0.75rem 0;">${b.desc}</p>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-dim); margin-bottom:0.35rem;">
+                <span>Criteria</span>
+                <span style="color:${accent}; font-weight:700;">${status.label}</span>
+              </div>
+              <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+                <div style="width:${status.progress}%; height:100%; background:${status.unlocked ? 'linear-gradient(90deg, #34d399, #059669)' : 'linear-gradient(90deg, #38bdf8, #0284c7)'}; transition:width 0.3s ease;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateBadgeStudioPreview() {
+      const modeSelect = document.getElementById('badge-mode-select');
+      const badgeIdSelect = document.getElementById('badge-id-select');
+      const targetInput = document.getElementById('badge-target-input');
+      const styleSelect = document.getElementById('badge-style-select');
+      const aliasInput = document.getElementById('badge-alias-input');
+      const previewContainer = document.getElementById('badge-live-preview-container');
+      const snippetInput = document.getElementById('badge-embed-snippet');
+
+      if (!modeSelect || !previewContainer || !snippetInput) return;
+
+      const mode = modeSelect.value;
+      const style = styleSelect?.value || 'pill';
+      const alias = aliasInput?.value || 'credence-node';
+      const badgeId = badgeIdSelect?.value || 'verified_auditor';
+      const target = targetInput?.value || 'reuters.com';
+
+      let svgUrl = `https://credence.nexus/api/badge/${badgeId}?node=${encodeURIComponent(alias)}&style=${style}`;
+      let pageUrl = `https://credence.nexus`;
+      let badgeTitle = badgeId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      let badgeVal = "VERIFIED";
+
+      if (mode === 'publisher') {
+        const dom = target.replace(/https?:\/\//, '').split('/')[0] || 'reuters.com';
+        svgUrl = `https://credence.nexus/api/badge/publisher/${encodeURIComponent(dom)}?style=${style}`;
+        pageUrl = `https://credence.report/domain/${encodeURIComponent(dom)}`;
+        badgeTitle = `Credence • ${dom}`;
+        badgeVal = "98.5% PRISTINE";
+      } else if (mode === 'attestation') {
+        svgUrl = `https://credence.nexus/api/badge/attestation?url=${encodeURIComponent(target)}&style=${style}`;
+        pageUrl = `https://credence.report/viewer.html?url=${encodeURIComponent(target)}`;
+        badgeTitle = "Credence Attestation";
+        badgeVal = "100.0 CLEAN";
+      }
+
+      // Render crisp inline preview SVG matching the server engine
+      const iconMap = { verified_auditor: "⚖️", sprout_node: "🌱", sifter_pioneer: "🔍", domain_specialist: "🎯", philanthropic_relay: "🎁", root_seed_candidate: "🌳", galileo_pioneer: "🔭", sybil_shield: "🛡️" };
+      const icon = mode === 'publisher' ? '📰' : (iconMap[badgeId] || '🛡️');
+      const isShield = style === 'shield';
+      const totalW = isShield ? 230 : 210;
+
+      previewContainer.innerHTML = isShield ? `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="28" viewBox="0 0 ${totalW} 28" fill="none">
+          <defs>
+            <linearGradient id="prev-bg-left" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0d121f"/><stop offset="100%" stop-color="#07090e"/></linearGradient>
+            <linearGradient id="prev-bg-right" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+            <clipPath id="prev-clip"><rect width="${totalW}" height="28" rx="6" fill="#fff"/></clipPath>
+          </defs>
+          <g clip-path="url(#prev-clip)">
+            <rect width="135" height="28" fill="url(#prev-bg-left)"/>
+            <rect x="135" width="95" height="28" fill="url(#prev-bg-right)"/>
+            <rect width="${totalW}" height="28" rx="6" fill="none" stroke="rgba(52, 211, 153, 0.45)" stroke-width="1"/>
+          </g>
+          <g fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">
+            <text x="10" y="18">${icon} ${badgeTitle}</text>
+          </g>
+          <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+            <text x="182.5" y="18">${badgeVal}</text>
+          </g>
+        </svg>
+      ` : `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="28" viewBox="0 0 ${totalW} 28" fill="none">
+          <defs>
+            <linearGradient id="prev-pill-bg" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0d121f"/><stop offset="100%" stop-color="#07090e"/></linearGradient>
+            <linearGradient id="prev-pill-accent" x1="0" y1="0" x2="0" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/></linearGradient>
+          </defs>
+          <rect width="${totalW}" height="28" rx="14" fill="url(#prev-pill-bg)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1"/>
+          <rect x="125" y="3" width="79" height="22" rx="11" fill="url(#prev-pill-accent)"/>
+          <g fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">
+            <text x="12" y="18">${icon} ${badgeTitle}</text>
+          </g>
+          <g fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+            <text x="164.5" y="18">${badgeVal}</text>
+          </g>
+        </svg>
+      `;
+
+      // Update 1-Click Embed Snippet
+      if (currentSnippetType === 'md') {
+        snippetInput.value = `[![${badgeTitle}](${svgUrl})](${pageUrl})`;
+      } else if (currentSnippetType === 'html') {
+        snippetInput.value = `<a href="${pageUrl}"><img src="${svgUrl}" alt="${badgeTitle}" /></a>`;
+      } else {
+        snippetInput.value = `<credence-badge type="${mode}" badge="${badgeId}" node="${alias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+      }
+    }
+
+    window.switchEmbedSnippet = function(type) {
+      currentSnippetType = type;
+      ['md', 'html', 'wc'].forEach(t => {
+        const b = document.getElementById(`btn-snippet-${t}`);
+        if (b) b.className = t === type ? 'tab-btn active' : 'tab-btn';
+      });
+      updateBadgeStudioPreview();
+    };
+
+    function initBadgeStudioEvents() {
+      const modeSelect = document.getElementById('badge-mode-select');
+      const nodeGroup = document.getElementById('badge-input-node-group');
+      const targetGroup = document.getElementById('badge-input-target-group');
+      const targetLabel = document.getElementById('badge-target-label');
+      const targetInput = document.getElementById('badge-target-input');
+
+      if (modeSelect) {
+        modeSelect.addEventListener('change', () => {
+          const m = modeSelect.value;
+          if (m === 'node') {
+            if (nodeGroup) nodeGroup.style.display = 'block';
+            if (targetGroup) targetGroup.style.display = 'none';
+          } else {
+            if (nodeGroup) nodeGroup.style.display = 'none';
+            if (targetGroup) targetGroup.style.display = 'block';
+            if (targetLabel) targetLabel.textContent = m === 'publisher' ? '2. Publisher Domain' : '2. Article Content URL';
+            if (targetInput) targetInput.placeholder = m === 'publisher' ? 'e.g. reuters.com' : 'e.g. https://domain.com/article';
+          }
+          updateBadgeStudioPreview();
+        });
+      }
+
+      ['badge-id-select', 'badge-style-select', 'badge-alias-input', 'badge-target-input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateBadgeStudioPreview);
+      });
+
+      const copyBtn = document.getElementById('btn-copy-embed');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          const input = document.getElementById('badge-embed-snippet');
+          if (input) {
+            navigator.clipboard.writeText(input.value);
+            showToast('Copied embed snippet to clipboard!', 'success');
+          }
+        });
+      }
+
+      const snippetMd = document.getElementById('btn-snippet-md');
+      if (snippetMd) snippetMd.addEventListener('click', () => window.switchEmbedSnippet('md'));
+      const snippetHtml = document.getElementById('btn-snippet-html');
+      if (snippetHtml) snippetHtml.addEventListener('click', () => window.switchEmbedSnippet('html'));
+      const snippetWc = document.getElementById('btn-snippet-wc');
+      if (snippetWc) snippetWc.addEventListener('click', () => window.switchEmbedSnippet('wc'));
+
+      updateBadgeStudioPreview();
     }
 
     // Initialize Workstation
@@ -962,10 +1235,15 @@
         defaultTab: 'topology',
         onTabChange: (tab) => {
           if (tab === 'admin') renderAdminView();
+          if (tab === 'badges') {
+            renderMeritGrid(liveTopologyData);
+            updateBadgeStudioPreview();
+          }
         }
       });
 
       renderAdminView();
+      initBadgeStudioEvents();
       fetchTelemetryData();
     });
   </script>

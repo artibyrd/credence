@@ -13,6 +13,11 @@ class CredenceBadge extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.state = {
+      type: 'attestation',
+      badgeId: '',
+      nodeAlias: '',
+      domain: '',
+      tier: 'AUDITOR',
       status: 'VERIFIED',
       score: 100.0,
       suspicionScore: 0.0,
@@ -29,11 +34,16 @@ class CredenceBadge extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['url', 'receipt', 'score', 'version', 'lens'];
+    return ['type', 'badge', 'node', 'domain', 'tier', 'url', 'receipt', 'score', 'version', 'lens'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
+    if (name === 'type' && newValue) this.state.type = newValue;
+    if (name === 'badge' && newValue) this.state.badgeId = newValue;
+    if (name === 'node' && newValue) this.state.nodeAlias = newValue;
+    if (name === 'domain' && newValue) this.state.domain = newValue;
+    if (name === 'tier' && newValue) this.state.tier = newValue;
     if (name === 'url' && newValue) this.state.url = newValue;
     if (name === 'score' && newValue) this.state.score = parseFloat(newValue) || 100.0;
     if (name === 'version' && newValue) this.state.version = newValue;
@@ -69,6 +79,11 @@ class CredenceBadge extends HTMLElement {
   }
 
   connectedCallback() {
+    this.state.type = this.getAttribute('type') || (this.getAttribute('badge') ? 'node' : (this.getAttribute('domain') ? 'publisher' : 'attestation'));
+    this.state.badgeId = this.getAttribute('badge') || '';
+    this.state.nodeAlias = this.getAttribute('node') || 'credence-node';
+    this.state.domain = this.getAttribute('domain') || '';
+    this.state.tier = this.getAttribute('tier') || 'AUDITOR';
     this.state.url = this.getAttribute('url') || window.location.href;
     if (this.getAttribute('score')) this.state.score = parseFloat(this.getAttribute('score')) || 100.0;
     if (this.getAttribute('version')) this.state.version = this.getAttribute('version') || 'v2.1.5';
@@ -95,24 +110,49 @@ class CredenceBadge extends HTMLElement {
   }
 
   render() {
-    const { status, score, suspicionScore, classification, version, popoverOpen, activeLens, receipt, receiptHash } = this.state;
+    const { type, badgeId, nodeAlias, domain, tier, status, score, suspicionScore, classification, version, popoverOpen, activeLens, receipt, receiptHash } = this.state;
+
+    const BADGE_ICONS = {
+      sprout_node: '🌱',
+      sifter_pioneer: '🔍',
+      verified_auditor: '⚖️',
+      domain_specialist: '🎯',
+      philanthropic_relay: '🎁',
+      root_seed_candidate: '🌳',
+      galileo_pioneer: '🔭',
+      sybil_shield: '🛡️'
+    };
 
     let badgeClass = 'badge-clean';
     let icon = '🛡️';
     let label = `${score.toFixed(1)} Clean · Verified ${version}`;
 
-    if (status === 'ATTENTION') {
-      badgeClass = 'badge-caution';
-      icon = '🔍';
-      label = `${score.toFixed(1)} Notable Flags · ${version}`;
-    } else if (status === 'FLAGGED') {
-      badgeClass = 'badge-flagged';
-      icon = '🛑';
-      label = `${score.toFixed(1)} High Suspicion · ${version}`;
-    } else if (status === 'MODIFIED') {
-      badgeClass = 'badge-modified';
-      icon = '⚠️';
-      label = `Content Modified Post-Audit`;
+    if (type === 'node') {
+      const bKey = badgeId || 'verified_auditor';
+      icon = BADGE_ICONS[bKey] || '🛡️';
+      const bName = bKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      label = `${nodeAlias} · ${bName}`;
+      badgeClass = 'badge-clean';
+    } else if (type === 'publisher') {
+      icon = '📰';
+      const domName = domain || 'domain.com';
+      const band = score >= 85 ? 'PRISTINE' : (score >= 70 ? 'CLEAN' : (score >= 50 ? 'MODERATE' : 'SUSPICIOUS'));
+      label = `${domName} · ${score.toFixed(1)}% ${band}`;
+      badgeClass = score >= 70 ? 'badge-clean' : (score >= 50 ? 'badge-caution' : 'badge-flagged');
+    } else {
+      if (status === 'ATTENTION') {
+        badgeClass = 'badge-caution';
+        icon = '🔍';
+        label = `${score.toFixed(1)} Notable Flags · ${version}`;
+      } else if (status === 'FLAGGED') {
+        badgeClass = 'badge-flagged';
+        icon = '🛑';
+        label = `${score.toFixed(1)} High Suspicion · ${version}`;
+      } else if (status === 'MODIFIED') {
+        badgeClass = 'badge-modified';
+        icon = '⚠️';
+        label = `Content Modified Post-Audit`;
+      }
     }
 
     const signer = receipt && receipt.node_pubkey ? `${receipt.node_pubkey.substring(0, 16)}...` : 'ed25519:e3b0c44...41a7';

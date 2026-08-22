@@ -1,9 +1,341 @@
 {
   "protocol": "credence-attestation-pack/1.0",
-  "exported_at": "2026-08-22T08:08:46.427311+00:00",
+  "exported_at": "2026-08-22T18:44:53.519905+00:00",
   "exporter_node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-  "total_attestations": 635,
+  "total_attestations": 645,
   "attestations": [
+    {
+      "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
+      "url": "text://inline",
+      "title": "Fallacy Test",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0xc8393e902b1e3f78",
+      "suspicion_score": 0.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 1.0,
+      "classification": "CLEAN",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:44:52.002949",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "8439ca93fc5befa3cddd356c1ac23d82f733d00d73b58f70a89d77c9c02bfa3c560d7793057f4986d552d5cf4029aa3095d699d4b5be95404706291c9fc00e09",
+      "violations": []
+    },
+    {
+      "content_sha256": "sha256:5c43ae7f6b1fbf373e1e512796d0b8ff0eb65ca85436ccc59dbad58ed3064d52",
+      "url": "text://inline",
+      "title": "Test Fallacy Snippet",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cf9b217633d0b70",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:44:51.209725",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "614d52a47baacec53f48f819a693c83003e2a235c976732824bbfbbe3585f218f24cfbb4a7055eaf0fccc644dd3a17bf85c4db42f7c91d380be074acb281e90f",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:44:49.512448",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "8f12865155561e242fba7b957200aa3682b602cc231467e640e7f0e2e6415d5e0858200f94e8b2199d8a5c57b6b3340e002564210692e4bde37e1cfcd173970c",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:44:49.438476",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "055173493063a9a3819d34ac7182d848178a15f83f592d676f90b97755268b4904b0e71592661b187d2cf175177a0fff6a6b24a0c309fe01c5c025089cb8d00d",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
+      "url": "text://inline",
+      "title": "Fallacy Test",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0xc8393e902b1e3f78",
+      "suspicion_score": 0.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 1.0,
+      "classification": "CLEAN",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:41:22.608206",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "87e78a30a8c5e8186f0fcd66f1e2316365f8572cc47aea05df9ebde912cf54414e068a7edd7ea0a4567f2313b80d537e21765ce8606aa3c55e7476754806cb04",
+      "violations": []
+    },
+    {
+      "content_sha256": "sha256:5c43ae7f6b1fbf373e1e512796d0b8ff0eb65ca85436ccc59dbad58ed3064d52",
+      "url": "text://inline",
+      "title": "Test Fallacy Snippet",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cf9b217633d0b70",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:41:21.795784",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "961be775d83f1cb5e557cf15cc073277fe91f2187acd09d5563c0d85954a0acbdce8e4f3cdb1e4053bd712e90508ae0e5289cc5ca12065232b1b009c00733a0f",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:41:19.811235",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "08529beb308c495e2a61e97733459d1ab001794e86eda8b9d2c7c7869f24b1f023df26053402cd8e746bb62569883c6d80631df7d987f0ab25d3d9836b8c0d07",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:41:19.723217",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "baaea3e11a4dba80a1c72256baf620277f885ccda1925a8f41ad0c2b908580782d4aa9e9d1c87070de04981d82ded6060214dd935c5621aa79e8c4ed7c4d4a0d",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:46b735dbc8ee5ed2832dc13bd4114d86f0c1efc01080c1e9b57a7d26f6438d09",
+      "url": "https://themarkup.org/election-2026/2026/03/09/it-was-john-waynes-political-club-now-its-spending-millions-on-online-influence",
+      "title": "It was John Wayne\u2019s political club. Now it\u2019s spending millions on online influence \u2013 The Markup",
+      "byline": null,
+      "site_name": "Themarkup",
+      "simhash_64": "0x3b8998476d234255",
+      "suspicion_score": 16.5,
+      "suspicion_density": 0.77,
+      "confidence_score": 0.9,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:37:14.704948",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "24a228093025715c77073868a15cf8a94f73906bb66284a1af4296777732ff3ef0ae7f8a085901bcc2b8a7c882b762daf14ff426e62732670527262aad1aab00",
+      "violations": [
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:be-accountable-and-transparent/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 2,
+          "confidence": 0.9,
+          "quote_or_element": "It was John Wayne\u2019s political club. Now it\u2019s spending millions on online influence \u2013 The Markup",
+          "reasoning": "Article completely lacks author byline or publisher identification.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:24470bb8c6131853912a04e0f9bb0e8d44610052bc7d746ff9a922f17d3ed3d2",
+      "url": "https://themarkup.org/inside-the-markup/2026/03/30/the-markup-wins-sabew-award-for-best-in-business-journalism",
+      "title": "The Markup wins SABEW Award for Best in Business Journalism \u2013 The Markup",
+      "byline": null,
+      "site_name": "Themarkup",
+      "simhash_64": "0x39c9186345234675",
+      "suspicion_score": 16.5,
+      "suspicion_density": 1.71,
+      "confidence_score": 0.9,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-22T18:37:09.829275",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "437e288224da960aa1dd4bbd7b57539986b3ea87d098ba10ea0b41de07a727f6d76efb1075bf557545a5690ba741170f11f144811e505f9daaed9e2279e88800",
+      "violations": [
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:be-accountable-and-transparent/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 2,
+          "confidence": 0.9,
+          "quote_or_element": "The Markup wins SABEW Award for Best in Business Journalism \u2013 The Markup",
+          "reasoning": "Article completely lacks author byline or publisher identification.",
+          "line_or_selector": null
+        }
+      ]
+    },
     {
       "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
       "url": "text://inline",
@@ -20655,5 +20987,5 @@
       ]
     }
   ],
-  "bundle_signature": "19607a04c12db9746332bb91f5c50e12576880c384ee08ae9a7a64479089ecce76bd544976b70022307059f06dd84bf048ddfbe488d8070af9eff5de91842b08"
+  "bundle_signature": "2fa228402631e5cff41e9b948cd309c9a84dcfe165ab7141ccd8c93cc3f0979598ae962c5fcd55870584fb229eafa82605ad4dcc3f960db21155017dfbbe7c00"
 }

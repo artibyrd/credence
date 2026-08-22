@@ -53,24 +53,34 @@ async def api_get_merit(request: Any) -> Any:
 
 async def api_get_badge_svg(request: Any) -> Any:
     """REST API: Dynamic SVG badge endpoint."""
-
     from credence.mesh.merit import generate_svg_badge
 
     badge_id = request.path_params.get("badge_id", "root_seed_candidate").replace(".svg", "")
     node = request.query_params.get("node", "credence-node")
     score = request.query_params.get("score", "VERIFIED")
+    style = request.query_params.get("style", "pill")
     theme = request.query_params.get("theme", "dark")
 
-    svg_content = generate_svg_badge(badge_id=badge_id, node_alias=node, score_or_val=score, theme=theme)
-    return Response(content=svg_content, media_type="image/svg+xml")
+    svg_content = generate_svg_badge(
+        badge_id=badge_id,
+        node_alias=node,
+        score_or_val=score,
+        style=style,
+        theme=theme,
+    )
+    return Response(
+        content=svg_content,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=300"},
+    )
 
 
 async def api_get_publisher_badge(request: Any) -> Any:
     """REST API: Dynamic Publisher SVG badge endpoint."""
-
     from credence.subjects.analytics import generate_publisher_svg_badge, get_domain_leaderboard
 
     domain = request.path_params.get("domain", "reuters.com").replace(".svg", "")
+    style = request.query_params.get("style", "pill")
     theme = request.query_params.get("theme", "dark")
 
     dci_val = 85.0
@@ -84,8 +94,18 @@ async def api_get_publisher_badge(request: Any) -> Any:
                 status = r.trust_band
                 break
 
-    svg = generate_publisher_svg_badge(domain=domain, dci_score=dci_val, status=status, theme=theme)
-    return Response(content=svg, media_type="image/svg+xml")
+    svg = generate_publisher_svg_badge(
+        domain=domain,
+        dci_score=dci_val,
+        status=status,
+        style=style,
+        theme=theme,
+    )
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=300"},
+    )
 
 
 async def api_rankings_rules(request: Any) -> Any:

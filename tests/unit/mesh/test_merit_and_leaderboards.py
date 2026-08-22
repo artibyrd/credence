@@ -152,28 +152,124 @@ def test_epistemic_tier_progression() -> None:
     )
 
 
-def test_svg_badge_generation() -> None:
-    """Verify Shields.io compatible SVG generation."""
-    svg = generate_svg_badge(
+def test_svg_badge_generation_strict_xml_and_styles() -> None:
+    """Verify strict XML ElementTree parseability, visual styles, and metadata across styles."""
+    import xml.etree.ElementTree as ET
+
+    # Test pill style
+    svg_pill = generate_svg_badge(
         badge_id="root_seed_candidate",
         node_alias="anchor-us-central1",
         score_or_val="0.985",
+        style="pill",
         theme="dark",
     )
-    assert svg.startswith("<svg")
-    assert svg.endswith("</svg>")
-    assert "anchor-us-central1" in svg
-    assert 'xmlns="http://www.w3.org/2000/svg"' in svg
+    root_pill = ET.fromstring(svg_pill)
+    assert root_pill.tag == "{http://www.w3.org/2000/svg}svg" or root_pill.tag.endswith("svg")
+    assert "anchor-us-central1" in svg_pill
+    assert "0.985" in svg_pill
+    assert int(root_pill.attrib["height"]) == 28
+    assert int(root_pill.attrib["width"]) > 100
 
-    # Light theme
-    svg_light = generate_svg_badge(
-        badge_id="sprout_node",
-        node_alias="my-node",
-        score_or_val="ACTIVE",
-        theme="light",
+    # Test shield style
+    svg_shield = generate_svg_badge(
+        badge_id="verified_auditor",
+        node_alias="sifter-node-09",
+        score_or_val="99.4%",
+        style="shield",
+        theme="midnight",
     )
-    assert svg_light.startswith("<svg")
-    assert "my-node" in svg_light
+    root_shield = ET.fromstring(svg_shield)
+    assert root_shield.tag == "{http://www.w3.org/2000/svg}svg" or root_shield.tag.endswith("svg")
+    assert "sifter-node-09" in svg_shield
+    assert "99.4%" in svg_shield
+    assert int(root_shield.attrib["height"]) == 28
+
+
+def test_svg_badge_8_registry_matrix() -> None:
+    """Verify all 8 official badges and fallbacks generate valid, well-formed XML."""
+    import xml.etree.ElementTree as ET
+
+    for badge_id, badge_info in BADGE_REGISTRY.items():
+        for style in ["pill", "shield"]:
+            for theme in ["dark", "midnight", "light"]:
+                svg = generate_svg_badge(
+                    badge_id=badge_id,
+                    node_alias=f"node-{badge_id}",
+                    score_or_val="VERIFIED",
+                    style=style,
+                    theme=theme,
+                )
+                tree = ET.fromstring(svg)
+                assert tree.tag.endswith("svg")
+                assert badge_info.name in svg or badge_id.replace("_", " ").title() in svg
+
+    # Test unknown fallback badge_id
+    fallback_svg = generate_svg_badge(badge_id="custom_pioneer_tier", node_alias="custom-node", score_or_val="TIER 1")
+    fallback_tree = ET.fromstring(fallback_svg)
+    assert fallback_tree.tag.endswith("svg")
+    assert "Custom Pioneer Tier" in fallback_svg
+
+
+def test_svg_badge_xml_escaping_and_fuzzing() -> None:
+    """Verify robust XML sanitization against special characters and injection payloads."""
+    import xml.etree.ElementTree as ET
+
+    malicious_aliases = [
+        "Node & Co. <script>alert('pwn')</script>",
+        'Quote "Test" & Ampersand',
+        "Special < > & ' \" Chars",
+        "Emoji 🚀 & Symbols <>",
+    ]
+    for alias in malicious_aliases:
+        svg = generate_svg_badge(
+            badge_id="sybil_shield",
+            node_alias=alias,
+            score_or_val="G=1.00 & 100%",
+            style="pill",
+        )
+        # ElementTree will raise ParseError if XML escaping is broken
+        tree = ET.fromstring(svg)
+        assert tree.tag.endswith("svg")
+
+
+def test_svg_badge_dynamic_width_boundaries() -> None:
+    """Verify text width calculation for extreme short and long strings without crashing or clipping."""
+    import xml.etree.ElementTree as ET
+
+    # Extreme short
+    svg_short = generate_svg_badge(badge_id="sprout_node", node_alias="N", score_or_val="1")
+    tree_short = ET.fromstring(svg_short)
+    w_short = int(tree_short.attrib["width"])
+    assert w_short > 50
+
+    # Extreme long
+    long_alias = "extremely-long-sovereign-decentralized-validator-node-cluster-alias-primary"
+    long_val = "UNLOCKED_WITH_100_PERCENT_GROUNDING_AND_ZERO_FAILURES"
+    svg_long = generate_svg_badge(badge_id="root_seed_candidate", node_alias=long_alias, score_or_val=long_val)
+    tree_long = ET.fromstring(svg_long)
+    w_long = int(tree_long.attrib["width"])
+    assert w_long > 400
+
+
+def test_publisher_svg_badge_generation() -> None:
+    """Verify publisher trust badges produce well-formed XML and reflect DCI scores and bands."""
+    import xml.etree.ElementTree as ET
+
+    from credence.subjects.weather import generate_publisher_svg_badge
+
+    for score, expected_band in [(95.0, "PRISTINE"), (75.0, "CLEAN"), (40.0, "SUSPICIOUS")]:
+        for style in ["pill", "shield"]:
+            svg = generate_publisher_svg_badge(
+                domain="reuters.com",
+                dci_score=score,
+                status=expected_band,
+                style=style,
+            )
+            tree = ET.fromstring(svg)
+            assert tree.tag.endswith("svg")
+            assert "reuters.com" in svg
+            assert expected_band in svg
 
 
 @pytest.mark.asyncio

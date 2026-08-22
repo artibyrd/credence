@@ -284,6 +284,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--lens", default="surface", choices=["surface", "focus", "forensic"], help="Information pyramid lens"
     )
 
+    # badge
+    p_badge = subparsers.add_parser("badge", help="Generate or export SVG and Web Component badges")
+    p_badge.add_argument("action", default="export", nargs="?", choices=["export"])
+    p_badge.add_argument("badge_id", default="verified_auditor", nargs="?", help="Badge ID or domain")
+    p_badge.add_argument("--output", "-o", help="Target SVG file path (default stdout)")
+    p_badge.add_argument("--node", default="credence-node", help="Node alias or label")
+    p_badge.add_argument("--score", default="VERIFIED", help="Metric score or value")
+    p_badge.add_argument("--style", default="pill", choices=["pill", "shield"], help="Visual style variant")
+    p_badge.add_argument("--theme", default="dark", choices=["dark", "midnight", "light"], help="Theme palette")
+
+    # merit
+    p_merit = subparsers.add_parser("merit", help="Display node epistemic merit and leaderboards")
+    p_merit.add_argument("--category", default="best", choices=["best", "worst", "quality", "uptime"])
+    p_merit.add_argument("--export-svg", help="Export merit badge SVG to file path")
+
     # tui
     subparsers.add_parser("tui", help="Launch interactive Textual Terminal Dashboard")
 
@@ -309,6 +324,17 @@ def main() -> None:
         asyncio.run(cli_browse_audits(limit=args.limit, output_format=args.format))
     elif args.command == "export":
         asyncio.run(cli_export_report(args.identifier, output_path=args.output))
+    elif args.command == "badge":
+        cli_badge_export(
+            badge_id=args.badge_id,
+            output_path=args.output,
+            node=args.node,
+            score=args.score,
+            style=args.style,
+            theme=args.theme,
+        )
+    elif args.command == "merit":
+        asyncio.run(cli_merit(export_svg=args.export_svg, category=args.category))
     elif args.command == "verify":
         run_verify_command(args.file)
     elif args.command == "identity":
