@@ -122,7 +122,7 @@ def _register_taxonomy_resources(server: MCPServer) -> None:
         return json.dumps(health, indent=2)
 
 
-def _register_subject_resources(server: MCPServer) -> None:
+def _register_subject_core_resources(server: MCPServer) -> None:
     """Register subject catalog and empirical expertise resources."""
 
     @server.resource("credence://subjects/registry")
@@ -167,10 +167,16 @@ def _register_subject_resources(server: MCPServer) -> None:
             )
         return "[]"
 
+
+def _register_feed_and_root_resources(server: MCPServer) -> None:
+    """Register syndicated feed status, boredom cycle, and root candidates resources."""
+
     @server.resource("credence://feeds/status")
     async def get_feeds_status_resource() -> str:
         from credence.db import get_async_session, init_db
-        from credence.models import FeedItem, FeedSubscription
+        from credence.feeds.boredom import compute_curiosity_excitement
+        from credence.models import Audit, FeedItem, FeedSubscription
+        from credence.pipeline.governor import get_token_headroom_status
 
         await init_db()
         async with get_async_session() as session:
@@ -178,10 +184,6 @@ def _register_subject_resources(server: MCPServer) -> None:
             subs = (await session.exec(stmt_subs)).all()
             stmt_items = select(FeedItem)
             items = (await session.exec(stmt_items)).all()
-
-            from credence.feeds.boredom import compute_curiosity_excitement
-            from credence.models import Audit
-            from credence.pipeline.governor import get_token_headroom_status
 
             stmt_a = select(Audit).order_by(col(Audit.audited_at).desc()).limit(1)
             latest_audit = (await session.exec(stmt_a)).first()
@@ -268,6 +270,21 @@ def _register_subject_resources(server: MCPServer) -> None:
             )
         return "{}"
 
+    @server.resource("credence://digest/morning")
+    async def get_morning_digest_resource() -> str:
+        from credence.db import get_async_session, init_db
+        from credence.feeds.digest import generate_morning_digest
+
+        await init_db()
+        async with get_async_session() as session:
+            digest = await generate_morning_digest(session, timeframe_hours=24)
+            return json.dumps(digest.to_dict(), indent=2)
+        return "{}"
+
+
+def _register_domain_resources(server: MCPServer) -> None:
+    """Register domain-level reputation and quarantine resources."""
+
     @server.resource("credence://domain/{domain}/reputation")
     async def get_domain_reputation_resource(domain: str) -> str:
         from credence.db import get_async_session, init_db
@@ -290,16 +307,9 @@ def _register_subject_resources(server: MCPServer) -> None:
             return json.dumps(quarantined, indent=2)
         return "[]"
 
-    @server.resource("credence://digest/morning")
-    async def get_morning_digest_resource() -> str:
-        from credence.db import get_async_session, init_db
-        from credence.feeds.digest import generate_morning_digest
 
-        await init_db()
-        async with get_async_session() as session:
-            digest = await generate_morning_digest(session, timeframe_hours=24)
-            return json.dumps(digest.to_dict(), indent=2)
-        return "{}"
+def _register_report_resources(server: MCPServer) -> None:
+    """Register audit report retrieval, human formatting, compact rendering, and revision history resources."""
 
     @server.resource("credence://reports/{identifier}")
     async def get_report_resource(identifier: str) -> str:
@@ -420,3 +430,11 @@ def _register_subject_resources(server: MCPServer) -> None:
         async with get_async_session() as s:
             trajectory = await get_url_revision_history(s, identifier)
             return json.dumps(trajectory.model_dump(mode="json"), indent=2)
+
+
+def _register_subject_resources(server: MCPServer) -> None:
+    """Register subject catalog, feeds, domains, and report resources via decoupled dispatchers."""
+    _register_subject_core_resources(server)
+    _register_feed_and_root_resources(server)
+    _register_domain_resources(server)
+    _register_report_resources(server)

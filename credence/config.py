@@ -36,6 +36,9 @@ class CostProfileConfig(BaseModel):
     max_article_words: int = Field(gt=0)
     concurrency_limit: int = Field(gt=0)
     enable_deep_verification: bool = False
+    peer_hunger: str = Field(default="active", description="P2P mesh peering appetite: lean | active | voracious")
+    target_peer_degree: int = Field(default=4, ge=1, description="Target Watts-Strogatz peer degree k")
+    max_peer_connections: int = Field(default=48, ge=2, description="Upper bound peer connection ceiling")
 
 
 COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
@@ -55,6 +58,9 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         max_article_words=5000,
         concurrency_limit=1,
         enable_deep_verification=False,
+        peer_hunger="lean",
+        target_peer_degree=2,
+        max_peer_connections=8,
     ),
     CostProfile.FREE: CostProfileConfig(
         profile=CostProfile.FREE,
@@ -72,6 +78,9 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         max_article_words=1500,
         concurrency_limit=1,
         enable_deep_verification=False,
+        peer_hunger="lean",
+        target_peer_degree=2,
+        max_peer_connections=12,
     ),
     CostProfile.ECONOMY: CostProfileConfig(
         profile=CostProfile.ECONOMY,
@@ -89,6 +98,9 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         max_article_words=2500,
         concurrency_limit=2,
         enable_deep_verification=False,
+        peer_hunger="lean",
+        target_peer_degree=2,
+        max_peer_connections=16,
     ),
     CostProfile.BALANCED: CostProfileConfig(
         profile=CostProfile.BALANCED,
@@ -106,6 +118,9 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         max_article_words=3000,
         concurrency_limit=3,
         enable_deep_verification=False,
+        peer_hunger="active",
+        target_peer_degree=4,
+        max_peer_connections=48,
     ),
     CostProfile.ULTRA: CostProfileConfig(
         profile=CostProfile.ULTRA,
@@ -123,6 +138,9 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         max_article_words=10000,
         concurrency_limit=8,
         enable_deep_verification=True,
+        peer_hunger="voracious",
+        target_peer_degree=8,
+        max_peer_connections=128,
     ),
 }
 

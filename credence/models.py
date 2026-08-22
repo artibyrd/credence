@@ -63,7 +63,7 @@ class Audit(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     snapshot_id: int = Field(foreign_key="snapshot.id", index=True)
-    audited_at: datetime = Field(default_factory=utc_now, description="UTC audit timestamp")
+    audited_at: datetime = Field(default_factory=utc_now, index=True, description="UTC audit timestamp")
     content_sha256: str = Field(index=True, description="SHA-256 of snapshot content")
 
     # Scoring & Calibration
@@ -194,7 +194,7 @@ class Subject(SQLModel, table=True):
     description: str = Field(default="", description="Subject scope explanation")
     parent_id: Optional[str] = Field(default=None, index=True, description="Parent subject namespace ID")
     is_active: bool = Field(default=True, index=True, description="Whether subject is active for classification")
-    created_at: datetime = Field(default_factory=utc_now, description="UTC registration timestamp")
+    created_at: datetime = Field(default_factory=utc_now, index=True, description="UTC registration timestamp")
 
 
 class DomainMetric(SQLModel, table=True):
@@ -231,7 +231,7 @@ class FeedSubscription(SQLModel, table=True):
     last_polled_at: Optional[datetime] = Field(default=None, description="UTC timestamp of last poll")
     is_active: bool = Field(default=True, index=True, description="Whether feed polling is active")
     is_satire: bool = Field(default=False, description="True if feed is a dedicated satire publication")
-    created_at: datetime = Field(default_factory=utc_now, description="Subscription creation timestamp")
+    created_at: datetime = Field(default_factory=utc_now, index=True, description="Subscription creation timestamp")
 
 
 class FeedItem(SQLModel, table=True):
@@ -283,7 +283,7 @@ class DomainReputation(SQLModel, table=True):
         default=0.0, ge=0.0, le=100.0, description="Progress percentage towards graduating from probation"
     )
     first_seen_at: datetime = Field(default_factory=utc_now, description="Timestamp of first encounter")
-    last_audited_at: datetime = Field(default_factory=utc_now, description="Timestamp of most recent audit")
+    last_audited_at: datetime = Field(default_factory=utc_now, index=True, description="Timestamp of most recent audit")
     quarantined_at: Optional[datetime] = Field(default=None, description="Timestamp when domain entered quarantine")
     graduated_at: Optional[datetime] = Field(default=None, description="Timestamp when domain graduated from probation")
 

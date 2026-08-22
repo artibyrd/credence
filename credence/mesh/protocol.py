@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from credence.pipeline.schemas import AuditReport
 
@@ -33,10 +33,12 @@ class MeshMessageType(str, Enum):
 class PeerHelloPayload(BaseModel):
     """Handshake payload exchanged upon WebSocket connection."""
 
+    model_config = ConfigDict(extra="ignore")
+
     node_pubkey: str = Field(..., description="Sender node Ed25519 public key hex")
     node_alias: str = Field(default="credence-node", description="Human-readable node label")
     listen_mesh_port: int = Field(default=8765, description="Inbound WebSocket mesh port")
-    protocol_version: str = Field(default="2.0.0", description="Mesh protocol version")
+    protocol_version: str = Field(default="2.6.0", description="Mesh protocol version")
     supported_catalog_hashes: Dict[str, str] = Field(
         default_factory=dict, description="Map of {catalog_id: sha256_hash}"
     )
@@ -48,6 +50,8 @@ class PeerHelloPayload(BaseModel):
 class AnnounceAttestationPayload(BaseModel):
     """Gossip payload broadcasting a newly signed AuditReport."""
 
+    model_config = ConfigDict(extra="ignore")
+
     attestation: AuditReport = Field(..., description="Full signed AuditReport")
     gossip_ttl: int = Field(default=3, ge=0, le=10, description="Hops remaining before gossip termination")
 
@@ -55,11 +59,15 @@ class AnnounceAttestationPayload(BaseModel):
 class RequestAttestationPayload(BaseModel):
     """Query payload requesting an attestation from peers by content SHA-256."""
 
+    model_config = ConfigDict(extra="ignore")
+
     content_sha256: str = Field(..., description="Target content SHA-256")
 
 
 class AttestationResponsePayload(BaseModel):
     """Response returning a requested attestation."""
+
+    model_config = ConfigDict(extra="ignore")
 
     content_sha256: str = Field(..., description="Target content SHA-256")
     attestation: Optional[AuditReport] = Field(default=None, description="Signed attestation if found")
@@ -67,6 +75,8 @@ class AttestationResponsePayload(BaseModel):
 
 class HeartbeatPayload(BaseModel):
     """Ping/Pong liveness and health probe."""
+
+    model_config = ConfigDict(extra="ignore")
 
     timestamp: datetime = Field(default_factory=utc_now)
     peer_count: int = Field(default=0)
@@ -77,6 +87,8 @@ class MeshMessageEnvelope(BaseModel):
 
     Governed by Invariant 6 (RFC 8785 Canonical JSON & Ed25519 Custody).
     """
+
+    model_config = ConfigDict(extra="ignore")
 
     message_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), description="Unique message UUID for deduplication"

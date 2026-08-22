@@ -146,58 +146,60 @@ async def get_top_violated_rules(
     session: AsyncSession,
     limit: int = 10,
 ) -> List[RuleViolationMetric]:
-    """Calculate the most frequently breached taxonomy rules across all stored audits."""
-    stmt_v = select(Violation)
-    violations = list((await session.exec(stmt_v)).all())
+    """Calculate the most frequently breached taxonomy rules across all stored audits using SQL aggregates."""
+    from sqlalchemy import func
 
-    stmt_a = select(Audit)
-    total_audits = max(1, len(list((await session.exec(stmt_a)).all())))
+    stmt_count = select(func.count(col(Audit.id)))
+    total_audits_res = (await session.exec(stmt_count)).one_or_none()
+    total_audits = max(1, total_audits_res or 1)
 
-    if not violations:
+    stmt_agg = (
+        select(
+            Violation.rule_id,
+            func.count(col(Violation.id)).label("v_count"),
+            func.avg(col(Violation.severity)).label("v_avg_sev"),
+        )
+        .group_by(Violation.rule_id)
+        .order_by(func.count(col(Violation.id)).desc(), func.avg(col(Violation.severity)).desc())
+        .limit(limit)
+    )
+    agg_rows = (await session.exec(stmt_agg)).all()
+    if not agg_rows:
         return []
 
-    violation_groups: Dict[str, List[Violation]] = defaultdict(list)
-    for v in violations:
-        violation_groups[v.rule_id].append(v)
-
     registry.load_all()
-
     metrics: List[RuleViolationMetric] = []
-    for rule_id, v_list in violation_groups.items():
-        first_v = v_list[0]
-        avg_sev = sum(v.severity for v in v_list) / max(1, len(v_list))
-        pct = round((len(v_list) / total_audits) * 100.0, 1)
 
+    for idx, (rule_id, count_val, avg_sev_val) in enumerate(agg_rows):
         rule_obj = registry.get_rule(rule_id)
         name = rule_obj.name if rule_obj else rule_id
+        pct = round((count_val / total_audits) * 100.0, 1)
 
-        ex_quote = first_v.quote_or_element
-        ex_reason = first_v.reasoning
-        for v in v_list:
-            if len(v.quote_or_element) > len(ex_quote):
-                ex_quote = v.quote_or_element
-                ex_reason = v.reasoning
+        # Retrieve a representative sample violation for quote and reasoning
+        sample_stmt = select(Violation).where(Violation.rule_id == rule_id).limit(1)
+        sample_v = (await session.exec(sample_stmt)).first()
+
+        ex_quote = sample_v.quote_or_element if sample_v else ""
+        ex_reason = sample_v.reasoning if sample_v else ""
+        rule_uri = sample_v.rule_uri if sample_v else f"credence://taxonomy/rules/{rule_id}"
+        domain_name = sample_v.domain if sample_v else "unknown"
 
         metrics.append(
             RuleViolationMetric(
-                rank=1,
+                rank=idx + 1,
                 rule_id=rule_id,
-                rule_uri=first_v.rule_uri,
+                rule_uri=rule_uri,
                 name=name,
-                domain=first_v.domain,
-                total_violations=len(v_list),
+                domain=domain_name,
+                total_violations=int(count_val),
                 percentage_of_all_audits=pct,
-                avg_severity=round(avg_sev, 1),
+                avg_severity=round(float(avg_sev_val or 0.0), 1),
                 example_quote=ex_quote[:120] + "..." if len(ex_quote) > 120 else ex_quote,
                 example_reasoning=ex_reason[:150] + "..." if len(ex_reason) > 150 else ex_reason,
             )
         )
 
-    metrics.sort(key=lambda m: (-m.total_violations, -m.avg_severity, m.rule_id))
-    for idx, m in enumerate(metrics):
-        m.rank = idx + 1
-
-    return metrics[:limit]
+    return metrics
 
 
 __all__ = [

@@ -10,8 +10,9 @@ from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 from sqlmodel import SQLModel
@@ -62,6 +63,15 @@ def get_engine(db_url: str | None = None) -> AsyncEngine:
                 connect_args={"check_same_thread": False} if "sqlite" in target_url else {},
                 poolclass=NullPool if "sqlite" in target_url else None,
             )
+            if "sqlite" in target_url:
+
+                @event.listens_for(_engine.sync_engine, "connect")
+                def _set_sqlite_pragmas(dbapi_connection: Any, connection_record: Any) -> None:
+                    cursor = dbapi_connection.cursor()
+                    cursor.execute("PRAGMA foreign_keys=ON;")
+                    cursor.execute("PRAGMA busy_timeout=5000;")
+                    cursor.close()
+
         _engine_loop = current_loop
     return _engine
 

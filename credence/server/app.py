@@ -63,9 +63,11 @@ from credence.server.api.system import (
     api_cron_boredom,
     api_favicon,
     api_germinate,
+    api_get_mesh_status,
     api_health,
     api_node_stats,
     api_root_index,
+    api_set_operational_profile,
 )
 from credence.server.api.widget import api_get_badge_data, api_get_history
 from credence.server.lifespan import combined_lifespan
@@ -113,9 +115,13 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/history/{identifier:path}", endpoint=api_get_history, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
         Route("/api/mesh/stats", endpoint=api_mesh_stats, methods=["GET", "OPTIONS"]),
+        Route("/api/v1/mesh/status", endpoint=api_get_mesh_status, methods=["GET", "OPTIONS"]),
+        Route("/api/mesh/status", endpoint=api_get_mesh_status, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
         Route("/api/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
+        Route("/api/v1/config/profile", endpoint=api_set_operational_profile, methods=["POST", "OPTIONS"]),
+        Route("/api/config/profile", endpoint=api_set_operational_profile, methods=["POST", "OPTIONS"]),
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
         Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
         Route("/api/cost/telemetry", endpoint=api_cost_telemetry, methods=["GET", "OPTIONS"]),

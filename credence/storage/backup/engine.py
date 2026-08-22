@@ -123,11 +123,11 @@ def create_database_backup(
 
     if upload_cloud and bucket:
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.create_task(upload_to_cloud_storage(target_gz, manifest_file, bucket, active_backend))
-            else:
-                loop.run_until_complete(upload_to_cloud_storage(target_gz, manifest_file, bucket, active_backend))
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(upload_to_cloud_storage(target_gz, manifest_file, bucket, active_backend))
+            except RuntimeError:
+                asyncio.run(upload_to_cloud_storage(target_gz, manifest_file, bucket, active_backend))
         except Exception as ce:
             logger.debug("Cloud backup upload scheduled or non-blocking: %s", ce)
 

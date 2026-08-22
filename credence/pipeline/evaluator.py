@@ -14,6 +14,7 @@ Orchestrates:
 from __future__ import annotations
 
 import json
+import logging
 from typing import Optional
 
 from sqlmodel import col, select
@@ -46,6 +47,8 @@ from credence.pipeline.scoring import (
 )
 from credence.pipeline.subagents import validate_all_violations
 from credence.taxonomy_loader import TaxonomyRegistry, registry
+
+logger = logging.getLogger(__name__)
 
 
 async def evaluate_snapshot(
@@ -239,12 +242,25 @@ async def audit_url(
             from credence.ingestion.hasher import compute_text_diff, compute_token_drift
 
             try:
-                # If parent clean text is available in storage or snapshot
-                diff_res = compute_text_diff("", snapshot_result.extracted.clean_text)
+                parent_clean_text = ""
+                if prev_snap.dom_file_path:
+                    try:
+                        from credence.ingestion.extractor import extract_clean_content
+                        from credence.storage.base import get_blob_storage
+
+                        storage = get_blob_storage()
+                        parent_bytes = await storage.get_blob(prev_snap.dom_file_path)
+                        if parent_bytes:
+                            parent_extracted = extract_clean_content(parent_bytes.decode("utf-8", errors="ignore"))
+                            parent_clean_text = parent_extracted.clean_text
+                    except Exception as parent_err:
+                        logger.debug("Could not retrieve parent clean text from storage: %s", parent_err)
+
+                diff_res = compute_text_diff(parent_clean_text, snapshot_result.extracted.clean_text)
                 content_diff_json = json.dumps(diff_res)
-                token_drift_val = compute_token_drift("", snapshot_result.extracted.clean_text)
-            except Exception:
-                pass
+                token_drift_val = compute_token_drift(parent_clean_text, snapshot_result.extracted.clean_text)
+            except Exception as diff_err:
+                logger.debug("Non-fatal diff calculation error: %s", diff_err)
 
             # Calculate score delta from previous audit
             prev_audit_stmt = (

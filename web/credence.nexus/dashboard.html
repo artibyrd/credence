@@ -303,7 +303,7 @@
   <!-- Unified Ecosystem Navigation Bar (5 Invariant Links) -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.5.1</span>
+      🛡️ Credence <span class="badge">v2.6.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -543,6 +543,21 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Peer Hunger Admin Control Deck -->
+        <div class="chart-box" style="margin-top:1.5rem; border: 1px solid rgba(56, 189, 248, 0.4);">
+          <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>⚡ Mesh Peer Hunger &amp; Dynamic Capacity Governor</span>
+            <span class="pill pill-cyan" id="admin-hunger-badge">ACTIVE (BALANCED)</span>
+          </div>
+          <div style="padding:1rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+            <span style="font-size:0.88rem; color:var(--text-muted);">Adjust Peering Appetite:</span>
+            <button class="btn-action hunger-btn" data-hunger="lean" style="padding:0.35rem 0.85rem; font-size:0.82rem;">🌱 Lean (Economy)</button>
+            <button class="btn-action hunger-btn" data-hunger="active" style="padding:0.35rem 0.85rem; font-size:0.82rem;">🔥 Active (Balanced)</button>
+            <button class="btn-action hunger-btn" data-hunger="voracious" style="padding:0.35rem 0.85rem; font-size:0.82rem;">🚀 Voracious (Ultra)</button>
+            <span id="hunger-update-status" style="font-size:0.82rem; color:var(--accent-green); margin-left:auto;"></span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -726,6 +741,35 @@
         renderSources(filtered);
       });
     }
+
+    // Peer Hunger Admin Controls
+    document.querySelectorAll('.hunger-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const hunger = btn.getAttribute('data-hunger');
+        const statusSpan = document.getElementById('hunger-update-status');
+        const endpoint = getActiveEndpoint();
+        if (statusSpan) statusSpan.textContent = 'Updating...';
+        try {
+          const res = await fetch(`${endpoint.replace(/\/$/, '')}/api/v1/config/profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ peer_hunger: hunger })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const badge = document.getElementById('admin-hunger-badge');
+            if (badge) badge.textContent = `${data.peer_hunger} (${data.active_profile.toUpperCase()})`;
+            if (statusSpan) statusSpan.textContent = '✓ Updated';
+            setTimeout(() => { if (statusSpan) statusSpan.textContent = ''; }, 3000);
+            fetchStats();
+          } else {
+            if (statusSpan) statusSpan.textContent = '⚠️ Update failed';
+          }
+        } catch (e) {
+          if (statusSpan) statusSpan.textContent = '⚠️ Network error';
+        }
+      });
+    });
 
     function getActiveEndpoint() {
       const mode = endpointSelect.value;
