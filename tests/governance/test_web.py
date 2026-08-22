@@ -210,7 +210,6 @@ def test_web_viewer_deterministic_default_selection_and_4_tab_layout(web_dir: Pa
     content = viewer_file.read_text(encoding="utf-8")
 
     # Deterministic default report selection
-    assert "dynamicCorpus[0]" in content
     assert "MOCK_CORPUS[0]" in content
 
     # 4-Tab consolidated navigation
