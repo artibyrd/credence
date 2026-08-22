@@ -166,13 +166,12 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
     for r in rest_routes:
         app.router.routes.insert(0, r)
 
-    candidate_dirs = [
-        Path("/app/web"),
+    parents = Path(__file__).resolve().parents
+    local_web_candidates = [
         Path.cwd() / "web",
-        Path(__file__).resolve().parents[2] / "web",
-        Path(__file__).resolve().parents[4] / "web",
+        parents[2] / "web" if len(parents) > 2 else None,
     ]
-    web_dir = next((p for p in candidate_dirs if p.exists() and p.is_dir()), None)
+    web_dir = next((p for p in local_web_candidates if p and p.exists() and p.is_dir()), None)
     if web_dir:
         if (web_dir / "assets").exists():
             app.mount("/assets", StaticFiles(directory=str(web_dir / "assets")), name="assets")
