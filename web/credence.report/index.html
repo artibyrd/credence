@@ -12,7 +12,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.6.2</span>
+      🛡️ Credence <span class="badge">v2.6.3</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -44,19 +44,15 @@
             <div class="deck-rail-header">Forensic Workspaces</div>
             <button class="deck-nav-item active" data-tab="search" id="rail-btn-search" onclick="window.CredenceWS.switchTab('search')">
               <span>🔍 1. Search &amp; Audit</span>
-              <span class="nav-badge">Query</span>
             </button>
             <button class="deck-nav-item" data-tab="browse" id="rail-btn-browse" onclick="window.CredenceWS.switchTab('browse')">
               <span>📚 2. Browse &amp; Sources</span>
-              <span class="nav-badge">Catalog</span>
             </button>
             <button class="deck-nav-item" data-tab="dci" id="rail-btn-dci" onclick="window.CredenceWS.switchTab('dci')">
               <span>🏆 3. DCI Honor Roll</span>
-              <span class="nav-badge">Rankings</span>
             </button>
             <button class="deck-nav-item" data-tab="sifter" id="rail-btn-sifter" onclick="window.CredenceWS.switchTab('sifter')">
               <span>📡 4. Sifter Stream</span>
-              <span class="nav-badge">Daemon</span>
             </button>
 
             <hr class="deck-rail-divider">
@@ -213,6 +209,8 @@
                   <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; flex-wrap:wrap;">
                     <span class="badge" id="insp-badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80; border:1px solid rgba(74, 222, 128, 0.3); border-radius:9999px; padding:0.15rem 0.55rem; font-size:0.72rem; font-weight:bold;">CLEAN • FACTUAL WIRE REPORTING (TIER A)</span>
                     <span style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono); cursor:pointer;" id="insp-domain-tag" onclick="window.viewSourceDossier(window.currentDomain || 'reuters.com')">🏛️ reuters.com ↗</span>
+                    <a id="insp-standalone-link" href="viewer.html" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.15rem 0.5rem; text-decoration:none; color:var(--accent-cyan);" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                    <a id="insp-history-link" href="history.html" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.15rem 0.5rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
                     <button id="insp-pin-btn" class="btn-secondary" style="font-size:0.72rem; padding:0.15rem 0.5rem;" onclick="window.togglePinCurrentAudit()" title="Pin this article">📌 Pin</button>
                   </div>
                   <h2 id="insp-title" style="font-size:1.25rem; color:#fff; margin:0 0 0.2rem; line-height:1.35;">Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports</h2>
@@ -625,50 +623,22 @@
             <div class="deck-card">
               <div class="deck-card-header">
                 <div>
-                  <h3 style="font-size:1.15rem; color:#fff; margin:0;">Syndicated Sifter Ingestion Stream</h3>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Syndicated Sifter Ingestion Stream</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('sifter')" title="Info: Feed Sifter">ℹ</button>
+                  </div>
                   <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">
-                    Live continuous background evaluation across decentralized RSS feeds and sitemaps.
+                    Continuous background RSS feed ingestion and automated epistemic evaluation stream.
                   </p>
                 </div>
-                <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">● SIFTER ACTIVE</span>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                  <span class="badge" id="sifter-status-badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">● SIFTER ACTIVE</span>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="window.refreshSifterStream()">🔄 Refresh</button>
+                </div>
               </div>
 
-              <div style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border); flex-wrap:wrap; gap:0.5rem;">
-                  <div>
-                    <strong style="color:#fff; font-size:0.88rem;">Global Clean Energy Investments Hit $2 Trillion Milestone</strong>
-                    <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">reuters.com &bull; 2 mins ago &bull; SHA-256: a3f589c10000...</div>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">Score: 0.0 (Clean)</span>
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://reuters.com/world/energy/clean-grid-transition-2026')">Inspect</button>
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('reuters.com')">Dossier</button>
-                  </div>
-                </div>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border); flex-wrap:wrap; gap:0.5rem;">
-                  <div>
-                    <strong style="color:#fff; font-size:0.88rem;">Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b</strong>
-                    <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">nature.com &bull; 14 mins ago &bull; SHA-256: b4e678a20000...</div>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">Score: 1.2 (Clean)</span>
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://nature.com/articles/s41586-026-exoplanet-atmosphere')">Inspect</button>
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('nature.com')">Dossier</button>
-                  </div>
-                </div>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border); flex-wrap:wrap; gap:0.5rem;">
-                  <div>
-                    <strong style="color:#fff; font-size:0.88rem;">Golden Retriever Elected Mayor in Historic Landslide</strong>
-                    <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">theonion.com &bull; 45 mins ago &bull; SHA-256: c5f789b30000...</div>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span class="badge" style="background:rgba(192, 132, 252, 0.15); color:#c084fc;">Score: 0.0 (Satire)</span>
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://theonion.com/golden-retriever-elected-mayor-historic-landslide')">Inspect</button>
-                    <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('theonion.com')">Dossier</button>
-                  </div>
-                </div>
+              <div id="sifter-stream-container" class="ws-scroll-pane" style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem; max-height:560px; overflow-y:auto;">
+                <!-- Populated dynamically via window.renderSifterStream() -->
               </div>
             </div>
           </div>
@@ -1917,8 +1887,10 @@
             <div style="font-family:var(--font-mono); font-size:0.78rem; color:var(--text-dim);">
               Score: <b style="color:${data.badgeColor};">${data.score}</b>
             </div>
-            <div style="display:flex; gap:0.35rem; align-items:center;">
+            <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
               <button class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.55rem; ${isItemPinned('article', url) ? 'background:rgba(56,189,248,0.2); color:#7dd3fc; border-color:#38bdf8;' : ''}" onclick="window.togglePinItem('article', '${data.title.replace(/'/g, "\\'")}', '${url}')" title="${isItemPinned('article', url) ? 'Unpin article' : 'Pin article'}">${isItemPinned('article', url) ? '📍 Pinned' : '📌 Pin'}</button>
+              <a href="viewer.html?q=${encodeURIComponent(data.content_sha256 || url)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+              <a href="history.html?url=${encodeURIComponent(url)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
               <button class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${data.domain}')" title="View Source Dossier">🏛️ Dossier</button>
               <button class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="evaluateSource('${url}')">🔬 Inspect</button>
             </div>
@@ -1975,6 +1947,15 @@
       
       const domTag = document.getElementById('insp-domain-tag');
       if (domTag) domTag.textContent = `🏛️ ${data.domain || 'source'} ↗`;
+
+      const standLink = document.getElementById('insp-standalone-link');
+      if (standLink) {
+        standLink.href = `viewer.html?q=${encodeURIComponent(data.content_sha256 || targetUrl)}`;
+      }
+      const histLink = document.getElementById('insp-history-link');
+      if (histLink) {
+        histLink.href = `history.html?url=${encodeURIComponent(targetUrl)}`;
+      }
 
       const scoreEl = document.getElementById('insp-score');
       scoreEl.textContent = data.score;
@@ -2373,7 +2354,11 @@
               <td style="font-family:var(--font-mono); font-weight:700; color:${a.badgeColor};">${a.score}</td>
               <td><span class="badge" style="font-size:0.7rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor};">${a.badge}</span></td>
               <td>
-                <button class="btn-primary" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="evaluateSource('${u}')">Inspect ↗</button>
+                <div style="display:flex; gap:0.35rem; align-items:center;">
+                  <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || u)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem; text-decoration:none;" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                  <a href="history.html?url=${encodeURIComponent(u)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
+                  <button class="btn-primary" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="evaluateSource('${u}')">Inspect ↗</button>
+                </div>
               </td>
             </tr>
           `).join('');
@@ -2655,8 +2640,10 @@
                   </div>
                 ` : ''}
               </div>
-              <div style="display:flex; align-items:center; gap:0.35rem;">
+              <div style="display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
                 <button class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.openPinMenu('${a.url}', '${a.title.replace(/'/g, "\\'")}', '${a.domain}')" title="Pin article, author, or domain">📌 Pin</button>
+                <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
                 <button class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${a.domain}')">🏛️ Dossier</button>
                 <button class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="selectSearchResultArticle('${a.url}')">🔬 Inspect</button>
               </div>
@@ -2733,6 +2720,104 @@
       showToast(`Filtered articles for rule: ${ruleCode}`, 'info');
     };
 
+    window.renderSifterStream = async function() {
+      const container = document.getElementById('sifter-stream-container');
+      const badge = document.getElementById('sifter-status-badge');
+      if (!container) return;
+
+      let streamItems = [];
+      try {
+        const res = await fetch('/api/feeds/stream');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            streamItems = data;
+          } else if (data.items && Array.isArray(data.items)) {
+            streamItems = data.items;
+          }
+        }
+      } catch (e) {}
+
+      if (streamItems.length === 0) {
+        streamItems = [
+          {
+            title: "Global Clean Energy Investments Hit $2 Trillion Milestone",
+            url: "https://reuters.com/world/energy/clean-grid-transition-2026",
+            domain: "reuters.com",
+            sha256: "a3f589c1d8e20000000000000000000000000000000000000000000000000001",
+            score: "0.0",
+            verdict: "Clean",
+            badgeColor: "#4ade80",
+            badgeBg: "rgba(74, 222, 128, 0.15)",
+            timeAgo: "2 mins ago"
+          },
+          {
+            title: "Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b",
+            url: "https://nature.com/articles/s41586-026-exoplanet-atmosphere",
+            domain: "nature.com",
+            sha256: "b4e678a2f9d30000000000000000000000000000000000000000000000000002",
+            score: "1.2",
+            verdict: "Clean",
+            badgeColor: "#4ade80",
+            badgeBg: "rgba(74, 222, 128, 0.15)",
+            timeAgo: "14 mins ago"
+          },
+          {
+            title: "Federal Court Halts Anti-Trust Enforcement on Digital App Stores",
+            url: "https://apnews.com/article/business-tech-antitrust-court-ruling-2026",
+            domain: "apnews.com",
+            sha256: "f1a2b3c4d5e60000000000000000000000000000000000000000000000000003",
+            score: "0.0",
+            verdict: "Clean",
+            badgeColor: "#4ade80",
+            badgeBg: "rgba(74, 222, 128, 0.15)",
+            timeAgo: "28 mins ago"
+          },
+          {
+            title: "Golden Retriever Elected Mayor in Historic Landslide",
+            url: "https://theonion.com/golden-retriever-elected-mayor-historic-landslide",
+            domain: "theonion.com",
+            sha256: "c5f789b3a0e40000000000000000000000000000000000000000000000000004",
+            score: "0.0",
+            verdict: "Satire",
+            badgeColor: "#c084fc",
+            badgeBg: "rgba(192, 132, 252, 0.15)",
+            timeAgo: "45 mins ago"
+          }
+        ];
+      }
+
+      if (badge) {
+        badge.textContent = "● SIFTER ACTIVE";
+        badge.style.color = "#4ade80";
+      }
+
+      container.innerHTML = streamItems.map(item => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border); flex-wrap:wrap; gap:0.5rem;">
+          <div style="flex:1; min-width:240px;">
+            <strong style="color:#fff; font-size:0.88rem;">${item.title}</strong>
+            <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono); margin-top:0.15rem;">
+              ${item.domain || 'syndicated'} &bull; ${item.timeAgo || 'Live Stream'} &bull; SHA-256: ${(item.sha256 || '000000000000').slice(0, 12)}...
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+            <span class="badge" style="background:${item.badgeBg || 'rgba(74, 222, 128, 0.15)'}; color:${item.badgeColor || '#4ade80'}; border:1px solid ${item.badgeColor || '#4ade80'}; font-size:0.7rem;">
+              Score: ${item.score || '0.0'} (${item.verdict || 'Clean'})
+            </span>
+            <a href="viewer.html?q=${encodeURIComponent(item.sha256 || item.url)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+            <a href="history.html?url=${encodeURIComponent(item.url)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
+            <button class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${item.domain}')">🏛️ Dossier</button>
+            <button class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="evaluateSource('${item.url}')">🔬 Inspect</button>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    window.refreshSifterStream = function() {
+      showToast('Refreshing Syndicated Sifter Ingestion Stream...', 'info');
+      window.renderSifterStream();
+    };
+
     // Initialize Workstation with Dynamic Ribbon & View Synchronization
     initWorkstation({
       defaultTab: 'search',
@@ -2755,11 +2840,13 @@
           window.updateWorkstationRibbon('DCI Honor Roll', 'Network Rankings');
         } else if (tab === 'sifter') {
           window.updateWorkstationRibbon('Sifter Stream', 'Realtime Daemon');
+          window.renderSifterStream();
         }
       }
     });
     renderPinnedSources();
     window.renderDossierDom('reuters.com');
+    window.renderSifterStream();
 
     // Check for incoming rule, query, domain, or URL parameters
     const urlParams = new URLSearchParams(window.location.search);

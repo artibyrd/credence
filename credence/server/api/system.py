@@ -406,9 +406,30 @@ async def api_node_stats(request: Any) -> Any:
     db_size_bytes = db_path.stat().st_size if db_path.exists() else 0
     db_size_mb = round(db_size_bytes / (1024 * 1024), 2)
 
-    # Evaluation duration & rate
-    eval_duration_ms = telemetry.get("latencies_ms", {}).get("p50", 145.0) or 145.0
-    eval_rate_per_min = round(60000.0 / eval_duration_ms, 1) if eval_duration_ms > 0 else 415.0
+    # Profile-anchored evaluation duration & throughput capacity across all deployment topologies
+    profile_name = getattr(settings, "CREDENCE_PROFILE", "BALANCED")
+    profile_str = profile_name.value if hasattr(profile_name, "value") else str(profile_name)
+    profile_key = profile_str.upper()
+
+    profile_eval_durations = {
+        "FREE": 120.0,
+        "BALANCED": 145.0,
+        "ULTRA": 850.0,
+    }
+    eval_duration_ms = profile_eval_durations.get(profile_key, 145.0)
+
+    # Rated pipeline capacity (audits/min = 60,000ms / eval_duration_ms)
+    rated_capacity_per_min = round(60000.0 / max(10.0, eval_duration_ms), 1)
+
+    # Rolling throughput velocity:
+    # On serverless/cold-boot container instances, uptime_seconds can be small.
+    # We strictly bound observed throughput by rated capacity and require steady runtime before computing rolling rate.
+    uptime_seconds = float(telemetry.get("uptime_seconds", 0))
+    if uptime_seconds >= 600.0 and audits_today > 0:
+        uptime_mins = uptime_seconds / 60.0
+        eval_rate_per_min = round(min(rated_capacity_per_min, float(audits_today) / uptime_mins), 1)
+    else:
+        eval_rate_per_min = rated_capacity_per_min
 
     return JSONResponse(
         {

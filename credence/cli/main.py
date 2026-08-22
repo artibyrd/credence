@@ -227,6 +227,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--transport", default="sse", choices=["sse", "stdio", "web"], help="Transport mode")
     p_serve.add_argument("--port", type=int, default=8000, help="Server bind port")
     p_serve.add_argument("--host", default="0.0.0.0", help="Server bind host")  # noqa: S104
+    p_serve.add_argument("--name", "--alias", dest="name", default=None, help="Authoritative node alias / server name")
 
     # quota
     subparsers.add_parser("quota", help="Display token headroom and spend status")
@@ -313,7 +314,7 @@ def main() -> None:
     elif args.command == "identity":
         cli_identity(action=args.action, key_path=args.key_path)
     elif args.command == "serve":
-        run_server_command(transport=args.transport, host=args.host, port=args.port)
+        run_server_command(transport=args.transport, host=args.host, port=args.port, name=getattr(args, "name", None))
     elif args.command == "quota":
         asyncio.run(run_quota_command()) if asyncio.iscoroutinefunction(run_quota_command) else run_quota_command()
     elif args.command == "db":

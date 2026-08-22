@@ -7,12 +7,14 @@ Architecture: Modular Dispatcher (<150 LOC).
 from __future__ import annotations
 
 import time
+from pathlib import Path
 from typing import Any
 
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Route
+from starlette.staticfiles import StaticFiles
 
 from credence.server.api.analytics import (
     api_bounties,
@@ -118,8 +120,8 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/v1/mesh/status", endpoint=api_get_mesh_status, methods=["GET", "OPTIONS"]),
         Route("/api/mesh/status", endpoint=api_get_mesh_status, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
-        Route("/api/mesh/network-health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
         Route("/api/v1/mesh/health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
+        Route("/api/mesh/health", endpoint=api_mesh_network_health, methods=["GET", "OPTIONS"]),
         Route("/api/v1/config/profile", endpoint=api_set_operational_profile, methods=["POST", "OPTIONS"]),
         Route("/api/config/profile", endpoint=api_set_operational_profile, methods=["POST", "OPTIONS"]),
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
@@ -163,6 +165,32 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
 
     for r in rest_routes:
         app.router.routes.insert(0, r)
+
+    parents = Path(__file__).resolve().parents
+    local_web_candidates = [
+        Path("/app/web"),
+        Path.cwd() / "web",
+        parents[2] / "web" if len(parents) > 2 else None,
+    ]
+    web_dir = next((p for p in local_web_candidates if p and p.exists() and p.is_dir()), None)
+    if web_dir:
+        if (web_dir / "assets").exists():
+            app.mount("/assets", StaticFiles(directory=str(web_dir / "assets")), name="assets")
+        if (web_dir / "credence.report").exists():
+            app.mount(
+                "/credence.report", StaticFiles(directory=str(web_dir / "credence.report"), html=True), name="report"
+            )
+        if (web_dir / "credence.foundation").exists():
+            app.mount(
+                "/credence.foundation",
+                StaticFiles(directory=str(web_dir / "credence.foundation"), html=True),
+                name="foundation",
+            )
+        if (web_dir / "credence.nexus").exists():
+            app.mount(
+                "/credence.nexus", StaticFiles(directory=str(web_dir / "credence.nexus"), html=True), name="nexus"
+            )
+        app.mount("/web", StaticFiles(directory=str(web_dir), html=True), name="web")
 
     app.add_middleware(
         CORSMiddleware,

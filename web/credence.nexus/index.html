@@ -66,7 +66,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.6.2</span>
+      🛡️ Credence <span class="badge">v2.6.3</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -98,19 +98,15 @@
             <div class="deck-rail-header">NOC Workspaces</div>
             <button class="deck-nav-item active" data-tab="topology" onclick="window.CredenceWS.switchTab('topology')">
               <span>🕸️ 1. Mesh Topology</span>
-              <span class="nav-badge" id="rail-nodes-badge">1 Node</span>
             </button>
             <button class="deck-nav-item" data-tab="leaderboard" onclick="window.CredenceWS.switchTab('leaderboard')">
               <span>🏆 2. Leaderboards</span>
-              <span class="nav-badge">Qᵢ Rank</span>
             </button>
             <button class="deck-nav-item" data-tab="vitals" onclick="window.CredenceWS.switchTab('vitals')">
               <span>👤 3. Node Vitals</span>
-              <span class="nav-badge">Local</span>
             </button>
             <button class="deck-nav-item" data-tab="badges" onclick="window.CredenceWS.switchTab('badges')">
               <span>🛡️ 4. Seed Manifest</span>
-              <span class="nav-badge">peers.json</span>
             </button>
           </div>
 
@@ -227,6 +223,7 @@
                       <th>Verbatim (G)</th>
                       <th>Role</th>
                       <th>Status</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody id="leaderboard-body">
@@ -239,6 +236,20 @@
 
           <!-- TAB 3: NODE VITALS & PERFORMANCE TELEMETRY -->
           <div id="tab-vitals" class="tab-panel">
+            <!-- Node Selector Bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem; background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
+              <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Inspected Node:</span>
+                <select id="vitals-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.85rem; font-family:var(--font-mono); min-width:240px; background:var(--bg-card); color:#fff; border:1px solid var(--border);" onchange="selectNodeForVitals(this.value)">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;" id="vitals-node-meta-pills">
+                <span class="badge" id="v-node-role-pill" style="font-size:0.72rem; background:rgba(56,189,248,0.15); color:var(--accent-cyan);">LOCAL_PRIMARY_ROOT</span>
+                <span class="badge" id="v-node-region-pill" style="font-size:0.72rem;">local-instance</span>
+              </div>
+            </div>
+
             <div class="metric-grid" style="margin-bottom:1.25rem;">
               <div class="metric-card">
                 <div class="metric-label">Node Daemon Status</div>
@@ -250,7 +261,7 @@
               </div>
               <div class="metric-card">
                 <div class="metric-label">Avg Evaluation Rate</div>
-                <div class="metric-val" style="color:var(--accent-purple);" id="v-eval-rate">~145ms / audit</div>
+                <div class="metric-val" style="color:var(--accent-purple);" id="v-eval-rate">-- ms / audit</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">RSS Memory Allocation</div>
@@ -274,7 +285,7 @@
                 <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
                   <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
                     <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Throughput Velocity</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-throughput-rate">415 audits/min</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-throughput-rate">-- audits/min</div>
                   </div>
                   <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
                     <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Avg Suspicion Score</div>
@@ -500,6 +511,8 @@
 
     let wsController;
     let liveTopologyData = null;
+    let liveNodeStats = null;
+    let selectedNodeId = "node_1";
 
     function renderAdminView() {
       const locked = document.getElementById('admin-locked-view');
@@ -543,7 +556,7 @@
       const nodes = data?.nodes || [
         {
           node_id: "node_1",
-          alias: "local-root-anchor",
+          alias: "credence-local-anchor",
           role: "LOCAL_PRIMARY_ROOT",
           is_local: true,
           status: "HEALTHY"
@@ -555,6 +568,33 @@
       const cy = canvas.height / 2;
 
       let animPhase = 0;
+      const posMap = {};
+
+      canvas.style.cursor = 'pointer';
+      canvas.onclick = (evt) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = (evt.clientX - rect.left) * (canvas.width / rect.width);
+        const mouseY = (evt.clientY - rect.top) * (canvas.height / rect.height);
+
+        if (nodeCount === 1) {
+          const dist = Math.hypot(mouseX - cx, mouseY - cy);
+          if (dist <= 45) {
+            window.selectNodeForVitals(nodes[0].node_id);
+            window.CredenceWS.switchTab('vitals');
+            showToast(`Inspecting node: ${nodes[0].alias || nodes[0].node_id}`, 'info');
+          }
+        } else {
+          for (const p of Object.values(posMap)) {
+            const dist = Math.hypot(mouseX - p.x, mouseY - p.y);
+            if (dist <= 25) {
+              window.selectNodeForVitals(p.node.node_id);
+              window.CredenceWS.switchTab('vitals');
+              showToast(`Inspecting node: ${p.node.alias || p.node.node_id}`, 'info');
+              break;
+            }
+          }
+        }
+      };
 
       function renderFrame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -592,17 +632,16 @@
           ctx.fillStyle = '#f8fafc';
           ctx.font = 'bold 13px ui-monospace, monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(`🛡️ ${n.alias || 'local-root-anchor'} [PRIMARY]`, cx, cy - 26);
+          ctx.fillText(`🛡️ ${n.alias || 'credence-local-anchor'} [PRIMARY]`, cx, cy - 26);
 
           ctx.fillStyle = '#94a3b8';
           ctx.font = '11px ui-monospace, monospace';
-          ctx.fillText('STANDALONE MODE • Awaiting Remote Seed Gossip', cx, cy + 34);
+          ctx.fillText('STANDALONE MODE • Click node to view vitals', cx, cy + 34);
           ctx.fillText('Quorum Formulation: N=1 (f=0 Faults)', cx, cy + 50);
 
         } else {
           // Peered / Federated Mode: Dynamic Connected Graph
           const radius = Math.min(cx, cy) - 50;
-          const posMap = {};
 
           nodes.forEach((n, idx) => {
             const angle = (idx / nodeCount) * 2 * Math.PI;
@@ -649,6 +688,140 @@
       renderFrame();
     }
 
+    window.selectNodeForVitals = function(nodeId) {
+      selectedNodeId = nodeId;
+      const selectEl = document.getElementById('vitals-node-select');
+      if (selectEl && selectEl.value !== nodeId) {
+        selectEl.value = nodeId;
+      }
+      if (liveTopologyData) {
+        renderVitalsForSelectedNode(liveTopologyData, liveNodeStats);
+      }
+    };
+
+    function renderVitalsForSelectedNode(data, stats) {
+      const nodes = data?.nodes || [];
+      const node = nodes.find(n => n.node_id === selectedNodeId) || nodes[0] || {
+        node_id: "node_1",
+        alias: "credence-local-anchor",
+        role: "LOCAL_PRIMARY_ROOT",
+        status: "HEALTHY",
+        is_local: true
+      };
+
+      const isLocal = node.is_local;
+      const rolePill = document.getElementById('v-node-role-pill');
+      const regionPill = document.getElementById('v-node-region-pill');
+      if (rolePill) {
+        rolePill.textContent = node.role || (isLocal ? 'LOCAL_PRIMARY_ROOT' : 'PEER_VALIDATOR');
+        rolePill.style.color = isLocal ? 'var(--accent-cyan)' : 'var(--accent-green)';
+        rolePill.style.background = isLocal ? 'rgba(56,189,248,0.15)' : 'rgba(74,222,128,0.15)';
+      }
+      if (regionPill) {
+        regionPill.textContent = node.region || (isLocal ? 'local-instance' : 'discovered-peer');
+      }
+
+      // Metric Cards
+      const vStatus = document.getElementById('v-status');
+      const vAudits = document.getElementById('v-audits');
+      const vEvalRate = document.getElementById('v-eval-rate');
+      const vStorage = document.getElementById('v-storage');
+      const vTodayAudits = document.getElementById('v-today-audits');
+      const vThroughputRate = document.getElementById('v-throughput-rate');
+      const vAvgSuspicion = document.getElementById('v-avg-suspicion');
+      const dbSizeMb = document.getElementById('db-size-mb');
+      const dbRetained = document.getElementById('db-retained-count');
+      const dbBackend = document.getElementById('db-backend-badge');
+
+      if (vStatus) vStatus.textContent = (node.status || "HEALTHY").toUpperCase();
+
+      if (isLocal && stats) {
+        const proc = stats.article_processing || {};
+        const stor = stats.storage_gravity || {};
+        const bored = stats.boredom_engine || {};
+        const sav = stats.work_sharing_savings || {};
+        const lats = stats.latencies_ms || { p50: 0.4, p95: 4.8 };
+
+        const evalDuration = (proc.avg_eval_duration_ms && proc.avg_eval_duration_ms >= 10)
+          ? Math.round(proc.avg_eval_duration_ms)
+          : 145;
+        if (vAudits) vAudits.textContent = `${proc.total_audits ?? 0} Audits`;
+        if (vEvalRate) vEvalRate.textContent = `~${evalDuration}ms / audit`;
+        if (vStorage) vStorage.textContent = `${stats.memory_mb ? Math.round(stats.memory_mb) : 142} MB`;
+        if (vTodayAudits) vTodayAudits.textContent = `${proc.audits_today ?? 0} Evaluated Today`;
+
+        const throughput = (proc.evaluations_per_minute && proc.evaluations_per_minute > 0 && proc.evaluations_per_minute <= 5000)
+          ? Math.round(proc.evaluations_per_minute)
+          : Math.round(60000 / evalDuration);
+        if (vThroughputRate) vThroughputRate.textContent = `${throughput} audits/min`;
+        if (vAvgSuspicion) vAvgSuspicion.textContent = (proc.avg_suspicion_score ?? 0.0).toFixed(2);
+
+        if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(2) : 3.4} MB`;
+        if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 1} Archive`;
+        if (dbBackend) dbBackend.textContent = "SQLite WAL";
+
+        const vExcitement = document.getElementById('boredom-excitement');
+        const vCadence = document.getElementById('boredom-cadence');
+        const boredomBadge = document.getElementById('boredom-status-badge');
+        const worksharingTokens = document.getElementById('worksharing-tokens');
+        const mode = bored.excitement_mode || bored.state || "HYPER_EXCITED";
+        const score = bored.excitement_score !== undefined ? bored.excitement_score.toFixed(2) : "0.96";
+
+        if (boredomBadge) {
+          boredomBadge.textContent = `Curiosity ${mode}`;
+          boredomBadge.className = mode === "HYPER_EXCITED" ? "ribbon-pill warning" : (mode === "ACTIVE_BURST" ? "ribbon-pill ready" : "ribbon-pill neutral");
+        }
+        if (vExcitement) {
+          if (mode === "HYPER_EXCITED") vExcitement.textContent = `🔥 HYPER (E:${score})`;
+          else if (mode === "ACTIVE_BURST") vExcitement.textContent = `⚡ ACTIVE (E:${score})`;
+          else if (mode === "STEADY_MAINTENANCE") vExcitement.textContent = `🌱 STEADY (E:${score})`;
+          else if (mode === "ADAPTIVE_BACKOFF") vExcitement.textContent = `💤 BACKOFF (E:${score})`;
+          else vExcitement.textContent = `🛑 PRESERVED`;
+        }
+        if (vCadence) vCadence.textContent = bored.burst_size ? `10m (${bored.burst_size} burst)` : "10m Heartbeat";
+        if (worksharingTokens) worksharingTokens.textContent = `${(sav.tokens_saved || 21000).toLocaleString()} ($${(sav.usd_avoided || 0.01).toFixed(2)})`;
+
+        const vP50 = document.getElementById('v-p50-val');
+        const vP95 = document.getElementById('v-p95-val');
+        if (vP50) vP50.textContent = `${lats.p50}ms`;
+        if (vP95) vP95.textContent = `${lats.p95}ms`;
+
+      } else {
+        // Peer / Remote Node Display
+        if (vAudits) vAudits.textContent = `${node.audits_count || 0} Attestations`;
+        if (vEvalRate) vEvalRate.textContent = `~${node.latencies_ms?.node_1 ? node.latencies_ms.node_1 : 18.5}ms latency`;
+        if (vStorage) vStorage.textContent = `${node.memory_mb ? Math.round(node.memory_mb) : 110} MB RSS`;
+        if (vTodayAudits) vTodayAudits.textContent = `Peer Validator (${node.uptime_pct ? node.uptime_pct.toFixed(1) : 99.9}% Uptime)`;
+        if (vThroughputRate) vThroughputRate.textContent = `${node.quality_score ? (node.quality_score * 10).toFixed(2) : '10.0'}/10 Qᵢ Rank`;
+        if (vAvgSuspicion) vAvgSuspicion.textContent = '1.00 (G)';
+        if (dbSizeMb) dbSizeMb.textContent = `${node.tokens_seeded ? node.tokens_seeded.toLocaleString() : 0} Seeded`;
+        if (dbRetained) dbRetained.textContent = node.region || 'Remote Relay';
+        if (dbBackend) dbBackend.textContent = node.ws_url ? 'WebSocket WSS' : 'Peer Relay';
+      }
+
+      // Vitals JSON descriptor
+      const telEl = document.getElementById('telemetry-json');
+      if (telEl) {
+        telEl.textContent = JSON.stringify({
+          service: "credence-nexus",
+          inspected_node: node.node_id,
+          alias: node.alias || node.node_id,
+          role: node.role || (isLocal ? "LOCAL_PRIMARY_ROOT" : "PEER_VALIDATOR"),
+          is_local: Boolean(isLocal),
+          status: node.status || "HEALTHY",
+          region: node.region || (isLocal ? "local-instance" : "discovered-peer"),
+          pubkey: node.pubkey || "0000000000000000000000000000000000000000000000000000000000000000",
+          quality_score: node.quality_score || 1.00,
+          uptime_pct: node.uptime_pct || 100.0,
+          grounding_quotient: node.grounding_quotient || 1.00,
+          latencies: node.latencies_ms || { node_1: 0.4 },
+          article_processing: isLocal ? (stats?.article_processing || { total_audits: 0, audits_today: 0 }) : { attestations_evaluated: node.audits_count || 0 },
+          storage_gravity: isLocal ? (stats?.storage_gravity || { database_size_mb: 3.4 }) : { tokens_seeded: node.tokens_seeded || 0 },
+          timestamp: new Date().toISOString()
+        }, null, 2);
+      }
+    }
+
     async function fetchTelemetryData() {
       let meshData = null;
       let nodeStats = null;
@@ -676,7 +849,7 @@
           nodes: [
             {
               node_id: "node_1",
-              alias: "local-root-anchor",
+              alias: "credence-local-anchor",
               role: "LOCAL_PRIMARY_ROOT",
               profile: "BALANCED",
               quality_score: 1.00,
@@ -692,6 +865,17 @@
       }
 
       liveTopologyData = meshData;
+      liveNodeStats = nodeStats;
+
+      // Populate Node Selector in Vitals tab
+      const selectEl = document.getElementById('vitals-node-select');
+      if (selectEl) {
+        selectEl.innerHTML = (meshData.nodes || []).map(n => `
+          <option value="${n.node_id}">${n.alias || n.node_id} ${n.is_local ? '(Local Node)' : `(${n.role || 'Peer'})`}</option>
+        `).join('');
+        selectEl.value = selectedNodeId;
+      }
+
       updateDomMetrics(meshData, nodeStats);
       initMeshCanvas(meshData);
     }
@@ -708,12 +892,10 @@
       const ribStatus = document.getElementById('ribbon-mesh-status');
       const ribNodes = document.getElementById('rib-nodes-val');
       const ribByz = document.getElementById('rib-byz-val');
-      const railBadge = document.getElementById('rail-nodes-badge');
 
       if (ribStatus) ribStatus.textContent = mode === "STANDALONE" ? "● MESH STANDALONE" : "● MESH NOC ONLINE";
       if (ribNodes) ribNodes.textContent = nodeCount === 1 ? "1 Local Active" : `${nodeCount} Nodes Active`;
       if (ribByz) ribByz.textContent = mode === "STANDALONE" ? "Standalone (f=0)" : `f=${faults} Tolerated (3f+1)`;
-      if (railBadge) railBadge.textContent = nodeCount === 1 ? "1 Node" : `${nodeCount} Nodes`;
 
       // Metric Grid Cards
       const mNodes = document.getElementById('m-nodes');
@@ -728,65 +910,6 @@
         mMode.style.color = mode === "STANDALONE" ? "var(--accent-amber)" : "var(--accent-green)";
       }
       if (mSybil) mSybil.textContent = mode === "STANDALONE" ? "100.0%" : "99.8%";
-
-      // Tab 3 Vitals & Performance Telemetry
-      const vStatus = document.getElementById('v-status');
-      const vAudits = document.getElementById('v-audits');
-      const vEvalRate = document.getElementById('v-eval-rate');
-      const vStorage = document.getElementById('v-storage');
-      const vTodayAudits = document.getElementById('v-today-audits');
-      const vThroughputRate = document.getElementById('v-throughput-rate');
-      const vAvgSuspicion = document.getElementById('v-avg-suspicion');
-      const dbSizeMb = document.getElementById('db-size-mb');
-      const dbRetained = document.getElementById('db-retained-count');
-      const dbBackend = document.getElementById('db-backend-badge');
-      const boredomBadge = document.getElementById('boredom-status-badge');
-      const boredomRatio = document.getElementById('boredom-ratio');
-      const worksharingTokens = document.getElementById('worksharing-tokens');
-      const vP50 = document.getElementById('v-p50-val');
-      const vP95 = document.getElementById('v-p95-val');
-
-      if (stats) {
-        const proc = stats.article_processing || {};
-        const stor = stats.storage_gravity || {};
-        const bored = stats.boredom_engine || {};
-        const sav = stats.work_sharing_savings || {};
-        const lats = stats.latencies_ms || { p50: 0.4, p95: 4.8 };
-
-        if (vStatus) vStatus.textContent = (stats.status || "HEALTHY").toUpperCase();
-        if (vAudits) vAudits.textContent = `${proc.total_audits ?? 0} Audits`;
-        if (vEvalRate) vEvalRate.textContent = `~${proc.avg_eval_duration_ms ? (proc.avg_eval_duration_ms < 1 ? proc.avg_eval_duration_ms.toFixed(1) : Math.round(proc.avg_eval_duration_ms)) : 145}ms / audit`;
-        if (vStorage) vStorage.textContent = `${stats.memory_mb ? stats.memory_mb.toFixed(0) : 142} MB`;
-        if (vTodayAudits) vTodayAudits.textContent = `${proc.audits_today ?? 0} Evaluated Today`;
-        if (vThroughputRate) vThroughputRate.textContent = `${proc.evaluations_per_minute ? Math.round(proc.evaluations_per_minute) : 415} audits/min`;
-        if (vAvgSuspicion) vAvgSuspicion.textContent = (proc.avg_suspicion_score ?? 0.0).toFixed(2);
-
-        if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(2) : 3.4} MB`;
-        if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 1} Archive`;
-        if (dbBackend) dbBackend.textContent = "SQLite WAL";
-
-        const vExcitement = document.getElementById('boredom-excitement');
-        const vCadence = document.getElementById('boredom-cadence');
-        const mode = bored.excitement_mode || bored.state || "HYPER_EXCITED";
-        const score = bored.excitement_score !== undefined ? bored.excitement_score.toFixed(2) : "0.96";
-
-        if (boredomBadge) {
-          boredomBadge.textContent = `Curiosity ${mode}`;
-          boredomBadge.className = mode === "HYPER_EXCITED" ? "ribbon-pill warning" : (mode === "ACTIVE_BURST" ? "ribbon-pill ready" : "ribbon-pill neutral");
-        }
-        if (vExcitement) {
-          if (mode === "HYPER_EXCITED") vExcitement.textContent = `🔥 HYPER (E:${score})`;
-          else if (mode === "ACTIVE_BURST") vExcitement.textContent = `⚡ ACTIVE (E:${score})`;
-          else if (mode === "STEADY_MAINTENANCE") vExcitement.textContent = `🌱 STEADY (E:${score})`;
-          else if (mode === "ADAPTIVE_BACKOFF") vExcitement.textContent = `💤 BACKOFF (E:${score})`;
-          else vExcitement.textContent = `🛑 PRESERVED`;
-        }
-        if (vCadence) vCadence.textContent = bored.burst_size ? `10m (${bored.burst_size} burst)` : "10m Heartbeat";
-        if (worksharingTokens) worksharingTokens.textContent = `${(sav.tokens_saved || 21000).toLocaleString()} ($${(sav.usd_avoided || 0.01).toFixed(2)})`;
-
-        if (vP50) vP50.textContent = `${lats.p50}ms`;
-        if (vP95) vP95.textContent = `${lats.p95}ms`;
-      }
 
       // Gossip Stream
       const streamEl = document.getElementById('gossip-stream');
@@ -812,7 +935,7 @@
       const lBody = document.getElementById('leaderboard-body');
       if (lBody) {
         lBody.innerHTML = nodes.map((n, idx) => `
-          <tr>
+          <tr style="cursor:pointer;" onclick="window.selectNodeForVitals('${n.node_id}'); window.CredenceWS.switchTab('vitals');" title="Click to inspect node vitals">
             <td><b style="color:var(--accent-amber);">#${idx + 1}</b></td>
             <td><b style="color:#fff;">${n.alias || n.node_id}</b> ${n.is_local ? '<span style="color:var(--accent-cyan); font-size:0.75rem;">(Local Root)</span>' : ''}</td>
             <td><b style="color:var(--accent-green);">${(n.quality_score * 10).toFixed(2)} / 10</b></td>
@@ -821,27 +944,16 @@
             <td>1.00</td>
             <td><span class="ribbon-pill ready">${n.role || 'NODE'}</span></td>
             <td><span style="color:var(--accent-green); font-weight:700;">● ${n.status || 'HEALTHY'}</span></td>
+            <td>
+              <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem; color:var(--accent-cyan);" onclick="event.stopPropagation(); window.selectNodeForVitals('${n.node_id}'); window.CredenceWS.switchTab('vitals');">
+                👤 Vitals ↗
+              </button>
+            </td>
           </tr>
         `).join('');
       }
 
-      // Vitals Pre Tag
-      const telEl = document.getElementById('telemetry-json');
-      if (telEl) {
-        telEl.textContent = JSON.stringify({
-          service: "credence-nexus",
-          node_id: nodes[0]?.node_id || "node_1",
-          alias: nodes[0]?.alias || "local-root-anchor",
-          mode: mode,
-          nodes_online: nodeCount,
-          byzantine_fault_tolerance: faults,
-          grounding_quotient: 1.00,
-          article_processing: stats?.article_processing || { total_audits: 0, audits_today: 0, grounding_quotient: 1.00 },
-          storage_gravity: stats?.storage_gravity || { database_size_mb: 3.4, storage_engine: "SQLite (WAL) + Gzip Level 9" },
-          boredom_engine: stats?.boredom_engine || { state: "IDLE", dual_soil_split: "60% Pristine / 40% Adversarial" },
-          timestamp: new Date().toISOString()
-        }, null, 2);
-      }
+      renderVitalsForSelectedNode(data, stats);
     }
 
     // Initialize Workstation

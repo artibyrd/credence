@@ -163,6 +163,35 @@ class Settings(BaseSettings):
     NODE_KEY_PATH: Path = Path("data/node_identity.key")
     TAXONOMY_DIR: Path = Path("credence/taxonomies")
 
+    # Node Identity and Authoritative Server Naming
+    NODE_ALIAS: Optional[str] = None
+    SERVER_NAME: Optional[str] = None
+
+    @property
+    def effective_node_alias(self) -> str:
+        """Resolve authoritative node alias / server name across multi-environment deployments."""
+        import os
+
+        explicit = (
+            self.NODE_ALIAS
+            or self.SERVER_NAME
+            or os.getenv("CREDENCE_SERVER_NAME")
+            or os.getenv("NODE_ALIAS")
+            or os.getenv("SERVER_NAME")
+        )
+        if explicit:
+            return explicit
+
+        gcp_project = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT_ID") or ""
+        env = (self.ENV or os.getenv("CREDENCE_ENV") or "").lower()
+
+        if "prod" in gcp_project or env == "production":
+            return "credence-prod-us-central1"
+        if "dev" in gcp_project or env in ("development", "staging"):
+            return "credence-dev-us-central1"
+
+        return "credence-local-anchor"
+
     # Cloud & Blob Storage Configuration (Local Filesystem or S3 / Cloudflare R2 / GCS)
     STORAGE_BACKEND: str = "local"
     S3_BUCKET_NAME: Optional[str] = None
