@@ -291,7 +291,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_badge.add_argument("--output", "-o", help="Target SVG file path (default stdout)")
     p_badge.add_argument("--node", default="credence-node", help="Node alias or label")
     p_badge.add_argument("--score", default="VERIFIED", help="Metric score or value")
-    p_badge.add_argument("--style", default="pill", choices=["pill", "shield"], help="Visual style variant")
+    p_badge.add_argument(
+        "--style", default="glass", choices=["glass", "pill", "shield", "meta", "compact"], help="Visual style variant"
+    )
     p_badge.add_argument("--theme", default="dark", choices=["dark", "midnight", "light"], help="Theme palette")
 
     # merit

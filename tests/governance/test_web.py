@@ -276,7 +276,8 @@ def test_web_workstation_architecture_and_admin_deck(web_dir: Path) -> None:
     assert "tab-topology" in nexus_content
     assert "tab-leaderboard" in nexus_content
     assert "tab-vitals" in nexus_content
-    assert "tab-badges" in nexus_content
+    assert "tab-merit" in nexus_content or "tab-badges" in nexus_content
+    assert "tab-seeds" in nexus_content
     assert "info-btn" in nexus_content
 
     # 5. Verify Report Epistemic Forensic Lab

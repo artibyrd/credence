@@ -156,6 +156,20 @@ def test_svg_badge_generation_strict_xml_and_styles() -> None:
     """Verify strict XML ElementTree parseability, visual styles, and metadata across styles."""
     import xml.etree.ElementTree as ET
 
+    # Test glass style (Doc header style)
+    svg_glass = generate_svg_badge(
+        badge_id="verified_auditor",
+        node_alias="anchor-us-central1",
+        score_or_val="100.0 Clean",
+        style="glass",
+        theme="dark",
+    )
+    root_glass = ET.fromstring(svg_glass)
+    assert root_glass.tag == "{http://www.w3.org/2000/svg}svg" or root_glass.tag.endswith("svg")
+    assert "anchor-us-central1" in svg_glass
+    assert "100.0 Clean" in svg_glass
+    assert int(root_glass.attrib["height"]) == 28
+
     # Test pill style
     svg_pill = generate_svg_badge(
         badge_id="root_seed_candidate",
@@ -187,11 +201,11 @@ def test_svg_badge_generation_strict_xml_and_styles() -> None:
 
 
 def test_svg_badge_8_registry_matrix() -> None:
-    """Verify all 8 official badges and fallbacks generate valid, well-formed XML."""
+    """Verify all 8 official badges and fallbacks generate valid, well-formed XML across styles."""
     import xml.etree.ElementTree as ET
 
     for badge_id, badge_info in BADGE_REGISTRY.items():
-        for style in ["pill", "shield"]:
+        for style in ["glass", "pill", "shield"]:
             for theme in ["dark", "midnight", "light"]:
                 svg = generate_svg_badge(
                     badge_id=badge_id,
