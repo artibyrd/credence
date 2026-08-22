@@ -51,6 +51,25 @@ async def api_get_merit(request: Any) -> Any:
     return JSONResponse({"error": "Unavailable"}, status_code=500)
 
 
+async def api_verify_merit(request: Any) -> Any:
+    """REST API: Cryptographically verify a node merit card attestation envelope."""
+    from credence.mesh.merit import verify_node_merit_card
+
+    try:
+        data = await request.json()
+        is_valid = verify_node_merit_card(data)
+        return JSONResponse(
+            {
+                "valid": is_valid,
+                "node_pubkey": data.get("node_pubkey"),
+                "canonical_sha256": data.get("canonical_sha256"),
+                "tampered": not is_valid,
+            }
+        )
+    except Exception as e:
+        return JSONResponse({"valid": False, "error": str(e), "tampered": True}, status_code=400)
+
+
 async def api_get_badge_svg(request: Any) -> Any:
     """REST API: Dynamic SVG badge endpoint."""
     from credence.mesh.merit import generate_svg_badge

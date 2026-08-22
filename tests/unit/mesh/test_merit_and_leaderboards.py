@@ -346,6 +346,69 @@ async def test_leaderboard_multi_categories_and_teams(db_session: AsyncSession) 
     assert lb_g[0].score == 3
 
     # Team filtering: alpha-team only returns alpha-node
-    lb_team = await get_leaderboard(db_session, category="quality", team_filter="alpha-team")
-    assert len(lb_team) == 1
-    assert lb_team[0].node_alias == "alpha-node"
+    lb_t = await get_leaderboard(db_session, category="quality", team_filter="alpha-team")
+    assert len(lb_t) == 1
+    assert lb_t[0].node_alias == "alpha-node"
+
+
+def test_node_merit_card_cryptographic_signing_and_verification() -> None:
+    """Verify that NodeMeritCard generates RFC 8785 canonical hashes and valid Ed25519 signatures."""
+    from dataclasses import asdict
+
+    from credence.mesh.merit import NodeMeritCard, sign_node_merit_card, verify_node_merit_card
+    from credence.mesh.models import BadgeAward
+
+    card = NodeMeritCard(
+        node_pubkey="a" * 64,
+        node_alias="test-node",
+        team_tag=None,
+        tier="SPROUT",
+        quality_score=0.85,
+        uptime_ratio=1.0,
+        grounding_ratio=1.0,
+        concordance_factor=0.85,
+        longevity_days=0.0,
+        traffic_class="STANDARD",
+        tokens_seeded=0,
+        usd_saved_estimate=0.0,
+        attestations_seeded=0,
+        galileo_discoveries=0,
+        rank_overall=1,
+        total_nodes=1,
+        is_seed_candidate=False,
+        unlocked_badges=[
+            BadgeAward(
+                badge_id="sprout_node",
+                name="Sprout Genesis",
+                tier="SPROUT",
+                icon="🌱",
+                description="Initialized",
+                unlocked_at="2026-08-22T00:00:00Z",
+            )
+        ],
+    )
+
+    signed_card = sign_node_merit_card(card)
+    assert signed_card.canonical_sha256 is not None
+    assert signed_card.canonical_sha256.startswith("sha256:")
+    assert signed_card.signature is not None
+    assert len(signed_card.signature) > 32
+
+    # Verification of authentic envelope
+    card_dict = asdict(signed_card)
+    assert verify_node_merit_card(card_dict) is True
+
+    # Tampering test 1: Modifying score invalidates signature
+    tampered_score = dict(card_dict)
+    tampered_score["quality_score"] = 0.99
+    assert verify_node_merit_card(tampered_score) is False
+
+    # Tampering test 2: Forging badge unlocks invalidates signature
+    tampered_badges = dict(card_dict)
+    tampered_badges["unlocked_badges"] = ["sprout_node", "root_seed_candidate", "century_anchor"]
+    assert verify_node_merit_card(tampered_badges) is False
+
+    # Tampering test 3: Corrupted public key or signature
+    tampered_sig = dict(card_dict)
+    tampered_sig["signature"] = "00" * 64
+    assert verify_node_merit_card(tampered_sig) is False

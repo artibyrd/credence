@@ -221,3 +221,59 @@ def test_red_team_dynamic_demotion_and_reinstatement() -> None:
         longevity_days=20.0,
     )
     assert tier_reinstated == EpistemicTier.AUDITOR
+
+
+@pytest.mark.unit
+def test_red_team_forged_badge_attestation_rejection() -> None:
+    """Vector 7: Verify that client-side forged badge claims fail Ed25519 cryptographic verification."""
+    from dataclasses import asdict
+
+    from credence.mesh.merit import NodeMeritCard, sign_node_merit_card, verify_node_merit_card
+    from credence.mesh.models import BadgeAward
+
+    # Authentic Sprout node
+    card = NodeMeritCard(
+        node_pubkey="0" * 64,
+        node_alias="honest-sprout",
+        team_tag=None,
+        tier="SPROUT",
+        quality_score=0.85,
+        uptime_ratio=1.0,
+        grounding_ratio=1.0,
+        concordance_factor=0.85,
+        longevity_days=0.0,
+        traffic_class="STANDARD",
+        tokens_seeded=0,
+        usd_saved_estimate=0.0,
+        attestations_seeded=0,
+        galileo_discoveries=0,
+        rank_overall=1,
+        total_nodes=1,
+        is_seed_candidate=False,
+        unlocked_badges=[
+            BadgeAward(
+                badge_id="sprout_node",
+                name="Sprout Genesis",
+                tier="SPROUT",
+                icon="🌱",
+                description="Initialized",
+                unlocked_at="2026-08-22T00:00:00Z",
+            )
+        ],
+    )
+    signed_card = sign_node_merit_card(card)
+    card_dict = asdict(signed_card)
+
+    # 1. Authentic envelope passes verification
+    assert verify_node_merit_card(card_dict) is True
+
+    # 2. Malicious user tries to forge 'Root Seed Candidate' or 'Century Anchor'
+    forged_card = dict(card_dict)
+    forged_card["tier"] = "ROOT_ANCHOR"
+    forged_card["unlocked_badges"] = [
+        {"badge_id": "sprout_node"},
+        {"badge_id": "root_seed_candidate"},
+        {"badge_id": "century_anchor"},
+    ]
+    # Verification fails because the computed canonical JSON digest no longer matches the signed digest/signature
+    assert verify_node_merit_card(forged_card) is False

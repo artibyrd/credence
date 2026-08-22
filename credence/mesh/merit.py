@@ -6,14 +6,15 @@ Architecture: Modular P2P Merit Engine (<450 LOC).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import hashlib
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.identity import load_or_create_node_identity
+from credence.identity import canonical_json_bytes, load_or_create_node_identity
 from credence.mesh.badges import (
     compute_half_life_uptime,
     compute_longevity_days,
@@ -71,6 +72,78 @@ class NodeMeritCard:
     unlocked_badges: List[BadgeAward] = field(default_factory=list)
     next_tier: Optional[str] = None
     next_tier_progress: float = 0.0
+    issued_at: Optional[str] = None
+    canonical_sha256: Optional[str] = None
+    signature: Optional[str] = None
+
+
+def compute_merit_canonical_payload(card_or_dict: NodeMeritCard | Dict[str, Any]) -> Dict[str, Any]:
+    """Extract deterministic signable dictionary payload for RFC 8785 canonical JSON serialization."""
+    if isinstance(card_or_dict, NodeMeritCard):
+        d = asdict(card_or_dict)
+    else:
+        d = dict(card_or_dict)
+
+    unlocked = d.get("unlocked_badges", [])
+    unlocked_ids = sorted(
+        [b["badge_id"] if isinstance(b, dict) and "badge_id" in b else getattr(b, "badge_id", str(b)) for b in unlocked]
+    )
+
+    return {
+        "grounding_ratio": round(float(d.get("grounding_ratio", 0.0)), 4),
+        "issued_at": str(d.get("issued_at") or ""),
+        "longevity_days": round(float(d.get("longevity_days", 0.0)), 2),
+        "node_alias": str(d.get("node_alias", "")),
+        "node_pubkey": str(d.get("node_pubkey", "")),
+        "quality_score": round(float(d.get("quality_score", 0.0)), 4),
+        "tier": str(d.get("tier", "")),
+        "tokens_seeded": int(d.get("tokens_seeded", 0)),
+        "unlocked_badges": unlocked_ids,
+        "uptime_ratio": round(float(d.get("uptime_ratio", 0.0)), 4),
+    }
+
+
+def sign_node_merit_card(card: NodeMeritCard) -> NodeMeritCard:
+    """Cryptographically sign a NodeMeritCard using the node's Ed25519 identity."""
+    id_obj = load_or_create_node_identity()
+    card.node_pubkey = id_obj.public_key_hex
+    now_iso = card.issued_at or datetime.now(timezone.utc).isoformat()
+    card.issued_at = now_iso
+    payload = compute_merit_canonical_payload(card)
+    raw_bytes = canonical_json_bytes(payload)
+    digest = hashlib.sha256(raw_bytes).hexdigest()
+    sig = id_obj.private_key.sign(raw_bytes)
+
+    card.canonical_sha256 = f"sha256:{digest}"
+    card.signature = sig.hex()
+    return card
+
+
+def verify_node_merit_card(card_data: Dict[str, Any]) -> bool:
+    """Verify that a node merit payload is cryptographically authentic and unmodified."""
+    from cryptography.exceptions import InvalidSignature
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+
+    pubkey_hex = card_data.get("node_pubkey")
+    sig_hex = card_data.get("signature")
+    expected_digest = card_data.get("canonical_sha256")
+    if not pubkey_hex or not sig_hex or not expected_digest:
+        return False
+
+    payload = compute_merit_canonical_payload(card_data)
+    raw_bytes = canonical_json_bytes(payload)
+    computed_digest = f"sha256:{hashlib.sha256(raw_bytes).hexdigest()}"
+    if computed_digest != expected_digest:
+        return False
+
+    try:
+        pub_bytes = bytes.fromhex(pubkey_hex)
+        public_key = ed25519.Ed25519PublicKey.from_public_bytes(pub_bytes)
+        sig_bytes = bytes.fromhex(sig_hex)
+        public_key.verify(sig_bytes, raw_bytes)
+        return True
+    except (ValueError, InvalidSignature, TypeError):
+        return False
 
 
 async def get_leaderboard(
@@ -206,7 +279,7 @@ async def get_local_node_merit(
 
     if not peer:
         badges = evaluate_node_badges(None, dom_records, feed_items_count=feed_count, now=current_time)
-        return NodeMeritCard(
+        card = NodeMeritCard(
             node_pubkey=local_pubkey,
             node_alias="local-node",
             team_tag=None,
@@ -228,6 +301,7 @@ async def get_local_node_merit(
             next_tier=EpistemicTier.SIFTER.value,
             next_tier_progress=min(1.0, feed_count / 100.0),
         )
+        return sign_node_merit_card(card)
 
     longevity = compute_longevity_days(peer.first_seen, now=current_time)
     uptime = compute_half_life_uptime(
@@ -262,7 +336,7 @@ async def get_local_node_merit(
 
     usd_saved = round((peer.tokens_seeded_count / 1_000_000.0) * 0.075, 4)
 
-    return NodeMeritCard(
+    card = NodeMeritCard(
         node_pubkey=peer.node_pubkey,
         node_alias=peer.node_alias,
         team_tag=peer.team_tag,
@@ -284,19 +358,23 @@ async def get_local_node_merit(
         next_tier=next_tier_name,
         next_tier_progress=round(next_prog, 2),
     )
+    return sign_node_merit_card(card)
 
 
 __all__ = [
     "BADGE_REGISTRY",
     "BadgeAward",
     "BadgeInfo",
+    "compute_half_life_uptime",
+    "compute_longevity_days",
+    "compute_merit_canonical_payload",
+    "determine_node_tier",
+    "evaluate_node_badges",
     "generate_svg_badge",
     "get_leaderboard",
     "get_local_node_merit",
-    "compute_half_life_uptime",
-    "compute_longevity_days",
-    "determine_node_tier",
-    "evaluate_node_badges",
     "LeaderboardEntry",
     "NodeMeritCard",
+    "sign_node_merit_card",
+    "verify_node_merit_card",
 ]
