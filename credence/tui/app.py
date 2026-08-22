@@ -233,7 +233,10 @@ class CredenceApp(App):
                 yield Static("Cryptographic Identity: Ed25519 RFC 8785 Envelopes Active", id="identity_panel")
 
             with TabPane("8. Ops", id="tab_ops"):
-                yield Static("SRE Telemetry: 100% Clean | Zero-Token Adoption Engine Active", id="ops_panel")
+                yield Static(
+                    "SRE Telemetry: HEALTHY | Excitement: 🔥 HYPER (E:0.96) | Heartbeat: 10m Cron (5 Burst) | Scale-to-Zero ($0.00 Idle)",
+                    id="ops_panel",
+                )
 
             with TabPane("9. Mesh", id="tab_mesh"):
                 yield Static("P2P Mesh Cluster: Standalone | HRW Rendezvous Hashing Ready", id="mesh_panel")

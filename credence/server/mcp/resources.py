@@ -179,12 +179,37 @@ def _register_subject_resources(server: MCPServer) -> None:
             stmt_items = select(FeedItem)
             items = (await session.exec(stmt_items)).all()
 
+            from credence.feeds.boredom import compute_curiosity_excitement
+            from credence.models import Audit
+            from credence.pipeline.governor import get_token_headroom_status
+
+            stmt_a = select(Audit).order_by(col(Audit.audited_at).desc()).limit(1)
+            latest_audit = (await session.exec(stmt_a)).first()
+            last_time = latest_audit.audited_at if latest_audit else None
+            headroom = await get_token_headroom_status(session)
+            total_audits_cnt = len((await session.exec(select(Audit.id))).all())
+
+            decision = compute_curiosity_excitement(
+                total_audits=total_audits_cnt,
+                daily_headroom_pct=headroom.daily_headroom_pct,
+                last_audit_time=last_time,
+            )
+
             return json.dumps(
                 {
                     "active_subscriptions_count": len([s for s in subs if s.is_active]),
                     "total_articles_discovered": len(items),
                     "zero_token_adoptions_count": len([i for i in items if i.processing_status == "mesh_adopted"]),
                     "total_tokens_saved": sum(i.tokens_saved for i in items),
+                    "epistemic_excitement": {
+                        "mode": decision.mode,
+                        "score": decision.excitement_score,
+                        "burst_size": decision.audit_burst,
+                        "expand_roots_appetite": decision.expand_roots_appetite,
+                        "heartbeat_cadence": "10m Cloud Scheduler Cron",
+                        "scale_to_zero_idle_cost": "$0.00",
+                        "reason": decision.reason,
+                    },
                 },
                 indent=2,
             )
