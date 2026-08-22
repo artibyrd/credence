@@ -321,14 +321,18 @@
                 <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
                   Background curiosity loop running dual-soil sampling (60% clean / 40% adv) and zero-token peer attestation adoption.
                 </p>
-                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Sampling Ratio</div>
-                    <div style="font-size:1rem; font-weight:700; color:var(--accent-purple); font-family:var(--font-mono);" id="boredom-ratio">60/40 Split</div>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.6rem;">
+                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.5rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Excitement Level</div>
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--accent-yellow); font-family:var(--font-mono);" id="boredom-excitement">🔥 HYPER (E:0.96)</div>
                   </div>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Mesh Tokens Avoided</div>
-                    <div style="font-size:1rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="worksharing-tokens">21k ($0.01)</div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.5rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Heartbeat Cadence</div>
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--accent-purple); font-family:var(--font-mono);" id="boredom-cadence">10m Heartbeat</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.5rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Mesh Savings</div>
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="worksharing-tokens">21k ($0.01)</div>
                   </div>
                 </div>
               </div>
@@ -761,8 +765,23 @@
         if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 1} Archive`;
         if (dbBackend) dbBackend.textContent = "SQLite WAL";
 
-        if (boredomBadge) boredomBadge.textContent = bored.state ? `Curiosity ${bored.state}` : "Curiosity Idle";
-        if (boredomRatio) boredomRatio.textContent = "60/40 Split";
+        const vExcitement = document.getElementById('boredom-excitement');
+        const vCadence = document.getElementById('boredom-cadence');
+        const mode = bored.excitement_mode || bored.state || "HYPER_EXCITED";
+        const score = bored.excitement_score !== undefined ? bored.excitement_score.toFixed(2) : "0.96";
+
+        if (boredomBadge) {
+          boredomBadge.textContent = `Curiosity ${mode}`;
+          boredomBadge.className = mode === "HYPER_EXCITED" ? "ribbon-pill warning" : (mode === "ACTIVE_BURST" ? "ribbon-pill ready" : "ribbon-pill neutral");
+        }
+        if (vExcitement) {
+          if (mode === "HYPER_EXCITED") vExcitement.textContent = `🔥 HYPER (E:${score})`;
+          else if (mode === "ACTIVE_BURST") vExcitement.textContent = `⚡ ACTIVE (E:${score})`;
+          else if (mode === "STEADY_MAINTENANCE") vExcitement.textContent = `🌱 STEADY (E:${score})`;
+          else if (mode === "ADAPTIVE_BACKOFF") vExcitement.textContent = `💤 BACKOFF (E:${score})`;
+          else vExcitement.textContent = `🛑 PRESERVED`;
+        }
+        if (vCadence) vCadence.textContent = bored.burst_size ? `10m (${bored.burst_size} burst)` : "10m Heartbeat";
         if (worksharingTokens) worksharingTokens.textContent = `${(sav.tokens_saved || 21000).toLocaleString()} ($${(sav.usd_avoided || 0.01).toFixed(2)})`;
 
         if (vP50) vP50.textContent = `${lats.p50}ms`;

@@ -48,4 +48,13 @@ async def test_cron_boredom_endpoint_and_stats_parity(db_session: Any) -> None:
             bored = stats_data["boredom_engine"]
             assert "state" in bored
             assert "excitement_mode" in bored
-            assert bored["state"] in ("HYPER_EXCITED", "ACTIVE", "MAINTENANCE", "IDLE", "QUOTA_PRESERVED")
+            assert bored["state"] in (
+                "HYPER_EXCITED",
+                "ACTIVE_BURST",
+                "ACTIVE",
+                "STEADY_MAINTENANCE",
+                "MAINTENANCE",
+                "ADAPTIVE_BACKOFF",
+                "IDLE",
+                "QUOTA_PRESERVED",
+            )

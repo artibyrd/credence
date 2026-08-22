@@ -785,6 +785,32 @@
       document.getElementById('kpi-usd-saved').textContent = `$${(savings.usd_saved_estimate || 0.01).toFixed(2)} avoided at $0.00 spend`;
       document.getElementById('kpi-mesh-efficiency').textContent = `${savings.work_sharing_efficiency_pct || 92.3}% Work-Sharing Efficiency`;
 
+      // 1.1 Render Epistemic Excitement Telemetry
+      const totalAudits = my.total_audited_lifetime || 0;
+      const headroomPct = my.token_headroom?.daily_pct ?? 100.0;
+      const volDisc = Math.min(0.80, totalAudits / 250.0);
+      const excScore = ((headroomPct / 100.0) * (1.0 - volDisc)).toFixed(2);
+
+      const excBadge = document.getElementById('dash-excitement-badge');
+      const excScoreEl = document.getElementById('dash-excitement-score');
+      const burstSizeEl = document.getElementById('dash-burst-size');
+
+      if (totalAudits < 50 && headroomPct >= 70.0) {
+        if (excBadge) { excBadge.textContent = "🔥 HYPER_EXCITED"; excBadge.className = "badge badge-ready"; }
+        if (burstSizeEl) burstSizeEl.textContent = "5 Audits / Tick (+ 3 roots)";
+      } else if (totalAudits < 200 && headroomPct >= 50.0) {
+        if (excBadge) { excBadge.textContent = "⚡ ACTIVE_BURST"; excBadge.className = "badge badge-ready"; }
+        if (burstSizeEl) burstSizeEl.textContent = "3 Audits / Tick (+ 1 root)";
+      } else if (headroomPct < 30.0) {
+        if (excBadge) { excBadge.textContent = "🛑 QUOTA_PRESERVED"; excBadge.className = "badge badge-error"; }
+        if (burstSizeEl) burstSizeEl.textContent = "0 Audits (Circuit Breaker)";
+      } else {
+        if (excBadge) { excBadge.textContent = "🌱 STEADY_MAINTENANCE"; excBadge.className = "badge badge-neutral"; }
+        if (burstSizeEl) burstSizeEl.textContent = "1–2 Audits (30m Cooldown)";
+      }
+
+      if (excScoreEl) excScoreEl.textContent = excScore;
+
       // 2. Render Histograms & Distribution
       renderHistogram(data.score_histogram || []);
       renderVerdicts(data.verdict_distribution || {});

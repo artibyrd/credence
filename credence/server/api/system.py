@@ -279,7 +279,9 @@ async def api_node_stats(request: Any) -> Any:
 
     from credence.config import settings
     from credence.db import get_async_session, init_db
+    from credence.feeds.boredom import compute_curiosity_excitement
     from credence.models import Audit, Snapshot
+    from credence.pipeline.governor import get_token_headroom_status
     from credence.storage.backup import get_backup_status
 
     await init_db()
@@ -306,6 +308,17 @@ async def api_node_stats(request: Any) -> Any:
             avg_suspicion = round(float(res_avg), 3) if res_avg is not None else 0.0
         except Exception as e:
             logger.warning("Error fetching aggregate db stats: %s", e)
+
+        # Headroom & Excitement evaluation
+        headroom = await get_token_headroom_status(s)
+        stmt_latest = select(Audit).order_by(col(Audit.audited_at).desc()).limit(1)
+        latest_audit = (await s.exec(stmt_latest)).first()
+        last_time = latest_audit.audited_at if latest_audit else None
+        decision = compute_curiosity_excitement(
+            total_audits=total_audits,
+            daily_headroom_pct=headroom.daily_headroom_pct,
+            last_audit_time=last_time,
+        )
 
     # Database disk footprint
     db_path = settings.DB_PATH
@@ -344,13 +357,15 @@ async def api_node_stats(request: Any) -> Any:
                 "manifest": backup_status.get("manifest", {}),
             },
             "boredom_engine": {
-                "state": "HYPER_EXCITED" if total_audits < 50 else ("ACTIVE" if total_audits < 200 else "MAINTENANCE"),
-                "excitement_mode": "HYPER_EXCITED"
-                if total_audits < 50
-                else ("ACTIVE_BURST" if total_audits < 200 else "STEADY_MAINTENANCE"),
+                "state": decision.mode,
+                "excitement_mode": decision.mode,
+                "excitement_score": decision.excitement_score,
+                "burst_size": decision.audit_burst,
+                "cadence_desc": "10m Heartbeat (Adaptive E)",
                 "ratio": 0.60,
                 "dual_soil_split": "60% Clean / 40% Adv",
                 "token_headroom_preserved": "30% Safety Floor Active",
+                "reason": decision.reason,
             },
             "work_sharing_savings": {
                 "tokens_saved": 21000,
