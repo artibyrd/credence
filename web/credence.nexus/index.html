@@ -594,6 +594,7 @@
     let wsController;
     let liveTopologyData = null;
     let liveNodeStats = null;
+    let liveNodeMerit = null;
     let selectedNodeId = "node_1";
 
     function renderAdminView() {
@@ -907,15 +908,21 @@
     async function fetchTelemetryData() {
       let meshData = null;
       let nodeStats = null;
+      let meritData = null;
 
       try {
-        const [resMesh, resStats] = await Promise.all([
+        const [resMesh, resStats, resMerit] = await Promise.all([
           fetch('/api/mesh/health').catch(() => null),
-          fetch('/api/node/stats').catch(() => null)
+          fetch('/api/node/stats').catch(() => null),
+          fetch('/api/merit').catch(() => null)
         ]);
         if (resMesh && resMesh.ok) meshData = await resMesh.json();
         if (resStats && resStats.ok) nodeStats = await resStats.json();
+        if (resMerit && resMerit.ok) meritData = await resMerit.json();
       } catch (e) {}
+
+      liveNodeMerit = meritData;
+
 
       if (!meshData) {
         meshData = {
@@ -1043,21 +1050,121 @@
     // Epistemic Merit & Badge Studio Module
     // ==========================================
     const MERIT_BADGES_DEF = [
-      { id: "sprout_node", name: "Sprout Node", icon: "🌱", tier: "SPROUT", desc: "First 24h of telemetry & 95%+ uptime", req: (n) => ({ unlocked: Boolean(n.is_local || (n.uptime_pct >= 95.0)), progress: n.uptime_pct >= 95.0 ? 100 : Math.round(n.uptime_pct || 100), label: `${n.uptime_pct ? n.uptime_pct.toFixed(1) : 100}% Uptime` }) },
-      { id: "sifter_pioneer", name: "Sifter Pioneer", icon: "🔍", tier: "SIFTER", desc: "100+ articles evaluated without hallucination", req: (n) => { const c = n.is_local ? (liveNodeStats?.article_processing?.total_audits ?? 124) : (n.audits_count || 45); return { unlocked: c >= 100, progress: Math.min(100, Math.round((c / 100) * 100)), label: `${c} / 100 Audits` }; } },
-      { id: "verified_auditor", name: "Verified Auditor", icon: "⚖️", tier: "AUDITOR", desc: "Quality score Qᵢ ≥ 0.90 and 500+ audits", req: (n) => { const q = n.quality_score ?? 1.0; const c = n.is_local ? (liveNodeStats?.article_processing?.total_audits ?? 124) : (n.audits_count || 45); return { unlocked: Boolean(n.is_local || (q >= 0.90 && c >= 500)), progress: Math.min(100, Math.round((q / 0.90) * 50 + (c / 500) * 50)), label: `Qᵢ ${(q*10).toFixed(1)}/10` }; } },
-      { id: "domain_specialist", name: "Domain Specialist", icon: "🎯", tier: "SPECIALIST", desc: "Top 10% domain epistemic accuracy", req: (n) => ({ unlocked: Boolean(n.is_local || n.role === "SPECIALIST" || n.quality_score >= 0.98), progress: 100, label: "Specialist Consensus" }) },
-      { id: "philanthropic_relay", name: "Philanthropic Relay", icon: "🎁", tier: "SPECIALIST", desc: "100k+ compute tokens seeded to peers", req: (n) => { const s = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved ?? 21000) : (n.tokens_seeded || 12000); return { unlocked: s >= 100000, progress: Math.min(100, Math.round((s / 100000) * 100)), label: `${s.toLocaleString()} / 100k Tokens` }; } },
-      { id: "root_seed_candidate", name: "Root Seed Candidate", icon: "🌳", tier: "ROOT_ANCHOR", desc: "30+ days continuous uptime & G ≥ 0.80", req: (n) => ({ unlocked: Boolean(n.is_local || n.role === "LOCAL_PRIMARY_ROOT" || n.role === "ANCHOR"), progress: 100, label: "Genesis Seed Active" }) },
-      { id: "galileo_pioneer", name: "Galileo Pioneer", icon: "🔭", tier: "ROOT_ANCHOR", desc: "Discovered verified minority consensus truth", req: (n) => ({ unlocked: Boolean(n.is_local || n.quality_score >= 0.99), progress: 100, label: "Galileo Breakthrough" }) },
-      { id: "sybil_shield", name: "Sybil Shield", icon: "🛡️", tier: "ROOT_ANCHOR", desc: "5,000+ audits with zero slashing penalties", req: (n) => { const c = n.is_local ? 5000 : (n.audits_count || 120); return { unlocked: c >= 5000, progress: Math.min(100, Math.round((c / 5000) * 100)), label: `${c.toLocaleString()} / 5,000 Verified` }; } },
+      {
+        id: "sprout_node",
+        name: "Sprout Node",
+        icon: "🌱",
+        tier: "SPROUT",
+        desc: "First 24h of telemetry & 95%+ uptime",
+        eval: (n, merit) => {
+          const uptime = n.uptime_pct || (n.is_local ? 100.0 : 95.0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node") ?? (uptime >= 95.0));
+          const progress = Math.min(100, Math.round(uptime));
+          return { unlocked: isUnlocked, progress, label: `${uptime.toFixed(1)}% Uptime` };
+        }
+      },
+      {
+        id: "sifter_pioneer",
+        name: "Sifter Pioneer",
+        icon: "🔍",
+        tier: "SIFTER",
+        desc: "100+ articles evaluated without hallucination",
+        eval: (n, merit) => {
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer") ?? (audits >= 100));
+          const progress = Math.min(100, Math.round((audits / 100) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits} / 100 Audits` };
+        }
+      },
+      {
+        id: "verified_auditor",
+        name: "Verified Auditor",
+        icon: "⚖️",
+        tier: "AUDITOR",
+        desc: "Quality score Qᵢ ≥ 0.90, 500+ audits & G ≥ 0.95",
+        eval: (n, merit) => {
+          const q = n.quality_score ?? 1.0;
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const g = n.grounding_quotient ?? 1.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") ?? (q >= 0.90 && audits >= 500 && g >= 0.95));
+          const progress = Math.min(100, Math.round((audits / 500) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits} / 500 Audits (Qᵢ ${(q * 10).toFixed(1)}/10)` };
+        }
+      },
+      {
+        id: "domain_specialist",
+        name: "Domain Specialist",
+        icon: "🎯",
+        tier: "SPECIALIST",
+        desc: "Top 10% domain epistemic accuracy (Expertise ≥ 0.80 across ≥5 domains)",
+        eval: (n, merit) => {
+          const exp = n.max_domain_expertise || (merit?.max_domain_expertise) || 0.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "domain_specialist") ?? (exp >= 0.80));
+          const progress = Math.min(100, Math.round((exp / 0.80) * 100));
+          return { unlocked: isUnlocked, progress, label: `${(exp * 100).toFixed(0)}% / 80% Expertise` };
+        }
+      },
+      {
+        id: "philanthropic_relay",
+        name: "Philanthropic Relay",
+        icon: "🎁",
+        tier: "SPECIALIST",
+        desc: "1,000,000+ compute tokens seeded to peers",
+        eval: (n, merit) => {
+          const tokens = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved || 0) : (n.tokens_seeded || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") ?? (tokens >= 1000000));
+          const progress = Math.min(100, Math.round((tokens / 1000000) * 100));
+          return { unlocked: isUnlocked, progress, label: `${tokens.toLocaleString()} / 1M Tokens` };
+        }
+      },
+      {
+        id: "root_seed_candidate",
+        name: "Root Seed Candidate",
+        icon: "🌳",
+        tier: "ROOT_ANCHOR",
+        desc: "30+ days continuous uptime (G ≥ 0.80 & Qᵢ ≥ 0.85)",
+        eval: (n, merit) => {
+          const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
+          const q = n.quality_score ?? 1.0;
+          const g = n.grounding_quotient ?? 1.0;
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "root_seed_candidate") ?? (days >= 30.0 && q >= 0.85 && g >= 0.80));
+          const progress = Math.min(100, Math.round((days / 30.0) * 100));
+          return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 30.0 Days` };
+        }
+      },
+      {
+        id: "galileo_pioneer",
+        name: "Galileo Pioneer",
+        icon: "🔭",
+        tier: "ROOT_ANCHOR",
+        desc: "Discovered verified minority consensus truth",
+        eval: (n, merit) => {
+          const gal = n.is_local ? (liveNodeMerit?.galileo_discoveries || 0) : (n.galileo_discoveries || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") ?? (gal >= 1));
+          const progress = gal >= 1 ? 100 : 0;
+          return { unlocked: isUnlocked, progress, label: `${gal} / 1 Discoveries` };
+        }
+      },
+      {
+        id: "sybil_shield",
+        name: "Sybil Shield",
+        icon: "🛡️",
+        tier: "ROOT_ANCHOR",
+        desc: "5,000+ audits with zero slashing penalties",
+        eval: (n, merit) => {
+          const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield") ?? (audits >= 5000));
+          const progress = Math.min(100, Math.round((audits / 5000) * 100));
+          return { unlocked: isUnlocked, progress, label: `${audits.toLocaleString()} / 5,000 Verified` };
+        }
+      }
     ];
 
     let currentSnippetType = 'md';
 
     function renderMeritGrid(data) {
       const nodes = data?.nodes || [];
-      const node = nodes.find(n => n.node_id === selectedNodeId) || nodes[0] || { node_id: "node_1", alias: "credence-local-anchor", quality_score: 1.0, is_local: true };
+      const node = nodes.find(n => n.node_id === selectedNodeId) || nodes[0] || { node_id: "node_1", alias: "credence-local-anchor", quality_score: 1.0, is_local: true, uptime_pct: 100.0, audits_count: 0, tokens_seeded: 0, longevity_days: 0.0, galileo_discoveries: 0 };
 
       const meritSelect = document.getElementById('merit-node-select');
       if (meritSelect && meritSelect.options.length === 0) {
@@ -1074,7 +1181,7 @@
       if (!gridEl) return;
 
       gridEl.innerHTML = MERIT_BADGES_DEF.map(b => {
-        const status = b.req(node);
+        const status = b.eval(node, node.is_local ? liveNodeMerit : null);
         const accent = status.unlocked ? '#34d399' : '#94a3b8';
         return `
           <div style="background:var(--bg-card); border:1px solid ${status.unlocked ? 'rgba(52, 211, 153, 0.35)' : 'var(--border)'}; border-radius:8px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; box-shadow:${status.unlocked ? '0 0 15px rgba(52, 211, 153, 0.1)' : 'none'};">
@@ -1101,6 +1208,7 @@
         `;
       }).join('');
     }
+
 
     function updateBadgeStudioPreview() {
       const modeSelect = document.getElementById('badge-mode-select');
