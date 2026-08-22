@@ -129,6 +129,30 @@ jobs:
           curl -f -s "${SERVICE_URL}/health" || curl -f -s "${SERVICE_URL}/api/health" || exit 1
           echo "✅ Dev Cloud Run health check passed!"
 
+      - name: Deploy Edge Router to Cloudflare Workers (Dev Preview)
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -g wrangler
+          cd web
+          wrangler deploy
+          echo "=== Purging Cloudflare Edge Cache for Dev Domains ==="
+          for domain in credence.run credence.report credence.nexus credence.foundation; do
+            Z_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/json")
+            Z_ID=$(echo "$Z_RESP" | jq -r '.result[0].id // empty')
+            if [ -n "$Z_ID" ]; then
+              curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${Z_ID}/purge_cache" \
+                -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data '{"purge_everything":true}'
+              echo "✅ Edge Cache Purged for ${domain}!"
+            fi
+          done
+
       - name: Skip Notice (No GCP Secret Configured in GitHub)
         if: env.GCP_CONFIGURED != 'true'
         env:

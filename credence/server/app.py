@@ -168,6 +168,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
 
     parents = Path(__file__).resolve().parents
     local_web_candidates = [
+        Path("/app/web"),
         Path.cwd() / "web",
         parents[2] / "web" if len(parents) > 2 else None,
     ]

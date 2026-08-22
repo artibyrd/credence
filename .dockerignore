@@ -34,9 +34,7 @@ data/**
 *.sqlite
 *.sqlite3
 
-# Web assets & standalone docs (deployed via Cloudflare Edge Plane)
-web
-web/**
+# Standalone docs (deployed via Cloudflare Edge Plane)
 docs
 docs/**
 blog
