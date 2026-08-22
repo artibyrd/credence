@@ -295,3 +295,39 @@ def test_web_workstation_architecture_and_admin_deck(web_dir: Path) -> None:
     dossier_idx = report_content.find('id="rail-btn-dossier"')
     dci_idx = report_content.find('id="rail-btn-dci"')
     assert dossier_idx < dci_idx, "Source Dossier (#2) must logically precede DCI (#3)"
+
+
+@pytest.mark.governance
+def test_web_foundation_anti_truncation_invariant(web_dir: Path) -> None:
+    """Verify credence.foundation taxonomy catalog headers never truncate text with ellipsis."""
+    found_file = web_dir / "credence.foundation" / "index.html"
+    content = found_file.read_text(encoding="utf-8")
+
+    # Anti-Truncation Invariant: No ellipsis truncation on catalog headers
+    assert "text-overflow:ellipsis" not in content, "Foundation catalog headers must not use text-overflow:ellipsis"
+    assert "text-overflow: ellipsis" not in content, "Foundation catalog headers must not use text-overflow: ellipsis"
+    assert "📰 Society of Professional Journalists (SPJ) Code of Ethics" in content
+    assert "🧠 Internet Encyclopedia of Philosophy (IEP) Fallacies" in content
+    assert "🛑 Deceptive UI Patterns Catalog" in content
+
+
+@pytest.mark.governance
+def test_web_vanilla_js_syntax_integrity(web_dir: Path) -> None:
+    """Verify all inline <script> tags in web HTML files are free of JS syntax errors."""
+    import re
+    import subprocess
+
+    for html_file in web_dir.glob("*/*.html"):
+        content = html_file.read_text(encoding="utf-8")
+        script_matches = re.findall(r"<script(?:\s+type=[\"']module[\"'])?>(.*?)</script>", content, re.DOTALL)
+        for idx, script_body in enumerate(script_matches):
+            clean_script = script_body.strip()
+            if not clean_script:
+                continue
+            # Run node syntax verification via vm.Script
+            res = subprocess.run(
+                ["node", "-e", f"new (require('vm')).Script({json.dumps(clean_script)});"],
+                capture_output=True,
+                text=True,
+            )
+            assert res.returncode == 0, f"JS syntax error in {html_file.name} (script #{idx + 1}):\n{res.stderr}"
