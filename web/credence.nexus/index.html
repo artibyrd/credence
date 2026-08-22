@@ -415,59 +415,81 @@
             </div>
           </div>
 
-          <!-- TAB 5: DEDICATED UNIVERSAL BADGE STUDIO -->
+          <!-- TAB 4: BADGE STUDIO -->
           <div id="tab-studio" class="tab-panel">
             <div class="deck-card" style="overflow:visible;">
-              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                <h3 style="font-size:1.2rem; color:#fff; margin:0;">Universal Badge Studio &amp; Embed Generator</h3>
-                <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Badge Studio Guide">ℹ</button>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <h3 style="font-size:1.2rem; color:#fff; margin:0;">Universal Badge Studio &amp; Embed Generator</h3>
+                  <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Badge Studio Guide">ℹ</button>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">
+                  Embed verifiable badges across Markdown, HTML, and Web Components
+                </div>
               </div>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
-                Design, preview, and generate 1-click embed snippets for GitHub READMEs, publication mastheads, or active websites.
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
+                Select a modality below to configure, preview, and generate 1-click embed snippets for GitHub READMEs, publication mastheads, or active websites.
               </p>
+
+              <!-- Modality Selection Tabs -->
+              <div style="display:flex; justify-content:flex-start; margin-bottom:1.25rem;">
+                <div class="lensing-tabs" style="font-size:0.8rem; padding:4px; background:rgba(15,23,42,0.7); border:1px solid var(--border); border-radius:8px; display:inline-flex; gap:4px;">
+                  <button type="button" class="tab-btn active" id="tab-btn-studio-node" onclick="window.setStudioModality('node')">🛡️ Node Epistemic Merit</button>
+                  <button type="button" class="tab-btn" id="tab-btn-studio-publisher" onclick="window.setStudioModality('publisher')">📰 Publisher Trust &amp; DCI</button>
+                  <button type="button" class="tab-btn" id="tab-btn-studio-attestation" onclick="window.setStudioModality('attestation')">📄 Article Attestation</button>
+                </div>
+              </div>
 
               <div style="display:grid; grid-template-columns:minmax(280px, 340px) 1fr; gap:1.75rem; align-items:start; overflow:visible;">
                 <!-- Left Configuration Column -->
                 <div style="display:flex; flex-direction:column; gap:1.1rem; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:1.25rem;">
-                  <div>
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Badge Modality</label>
-                    <select id="badge-mode-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                      <option value="node" selected>🛡️ Node Epistemic Merit (P2P Milestones)</option>
-                      <option value="publisher">📰 Publisher Trust &amp; DCI (Domain Reputation)</option>
-                      <option value="attestation">📄 Article Attestation (WebCrypto Anti-Tamper)</option>
-                    </select>
+                  
+                  <!-- PANE 1: Node Epistemic Merit -->
+                  <div id="studio-pane-node" class="studio-modality-pane">
+                    <div style="margin-bottom:1rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Target Mesh Node</label>
+                      <select id="badge-node-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                        <option value="local" selected>credence-local-anchor (Local Primary Root)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Milestone Badge</label>
+                      <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
+                        <option value="sprout_node" selected>🌱 Sprout Genesis [✓ EARNED]</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div id="badge-input-node-group">
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Target Mesh Node</label>
-                    <select id="badge-node-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                      <option value="local" selected>credence-local-anchor (Local Primary Root)</option>
-                    </select>
+                  <!-- PANE 2: Publisher Trust & DCI -->
+                  <div id="studio-pane-publisher" class="studio-modality-pane" style="display:none;">
+                    <div style="margin-bottom:1rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Target Publisher Domain</label>
+                      <input type="text" id="badge-publisher-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="e.g. reuters.com" value="reuters.com">
+                      <div style="display:flex; gap:0.4rem; margin-top:0.5rem; flex-wrap:wrap;">
+                        <button type="button" class="tab-btn" style="font-size:0.7rem; padding:2px 6px;" onclick="document.getElementById('badge-publisher-input').value='reuters.com'; window.updateBadgeStudioPreview();">reuters.com</button>
+                        <button type="button" class="tab-btn" style="font-size:0.7rem; padding:2px 6px;" onclick="document.getElementById('badge-publisher-input').value='nature.com'; window.updateBadgeStudioPreview();">nature.com</button>
+                        <button type="button" class="tab-btn" style="font-size:0.7rem; padding:2px 6px;" onclick="document.getElementById('badge-publisher-input').value='apnews.com'; window.updateBadgeStudioPreview();">apnews.com</button>
+                      </div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                      Displays the publisher's Domain Credibility Index (DCI) trust band computed from verified article audits.
+                    </div>
                   </div>
 
-                  <div id="badge-input-milestone-group">
-                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">3. Milestone Badge</label>
-                    <select id="badge-id-select" class="form-input" style="width:100%; font-size:0.85rem;">
-                      <option value="sprout_node" selected>🌱 Sprout Genesis</option>
-                      <option value="first_attestation">🌾 First Attestation</option>
-                      <option value="sifter_pioneer">🔍 Sifter Century</option>
-                      <option value="cadence_keeper">⏱️ Cadence Keeper</option>
-                      <option value="verified_auditor">⚖️ Verified Auditor</option>
-                      <option value="philanthropic_relay">🎁 Philanthropic Relay</option>
-                      <option value="domain_specialist">🎯 Domain Specialist</option>
-                      <option value="galileo_pioneer">🔭 Galileo Pioneer</option>
-                      <option value="root_seed_candidate">🌳 Root Seed Candidate</option>
-                      <option value="sybil_shield">🛡️ Sybil Sentinel</option>
-                      <option value="century_anchor">🏛️ Century Anchor</option>
-                    </select>
+                  <!-- PANE 3: Article Attestation -->
+                  <div id="studio-pane-attestation" class="studio-modality-pane" style="display:none;">
+                    <div style="margin-bottom:1rem;">
+                      <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">1. Target Article URL</label>
+                      <input type="text" id="badge-attestation-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="https://example.com/news/article-1" value="https://reuters.com/world/science/breakthrough.html">
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                      Embeds live in-browser WebCrypto DOM verification. If page text is altered post-audit, the badge shifts from <code>VERIFIED</code> to <code>⚠️ MODIFIED</code>.
+                    </div>
                   </div>
 
-                  <div id="badge-input-target-group" style="display:none;">
-                    <label id="badge-target-label" style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">2. Target Domain or URL</label>
-                    <input type="text" id="badge-target-input" class="form-input" style="width:100%; font-size:0.85rem;" placeholder="e.g. reuters.com" value="reuters.com">
-                  </div>
-
-                  <div>
+                  <!-- Common: Render Style Selection -->
+                  <div style="border-top:1px solid var(--border); padding-top:0.75rem;">
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:0.35rem; text-transform:uppercase;">Render Style</label>
                     <select id="badge-style-select" class="form-input" style="width:100%; font-size:0.85rem;">
                       <option value="component" selected>⚡ Interactive Web Component (&lt;credence-badge&gt;) [Default]</option>
@@ -1533,27 +1555,39 @@
       }
     }
 
+    window.currentStudioModality = 'node';
+
+    window.setStudioModality = function(modality) {
+      window.currentStudioModality = modality;
+      ['node', 'publisher', 'attestation'].forEach(m => {
+        const btn = document.getElementById(`tab-btn-studio-${m}`);
+        if (btn) btn.className = (m === modality) ? 'tab-btn active' : 'tab-btn';
+        const pane = document.getElementById(`studio-pane-${m}`);
+        if (pane) pane.style.display = (m === modality) ? 'block' : 'none';
+      });
+      updateBadgeStudioPreview();
+    };
+
     function updateBadgeStudioPreview() {
-      const modeSelect = document.getElementById('badge-mode-select');
+      const mode = window.currentStudioModality || 'node';
       const nodeSelect = document.getElementById('badge-node-select');
       const badgeIdSelect = document.getElementById('badge-id-select');
-      const targetInput = document.getElementById('badge-target-input');
+      const pubInput = document.getElementById('badge-publisher-input');
+      const attInput = document.getElementById('badge-attestation-input');
       const styleSelect = document.getElementById('badge-style-select');
       const previewContainer = document.getElementById('badge-live-preview-container');
       const snippetInput = document.getElementById('badge-embed-snippet');
       const warningEl = document.getElementById('badge-studio-locked-warning');
       const copyBtn = document.getElementById('btn-copy-embed');
 
-      if (!modeSelect || !previewContainer || !snippetInput) return;
+      if (!previewContainer || !snippetInput) return;
 
-      const mode = modeSelect.value;
       const style = styleSelect?.value || 'component';
       const nodes = (liveTopologyData && liveTopologyData.nodes && liveTopologyData.nodes.length > 0)
         ? liveTopologyData.nodes
         : [{ node_id: "node_1", alias: "credence-local-anchor", is_local: true }];
 
       const selectedNode = nodes.find(n => n.node_id === nodeSelect?.value) || nodes[0];
-      const target = targetInput?.value || 'reuters.com';
       const badgeId = badgeIdSelect?.value || 'sprout_node';
 
       const iconMap = {
@@ -1588,18 +1622,20 @@
         svgUrl = `https://credence.nexus/api/badge/${badgeId}?node=${encodeURIComponent(nodeAlias)}&style=shield`;
         pageUrl = `https://credence.nexus/#merit`;
       } else if (mode === 'publisher') {
-        const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+        const rawPub = pubInput?.value || 'reuters.com';
+        const dom = rawPub.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
         badgeTitle = `Credence • ${dom}`;
         icon = "📰";
         badgeVal = "98.5% PRISTINE";
         svgUrl = `https://credence.nexus/api/badge/publisher/${encodeURIComponent(dom)}?style=shield`;
         pageUrl = `https://credence.report/domain/${encodeURIComponent(dom)}`;
       } else if (mode === 'attestation') {
+        const targetUrl = attInput?.value || 'https://reuters.com/article';
         badgeTitle = "Credence Attestation";
         icon = "📄";
         badgeVal = "100.0 CLEAN";
-        svgUrl = `https://credence.nexus/api/badge/attestation?url=${encodeURIComponent(target)}&style=shield`;
-        pageUrl = `https://credence.report/viewer.html?url=${encodeURIComponent(target)}`;
+        svgUrl = `https://credence.nexus/api/badge/attestation?url=${encodeURIComponent(targetUrl)}&style=shield`;
+        pageUrl = `https://credence.report/viewer.html?url=${encodeURIComponent(targetUrl)}`;
       }
 
       const tagEl = document.getElementById('preview-mode-tag');
@@ -1619,7 +1655,8 @@
             </credence-badge>
           `;
         } else if (mode === 'publisher') {
-          const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+          const rawPub = pubInput?.value || 'reuters.com';
+          const dom = rawPub.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
           previewContainer.innerHTML = `
             <credence-badge 
               type="publisher" 
@@ -1629,17 +1666,17 @@
             </credence-badge>
           `;
         } else {
+          const targetUrl = attInput?.value || 'https://reuters.com/article';
           previewContainer.innerHTML = `
             <credence-badge 
               type="attestation" 
-              url="${target}" 
+              url="${targetUrl}" 
               score="100.0" 
               version="v2.7.0">
             </credence-badge>
           `;
         }
       } else {
-        // Modern Shield Vector (.svg)
         if (tagEl) tagEl.textContent = isUnlocked ? '🛡️ Modern Shield Vector SVG' : '🔒 Modern Shield (Unearned Locked)';
         const wTitle = Math.max(32, Math.floor(badgeTitle.length * 7.2));
         const wVal = Math.max(24, Math.floor(badgeVal.length * 7.8));
@@ -1680,7 +1717,6 @@
         `;
       }
 
-      // Handle Unearned vs Earned Embed Code
       if (mode === 'node' && !isUnlocked) {
         if (warningEl) warningEl.style.display = 'block';
         if (copyBtn) {
@@ -1698,7 +1734,6 @@
           copyBtn.style.cursor = 'pointer';
           copyBtn.textContent = 'Copy';
         }
-        // Update 1-Click Embed Snippet
         if (currentSnippetType === 'md') {
           snippetInput.value = `[![${badgeTitle}](${svgUrl})](${pageUrl})`;
         } else if (currentSnippetType === 'html') {
@@ -1707,15 +1742,18 @@
           if (mode === 'node') {
             snippetInput.value = `<credence-badge type="node" badge="${badgeId}" node="${nodeAlias}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
           } else if (mode === 'publisher') {
-            const dom = target.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
+            const rawPub = pubInput?.value || 'reuters.com';
+            const dom = rawPub.replace(/^https?:\/\//, '').split('/')[0] || 'reuters.com';
             snippetInput.value = `<credence-badge type="publisher" domain="${dom}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
           } else {
-            snippetInput.value = `<credence-badge type="attestation" url="${target}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
+            const targetUrl = attInput?.value || 'https://reuters.com/article';
+            snippetInput.value = `<credence-badge type="attestation" url="${targetUrl}"></credence-badge>\n<script type="module" src="https://credence.run/assets/credence-widget.js"><` + `/script>`;
           }
         }
       }
     }
 
+    window.updateBadgeStudioPreview = updateBadgeStudioPreview;
 
     window.switchEmbedSnippet = function(type) {
       currentSnippetType = type;
@@ -1727,32 +1765,7 @@
     };
 
     function initBadgeStudioEvents() {
-      const modeSelect = document.getElementById('badge-mode-select');
       const nodeSelect = document.getElementById('badge-node-select');
-      const nodeGroup = document.getElementById('badge-input-node-group');
-      const milestoneGroup = document.getElementById('badge-input-milestone-group');
-      const targetGroup = document.getElementById('badge-input-target-group');
-      const targetLabel = document.getElementById('badge-target-label');
-      const targetInput = document.getElementById('badge-target-input');
-
-      if (modeSelect) {
-        modeSelect.addEventListener('change', () => {
-          const m = modeSelect.value;
-          if (m === 'node') {
-            if (nodeGroup) nodeGroup.style.display = 'block';
-            if (milestoneGroup) milestoneGroup.style.display = 'block';
-            if (targetGroup) targetGroup.style.display = 'none';
-          } else {
-            if (nodeGroup) nodeGroup.style.display = 'none';
-            if (milestoneGroup) milestoneGroup.style.display = 'none';
-            if (targetGroup) targetGroup.style.display = 'block';
-            if (targetLabel) targetLabel.textContent = m === 'publisher' ? '2. Target Publisher Domain' : '2. Target Article Content URL';
-            if (targetInput) targetInput.placeholder = m === 'publisher' ? 'e.g. reuters.com' : 'e.g. https://domain.com/article';
-          }
-          updateBadgeStudioPreview();
-        });
-      }
-
       if (nodeSelect) {
         nodeSelect.addEventListener('change', () => {
           const nodes = (liveTopologyData && liveTopologyData.nodes) || [];
@@ -1762,7 +1775,7 @@
         });
       }
 
-      ['badge-id-select', 'badge-style-select', 'badge-target-input'].forEach(id => {
+      ['badge-id-select', 'badge-style-select', 'badge-publisher-input', 'badge-attestation-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', updateBadgeStudioPreview);
       });
@@ -1773,11 +1786,11 @@
           const input = document.getElementById('badge-embed-snippet');
           if (input) {
             navigator.clipboard.writeText(input.value);
-            showToast('Copied embed snippet to clipboard!', 'success');
+            window.showToast('Copied embed snippet to clipboard', 'success');
           }
         });
       }
-
+      
       const snippetMd = document.getElementById('btn-snippet-md');
       if (snippetMd) snippetMd.addEventListener('click', () => window.switchEmbedSnippet('md'));
       const snippetHtml = document.getElementById('btn-snippet-html');

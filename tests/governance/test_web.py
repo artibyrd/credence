@@ -312,9 +312,17 @@ def test_nexus_merit_badge_studio_governance(web_dir: Path) -> None:
     assert "sprout_node" in content
     assert "verified_auditor" in content
 
-    # Universal Badge Studio
-    assert "badge-mode-select" in content
+    # Universal Badge Studio 3-Modality Tabs & Panes
+    assert "tab-btn-studio-node" in content
+    assert "tab-btn-studio-publisher" in content
+    assert "tab-btn-studio-attestation" in content
+    assert "studio-pane-node" in content
+    assert "studio-pane-publisher" in content
+    assert "studio-pane-attestation" in content
+    assert "badge-node-select" in content
     assert "badge-id-select" in content
+    assert "badge-publisher-input" in content
+    assert "badge-attestation-input" in content
     assert "badge-style-select" in content
     assert "badge-live-preview-container" in content
     assert "badge-embed-snippet" in content
