@@ -129,7 +129,7 @@ jobs:
           curl -f -s "${SERVICE_URL}/health" || curl -f -s "${SERVICE_URL}/api/health" || exit 1
           echo "✅ Dev Cloud Run health check passed!"
 
-      - name: Deploy Edge Router to Cloudflare Workers (Dev Preview)
+      - name: Deploy Edge Router to Cloudflare Workers (Dev Preview Only)
         if: env.CLOUDFLARE_API_TOKEN != ''
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -137,8 +137,8 @@ jobs:
         run: |
           npm install -g wrangler
           cd web
-          wrangler deploy
-          echo "=== Purging Cloudflare Edge Cache for Dev Domains ==="
+          wrangler deploy --env dev
+          echo "=== Purging Cloudflare Edge Cache for Dev Preview Subdomains ==="
           for domain in credence.run credence.report credence.nexus credence.foundation; do
             Z_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
               -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -148,8 +148,8 @@ jobs:
               curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${Z_ID}/purge_cache" \
                 -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
                 -H "Content-Type: application/json" \
-                --data '{"purge_everything":true}'
-              echo "✅ Edge Cache Purged for ${domain}!"
+                --data "{\"hosts\":[\"dev.${domain}\",\"dev.admin.${domain}\",\"dev.seeds.${domain}\",\"dev.keys.${domain}\",\"dev.docs.${domain}\",\"dev.blog.${domain}\",\"mcp.dev.${domain}\"]}" || true
+              echo "✅ Dev Edge Cache Purged for dev.${domain}!"
             fi
           done
 
