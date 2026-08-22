@@ -23,13 +23,24 @@
   </nav>
 
   <div class="workstation-container">
-    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
-    <header class="workstation-header">
-      <span class="badge-pill">🏛️ Standards &amp; Governance Vault</span>
-      <h1 class="hero-title">Credence Foundation</h1>
-      <p class="hero-subtitle">
-        Constitutional rule catalogs, journalistic ethics standards, and cryptographic keys governing Credence audits.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🏛️</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Foundation</h1>
+            <span class="masthead-tag">Constitutional Standards &amp; Trust Vault</span>
+          </div>
+          <p class="masthead-desc">
+            Constitutional rule catalogs, journalistic ethics standards, and cryptographic root keys governing Credence audits.
+          </p>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <button class="btn-hud-toggle" onclick="window.CredenceWS.toggleTuiMode()" title="Toggle Monospace TUI Scanline HUD Mode">📟 Scanline HUD</button>
+        <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem;" onclick="window.CredenceWS.openShortcutsModal()" title="Keyboard shortcuts">⌨️ Hotkeys [?]</button>
+      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -53,31 +64,6 @@
             <button class="deck-nav-item" data-tab="governance" onclick="window.CredenceWS.switchTab('governance')">
               <span>⚖️ 4. Governance RFCs</span>
             </button>
-          </div>
-
-          <!-- Lower Section: Global Ecosystem Switcher (Changes Domain) -->
-          <div class="deck-rail-global">
-            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
-            <a href="https://credence.run" class="deck-domain-link">
-              <span>Home Hub</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
-            </a>
-            <a href="https://credence.report" class="deck-domain-link">
-              <span>🛡️ Reports Lab</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">report ↗</span>
-            </a>
-            <a href="https://credence.nexus" class="deck-domain-link">
-              <span>🕸️ Nexus NOC</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">nexus ↗</span>
-            </a>
-            <a href="https://credence.foundation" class="deck-domain-link active-domain">
-              <span class="domain-name">🏛️ Foundation</span>
-              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
-            </a>
-            <a href="https://docs.credence.run" class="deck-domain-link">
-              <span>📚 Docs &amp; Tools</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
-            </a>
           </div>
 
           <!-- Bottom Pinned Operator Footer -->
@@ -812,7 +798,7 @@
                 <textarea id="verify-payload" class="form-input" rows="4" style="font-family:var(--font-mono); font-size:0.85rem;" placeholder='{"classification":"CLEAN","content_sha256":"0000000000000000000000000000000000000000000000000000000000000000","suspicion_score":0.0}'></textarea>
               </div>
 
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap:1rem; margin-bottom:1.25rem;">
                 <div class="form-group">
                   <label class="form-label" for="verify-pubkey">Signer Ed25519 Public Key (Hex)</label>
                   <input type="text" id="verify-pubkey" class="form-input" placeholder="e.g. 0000000000000000000000000000000000000000000000000000000000000000">
@@ -823,7 +809,7 @@
                 </div>
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
                 <button class="btn-primary" onclick="verifyClientSignature()">🔍 Verify Signature via WebCrypto</button>
                 <div id="verify-result" style="font-family:var(--font-mono); font-size:0.9rem;"></div>
               </div>
@@ -846,7 +832,7 @@
 
               <!-- Ratified Standards RFC Table -->
               <h3 style="font-size:1rem; color:#fff; margin:1.25rem 0 0.75rem 0;">📜 Active &amp; Ratified RFC Standards</h3>
-              <div style="overflow-x:auto;">
+              <div class="ws-table-container">
                 <table class="dci-table" style="width:100%;">
                   <thead>
                     <tr>

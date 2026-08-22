@@ -9,7 +9,7 @@
   <style>
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
       gap: 1rem;
       margin-bottom: 1.25rem;
     }
@@ -33,6 +33,8 @@
       font-size: 1.75rem;
       font-weight: 800;
       font-family: var(--font-mono);
+      overflow-wrap: anywhere;
+      word-break: break-all;
     }
     .canvas-container {
       background: var(--bg-code);
@@ -62,7 +64,7 @@
     }
     .studio-modality-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
       gap: 1rem;
       margin-bottom: 1.75rem;
     }
@@ -108,8 +110,8 @@
     }
     .studio-columns-layout {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 1.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 1.5rem;
       align-items: stretch;
       overflow: visible;
     }
@@ -172,13 +174,24 @@
   </nav>
 
   <div class="workstation-container">
-    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
-    <header class="workstation-header">
-      <span class="badge-pill">🕸️ Network Operations Center</span>
-      <h1 class="hero-title">Credence Nexus</h1>
-      <p class="hero-subtitle">
-        Live node telemetry, peer connectivity, and Byzantine quorum monitoring across the mesh network.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🕸️</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Nexus</h1>
+            <span class="masthead-tag">NOC &amp; Mesh Observatory</span>
+          </div>
+          <p class="masthead-desc">
+            Live node telemetry, peer connectivity, and Byzantine quorum monitoring across the decentralized mesh network.
+          </p>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <button class="btn-hud-toggle" onclick="window.CredenceWS.toggleTuiMode()" title="Toggle Monospace TUI Scanline HUD Mode">📟 Scanline HUD</button>
+        <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem;" onclick="window.CredenceWS.openShortcutsModal()" title="Keyboard shortcuts">⌨️ Hotkeys [?]</button>
+      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -208,31 +221,6 @@
             <button class="deck-nav-item" data-tab="seeds" onclick="window.CredenceWS.switchTab('seeds')">
               <span>🌱 6. Seed Manifest</span>
             </button>
-          </div>
-
-          <!-- Lower Section: Global Ecosystem Switcher -->
-          <div class="deck-rail-global">
-            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
-            <a href="https://credence.run" class="deck-domain-link">
-              <span>Home Hub</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
-            </a>
-            <a href="https://credence.report" class="deck-domain-link">
-              <span>🛡️ Reports Lab</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">report ↗</span>
-            </a>
-            <a href="https://credence.nexus" class="deck-domain-link active-domain">
-              <span class="domain-name">🕸️ Nexus NOC</span>
-              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
-            </a>
-            <a href="https://credence.foundation" class="deck-domain-link">
-              <span>🏛️ Foundation</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">vault ↗</span>
-            </a>
-            <a href="https://docs.credence.run" class="deck-domain-link">
-              <span>📚 Docs &amp; Tools</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
-            </a>
           </div>
 
           <!-- Bottom Pinned Operator Footer -->

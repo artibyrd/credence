@@ -1763,8 +1763,8 @@ export function initWorkstation(config = {}) {
       return;
     }
 
-    // Number keys 1-5 for tab switching
-    if (['1', '2', '3', '4', '5'].includes(e.key)) {
+    // Number keys 1-6 for tab switching
+    if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
       const idx = parseInt(e.key, 10) - 1;
       const tabBtns = document.querySelectorAll(tabButtonsSelector);
       if (tabBtns[idx]) {

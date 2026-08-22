@@ -17,9 +17,9 @@
     }
     .cockpit-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
       gap: 1.25rem;
-      margin-top: 1.5rem;
+      margin-top: 1.25rem;
     }
     .cockpit-card {
       background: var(--admin-card-bg);
@@ -124,19 +124,26 @@
   </nav>
 
   <!-- Main Workstation Frame -->
-  <div class="workstation-container" style="max-width: 1200px; margin: 0 auto; padding: 1.5rem;">
+  <div class="workstation-container">
     
-    <!-- Header Section -->
-    <header class="workstation-header" style="text-align: center; margin-bottom: 2rem;">
-      <span class="badge-pill" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">
-        🔐 Sovereign Node Command Deck
-      </span>
-      <h1 class="hero-title" style="font-size: 2.25rem; font-weight: 800; color: #fff; margin: 0.5rem 0; letter-spacing: -0.02em;">
-        Credence Operator Admin Cockpit
-      </h1>
-      <p class="hero-subtitle" style="color: var(--text-muted); font-size: 1.05rem; max-width: 680px; margin: 0 auto;">
-        Real-time telemetry, AI token spend ceilings, Miracle-Gro cold-start cache warming, background crawler daemons, and cryptographic key custody.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🔐</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Operator Admin Cockpit</h1>
+            <span class="masthead-tag" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border-color:rgba(245, 158, 11, 0.3);">Sovereign Command Deck</span>
+          </div>
+          <p class="masthead-desc">
+            Real-time telemetry, AI token spend ceilings, Miracle-Gro cache warming, background crawler daemons, and cryptographic key custody.
+          </p>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <button class="btn-hud-toggle" onclick="window.CredenceWS.toggleTuiMode()" title="Toggle Monospace TUI Scanline HUD Mode">📟 Scanline HUD</button>
+        <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem;" onclick="window.CredenceWS.openShortcutsModal()" title="Keyboard shortcuts">⌨️ Hotkeys [?]</button>
+      </div>
     </header>
 
     <!-- GATED STATE (When not authenticated) -->

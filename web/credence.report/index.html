@@ -24,13 +24,25 @@
   </nav>
 
   <div class="workstation-container">
-    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
-    <header class="workstation-header">
-      <span class="badge-pill">🔬 Article &amp; Publisher Forensics</span>
-      <h1 class="hero-title">Credence Reports</h1>
-      <p class="hero-subtitle">
-        Interactive search, temporal diffing, and forensic evaluations for articles across the open web.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🔬</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Reports</h1>
+            <span class="masthead-tag">Forensic Verification Lab</span>
+          </div>
+          <p class="masthead-desc">
+            Interactive search, temporal diffing, 3-tier epistemic lensing, and forensic evaluations for articles across the open web.
+          </p>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <a href="viewer.html" class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;" title="Open standalone forensic report viewer">🔗 Viewer ↗</a>
+        <button class="btn-hud-toggle" onclick="window.CredenceWS.toggleTuiMode()" title="Toggle Monospace TUI Scanline HUD Mode">📟 Scanline HUD</button>
+        <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem;" onclick="window.CredenceWS.openShortcutsModal()" title="Keyboard shortcuts">⌨️ Hotkeys [?]</button>
+      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -64,38 +76,11 @@
             <div id="pinned-sources-container" style="display:flex; flex-direction:column; gap:0.35rem;">
               <!-- Dynamically populated from localStorage -->
             </div>
-
-
-          </div>
-
-          <!-- Lower Section: Global Ecosystem Switcher -->
-          <div class="deck-rail-global">
-            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
-            <a href="https://credence.run" class="deck-domain-link">
-              <span>Home Hub</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
-            </a>
-            <a href="https://credence.report" class="deck-domain-link active-domain">
-              <span class="domain-name">🛡️ Reports Lab</span>
-              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
-            </a>
-            <a href="https://credence.nexus" class="deck-domain-link">
-              <span>🕸️ Nexus NOC</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">nexus ↗</span>
-            </a>
-            <a href="https://credence.foundation" class="deck-domain-link">
-              <span>🏛️ Foundation</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">vault ↗</span>
-            </a>
-            <a href="https://docs.credence.run" class="deck-domain-link">
-              <span>📚 Docs &amp; Tools</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
-            </a>
           </div>
 
           <!-- Bottom Pinned Operator & Standalone Footer -->
           <div class="deck-rail-admin-footer">
-            <button type="button" class="btn-secondary" style="width:100%; text-align:center; font-size:0.78rem; padding:0.4rem; margin-bottom:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;" onclick="window.CredenceWS.openShortcutsModal()">
+            <button type="button" class="btn-secondary" style="width:100%; text-align:center; font-size:0.78rem; padding:0.4rem; margin-bottom:0.35rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;" onclick="window.CredenceWS.openShortcutsModal()">
               <span>⌨️ Hotkeys Reference</span>
               <span class="nav-badge" style="background:var(--bg-card); color:var(--text-dim);">[?]</span>
             </button>
