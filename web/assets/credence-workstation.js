@@ -350,7 +350,7 @@ export function injectShortcutsModal() {
         </div>
         <div class="operator-modal-body" style="font-family:var(--font-mono); font-size:0.85rem;">
           <div style="display:grid; grid-template-columns:120px 1fr; gap:0.75rem 1rem; align-items:center;">
-            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">1 – 6</kbd></div>
+            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">1 – 7</kbd></div>
             <div style="color:var(--text-main);">Switch Workstation Tabs</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">/</kbd></div>
             <div style="color:var(--text-main);">Focus Search / Audit Input</div>
@@ -1744,8 +1744,8 @@ export function initWorkstation(config = {}) {
       return;
     }
 
-    // Number keys 1-6 for tab switching
-    if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
+    // Number keys 1-7 for tab switching
+    if (['1', '2', '3', '4', '5', '6', '7'].includes(e.key)) {
       const idx = parseInt(e.key, 10) - 1;
       const tabBtns = document.querySelectorAll(tabButtonsSelector);
       if (tabBtns[idx]) {

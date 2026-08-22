@@ -38,9 +38,6 @@
           </p>
         </div>
       </div>
-      <div class="masthead-actions">
-        <span class="ribbon-pill ready">● 36 Forensic Rules</span>
-      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -321,18 +318,18 @@
                     <!-- ===================================================================
                WORKSPACE 2: BROWSE DIRECTORY & SOURCE DOSSIERS (UNIFIED)
                =================================================================== -->
-          <div id="tab-browse" class="tab-panel">
-            <div class="deck-card" style="padding:1.25rem;">
+          <div id="tab-browse" class="tab-panel" style="height: 100%; overflow: hidden;">
+            <div class="deck-card" style="padding:1.25rem; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
               
               <!-- Browse Header with Subview Switcher -->
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:0.85rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
                     <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.3); font-size:0.72rem;">FORENSIC DIRECTORY &amp; SOURCES</span>
                     <button class="info-btn" onclick="window.CredenceWS.openInfoModal('browse')" title="Info: Browse Directory &amp; Case Studies">ℹ</button>
                   </div>
                   <h2 style="font-size:1.25rem; color:#fff; margin:0 0 0.25rem 0;">Directory &amp; Publisher Dossiers</h2>
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0; max-width:760px; line-height:1.5;">
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0; max-width:760px; line-height:1.4;">
                     Explore curated empirical reports or inspect comprehensive longitudinal publisher profiles across the open web.
                   </p>
                 </div>
@@ -351,9 +348,9 @@
               <!-- ===============================================================
                    SUBVIEW A: CURATED ARTICLES CATALOG
                    =============================================================== -->
-              <div id="browse-subview-articles">
+              <div id="browse-subview-articles" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                 <!-- Quick Category Filter Chips -->
-                <div style="display:flex; gap:0.4rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
+                <div style="display:flex; gap:0.4rem; margin-bottom:0.75rem; flex-wrap:wrap; align-items:center;">
                   <span style="font-size:0.75rem; color:var(--text-dim); font-weight:600;">Category:</span>
                   <button class="btn-secondary active-chip" id="chip-cat-all" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('ALL')">All Audits (16)</button>
                   <button class="btn-secondary" id="chip-cat-clean" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('CLEAN')">Clean Wire / Journals (4)</button>
@@ -362,8 +359,8 @@
                   <button class="btn-secondary" id="chip-cat-local" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (2)</button>
                 </div>
 
-                <!-- Selection Hub Cards Grid (Bounded Vertical Scrollpane) -->
-                <div class="ws-scroll-pane" style="max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                <!-- Selection Hub Cards Grid (Single Scrollpane with max-height:580px) -->
+                <div class="ws-scroll-pane" style="flex: 1; max-height:580px; overflow-y:auto; padding-right:0.35rem;">
                   <div id="selection-hub-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
                     <!-- Populated dynamically via renderSelectionHub() -->
                   </div>
@@ -373,18 +370,18 @@
               <!-- ===============================================================
                    SUBVIEW B: PUBLISHER CATALOG & INLINE DOSSIER VIEW
                    =============================================================== -->
-              <div id="browse-subview-sources" style="display:none;">
+              <div id="browse-subview-sources" style="flex: 1; display: none; flex-direction: column; overflow: hidden;">
                 
                 <!-- Publisher Catalog Grid (Shown when browsing all publishers) -->
-                <div id="publishers-catalog-container">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                <div id="publishers-catalog-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
                     <input type="text" id="publishers-filter-input" class="form-input" placeholder="Search publishers (e.g. reuters, onion, nature, maricopa)..." style="max-width:340px; font-size:0.85rem; padding:0.4rem 0.65rem;" oninput="filterPublishersCatalog(this.value)">
                     <div style="font-size:0.78rem; color:var(--text-dim);">
                       Showing <b id="publishers-count-badge" style="color:#fff;">16 Verified Publishers</b>
                     </div>
                   </div>
 
-                  <div class="ws-scroll-pane" style="max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                  <div class="ws-scroll-pane" style="flex: 1; max-height:580px; overflow-y:auto; padding-right:0.35rem;">
                     <div id="publishers-catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
                       <!-- Populated dynamically via renderPublishersCatalog() -->
                     </div>
@@ -620,7 +617,7 @@
                 </div>
               </div>
 
-              <div id="sifter-stream-container" class="ws-scroll-pane" style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem; max-height:560px; overflow-y:auto;">
+              <div id="sifter-stream-container" style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem;">
                 <!-- Populated dynamically via window.renderSifterStream() -->
               </div>
             </div>

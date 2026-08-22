@@ -1180,12 +1180,18 @@ footer.footer {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .ws-table td {
   padding: 0.65rem 0.85rem;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-main);
+  white-space: nowrap;
+}
+
+.ws-table td.wrap-cell {
+  white-space: normal;
 }
 
 .ws-table tr:hover {
