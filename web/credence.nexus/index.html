@@ -1233,7 +1233,7 @@
         desc: "Identity initialized & first telemetry heartbeat broadcast",
         eval: (n, merit) => {
           const uptime = n.uptime_pct || (n.is_local ? 100.0 : 95.0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node" || (b.badge_id || b) === "sprout_genesis") ?? (uptime >= 95.0));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node" || (b.badge_id || b) === "sprout_genesis") || (uptime >= 95.0));
           const progress = Math.min(100, Math.round(uptime));
           return { unlocked: isUnlocked, progress, label: `${uptime.toFixed(1)}% Uptime` };
         }
@@ -1246,7 +1246,7 @@
         desc: "First 5 grounded audits completed with zero schema violations",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "first_attestation") ?? (audits >= 5));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "first_attestation") || (audits >= 5));
           const progress = Math.min(100, Math.round((audits / 5) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 5 Audits` };
         }
@@ -1259,7 +1259,7 @@
         desc: "100+ articles evaluated with grounded rule extraction",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer" || (b.badge_id || b) === "sifter_century") ?? (audits >= 100));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer" || (b.badge_id || b) === "sifter_century") || (audits >= 100));
           const progress = Math.min(100, Math.round((audits / 100) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 100 Audits` };
         }
@@ -1273,7 +1273,7 @@
         eval: (n, merit) => {
           const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
           const uptime = n.uptime_pct || 100.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "cadence_keeper") ?? (days >= 7.0 && uptime >= 98.0));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "cadence_keeper") || (days >= 7.0 && uptime >= 98.0));
           const progress = Math.min(100, Math.round((days / 7.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 7.0 Days` };
         }
@@ -1288,7 +1288,7 @@
           const q = n.quality_score ?? 1.0;
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") ?? (q >= 0.85 && audits >= 500 && g >= 0.95));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") || (q >= 0.85 && audits >= 500 && g >= 0.95));
           const progress = Math.min(100, Math.round((audits / 500) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 500 Audits (Qᵢ ${(q * 10).toFixed(1)}/10)` };
         }
@@ -1301,7 +1301,7 @@
         desc: "1,000,000+ compute tokens seeded to peers",
         eval: (n, merit) => {
           const tokens = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved || 0) : (n.tokens_seeded || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") ?? (tokens >= 1000000));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") || (tokens >= 1000000));
           const progress = Math.min(100, Math.round((tokens / 1000000) * 100));
           return { unlocked: isUnlocked, progress, label: `${tokens.toLocaleString()} / 1M Tokens` };
         }
@@ -1314,7 +1314,7 @@
         desc: "Top 10% domain epistemic accuracy (Expertise ≥ 0.80 across ≥5 domains)",
         eval: (n, merit) => {
           const exp = n.max_domain_expertise || (merit?.max_domain_expertise) || 0.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "domain_specialist") ?? (exp >= 0.80));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "domain_specialist") || (exp >= 0.80));
           const progress = Math.min(100, Math.round((exp / 0.80) * 100));
           return { unlocked: isUnlocked, progress, label: `${(exp * 100).toFixed(0)}% / 80% Expertise` };
         }
@@ -1327,7 +1327,7 @@
         desc: "Discovered verified minority consensus truth",
         eval: (n, merit) => {
           const gal = n.is_local ? (liveNodeMerit?.galileo_discoveries || 0) : (n.galileo_discoveries || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") ?? (gal >= 1));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") || (gal >= 1));
           const progress = gal >= 1 ? 100 : 0;
           return { unlocked: isUnlocked, progress, label: `${gal} / 1 Discoveries` };
         }
@@ -1342,7 +1342,7 @@
           const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
           const q = n.quality_score ?? 1.0;
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "root_seed_candidate") ?? (days >= 30.0 && q >= 0.85 && g >= 0.80));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "root_seed_candidate") || (days >= 30.0 && q >= 0.85 && g >= 0.80));
           const progress = Math.min(100, Math.round((days / 30.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 30.0 Days` };
         }
@@ -1355,7 +1355,7 @@
         desc: "5,000+ audits with zero slashing penalties",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield" || (b.badge_id || b) === "sybil_sentinel") ?? (audits >= 5000));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield" || (b.badge_id || b) === "sybil_sentinel") || (audits >= 5000));
           const progress = Math.min(100, Math.round((audits / 5000) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits.toLocaleString()} / 5,000 Verified` };
         }
@@ -1370,7 +1370,7 @@
           const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
           const q = n.quality_score ?? 1.0;
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "century_anchor") ?? (days >= 100.0 && q >= 0.90 && g >= 0.98));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "century_anchor") || (days >= 100.0 && q >= 0.90 && g >= 0.98));
           const progress = Math.min(100, Math.round((days / 100.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 100.0 Days` };
         }
@@ -1383,7 +1383,7 @@
         desc: "Participated in ≥25 BFT consensus rounds with 100% Ed25519 validity",
         eval: (n, merit) => {
           const rounds = n.is_local ? (liveNodeMerit?.consensus_rounds ?? 25) : (n.consensus_rounds ?? 25);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "byzantine_custodian" || (b.badge_id || b) === "quorum_custodian") ?? (rounds >= 25));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "byzantine_custodian" || (b.badge_id || b) === "quorum_custodian") || (rounds >= 25));
           const progress = Math.min(100, Math.round((rounds / 25) * 100));
           return { unlocked: isUnlocked, progress, label: `${rounds} / 25 Quorum Rounds` };
         }
@@ -1475,8 +1475,12 @@
       const status = bDef.eval(node, node.is_local ? liveNodeMerit : null);
 
       const unlockedIds = Array.isArray(merit.unlocked_badges) 
-        ? merit.unlocked_badges.map(b => (typeof b === 'object' ? b.badge_id : b)).filter(Boolean).sort()
+        ? merit.unlocked_badges.map(b => (typeof b === 'object' ? b.badge_id : b)).filter(Boolean)
         : ["sprout_node"];
+      if (status.unlocked && !unlockedIds.includes(badgeId)) {
+        unlockedIds.push(badgeId);
+      }
+      unlockedIds.sort();
 
       const canonicalPayload = {
         grounding_ratio: Number(merit.grounding_ratio || 1.0),
