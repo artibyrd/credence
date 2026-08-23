@@ -334,7 +334,9 @@ def main() -> None:
     elif args.command == "export":
         asyncio.run(cli_export_report(args.identifier, output_path=args.output))
     elif args.command == "badge":
-        target_badge = args.badge_id if args.badge_id else args.action if args.action != "export" else "verified_auditor"
+        target_badge = (
+            args.badge_id if args.badge_id else args.action if args.action != "export" else "verified_auditor"
+        )
         cli_badge_export(
             badge_id=target_badge,
             output_path=args.output,
