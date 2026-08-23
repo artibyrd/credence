@@ -11,6 +11,24 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.11.1] - 2026-08-23
+
+### Continuous Learning Patch: Plain-English Copy, Edge HTMLRewriter & Callout Parser Governance
+- **Public-Facing Copy & Jargon Boundary Invariant**:
+  - Codified Section 7 in `architecture-governance` mandating plain-English copy for top-of-funnel social cards, landing pages, and embeds, reserving internal constants ($G=1.00$, $H<0.30$, $3f+1$) strictly for deep forensic modals.
+- **Dynamic Origin-Aware Edge Open Graph Proxying**:
+  - Documented Section 8 in `architecture-governance` for Cloudflare Workers streaming `HTMLRewriter` metadata rewriting.
+- **Brand Identity & Favicon Suite Standardization**:
+  - Codified Section 9 in `architecture-governance` establishing the Cyan Gradient Glow Checkmark Shield and universal favicon assets.
+- **Interactive Diagram Ergonomics**:
+  - Codified Section 10 in `architecture-governance` enforcing vertical flowchart layouts and in-place zoom/lightbox controls.
+- **Dev Staging Version Bump Invariant**:
+  - Documented Section 12.1 in `knowledge-governance` requiring 7-manifest version synchronization prior to Dev staging deployments.
+- **Multi-Line Markdown Callout Parser Invariant**:
+  - Documented Section 13 in `knowledge-governance` and Section 5 in `invariant-audit` for contiguous block slurping and recursive AST evaluation.
+
+---
+
 ## [2.11.0] - 2026-08-23
 
 ### The Wetware Chronicles Redux Series, Social Sharing Engine & Diagram Lightbox
