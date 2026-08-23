@@ -178,6 +178,9 @@ jobs:
           done
           cd web
           wrangler deploy --env dev
+          echo "=== Deploying Docs to Cloudflare Pages ==="
+          git clone --depth=1 --branch="${{ github.head_ref || 'main' }}" "https://github.com/artibyrd/credence-docs.git" /tmp/credence-docs || git clone --depth=1 "https://github.com/artibyrd/credence-docs.git" /tmp/credence-docs
+          wrangler pages deploy /tmp/credence-docs --project-name=credence-docs --branch=main
           echo "=== Purging Cloudflare Edge Cache for Dev Preview Subdomains ==="
           for domain in credence.run credence.report credence.nexus credence.foundation; do
             Z_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
