@@ -417,90 +417,158 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
 
 
 @pytest.mark.governance
-def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
-    """Verify all fenced mermaid code blocks in documentation have valid syntax,
+def test_zero_legacy_mermaid_diagrams_invariant(docs_root: Path) -> None:
+    """Invariant 34: Verify zero legacy Mermaid diagrams remain anywhere in documentation or blog posts.
 
-    balanced delimiters, proper subgraph nesting, zero raw markdown links, and WCAG contrast standards.
+    All technical diagrams must use enclosed UTF-8 box schematics, wire sequence layouts, or state matrices.
     """
     md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
-    valid_diagram_types = (
-        "graph",
-        "flowchart",
-        "sequencediagram",
-        "classdiagram",
-        "statediagram",
-        "erdiagram",
-        "journey",
-        "gantt",
-        "pie",
-        "gitgraph",
-        "mindmap",
-        "timeline",
-    )
-
-    mermaid_count = 0
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
         blocks = re.findall(r"```mermaid\n([\s\S]*?)```", text)
-        for idx, block in enumerate(blocks):
-            mermaid_count += 1
-            lines = [
-                line.strip()
-                for line in block.strip().splitlines()
-                if line.strip() and not line.strip().startswith("%%")
-            ]
-            assert len(lines) > 0, f"Empty Mermaid diagram block #{idx + 1} in {md_file.name}"
+        assert len(blocks) == 0, (
+            f"Invariant 34 Violation in {md_file.name}: Found {len(blocks)} legacy Mermaid block(s). "
+            f"All diagrams must use high-density UTF-8 box schematics."
+        )
 
-            # 1. Valid diagram header
-            first_token = lines[0].split()[0].lower()
-            assert any(first_token.startswith(t) for t in valid_diagram_types), (
-                f"Invalid Mermaid diagram type '{first_token}' in {md_file.name} block #{idx + 1}"
+
+@pytest.mark.governance
+def test_zero_ascii_box_art_invariant(docs_root: Path) -> None:
+    """Invariant 34: Verify zero retro ASCII/UTF-8 box art remains anywhere in documentation or blog posts.
+
+    All technical illustrations must use high-fidelity, resolution-independent vector SVG assets.
+    """
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        boxes = re.findall(r"```(?:text|)\n([\s\S]*?)```", text)
+        for idx, block in enumerate(boxes):
+            assert not any(c in block for c in "┌╔"), (
+                f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII/UTF-8 box art. "
+                f"All diagrams must use native vector SVG illustrations in assets/illustrations/."
             )
 
-            # 2. Rejection of raw markdown links in diagram labels
-            assert not re.search(r"\[[^\]]+\]\([^)]+\)", block), (
-                f"Mermaid Invariant Violation in {md_file.name} block #{idx + 1}: "
-                f"Contains raw Markdown link syntax inside diagram. Use clean descriptive text instead."
-            )
 
-            # 3. Linebreak hygiene: prohibit literal '\\n' in string labels (use <br/>)
-            assert r"\n" not in block, (
-                f"Mermaid Invariant Violation in {md_file.name} block #{idx + 1}: "
-                f"Contains literal '\\n' in label. Use '<br/>' HTML break tags for line breaks."
-            )
+@pytest.mark.governance
+def test_doc_illustration_assets_integrity(docs_root: Path) -> None:
+    """Verify that all referenced vector SVG illustrations exist on disk, have valid XML markup, and declare explicit viewBox."""
+    import xml.etree.ElementTree as ET
 
-            # 4. Balanced subgraphs
-            is_sequence = first_token.startswith("sequencediagram")
-            if not is_sequence:
-                subgraph_count = sum(
-                    1 for line in lines if line.startswith("subgraph") or re.match(r"^subgraph\s+", line)
-                )
-                end_count = sum(
-                    1 for line in lines if line == "end" or line.startswith("end ") or line.endswith(" end")
-                )
-                assert subgraph_count == end_count, (
-                    f"Mismatched subgraphs in {md_file.name} block #{idx + 1}: "
-                    f"{subgraph_count} 'subgraph' blocks vs {end_count} 'end' statements."
-                )
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    illustrations_dir = docs_root / "assets" / "illustrations"
+    assert illustrations_dir.exists(), "assets/illustrations/ directory must exist in credence-docs"
 
-            # 5. Balanced double quotes per line
-            for line_no, line in enumerate(lines, 1):
-                quotes = re.findall(r'(?<!\\)"', line)
-                assert len(quotes) % 2 == 0, (
-                    f"Unbalanced double quotes in {md_file.name} block #{idx + 1}, line {line_no}: '{line}'"
-                )
+    referenced_svgs: set[str] = set()
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        matches = re.findall(
+            r"(?:!\[[^\]]*\]\((?:assets/illustrations/|\.\./assets/illustrations/|/assets/illustrations/)([^)]+\.svg)\)|src=[\"'](?:assets/illustrations/|\.\./assets/illustrations/|/assets/illustrations/)([^\"']+\.svg)[\"'])",
+            text,
+        )
+        for m in matches:
+            svg_name = m[0] or m[1]
+            if svg_name:
+                referenced_svgs.add(svg_name)
 
-            # 6. WCAG Dark-Theme Contrast Guard on custom classDef
-            for line in lines:
-                if line.startswith("classDef"):
-                    assert "fill:#" in line or "fill: #" in line, (
-                        f"classDef in {md_file.name} block #{idx + 1} missing explicit fill hex: '{line}'"
-                    )
-                    assert "stroke:#" in line or "stroke: #" in line, (
-                        f"classDef in {md_file.name} block #{idx + 1} missing explicit stroke hex: '{line}'"
-                    )
+    assert len(referenced_svgs) >= 20, (
+        f"Expected at least 20 referenced vector illustrations, found {len(referenced_svgs)}"
+    )
 
-    assert mermaid_count >= 85, f"Expected at least 85 Mermaid diagrams in catalog, found {mermaid_count}"
+    for svg_name in referenced_svgs:
+        svg_path = illustrations_dir / svg_name
+        assert svg_path.exists(), f"Referenced SVG illustration '{svg_name}' does not exist on disk at {svg_path}"
+
+        # Validate XML structure & viewBox
+        content = svg_path.read_text(encoding="utf-8")
+        assert 'xmlns="http://www.w3.org/2000/svg"' in content, f"{svg_name} missing SVG namespace"
+        assert 'viewBox="' in content, f"{svg_name} missing explicit viewBox for zero-scroll scaling"
+        assert "#090d16" in content or "#050810" in content or "#1e293b" in content, (
+            f"{svg_name} missing dark-theme color tokens"
+        )
+
+        try:
+            root = ET.fromstring(content)
+            assert root.tag.endswith("svg"), f"{svg_name} root XML tag must be svg"
+        except Exception as e:
+            pytest.fail(f"Invalid XML syntax in SVG illustration {svg_name}: {e}")
+
+
+@pytest.mark.governance
+def test_ecosystem_illustration_checksum_parity() -> None:
+    """Verify 100% file parity and identical SHA-256 checksums between credence-docs and web assets/illustrations/."""
+    import hashlib
+
+    credence_root = Path(__file__).resolve().parents[2]
+    docs_illustrations = credence_root.parent / "credence-docs" / "assets" / "illustrations"
+    web_illustrations = credence_root / "web" / "assets" / "illustrations"
+
+    assert docs_illustrations.exists(), f"Missing {docs_illustrations}"
+    assert web_illustrations.exists(), f"Missing {web_illustrations}"
+
+    docs_files = sorted([f.name for f in docs_illustrations.glob("*.svg")])
+    web_files = sorted([f.name for f in web_illustrations.glob("*.svg")])
+
+    assert len(docs_files) >= 20, f"Expected >=20 SVG illustrations in docs, found {len(docs_files)}"
+    assert docs_files == web_files, (
+        f"Illustration file list mismatch between docs and web: {set(docs_files) ^ set(web_files)}"
+    )
+
+    for filename in docs_files:
+        docs_hash = hashlib.sha256((docs_illustrations / filename).read_bytes()).hexdigest()
+        web_hash = hashlib.sha256((web_illustrations / filename).read_bytes()).hexdigest()
+        assert docs_hash == web_hash, f"SHA-256 checksum mismatch for illustration '{filename}' between docs and web"
+
+
+@pytest.mark.governance
+def test_edge_router_tiered_cache_headers() -> None:
+    """Verify that web/_worker.js enforces tiered edge caching (s-maxage=2592000 for SVGs/static vs max-age=0 for dynamic docs)."""
+    worker_path = Path(__file__).resolve().parents[2] / "web" / "_worker.js"
+    assert worker_path.exists(), "web/_worker.js must exist"
+    worker_text = worker_path.read_text(encoding="utf-8")
+
+    assert "s-maxage=2592000" in worker_text, "_worker.js must define long-lived edge CDN cache for static assets"
+    assert "stale-while-revalidate=86400" in worker_text, (
+        "_worker.js must define background revalidation for static assets"
+    )
+    assert (
+        "public, max-age=0, must-revalidate" in worker_text or "no-cache, no-store, must-revalidate" in worker_text
+    ), "_worker.js must enforce zero-cache revalidation on mutable HTML and markdown docs"
+
+
+@pytest.mark.governance
+def test_playground_and_docs_math_rendering_integrity(docs_root: Path) -> None:
+    """Verify that math expressions in docs and the interactive playground have balanced delimiters and zero broken syntax leaks."""
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+
+        # 1. Prohibit unescaped, unmatched inline math delimiters within a line (excluding fenced code blocks and math spans)
+        # Strip fenced code blocks and HTML code / pre blocks
+        prose_text = re.sub(r"```[\s\S]*?```", "", text)
+        prose_text = re.sub(r"<pre[\s\S]*?</pre>", "", prose_text)
+        prose_text = re.sub(r"<code[\s\S]*?</code>", "", prose_text)
+        prose_text = re.sub(r"`[^`\n]+`", "", prose_text)
+
+        # Strip display math and inline math blocks
+        prose_text = re.sub(r"\$\$[\s\S]*?\$\$", "", prose_text)
+        prose_text = re.sub(r"\\\[[\s\S]*?\\\]", "", prose_text)
+        prose_text = re.sub(r"\$[^\$\n]+\$", "", prose_text)
+        prose_text = re.sub(r"\\\([^\)\n]+\\\)", "", prose_text)
+
+        # Prohibit raw LaTeX macro leaks in bare un-delimited text like \bar{ or \sum_ without math delimiters
+        raw_latex_leaks = re.findall(
+            r"\\(?:frac|bar|sum|int|sqrt|alpha|beta|gamma|lambda|sigma|Delta|min|max)\{[^}]+\}", prose_text
+        )
+        assert len(raw_latex_leaks) == 0, (
+            f"Raw LaTeX macro leak outside math delimiters in {md_file.name}: {raw_latex_leaks[:5]}"
+        )
+
+    # 2. Playground math specific checks
+    playground_md = docs_root / "docs" / "playground.md"
+    assert playground_md.exists(), "docs/playground.md must exist"
+    pg_text = playground_md.read_text(encoding="utf-8")
+    assert "\\text{" in pg_text or "$" in pg_text, "docs/playground.md must contain formatted mathematical expressions"
 
 
 @pytest.mark.governance
@@ -1612,35 +1680,6 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
     assert app_js_path.exists()
     app_js_text = app_js_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
-
-
-@pytest.mark.governance
-@pytest.mark.unit
-def test_interactive_diagram_controls_and_lightbox_integrity(docs_root: Path) -> None:
-    """Verify that app.js implements interactive zoom/pan controls, fullscreen lightbox, and styles.css enforces WCAG contrast."""
-    app_js_path = docs_root / "app.js"
-    styles_css_path = docs_root / "styles.css"
-    assert app_js_path.exists()
-    assert styles_css_path.exists()
-
-    app_js_text = app_js_path.read_text(encoding="utf-8")
-    styles_css_text = styles_css_path.read_text(encoding="utf-8")
-
-    # 1. Interactive diagram controls & lightbox modal in app.js
-    assert "setupDiagramControls" in app_js_text, "app.js must define setupDiagramControls"
-    assert "openDiagramLightbox" in app_js_text, "app.js must define openDiagramLightbox"
-    assert "getOrCreateDiagramLightbox" in app_js_text, "app.js must define getOrCreateDiagramLightbox"
-    assert "mermaid-window-controls" in app_js_text, "app.js must create mermaid window controls"
-    assert "diagram-zoom-btn" in app_js_text, "app.js must create diagram zoom buttons"
-    assert "diagram-lightbox" in app_js_text, "app.js must wire diagram lightbox modal"
-
-    # 2. Stylesheet rules for diagram interactivity & WCAG high-contrast palette
-    assert ".mermaid-wrapper" in styles_css_text, "styles.css must style .mermaid-wrapper"
-    assert ".mermaid-window-controls" in styles_css_text, "styles.css must style .mermaid-window-controls"
-    assert ".diagram-lightbox" in styles_css_text, "styles.css must style .diagram-lightbox"
-    assert "cursor: grab" in styles_css_text, "styles.css must provide grab cursor for draggable diagrams"
-    assert "#1e293b" in styles_css_text, "styles.css must enforce dark slate (#1e293b) fills for Mermaid nodes"
-    assert "#38bdf8" in styles_css_text, "styles.css must enforce sky-cyan (#38bdf8) borders for Mermaid nodes"
 
 
 @pytest.mark.governance

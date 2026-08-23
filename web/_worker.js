@@ -56,7 +56,12 @@ export default {
         });
 
         const resHeaders = new Headers(res.headers);
-        resHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        const isStaticMedia = subPath.startsWith('/assets/') || subPath.endsWith('.svg') || subPath.endsWith('.png') || subPath.endsWith('.woff2');
+        if (isStaticMedia) {
+          resHeaders.set('Cache-Control', isDev ? 'public, max-age=300' : 'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400');
+        } else {
+          resHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
         resHeaders.set('Access-Control-Allow-Origin', '*');
         
         const resContentType = res.headers.get('content-type') || '';
@@ -228,12 +233,16 @@ export default {
         response = await fetch(new Request(new URL(finalPath, request.url)));
       }
 
-      // If exact file found, return with appropriate CORS & Zero-Cache Policy
+      // If exact file found, return with appropriate CORS & Tiered Cache Policy
       const resHeaders = new Headers(response.headers);
       if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || reqPath === '/index.html') {
         resHeaders.set('Access-Control-Allow-Origin', '*');
         resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-        resHeaders.set('Cache-Control', 'public, max-age=0, must-revalidate');
+        if (url.pathname.endsWith('.svg') || url.pathname.endsWith('.png') || url.pathname.endsWith('.woff2') || url.pathname.startsWith('/assets/illustrations/')) {
+          resHeaders.set('Cache-Control', isDev ? 'public, max-age=300' : 'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400');
+        } else {
+          resHeaders.set('Cache-Control', 'public, max-age=0, must-revalidate');
+        }
       }
 
       const resContentType = response.headers.get('content-type') || '';
