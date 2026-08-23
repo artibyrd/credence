@@ -40,20 +40,21 @@
       background: var(--bg-code);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 0.75rem;
+      padding: 0.5rem;
       position: relative;
       margin-bottom: 0;
       flex: 1;
-      min-height: 480px;
-      height: calc(100vh - 270px);
+      min-height: 280px;
+      height: calc(100vh - 310px);
+      max-height: 480px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     #mesh-canvas {
       width: 100%;
       height: 100%;
-      min-height: 460px;
       display: block;
     }
     .badge-preview-card {
@@ -237,7 +238,7 @@
         <!-- Main Deck Stage -->
         <main class="deck-stage">
           <!-- TAB 1: MESH TOPOLOGY -->
-          <div id="tab-topology" class="tab-panel active" style="height: 100%; display: flex; flex-direction: column; gap: 0.75rem;">
+          <div id="tab-topology" class="tab-panel active" style="height: 100%; display: flex; flex-direction: column; gap: 0.6rem; overflow: hidden;">
             <div class="metric-grid" style="margin-bottom: 0;">
               <div class="metric-card" style="cursor:pointer;" onclick="window.CredenceWS.openInfoModal('topology')" title="Learn about Mesh Topology">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -266,7 +267,7 @@
               </div>
             </div>
 
-            <!-- Canvas Container with Node Topology (Full Spacious Height) -->
+            <!-- Canvas Container with Node Topology (Full Viewport Fit) -->
             <div class="canvas-container">
               <canvas id="mesh-canvas"></canvas>
             </div>
@@ -292,15 +293,14 @@
                 <table class="ws-table" id="leaderboard-table">
                   <thead>
                     <tr>
-                      <th style="width: 50px; text-align: center;">Rank</th>
-                      <th style="min-width: 220px;">Node ID &amp; Region</th>
-                      <th style="width: 120px;">Quality (Qᵢ)</th>
-                      <th style="width: 90px;">Uptime</th>
-                      <th style="width: 90px;">Consensus</th>
-                      <th style="width: 90px;">Verbatim (G)</th>
-                      <th style="width: 120px;">Role</th>
-                      <th style="width: 110px;">Status</th>
-                      <th style="width: 90px; text-align: center;">Actions</th>
+                      <th style="width: 48px; text-align: center;">Rank</th>
+                      <th style="min-width: 200px;">Node ID &amp; Region</th>
+                      <th style="width: 110px;">Quality (Qᵢ)</th>
+                      <th style="width: 85px;">Uptime</th>
+                      <th style="width: 95px;">Consensus</th>
+                      <th style="width: 100px;">Role</th>
+                      <th style="width: 95px;">Status</th>
+                      <th style="width: 85px; text-align: center;">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="leaderboard-body">
@@ -1206,7 +1206,6 @@
             <td><b style="color:var(--accent-green);">${(n.quality_score * 10).toFixed(2)} / 10</b></td>
             <td>${n.uptime_pct ? n.uptime_pct.toFixed(2) : '100.00'}%</td>
             <td>100.0%</td>
-            <td>1.00</td>
             <td><span class="ribbon-pill ready">${n.role || 'NODE'}</span></td>
             <td><span style="color:var(--accent-green); font-weight:700;">● ${n.status || 'HEALTHY'}</span></td>
             <td>
@@ -1375,6 +1374,19 @@
           const progress = Math.min(100, Math.round((days / 100.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 100.0 Days` };
         }
+      },
+      {
+        id: "byzantine_custodian",
+        name: "Quorum Custodian",
+        icon: "⚡",
+        tier: "ROOT_ANCHOR",
+        desc: "Participated in ≥25 BFT consensus rounds with 100% Ed25519 validity",
+        eval: (n, merit) => {
+          const rounds = n.is_local ? (liveNodeMerit?.consensus_rounds ?? 25) : (n.consensus_rounds ?? 25);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "byzantine_custodian" || (b.badge_id || b) === "quorum_custodian") ?? (rounds >= 25));
+          const progress = Math.min(100, Math.round((rounds / 25) * 100));
+          return { unlocked: isUnlocked, progress, label: `${rounds} / 25 Quorum Rounds` };
+        }
       }
     ];
 
@@ -1435,35 +1447,7 @@
         `;
       }).join('');
 
-      const unlockedCount = MERIT_BADGES_DEF.filter(b => b.eval(node, node.is_local ? liveNodeMerit : null).unlocked).length;
-      const totalCount = MERIT_BADGES_DEF.length;
-      const apexCard = `
-        <div style="background:linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(168, 85, 247, 0.08)); border:1px dashed var(--accent-cyan); border-radius:6px; padding:0.75rem; display:flex; flex-direction:column; justify-content:space-between; min-height:148px;">
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
-              <span style="font-size:1.15rem;">🌌</span>
-              <span class="ribbon-pill ready" style="font-size:0.65rem; padding:0.1rem 0.4rem;">SOVEREIGN APEX</span>
-            </div>
-            <h4 style="color:#fff; margin:0 0 0.2rem 0; font-size:0.88rem; font-weight:700;">Consensus Custodian</h4>
-            <p style="color:var(--text-muted); font-size:0.72rem; line-height:1.35; margin:0 0 0.5rem 0;">Ultimate tier awarded upon achieving 100% peer consensus and full milestone matrix completion.</p>
-          </div>
-          <div>
-            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-dim); margin-bottom:0.25rem;">
-              <span>Milestone Progress</span>
-              <span style="color:var(--accent-cyan); font-weight:700;">${unlockedCount} / ${totalCount} Unlocked</span>
-            </div>
-            <div style="height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; margin-bottom:0.5rem;">
-              <div style="width:${Math.round((unlockedCount / totalCount) * 100)}%; height:100%; background:linear-gradient(90deg, #38bdf8, #c084fc);"></div>
-            </div>
-            <button type="button" class="btn-primary" style="width:100%; font-size:0.7rem; padding:0.25rem 0.4rem; display:flex; align-items:center; justify-content:center; gap:0.3rem; border-radius:4px; text-decoration:none;" onclick="window.CredenceWS.switchTab('studio')">
-              <span>🎨</span> <span>Studio Embed ↗</span>
-            </button>
-          </div>
-        </div>
-      `;
-
-      gridEl.innerHTML = cardsHtml + apexCard;
-
+      gridEl.innerHTML = cardsHtml;
     }
 
     async function openBadgeVerificationModal(badgeId, nodeId) {

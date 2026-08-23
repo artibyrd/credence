@@ -599,8 +599,8 @@
           <!-- ===================================================================
                WORKSPACE 4: SIFTER STREAM (LIVE NETWORK INGESTION)
                =================================================================== -->
-          <div id="tab-sifter" class="tab-panel">
-            <div class="deck-card">
+          <div id="tab-sifter" class="tab-panel" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="deck-card" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 0;">
               <div class="deck-card-header">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -617,7 +617,7 @@
                 </div>
               </div>
 
-              <div id="sifter-stream-container" style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem;">
+              <div id="sifter-stream-container" class="ws-scroll-pane" style="flex: 1; max-height: 580px; overflow-y: auto; display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem; padding-right: 0.35rem;">
                 <!-- Populated dynamically via window.renderSifterStream() -->
               </div>
             </div>

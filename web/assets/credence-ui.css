@@ -1706,6 +1706,7 @@ body.tui-mode .workstation-tab-btn.active {
 #search-results-list,
 #pinned-sources-container,
 #sifter-stream-feed,
+#sifter-stream-container,
 .log-terminal-body {
   scrollbar-width: thin;
   scrollbar-color: rgba(56, 189, 248, 0.25) rgba(0, 0, 0, 0.3);
@@ -1717,6 +1718,7 @@ body.tui-mode .workstation-tab-btn.active {
 #search-results-list::-webkit-scrollbar,
 #pinned-sources-container::-webkit-scrollbar,
 #sifter-stream-feed::-webkit-scrollbar,
+#sifter-stream-container::-webkit-scrollbar,
 .log-terminal-body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1728,6 +1730,7 @@ body.tui-mode .workstation-tab-btn.active {
 #search-results-list::-webkit-scrollbar-track,
 #pinned-sources-container::-webkit-scrollbar-track,
 #sifter-stream-feed::-webkit-scrollbar-track,
+#sifter-stream-container::-webkit-scrollbar-track,
 .log-terminal-body::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.25);
   border-radius: 4px;
@@ -1739,6 +1742,7 @@ body.tui-mode .workstation-tab-btn.active {
 #search-results-list::-webkit-scrollbar-thumb,
 #pinned-sources-container::-webkit-scrollbar-thumb,
 #sifter-stream-feed::-webkit-scrollbar-thumb,
+#sifter-stream-container::-webkit-scrollbar-thumb,
 .log-terminal-body::-webkit-scrollbar-thumb {
   background: rgba(56, 189, 248, 0.25);
   border-radius: 4px;
@@ -1750,6 +1754,7 @@ body.tui-mode .workstation-tab-btn.active {
 #search-results-list::-webkit-scrollbar-thumb:hover,
 #pinned-sources-container::-webkit-scrollbar-thumb:hover,
 #sifter-stream-feed::-webkit-scrollbar-thumb:hover,
+#sifter-stream-container::-webkit-scrollbar-thumb:hover,
 .log-terminal-body::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 189, 248, 0.5);
 }
