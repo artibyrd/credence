@@ -136,6 +136,125 @@ def _register_merit_and_analytics_tools(server: MCPServer) -> None:
             return json.dumps({"error": f"No audit records found for publisher '{domain}'."})
         return "{}"
 
+    @server.tool(
+        name="credence_generate_badge",
+        description="Generate vector SVG badges or embeddable Web Component markup across modalities: node, publisher, or attestation.",
+    )
+    async def generate_badge_tool(
+        modality: str = "node",
+        identifier: str = "sprout_node",
+        style: str = "shield",
+        theme: str = "dark",
+        format: str = "svg",
+    ) -> str:
+        from sqlmodel import col, select
+
+        from credence.mesh.badges import generate_attestation_badge_svg, generate_svg_badge
+        from credence.mesh.merit import get_local_node_merit
+        from credence.models import Audit, Snapshot
+        from credence.subjects.analytics import generate_publisher_svg_badge, get_domain_leaderboard
+
+        mod = modality.lower().strip()
+        fmt = format.lower().strip()
+        await init_db()
+
+        if mod == "node":
+            is_unlocked = False
+            async with get_async_session() as s:
+                merit_card = await get_local_node_merit(s)
+                unlocked_ids = {
+                    b.badge_id if hasattr(b, "badge_id") else b["badge_id"] if isinstance(b, dict) else str(b)
+                    for b in merit_card.unlocked_badges
+                }
+                if identifier in unlocked_ids:
+                    is_unlocked = True
+
+            score = "VERIFIED" if is_unlocked else "UNEARNED"
+            svg_content = generate_svg_badge(
+                badge_id=identifier,
+                node_alias="credence-node",
+                score_or_val=score,
+                style=style,
+                theme=theme,
+                is_unlocked=is_unlocked,
+            )
+            component_code = (
+                f'<credence-badge type="node" badge="{identifier}" style="{style}" theme="{theme}"></credence-badge>'
+            )
+
+        elif mod in ("publisher", "domain", "dci"):
+            dci_val = 85.0
+            status = "CLEAN"
+            async with get_async_session() as s:
+                ranks = await get_domain_leaderboard(s, category="best", limit=100)
+                for r in ranks:
+                    if r.domain == identifier:
+                        dci_val = r.dci_score
+                        status = r.trust_band
+                        break
+
+            svg_content = generate_publisher_svg_badge(
+                domain=identifier,
+                dci_score=dci_val,
+                status=status,
+                style=style,
+                theme=theme,
+            )
+            component_code = f'<credence-badge type="publisher" domain="{identifier}" score="{dci_val:.1f}" status="{status}"></credence-badge>'
+
+        else:  # "attestation" / "article"
+            suspicion_score = 0.0
+            classification = "VERIFIED"
+            content_sha = ""
+            async with get_async_session() as s:
+                if identifier.startswith("sha256:") or len(identifier) == 64:
+                    clean_hash = identifier if identifier.startswith("sha256:") else f"sha256:{identifier}"
+                    stmt = (
+                        select(Audit).where(Audit.content_sha256 == clean_hash).order_by(col(Audit.audited_at).desc())
+                    )
+                    audit = (await s.exec(stmt)).first()
+                else:
+                    stmt = (
+                        select(Audit)
+                        .join(Snapshot)
+                        .where(Snapshot.url == identifier)
+                        .order_by(col(Audit.audited_at).desc())
+                    )
+                    audit = (await s.exec(stmt)).first()
+
+                if audit:
+                    suspicion_score = audit.suspicion_score
+                    classification = audit.classification
+                    content_sha = audit.content_sha256
+
+            svg_content = generate_attestation_badge_svg(
+                content_sha256=content_sha or identifier,
+                suspicion_score=suspicion_score,
+                classification=classification,
+                style=style,
+                theme=theme,
+                is_modified=False,
+            )
+            score_num = 100.0 - suspicion_score
+            component_code = f'<credence-badge type="attestation" url="{identifier}" score="{score_num:.1f}" status="{classification}"></credence-badge>'
+
+        if fmt in ("component", "component_html", "html"):
+            return component_code
+        elif fmt == "json":
+            return json.dumps(
+                {
+                    "modality": mod,
+                    "identifier": identifier,
+                    "style": style,
+                    "theme": theme,
+                    "svg": svg_content,
+                    "component_html": component_code,
+                },
+                indent=2,
+            )
+        else:
+            return svg_content
+
 
 def _register_merit_and_analytics_resources(server: MCPServer) -> None:
     """Register merit, leaderboard, and web analytics resources."""

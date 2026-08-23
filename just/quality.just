@@ -82,3 +82,7 @@ audit-skills:
 # Audit invariant demotion candidates and token savings
 audit-demotions:
     @python3 ../credence-agent/scripts/audit_demotions.py
+
+# Synchronize Workstation Info Modals with documentation index
+sync-topics:
+    @python3 scripts/sync_info_topics.py

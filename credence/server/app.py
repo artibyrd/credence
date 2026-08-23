@@ -18,6 +18,7 @@ from starlette.staticfiles import StaticFiles
 
 from credence.server.api.analytics import (
     api_bounties,
+    api_get_attestation_badge,
     api_get_badge_svg,
     api_get_merit,
     api_get_publisher_badge,
@@ -151,6 +152,9 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/merit/verify", endpoint=api_verify_merit, methods=["POST", "OPTIONS"]),
         Route("/api/merit/{identifier:path}", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
         Route("/api/badge/publisher/{domain:path}", endpoint=api_get_publisher_badge, methods=["GET", "OPTIONS"]),
+        Route(
+            "/api/badge/attestation/{identifier:path}", endpoint=api_get_attestation_badge, methods=["GET", "OPTIONS"]
+        ),
         Route("/api/badge/{badge_id:path}", endpoint=api_get_badge_svg, methods=["GET", "OPTIONS"]),
         Route("/api/rankings/domains", endpoint=api_rankings_domains, methods=["GET", "OPTIONS"]),
         Route("/api/rankings/rules", endpoint=api_rankings_rules, methods=["GET", "OPTIONS"]),

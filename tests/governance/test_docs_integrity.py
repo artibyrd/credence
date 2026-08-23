@@ -1441,3 +1441,50 @@ def test_worker_assets_routing_invariant() -> None:
         "_worker.js must handle /assets/ requests directly without domain prefixing"
     )
     assert "new URL(reqPath, request.url)" in content, "_worker.js must include root reqPath fallback on 404"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_info_modals_integrity_and_sync(docs_root: Path) -> None:
+    """Verify that all info modals across web dashboards match INFO_TOPICS and topic-index.md with 0 broken links."""
+    credence_root = docs_root.parent / "credence"
+    ws_js_path = credence_root / "web" / "assets" / "credence-workstation.js"
+    assert ws_js_path.exists(), "credence-workstation.js must exist"
+
+    ws_content = ws_js_path.read_text(encoding="utf-8")
+    start = ws_content.find("const INFO_TOPICS = {")
+    end = ws_content.find(
+        "};\n\n// -----------------------------------------------------------------------------", start
+    )
+    if end == -1:
+        end = ws_content.find("};\n\n//", start)
+
+    block = ws_content[start:end]
+    ws_topics = set(re.findall(r"^\s{2}([a-z0-9_]+):\s*\{", block, re.MULTILINE))
+    assert len(ws_topics) >= 30, f"Expected at least 30 info topics in workstation.js, found {len(ws_topics)}"
+
+    # 1. Check topic-index.md table parity
+    topic_index_path = docs_root / "docs" / "topic-index.md"
+    assert topic_index_path.exists(), "topic-index.md must exist"
+    ti_content = topic_index_path.read_text(encoding="utf-8")
+    table_topics = set(re.findall(r"^\|\s*`([a-z0-9_]+)`\s*\|", ti_content, re.MULTILINE))
+
+    missing_in_index = ws_topics - table_topics
+    assert not missing_in_index, (
+        f"Info modal topics missing from topic-index.md: {missing_in_index}. Run 'just sync-topics'!"
+    )
+
+    # 2. Check that all URLs in INFO_TOPICS resolve to real docs
+    urls = re.findall(r"url:\s*\"([^\"]+)\"", block)
+    for u in urls:
+        if u.startswith("https://docs.credence.run#"):
+            path_part = u.split("#")[1].split("#")[0]
+            target_md = docs_root / (path_part + ".md")
+            target_html = docs_root / (path_part + ".html")
+            assert target_md.exists() or target_html.exists() or (docs_root / path_part).exists(), (
+                f"Broken link in INFO_TOPICS: {u} (expected {target_md})"
+            )
+        elif u.startswith("https://blog.credence.run#"):
+            slug = u.split("#")[1]
+            target_blog = docs_root / "blog" / (slug + ".md")
+            assert target_blog.exists(), f"Broken blog link in INFO_TOPICS: {u} (expected {target_blog})"

@@ -355,6 +355,20 @@ def evaluate_node_badges(
             )
         )
 
+    if getattr(peer_record, "quorum_rounds_participated", 0) >= 10 or (
+        peer_record.total_attestations_evaluated >= 100 and peer_record.quality_score >= 0.80
+    ):
+        awards.append(
+            BadgeAward(
+                badge_id="quorum_sentinel",
+                name=BADGE_REGISTRY["quorum_sentinel"].name,
+                tier=BADGE_REGISTRY["quorum_sentinel"].tier.value,
+                icon=BADGE_REGISTRY["quorum_sentinel"].icon,
+                description=BADGE_REGISTRY["quorum_sentinel"].description,
+                unlocked_at=now_iso,
+            )
+        )
+
     if (
         longevity >= 100.0
         and peer_record.quality_score >= 0.90
@@ -375,6 +389,48 @@ def evaluate_node_badges(
     return awards
 
 
+def generate_attestation_badge_svg(
+    content_sha256: str = "",
+    suspicion_score: float = 0.0,
+    classification: str = "VERIFIED",
+    style: str = "shield",
+    theme: str = "dark",
+    is_modified: bool = False,
+) -> str:
+    """Generate vector SVG badge for article attestations."""
+    if is_modified:
+        badge_id = "modified_post_audit"
+        score_val = "⚠️ MODIFIED"
+        title = "Article Attestation"
+        icon = "⚠️"
+    elif suspicion_score <= 20.0:
+        badge_id = "attestation_verified"
+        score_val = f"{100.0 - suspicion_score:.1f}"
+        title = "Credence Verified"
+        icon = "🛡️"
+    elif suspicion_score < 70.0:
+        badge_id = "attestation_attention"
+        score_val = f"SCORE {100.0 - suspicion_score:.1f}"
+        title = "Credence Review"
+        icon = "⚠️"
+    else:
+        badge_id = "attestation_flagged"
+        score_val = "FLAGGED"
+        title = "Credence Flagged"
+        icon = "🚨"
+
+    return generate_svg_badge(
+        badge_id=badge_id,
+        node_alias="credence",
+        score_or_val=score_val,
+        style=style,
+        theme=theme,
+        custom_title=title,
+        custom_icon=icon,
+        is_unlocked=not is_modified and suspicion_score <= 60.0,
+    )
+
+
 __all__ = [
     "BADGE_ACCENTS",
     "BADGE_THEMES",
@@ -382,5 +438,6 @@ __all__ = [
     "compute_longevity_days",
     "determine_node_tier",
     "evaluate_node_badges",
+    "generate_attestation_badge_svg",
     "generate_svg_badge",
 ]

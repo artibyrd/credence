@@ -287,12 +287,18 @@ def build_parser() -> argparse.ArgumentParser:
     # badge
     p_badge = subparsers.add_parser("badge", help="Generate or export SVG and Web Component badges")
     p_badge.add_argument("action", default="export", nargs="?", choices=["export"])
-    p_badge.add_argument("badge_id", default="verified_auditor", nargs="?", help="Badge ID or domain")
-    p_badge.add_argument("--output", "-o", help="Target SVG file path (default stdout)")
+    p_badge.add_argument("badge_id", default="verified_auditor", nargs="?", help="Badge ID, domain, or article URL")
+    p_badge.add_argument("--output", "-o", help="Target output file path (default stdout)")
+    p_badge.add_argument(
+        "--modality", "-m", default="node", choices=["node", "publisher", "attestation"], help="Attestation modality"
+    )
+    p_badge.add_argument(
+        "--format", "-f", dest="format", default="svg", choices=["svg", "component", "html"], help="Output format"
+    )
     p_badge.add_argument("--node", default="credence-node", help="Node alias or label")
     p_badge.add_argument("--score", default="VERIFIED", help="Metric score or value")
     p_badge.add_argument(
-        "--style", default="glass", choices=["glass", "pill", "shield", "meta", "compact"], help="Visual style variant"
+        "--style", default="shield", choices=["glass", "pill", "shield", "meta", "compact"], help="Visual style variant"
     )
     p_badge.add_argument("--theme", default="dark", choices=["dark", "midnight", "light"], help="Theme palette")
 
@@ -300,6 +306,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_merit = subparsers.add_parser("merit", help="Display node epistemic merit and leaderboards")
     p_merit.add_argument("--category", default="best", choices=["best", "worst", "quality", "uptime"])
     p_merit.add_argument("--export-svg", help="Export merit badge SVG to file path")
+    p_merit.add_argument("--mesh", action="store_true", help="Display live Byzantine quorum capacity")
 
     # tui
     subparsers.add_parser("tui", help="Launch interactive Textual Terminal Dashboard")
@@ -334,9 +341,17 @@ def main() -> None:
             score=args.score,
             style=args.style,
             theme=args.theme,
+            modality=getattr(args, "modality", "node"),
+            format_type=getattr(args, "format", "svg"),
         )
     elif args.command == "merit":
-        asyncio.run(cli_merit(export_svg=args.export_svg, category=args.category))
+        asyncio.run(
+            cli_merit(
+                export_svg=args.export_svg,
+                category=args.category,
+                mesh=getattr(args, "mesh", False),
+            )
+        )
     elif args.command == "verify":
         run_verify_command(args.file)
     elif args.command == "identity":

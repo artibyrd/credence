@@ -167,6 +167,7 @@ async def test_complete_4_way_feature_parity_matrix() -> None:
         "credence_get_mesh_stats",
         "credence_get_mesh_network_health",
         "credence_get_seed_nodes",
+        "credence_generate_badge",
     }
     missing_tools = expected_tools - tool_names
     assert not missing_tools, f"Missing FastMCP tools in parity matrix: {missing_tools}"
