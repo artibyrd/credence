@@ -12,8 +12,11 @@ sync-version version: (preflight "poetry")
     @find web ../credence-docs -name "*.html" -exec sed -i -E 's/Credence <span class="badge">v[^<]+<\/span>/Credence <span class="badge">v{{version}}<\/span>/g' {} +
     @sed -i -E 's/v[0-9]+\.[0-9]+\.[0-9]+ Stable/v{{version}} Stable/' web/credence.run/index.html
     @sed -i -E 's/"version": "[^"]+"/"version": "{{version}}"/' ../credence-agent/plugin.json
-    @poetry run pytest tests/governance/test_docs_integrity.py -k test_ecosystem_version_parity
-    @echo -e "\033[1;32m✅ All ecosystem version manifests synchronized to {{version}}.\033[0m"
+    @sed -i -E 's/>v[0-9]+\.[0-9]+\.[0-9]+</>v{{version}}</g' web/assets/og-card.svg ../credence-docs/assets/og-card.svg
+    @rsvg-convert -w 1200 -h 630 web/assets/og-card.svg -o web/assets/og-card.png
+    @rsvg-convert -w 1200 -h 630 ../credence-docs/assets/og-card.svg -o ../credence-docs/assets/og-card.png
+    @poetry run pytest tests/governance/test_docs_integrity.py -k "test_ecosystem_version_parity or test_social_sharing_open_graph_parity"
+    @echo -e "\033[1;32m✅ All ecosystem version manifests and social preview assets synchronized to {{version}}.\033[0m"
     @echo -e "\033[1;36m💡 REMINDER: Ensure docs/changelog.md contains release section '## [{{version}}] - YYYY-MM-DD' before running 'just release'.\033[0m"
 
 # Coordinate multi-repository git operations (status, branch, commit, tag, push)

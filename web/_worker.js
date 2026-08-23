@@ -59,11 +59,38 @@ export default {
         resHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
         resHeaders.set('Access-Control-Allow-Origin', '*');
         
-        return new Response(res.body, {
+        const resContentType = res.headers.get('content-type') || '';
+        const initialResponse = new Response(res.body, {
           status: res.status,
           statusText: res.statusText,
           headers: resHeaders,
         });
+
+        if (resContentType.includes('text/html') || subPath === '/' || subPath.endsWith('.html')) {
+          const originUrl = url.origin;
+          return new HTMLRewriter()
+            .on('meta[property="og:image"]', {
+              element(el) {
+                const src = el.getAttribute('content');
+                if (src) {
+                  const cleanPath = src.replace(/^https:\/\/[^\/]+\//, '/').replace(/^\//, '');
+                  el.setAttribute('content', `${originUrl}/${cleanPath}`);
+                }
+              }
+            })
+            .on('meta[property="og:url"]', {
+              element(el) {
+                const u = el.getAttribute('content');
+                if (u) {
+                  const cleanPath = u.replace(/^https:\/\/[^\/]+\//, '/').replace(/^\//, '');
+                  el.setAttribute('content', `${originUrl}/${cleanPath}`);
+                }
+              }
+            })
+            .transform(initialResponse);
+        }
+
+        return initialResponse;
       }
 
       if (host === 'mcp.credence.run' || host === 'mcp.dev.credence.run') {
@@ -203,17 +230,44 @@ export default {
 
       // If exact file found, return with appropriate CORS & Zero-Cache Policy
       const resHeaders = new Headers(response.headers);
-      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || reqPath === '/index.html') {
+      if (url.pathname.endsWith('.json') || url.pathname.endsWith('.pub') || url.pathname.endsWith('.yaml') || url.pathname.endsWith('.sh') || url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || reqPath === '/index.html') {
         resHeaders.set('Access-Control-Allow-Origin', '*');
         resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
         resHeaders.set('Cache-Control', 'public, max-age=0, must-revalidate');
       }
 
-      return new Response(response.body, {
+      const resContentType = response.headers.get('content-type') || '';
+      const initialResponse = new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers: resHeaders,
       });
+
+      if (resContentType.includes('text/html') || reqPath.endsWith('.html') || reqPath === '/index.html') {
+        const originUrl = url.origin;
+        return new HTMLRewriter()
+          .on('meta[property="og:image"]', {
+            element(el) {
+              const src = el.getAttribute('content');
+              if (src) {
+                const cleanPath = src.replace(/^https:\/\/[^\/]+\//, '/').replace(/^\//, '');
+                el.setAttribute('content', `${originUrl}/${cleanPath}`);
+              }
+            }
+          })
+          .on('meta[property="og:url"]', {
+            element(el) {
+              const u = el.getAttribute('content');
+              if (u) {
+                const cleanPath = u.replace(/^https:\/\/[^\/]+\//, '/').replace(/^\//, '');
+                el.setAttribute('content', `${originUrl}/${cleanPath}`);
+              }
+            }
+          })
+          .transform(initialResponse);
+      }
+
+      return initialResponse;
     } catch (err) {
       return new Response(`Credence Edge Error: ${err.message}\n${err.stack}`, {
         status: 500,

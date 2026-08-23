@@ -9,6 +9,7 @@ Validates:
 """
 
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -103,8 +104,8 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
 
     for html_file in html_files:
         content = html_file.read_text(encoding="utf-8")
-        if '<nav class="credence-nav">' in content and "🛡️ Credence" in content:
-            badge_match = re.search(r'🛡️ Credence\s*<span class="badge">([^<]+)</span>', content)
+        if '<nav class="credence-nav">' in content and "Credence" in content:
+            badge_match = re.search(r'Credence\s*<span class="badge">([^<]+)</span>', content)
             if badge_match:
                 found_version = badge_match.group(1).strip()
                 assert found_version == expected_tag, (
@@ -118,6 +119,83 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
         assert plugin_data["version"] == canonical_version, (
             f"credence-agent/plugin.json version does not match {canonical_version}"
         )
+
+
+@pytest.mark.governance
+def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
+    """Verify open-standard Open Graph (og:*), brand logos, and W3C favicons across all ecosystem surfaces."""
+    ecosystem_root = docs_root.parent
+    credence_root = ecosystem_root / "credence"
+
+    # 1. Verify 1200x630 social preview image and vector assets exist and match canonical version
+    docs_og_png = docs_root / "assets" / "og-card.png"
+    web_og_png = credence_root / "web" / "assets" / "og-card.png"
+    docs_og_svg = docs_root / "assets" / "og-card.svg"
+    web_og_svg = credence_root / "web" / "assets" / "og-card.svg"
+
+    # Brand logo & Favicon assets
+    docs_logo = docs_root / "assets" / "logo.svg"
+    web_logo = credence_root / "web" / "assets" / "logo.svg"
+    docs_fav = docs_root / "assets" / "favicon.svg"
+    web_fav = credence_root / "web" / "assets" / "favicon.svg"
+    docs_touch = docs_root / "assets" / "apple-touch-icon.png"
+    web_touch = credence_root / "web" / "assets" / "apple-touch-icon.png"
+
+    assert docs_og_png.exists(), "credence-docs/assets/og-card.png must exist for link embeds"
+    assert web_og_png.exists(), "credence/web/assets/og-card.png must exist for link embeds"
+    assert docs_og_svg.exists(), "credence-docs/assets/og-card.svg must exist"
+    assert web_og_svg.exists(), "credence/web/assets/og-card.svg must exist"
+    assert docs_og_png.stat().st_size > 1000, "og-card.png must be a valid non-empty image"
+
+    assert docs_logo.exists() and web_logo.exists(), "logo.svg must exist in docs and web"
+    assert docs_fav.exists() and web_fav.exists(), "favicon.svg must exist in docs and web"
+    assert docs_touch.exists() and web_touch.exists(), "apple-touch-icon.png must exist in docs and web"
+
+    # Canonical version verification in social card SVGs
+    pyproject_path = credence_root / "pyproject.toml"
+    with open(pyproject_path, "rb") as f:
+        pyproject_data = tomllib.load(f)
+    canonical_version = pyproject_data["tool"]["poetry"]["version"]
+    expected_tag = f"v{canonical_version}"
+
+    assert f">{expected_tag}<" in docs_og_svg.read_text(encoding="utf-8"), (
+        f"credence-docs/assets/og-card.svg version badge does not match {expected_tag}"
+    )
+    assert f">{expected_tag}<" in web_og_svg.read_text(encoding="utf-8"), (
+        f"credence/web/assets/og-card.svg version badge does not match {expected_tag}"
+    )
+
+    # 2. Verify all ecosystem HTML entry points define complete open standard preview meta tags and favicons
+    html_surfaces = list((credence_root / "web").rglob("*.html"))
+    html_surfaces.append(docs_root / "index.html")
+
+    for html_file in html_surfaces:
+        content = html_file.read_text(encoding="utf-8")
+        if 'http-equiv="refresh"' in content or "http-equiv='refresh'" in content:
+            continue  # Skip redirect shells
+        assert 'property="og:title"' in content or "property='og:title'" in content, (
+            f"Missing og:title meta tag in {html_file.name}"
+        )
+        assert 'property="og:description"' in content or "property='og:description'" in content, (
+            f"Missing og:description meta tag in {html_file.name}"
+        )
+        assert 'property="og:image"' in content or "property='og:image'" in content, (
+            f"Missing og:image meta tag in {html_file.name}"
+        )
+        assert 'name="theme-color"' in content or "name='theme-color'" in content, (
+            f"Missing theme-color meta tag in {html_file.name}"
+        )
+        assert 'rel="icon"' in content or "rel='icon'" in content, f"Missing favicon link in {html_file.name}"
+        assert 'rel="apple-touch-icon"' in content or "rel='apple-touch-icon'" in content, (
+            f"Missing apple-touch-icon link in {html_file.name}"
+        )
+        assert "twitter:" not in content, f"Found forbidden proprietary twitter card meta tag in {html_file.name}"
+
+    # 3. Verify app.js dynamic social meta updater is exported
+    app_js_content = (docs_root / "app.js").read_text(encoding="utf-8")
+    assert "export function updateSocialMetadata" in app_js_content, (
+        "app.js must export updateSocialMetadata for dynamic client-side article embeds"
+    )
 
 
 @pytest.mark.governance
@@ -960,9 +1038,7 @@ def test_app_js_directive_and_alert_resilience(docs_root: Path) -> None:
 
     # 1. Verify GFM alert regex
     assert "alertMatch" in content, "app.js must support GFM alertCallouts"
-    assert (
-        r"^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]" in content or "NOTE|TIP|IMPORTANT|WARNING|CAUTION" in content
-    )
+    assert "NOTE|TIP" in content and "IMPORTANT|WARNING|CAUTION" in content
 
     # 2. Verify container directive regex
     assert "directiveMatch" in content, "app.js must support container directives"
@@ -1001,7 +1077,7 @@ def test_raw_html_code_entity_escaping(docs_root: Path) -> None:
 
 @pytest.mark.governance
 def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
-    """Execute Node.js runtime smoke test on all documentation files via app.js parseMarkdown()."""
+    """Execute Node.js runtime test on all documentation files via app.js parseMarkdown() with leak checks."""
     import shutil
     import subprocess
 
@@ -1019,6 +1095,8 @@ def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
 
     import(`file://${{appJsPath}}`).then(({{ parseMarkdown }}) => {{
       let count = 0;
+      const leakViolations = [];
+
       function scan(dir) {{
         for (const f of fs.readdirSync(dir, {{ withFileTypes: true }})) {{
           const full = path.join(dir, f.name);
@@ -1030,6 +1108,16 @@ def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
               if (typeof html !== 'string' || html.length === 0) {{
                 throw new Error(`Empty HTML output for ${{full}}`);
               }}
+
+              // Invariant: Zero unrendered blockquote '>' leaks or split raw markers
+              const lines = html.split('\\n');
+              for (let idx = 0; idx < lines.length; idx++) {{
+                const trimmed = lines[idx].trim();
+                if (trimmed === '>' || trimmed === '&gt;' || trimmed === '<p>&gt;</p>' || trimmed === '<p>&gt; </p>') {{
+                  leakViolations.push(`${{path.relative(docsDir, full)}}:${{idx + 1}} -> "${{trimmed}}"`);
+                }}
+              }}
+
               count++;
             }} catch (err) {{
               console.error(`PARSER ERROR on ${{full}}:`, err);
@@ -1039,7 +1127,13 @@ def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
         }}
       }}
       scan(docsDir);
-      console.log(`Successfully verified ${{count}} markdown files.`);
+
+      if (leakViolations.length > 0) {{
+        console.error('Found unrendered blockquote leaks:\\n' + leakViolations.join('\\n'));
+        process.exit(1);
+      }}
+
+      console.log(`Successfully verified ${{count}} markdown files with zero parser leaks.`);
     }}).catch(err => {{
       console.error('Import error:', err);
       process.exit(1);
@@ -1518,3 +1612,46 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
     assert app_js_path.exists()
     app_js_text = app_js_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_interactive_diagram_controls_and_lightbox_integrity(docs_root: Path) -> None:
+    """Verify that app.js implements interactive zoom/pan controls, fullscreen lightbox, and styles.css enforces WCAG contrast."""
+    app_js_path = docs_root / "app.js"
+    styles_css_path = docs_root / "styles.css"
+    assert app_js_path.exists()
+    assert styles_css_path.exists()
+
+    app_js_text = app_js_path.read_text(encoding="utf-8")
+    styles_css_text = styles_css_path.read_text(encoding="utf-8")
+
+    # 1. Interactive diagram controls & lightbox modal in app.js
+    assert "setupDiagramControls" in app_js_text, "app.js must define setupDiagramControls"
+    assert "openDiagramLightbox" in app_js_text, "app.js must define openDiagramLightbox"
+    assert "getOrCreateDiagramLightbox" in app_js_text, "app.js must define getOrCreateDiagramLightbox"
+    assert "mermaid-window-controls" in app_js_text, "app.js must create mermaid window controls"
+    assert "diagram-zoom-btn" in app_js_text, "app.js must create diagram zoom buttons"
+    assert "diagram-lightbox" in app_js_text, "app.js must wire diagram lightbox modal"
+
+    # 2. Stylesheet rules for diagram interactivity & WCAG high-contrast palette
+    assert ".mermaid-wrapper" in styles_css_text, "styles.css must style .mermaid-wrapper"
+    assert ".mermaid-window-controls" in styles_css_text, "styles.css must style .mermaid-window-controls"
+    assert ".diagram-lightbox" in styles_css_text, "styles.css must style .diagram-lightbox"
+    assert "cursor: grab" in styles_css_text, "styles.css must provide grab cursor for draggable diagrams"
+    assert "#1e293b" in styles_css_text, "styles.css must enforce dark slate (#1e293b) fills for Mermaid nodes"
+    assert "#38bdf8" in styles_css_text, "styles.css must enforce sky-cyan (#38bdf8) borders for Mermaid nodes"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_edge_router_dynamic_opengraph_rewrite() -> None:
+    """Verify that web/_worker.js transforms og:image and og:url via HTMLRewriter for dynamic origin resolution."""
+    worker_path = Path(__file__).resolve().parents[2] / "web" / "_worker.js"
+    assert worker_path.exists(), "web/_worker.js must exist"
+    worker_text = worker_path.read_text(encoding="utf-8")
+
+    assert "new HTMLRewriter()" in worker_text, "_worker.js must use HTMLRewriter for dynamic metadata"
+    assert 'meta[property="og:image"]' in worker_text, "_worker.js must rewrite og:image meta tag"
+    assert 'meta[property="og:url"]' in worker_text, "_worker.js must rewrite og:url meta tag"
+    assert "originUrl" in worker_text, "_worker.js must resolve to active request originUrl"

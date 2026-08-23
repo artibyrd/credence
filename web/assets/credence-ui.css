@@ -109,6 +109,14 @@ body {
   letter-spacing: -0.02em;
 }
 
+.credence-nav .brand img.brand-logo {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
 .credence-nav .brand span.badge {
   font-size: 0.75rem;
   padding: 0.15rem 0.5rem;
