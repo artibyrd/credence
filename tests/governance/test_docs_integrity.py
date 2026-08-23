@@ -417,86 +417,19 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
 
 
 @pytest.mark.governance
-def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
-    """Verify any fenced mermaid code blocks in documentation have valid syntax,
+def test_zero_legacy_mermaid_diagrams_invariant(docs_root: Path) -> None:
+    """Invariant 34: Verify zero legacy Mermaid diagrams remain anywhere in documentation or blog posts.
 
-    balanced delimiters, proper subgraph nesting, zero raw markdown links, and WCAG contrast standards.
+    All technical diagrams must use enclosed UTF-8 box schematics, wire sequence layouts, or state matrices.
     """
     md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
-    valid_diagram_types = (
-        "graph",
-        "flowchart",
-        "sequencediagram",
-        "classdiagram",
-        "statediagram",
-        "erdiagram",
-        "journey",
-        "gantt",
-        "pie",
-        "gitgraph",
-        "mindmap",
-        "timeline",
-    )
-
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
         blocks = re.findall(r"```mermaid\n([\s\S]*?)```", text)
-        for idx, block in enumerate(blocks):
-            lines = [
-                line.strip()
-                for line in block.strip().splitlines()
-                if line.strip() and not line.strip().startswith("%%")
-            ]
-            assert len(lines) > 0, f"Empty Mermaid diagram block #{idx + 1} in {md_file.name}"
-
-            # 1. Valid diagram header
-            first_token = lines[0].split()[0].lower()
-            assert any(first_token.startswith(t) for t in valid_diagram_types), (
-                f"Invalid Mermaid diagram type '{first_token}' in {md_file.name} block #{idx + 1}"
-            )
-
-            # 2. Rejection of raw markdown links in diagram labels
-            assert not re.search(r"\[[^\]]+\]\([^)]+\)", block), (
-                f"Mermaid Invariant Violation in {md_file.name} block #{idx + 1}: "
-                f"Contains raw Markdown link syntax inside diagram. Use clean descriptive text instead."
-            )
-
-            # 3. Linebreak hygiene: prohibit literal '\\n' in string labels (use <br/>)
-            assert r"\n" not in block, (
-                f"Mermaid Invariant Violation in {md_file.name} block #{idx + 1}: "
-                f"Contains literal '\\n' in label. Use '<br/>' HTML break tags for line breaks."
-            )
-
-            # 4. Balanced subgraphs
-            is_sequence = first_token.startswith("sequencediagram")
-            if not is_sequence:
-                subgraph_count = sum(
-                    1 for line in lines if line.startswith("subgraph") or re.match(r"^subgraph\s+", line)
-                )
-                end_count = sum(
-                    1 for line in lines if line == "end" or line.startswith("end ") or line.endswith(" end")
-                )
-                assert subgraph_count == end_count, (
-                    f"Mismatched subgraphs in {md_file.name} block #{idx + 1}: "
-                    f"{subgraph_count} 'subgraph' blocks vs {end_count} 'end' statements."
-                )
-
-            # 5. Balanced double quotes per line
-            for line_no, line in enumerate(lines, 1):
-                quotes = re.findall(r'(?<!\\)"', line)
-                assert len(quotes) % 2 == 0, (
-                    f"Unbalanced double quotes in {md_file.name} block #{idx + 1}, line {line_no}: '{line}'"
-                )
-
-            # 6. WCAG Dark-Theme Contrast Guard on custom classDef
-            for line in lines:
-                if line.startswith("classDef"):
-                    assert "fill:#" in line or "fill: #" in line, (
-                        f"classDef in {md_file.name} block #{idx + 1} missing explicit fill hex: '{line}'"
-                    )
-                    assert "stroke:#" in line or "stroke: #" in line, (
-                        f"classDef in {md_file.name} block #{idx + 1} missing explicit stroke hex: '{line}'"
-                    )
+        assert len(blocks) == 0, (
+            f"Invariant 34 Violation in {md_file.name}: Found {len(blocks)} legacy Mermaid block(s). "
+            f"All diagrams must use high-density UTF-8 box schematics."
+        )
 
 
 @pytest.mark.governance
@@ -1676,35 +1609,6 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
     assert app_js_path.exists()
     app_js_text = app_js_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
-
-
-@pytest.mark.governance
-@pytest.mark.unit
-def test_interactive_diagram_controls_and_lightbox_integrity(docs_root: Path) -> None:
-    """Verify that app.js implements interactive zoom/pan controls, fullscreen lightbox, and styles.css enforces WCAG contrast."""
-    app_js_path = docs_root / "app.js"
-    styles_css_path = docs_root / "styles.css"
-    assert app_js_path.exists()
-    assert styles_css_path.exists()
-
-    app_js_text = app_js_path.read_text(encoding="utf-8")
-    styles_css_text = styles_css_path.read_text(encoding="utf-8")
-
-    # 1. Interactive diagram controls & lightbox modal in app.js
-    assert "setupDiagramControls" in app_js_text, "app.js must define setupDiagramControls"
-    assert "openDiagramLightbox" in app_js_text, "app.js must define openDiagramLightbox"
-    assert "getOrCreateDiagramLightbox" in app_js_text, "app.js must define getOrCreateDiagramLightbox"
-    assert "mermaid-window-controls" in app_js_text, "app.js must create mermaid window controls"
-    assert "diagram-zoom-btn" in app_js_text, "app.js must create diagram zoom buttons"
-    assert "diagram-lightbox" in app_js_text, "app.js must wire diagram lightbox modal"
-
-    # 2. Stylesheet rules for diagram interactivity & WCAG high-contrast palette
-    assert ".mermaid-wrapper" in styles_css_text, "styles.css must style .mermaid-wrapper"
-    assert ".mermaid-window-controls" in styles_css_text, "styles.css must style .mermaid-window-controls"
-    assert ".diagram-lightbox" in styles_css_text, "styles.css must style .diagram-lightbox"
-    assert "cursor: grab" in styles_css_text, "styles.css must provide grab cursor for draggable diagrams"
-    assert "#1e293b" in styles_css_text, "styles.css must enforce dark slate (#1e293b) fills for Mermaid nodes"
-    assert "#38bdf8" in styles_css_text, "styles.css must enforce sky-cyan (#38bdf8) borders for Mermaid nodes"
 
 
 @pytest.mark.governance

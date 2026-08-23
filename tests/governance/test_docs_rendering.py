@@ -83,11 +83,7 @@ async def test_schematic_and_diagram_rendering(page: Page, docs_server: str) -> 
         await page.goto(f"{docs_server}/#{route}", wait_until="networkidle")
         await page.wait_for_timeout(600)
 
-        # 1. Ensure no broken raw unrendered mermaid blocks remain
-        raw_mermaid = await page.query_selector_all(".mermaid-code pre code.language-mermaid")
-        assert len(raw_mermaid) == 0, f"Found unrendered raw mermaid blocks on route {route}"
-
-        # 2. Ensure high-density UTF-8 schematic pre/code blocks render with clean bounding dimensions
+        # 1. Ensure high-density UTF-8 schematic pre/code blocks render with clean bounding dimensions
         schematics = await page.query_selector_all(".markdown-body pre code")
         assert len(schematics) >= 1, f"Expected schematic code containers on route {route}, found {len(schematics)}"
 
@@ -98,15 +94,6 @@ async def test_schematic_and_diagram_rendering(page: Page, docs_server: str) -> 
                 assert box is not None, f"Schematic #{idx} on route {route} has no bounding box"
                 assert box["width"] > 200, f"Schematic #{idx} on route {route} width too small: {box['width']}"
                 assert box["height"] > 40, f"Schematic #{idx} on route {route} height too small: {box['height']}"
-
-        # 3. If any framed mermaid windows exist, verify their rendered SVGs
-        windows = await page.query_selector_all(".mermaid-window")
-        if len(windows) > 0:
-            rendered_svgs = await page.query_selector_all(".mermaid-rendered svg")
-            assert len(rendered_svgs) == len(windows)
-            for _idx, svg in enumerate(rendered_svgs):
-                box = await svg.bounding_box()
-                assert box is not None and box["width"] > 50 and box["height"] > 30
 
 
 @pytest.mark.e2e
