@@ -1,8 +1,9 @@
 # ==============================================================================
-# 1. Parameterized Preflight Toolchain Gates [core: preflight]
+# 1. Parameterized Preflight Toolchain Gates [group('core: preflight')]
 # ==============================================================================
 
-# Verify developer CLI dependencies (poetry, docker, gcloud, wrangler, gh, terraform, all)
+# Verify developer CLI dependencies across all planes (poetry, docker, gcloud, wrangler, gh, terraform, all)
+[group('core: preflight')]
 preflight tool="all":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -99,6 +100,7 @@ preflight tool="all":
             check_gh || true
             check_binary "Terraform" "terraform" "https://terraform.io" "" || true
             echo "=== Preflight Validation Complete ==="
+            echo -e "\033[1;36m💡 NEXT STEP: Run 'just ignite' for one-command onboarding or 'just check' for pre-commit QA.\033[0m"
             ;;
         *)
             echo "❌ Unknown preflight target '{{tool}}'. Valid options: poetry, docker, gcloud, wrangler, gh, terraform, all."
@@ -107,7 +109,9 @@ preflight tool="all":
     esac
 
 # Install all dependencies and Playwright browser binaries
+[group('core: preflight')]
 setup: (preflight "poetry")
     poetry install
     poetry run playwright install chromium
-
+    @echo -e "\033[1;32m✅ Development environment dependencies installed.\033[0m"
+    @echo -e "\033[1;36m💡 NEXT STEP: Run 'just check' to verify QA gates or 'just dev' to launch local services.\033[0m"
