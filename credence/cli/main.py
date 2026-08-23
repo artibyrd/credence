@@ -286,8 +286,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     # badge
     p_badge = subparsers.add_parser("badge", help="Generate or export SVG and Web Component badges")
-    p_badge.add_argument("action", default="export", nargs="?", choices=["export"])
-    p_badge.add_argument("badge_id", default="verified_auditor", nargs="?", help="Badge ID, domain, or article URL")
+    p_badge.add_argument("action", default="export", nargs="?", help="Action ('export') or target badge ID")
+    p_badge.add_argument("badge_id", default="", nargs="?", help="Badge ID, domain, or article URL")
     p_badge.add_argument("--output", "-o", help="Target output file path (default stdout)")
     p_badge.add_argument(
         "--modality", "-m", default="node", choices=["node", "publisher", "attestation"], help="Attestation modality"
@@ -334,8 +334,9 @@ def main() -> None:
     elif args.command == "export":
         asyncio.run(cli_export_report(args.identifier, output_path=args.output))
     elif args.command == "badge":
+        target_badge = args.badge_id if args.badge_id else args.action if args.action != "export" else "verified_auditor"
         cli_badge_export(
-            badge_id=args.badge_id,
+            badge_id=target_badge,
             output_path=args.output,
             node=args.node,
             score=args.score,
