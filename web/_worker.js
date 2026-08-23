@@ -17,11 +17,30 @@ export default {
       const targetBackend = isDev ? devBackend : prodBackend;
       const targetBackendHost = new URL(targetBackend).hostname;
 
-      // 2. Dynamic Zero-Cache Docs & Blog Proxy (docs.credence.run & blog.credence.run)
-      if (host === 'docs.credence.run' || host === 'dev.docs.credence.run' || host === 'blog.credence.run' || host === 'dev.blog.credence.run') {
-        const pagesUrl = new URL(url.pathname + url.search, 'https://credence-docs.pages.dev');
+      // 2. Dynamic Zero-Cache Docs & Blog Proxy (docs.credence.run, blog.credence.run, or /docs & /blog on dev)
+      if (
+        host === 'docs.credence.run' ||
+        host === 'dev.docs.credence.run' ||
+        host === 'blog.credence.run' ||
+        host === 'dev.blog.credence.run' ||
+        (isDev && (url.pathname === '/docs' || url.pathname.startsWith('/docs/') || url.pathname === '/blog' || url.pathname.startsWith('/blog/')))
+      ) {
+        let subPath = url.pathname;
+        if (subPath === '/docs' || subPath === '/blog') {
+          return Response.redirect(`${url.origin}${subPath}/`, 301);
+        }
+        if (subPath.startsWith('/docs/')) {
+          subPath = subPath.substring(5);
+        } else if (subPath.startsWith('/blog/')) {
+          subPath = subPath.substring(5);
+        }
+        if (!subPath || subPath === '') {
+          subPath = '/';
+        }
+        const targetPagesDomain = isDev ? 'dev.credence-docs.pages.dev' : 'credence-docs.pages.dev';
+        const pagesUrl = new URL(subPath + url.search, `https://${targetPagesDomain}`);
         const reqHeaders = new Headers(request.headers);
-        reqHeaders.set('Host', 'credence-docs.pages.dev');
+        reqHeaders.set('Host', targetPagesDomain);
         
         const res = await fetch(pagesUrl, {
           method: request.method,
@@ -140,7 +159,9 @@ export default {
 
       // Build target asset path
       let finalPath;
-      if (reqPath === '/' || reqPath === '' || reqPath === '/index.html') {
+      if (reqPath.startsWith('/assets/')) {
+        finalPath = reqPath;
+      } else if (reqPath === '/' || reqPath === '' || reqPath === '/index.html') {
         finalPath = `/${prefix}/index.html`;
       } else if (reqPath.endsWith('/')) {
         finalPath = `/${prefix}${reqPath}index.html`;
@@ -153,7 +174,15 @@ export default {
 
       if (env && env.ASSETS) {
         response = await env.ASSETS.fetch(new Request(assetUrl));
-        // Clean URL fallback: try .html if extensionless path returns 404
+        // Fallback 1: try root path if domain-prefixed path returned 404
+        if (response.status === 404 && finalPath !== reqPath) {
+          const rootAssetUrl = new URL(reqPath, request.url);
+          const rootResponse = await env.ASSETS.fetch(new Request(rootAssetUrl));
+          if (rootResponse.status < 400) {
+            response = rootResponse;
+          }
+        }
+        // Fallback 2: try .html if extensionless path returns 404
         if (response.status === 404 && !reqPath.includes('.')) {
           const htmlAssetUrl = new URL(finalPath + '.html', request.url);
           const htmlResponse = await env.ASSETS.fetch(new Request(htmlAssetUrl));

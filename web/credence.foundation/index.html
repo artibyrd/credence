@@ -11,7 +11,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.7.2</span>
+      🛡️ Credence <span class="badge">v2.8.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -23,13 +23,20 @@
   </nav>
 
   <div class="workstation-container">
-    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
-    <header class="workstation-header">
-      <span class="badge-pill">🏛️ Standards &amp; Governance Vault</span>
-      <h1 class="hero-title">Credence Foundation</h1>
-      <p class="hero-subtitle">
-        Constitutional rule catalogs, journalistic ethics standards, and cryptographic keys governing Credence audits.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🏛️</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Foundation</h1>
+            <span class="masthead-tag">Constitutional Standards &amp; Trust Vault</span>
+          </div>
+          <p class="masthead-desc">
+            Constitutional rule catalogs, journalistic ethics standards, and cryptographic root keys governing Credence audits.
+          </p>
+        </div>
+      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -53,31 +60,6 @@
             <button class="deck-nav-item" data-tab="governance" onclick="window.CredenceWS.switchTab('governance')">
               <span>⚖️ 4. Governance RFCs</span>
             </button>
-          </div>
-
-          <!-- Lower Section: Global Ecosystem Switcher (Changes Domain) -->
-          <div class="deck-rail-global">
-            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
-            <a href="https://credence.run" class="deck-domain-link">
-              <span>Home Hub</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
-            </a>
-            <a href="https://credence.report" class="deck-domain-link">
-              <span>🛡️ Reports Lab</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">report ↗</span>
-            </a>
-            <a href="https://credence.nexus" class="deck-domain-link">
-              <span>🕸️ Nexus NOC</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">nexus ↗</span>
-            </a>
-            <a href="https://credence.foundation" class="deck-domain-link active-domain">
-              <span class="domain-name">🏛️ Foundation</span>
-              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
-            </a>
-            <a href="https://docs.credence.run" class="deck-domain-link">
-              <span>📚 Docs &amp; Tools</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
-            </a>
           </div>
 
           <!-- Bottom Pinned Operator Footer -->
@@ -120,9 +102,10 @@
                       <span style="color:#fff; font-size:0.95rem; font-weight:700;">📰 Society of Professional Journalists (SPJ) Code of Ethics</span>
                       <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('spj_ethics')" title="Learn about SPJ Ethics Rules">ℹ</button>
                     </div>
-                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
                       <span class="badge" style="background:rgba(56, 189, 248, 0.12); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.25); font-size:0.72rem; font-family:var(--font-mono);">JOURNALISTIC_ETHICS</span>
-                      <span class="badge" style="background:rgba(255, 255, 255, 0.06); color:var(--text-muted); font-size:0.72rem;">13 Rules &bull; 1.2x</span>
+                      <span class="badge" style="background:rgba(255, 255, 255, 0.06); color:var(--text-muted); font-size:0.72rem;">13 Rules</span>
+                      <span class="badge" style="background:rgba(245, 158, 11, 0.12); color:var(--accent-amber); border:1px solid rgba(245, 158, 11, 0.25); font-size:0.72rem;">Weight 1.2x</span>
                       <span class="toggle-indicator" style="color:var(--accent-cyan); font-size:0.78rem; font-weight:600;">▼ Toggle</span>
                     </div>
                   </div>
@@ -347,9 +330,10 @@
                       <span style="color:#fff; font-size:0.95rem; font-weight:700;">🧠 Internet Encyclopedia of Philosophy (IEP) Fallacies</span>
                       <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('iep_fallacies')" title="Learn about IEP Fallacy Rules">ℹ</button>
                     </div>
-                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
                       <span class="badge" style="background:rgba(192, 132, 252, 0.12); color:var(--accent-purple); border:1px solid rgba(192, 132, 252, 0.25); font-size:0.72rem; font-family:var(--font-mono);">LOGICAL_FALLACY</span>
-                      <span class="badge" style="background:rgba(255, 255, 255, 0.06); color:var(--text-muted); font-size:0.72rem;">15 Rules &bull; 1.0x</span>
+                      <span class="badge" style="background:rgba(255, 255, 255, 0.06); color:var(--text-muted); font-size:0.72rem;">15 Rules</span>
+                      <span class="badge" style="background:rgba(192, 132, 252, 0.12); color:var(--accent-purple); border:1px solid rgba(192, 132, 252, 0.25); font-size:0.72rem;">Weight 1.0x</span>
                       <span class="toggle-indicator" style="color:var(--accent-purple); font-size:0.78rem; font-weight:600;">▼ Toggle</span>
                     </div>
                   </div>
@@ -606,9 +590,10 @@
                       <span style="color:#fff; font-size:0.95rem; font-weight:700;">🛑 Deceptive UI Patterns Catalog</span>
                       <button type="button" class="info-btn" onclick="event.stopPropagation(); window.CredenceWS.openInfoModal('deceptive_patterns')" title="Learn about Deceptive Patterns &amp; Drip Pricing">ℹ</button>
                     </div>
-                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
                       <span class="badge" style="background:rgba(244, 63, 94, 0.12); color:var(--accent-rose); border:1px solid rgba(244, 63, 94, 0.25); font-size:0.72rem; font-family:var(--font-mono);">DECEPTIVE_PATTERN</span>
-                      <span class="badge" style="background:rgba(255, 255, 255, 0.06); color:var(--text-muted); font-size:0.72rem;">8 Rules &bull; 1.5x</span>
+                      <span class="badge" style="background:rgba(255, 255, 255, 0.06); color:var(--text-muted); font-size:0.72rem;">8 Rules</span>
+                      <span class="badge" style="background:rgba(244, 63, 94, 0.12); color:var(--accent-rose); border:1px solid rgba(244, 63, 94, 0.25); font-size:0.72rem;">Weight 1.5x</span>
                       <span class="toggle-indicator" style="color:var(--accent-rose); font-size:0.78rem; font-weight:600;">▼ Toggle</span>
                     </div>
                   </div>
@@ -812,7 +797,7 @@
                 <textarea id="verify-payload" class="form-input" rows="4" style="font-family:var(--font-mono); font-size:0.85rem;" placeholder='{"classification":"CLEAN","content_sha256":"0000000000000000000000000000000000000000000000000000000000000000","suspicion_score":0.0}'></textarea>
               </div>
 
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap:1rem; margin-bottom:1.25rem;">
                 <div class="form-group">
                   <label class="form-label" for="verify-pubkey">Signer Ed25519 Public Key (Hex)</label>
                   <input type="text" id="verify-pubkey" class="form-input" placeholder="e.g. 0000000000000000000000000000000000000000000000000000000000000000">
@@ -823,7 +808,7 @@
                 </div>
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
                 <button class="btn-primary" onclick="verifyClientSignature()">🔍 Verify Signature via WebCrypto</button>
                 <div id="verify-result" style="font-family:var(--font-mono); font-size:0.9rem;"></div>
               </div>
@@ -846,20 +831,20 @@
 
               <!-- Ratified Standards RFC Table -->
               <h3 style="font-size:1rem; color:#fff; margin:1.25rem 0 0.75rem 0;">📜 Active &amp; Ratified RFC Standards</h3>
-              <div style="overflow-x:auto;">
-                <table class="dci-table" style="width:100%;">
+              <div class="ws-table-container">
+                <table class="ws-table" style="width:100%;">
                   <thead>
                     <tr>
-                      <th>RFC ID &amp; Title</th>
-                      <th>Domain</th>
-                      <th>Consensus Status</th>
-                      <th>Quorum Level</th>
-                      <th>Integrity Hash</th>
+                      <th style="min-width:280px;">RFC ID &amp; Title</th>
+                      <th style="width:160px;">Domain</th>
+                      <th style="width:130px;">Consensus Status</th>
+                      <th style="width:140px;">Quorum Level</th>
+                      <th style="width:130px;">Integrity Hash</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>
+                      <td class="wrap-cell">
                         <strong style="color:#fff;">RFC-001: Core SPJ Journalistic Ethics Standard</strong>
                         <div style="font-size:0.75rem; color:var(--text-dim);">Foundational 13-rule journalistic integrity framework</div>
                       </td>
@@ -869,7 +854,7 @@
                       <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:d8a2...4c01</code></td>
                     </tr>
                     <tr>
-                      <td>
+                      <td class="wrap-cell">
                         <strong style="color:#fff;">RFC-002: IEP Logical Fallacy Mapping</strong>
                         <div style="font-size:0.75rem; color:var(--text-dim);">15 formal fallacy definitions and evidentiary rules</div>
                       </td>
@@ -879,7 +864,7 @@
                       <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:e4f1...9b22</code></td>
                     </tr>
                     <tr>
-                      <td>
+                      <td class="wrap-cell">
                         <strong style="color:#fff;">RFC-003: Deceptive UI &amp; Drip Pricing Protections</strong>
                         <div style="font-size:0.75rem; color:var(--text-dim);">Consumer protection rules for e-commerce checkout flows</div>
                       </td>
@@ -889,7 +874,7 @@
                       <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:7b9c...aa83</code></td>
                     </tr>
                     <tr>
-                      <td>
+                      <td class="wrap-cell">
                         <strong style="color:#fff;">RFC-004: Domain Expertise Weighted Medians</strong>
                         <div style="font-size:0.75rem; color:var(--text-dim);">Mathematical formula for subject-matter authority consensus</div>
                       </td>

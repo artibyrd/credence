@@ -192,4 +192,27 @@ resource "cloudflare_record" "dev_admin_run" {
   comment         = "Dev Operator Admin Cockpit workstation"
 }
 
+resource "cloudflare_record" "dev_docs" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_run[0].id
+  name            = "dev.docs"
+  type            = "CNAME"
+  content         = var.domain_credence_run
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev Documentation portal"
+}
+
+resource "cloudflare_record" "dev_blog" {
+  count           = local.has_cloudflare && var.enable_dev_subdomains ? 1 : 0
+  zone_id         = data.cloudflare_zone.zone_run[0].id
+  name            = "dev.blog"
+  type            = "CNAME"
+  content         = var.domain_credence_run
+  proxied         = true
+  allow_overwrite = true
+  comment         = "Dev Sovereign Blog portal"
+}
+
+
 

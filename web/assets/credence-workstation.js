@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.7.2";
+export const CREDENCE_VERSION = "v2.8.0";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -350,7 +350,7 @@ export function injectShortcutsModal() {
         </div>
         <div class="operator-modal-body" style="font-family:var(--font-mono); font-size:0.85rem;">
           <div style="display:grid; grid-template-columns:120px 1fr; gap:0.75rem 1rem; align-items:center;">
-            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">1 – 5</kbd></div>
+            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">1 – 7</kbd></div>
             <div style="color:var(--text-main);">Switch Workstation Tabs</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">/</kbd></div>
             <div style="color:var(--text-main);">Focus Search / Audit Input</div>
@@ -358,8 +358,6 @@ export function injectShortcutsModal() {
             <div style="color:var(--text-main);">Cycle Epistemic Lensing Mode</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">r</kbd></div>
             <div style="color:var(--text-main);">Load Random Scenario / Peer</div>
-            <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">t</kbd></div>
-            <div style="color:var(--text-main);">Toggle Terminal Monospace HUD</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">?</kbd></div>
             <div style="color:var(--text-main);">Show / Hide Shortcuts Modal</div>
             <div><kbd style="background:#1e293b; padding:2px 6px; border-radius:4px; border:1px solid #334155; color:#38bdf8;">Esc</kbd></div>
@@ -1560,25 +1558,12 @@ export function closeInfoModal() {
 // -----------------------------------------------------------------------------
 
 export function toggleTuiMode() {
-  const isTui = document.body.classList.toggle('tui-mode');
-  localStorage.setItem('credence_tui_mode', isTui ? 'true' : 'false');
-  const btn = document.getElementById('btn-tui-toggle');
-  if (btn) {
-    btn.classList.toggle('active', isTui);
-    btn.innerHTML = isTui ? '📟 HUD: MONO' : '📟 HUD: SLATE';
-  }
-  showToast(isTui ? '📟 TUI Monospace HUD Mode Active' : '🖥️ Slate Dashboard Mode Active', 'info');
+  // Theme toggle removed by design
 }
 
 export function initTuiMode() {
-  if (localStorage.getItem('credence_tui_mode') === 'true') {
-    document.body.classList.add('tui-mode');
-    const btn = document.getElementById('btn-tui-toggle');
-    if (btn) {
-      btn.classList.add('active');
-      btn.innerHTML = '📟 HUD: MONO';
-    }
-  }
+  document.body.classList.remove('tui-mode');
+  localStorage.removeItem('credence_tui_mode');
 }
 
 // -----------------------------------------------------------------------------
@@ -1618,44 +1603,107 @@ export async function verifyEd25519Signature(canonicalJsonString, signatureHex, 
   }
 }
 
-export function normalizeLocalLinks() {
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (!isLocal) return;
+export function transformTargetUrl(href) {
+  if (!href || typeof window === 'undefined' || !window.location) return href;
+  const host = window.location.hostname;
+  const isDev = host.startsWith('dev.') || host.startsWith('mcp.dev.');
+  const isSingleHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.a.run.app') || host.endsWith('.pages.dev');
 
-  const domainMap = {
-    'https://admin.credence.run': '/admin.credence.run/',
-    'https://credence.run': '/credence.run/',
-    'https://credence.report': '/credence.report/',
-    'https://credence.nexus': '/credence.nexus/',
-    'https://credence.foundation': '/credence.foundation/',
-  };
+  // Handle relative cross-domain paths (e.g. ../credence.report/index.html?rule=...)
+  if (href.startsWith('../credence.') || href.startsWith('../admin.credence.')) {
+    const parts = href.split('/');
+    const targetDir = parts[1];
+    const sub = parts.slice(2).join('/');
+    const subPath = sub ? (sub.startsWith('?') ? `index.html${sub}` : sub) : '';
+    if (isDev) return `https://dev.${targetDir}/${subPath}`;
+    if (isSingleHost) return `/${targetDir}/${subPath}`;
+    return `https://${targetDir}/${subPath}`;
+  }
+
+  // Handle Dev Preview Subdomains (stay on dev.* across ecosystem)
+  if (isDev) {
+    const prodMap = {
+      'https://admin.credence.run': 'https://dev.admin.credence.run',
+      'https://credence.run': 'https://dev.credence.run',
+      'https://credence.report': 'https://dev.credence.report',
+      'https://credence.nexus': 'https://dev.credence.nexus',
+      'https://credence.foundation': 'https://dev.credence.foundation',
+      'https://docs.credence.run': 'https://dev.credence.run/docs/',
+      'https://blog.credence.run': 'https://dev.credence.run/blog/',
+      'https://mcp.credence.run': 'https://mcp.dev.credence.run',
+      'https://seeds.credence.nexus': 'https://dev.seeds.credence.nexus',
+      'https://keys.credence.foundation': 'https://dev.keys.credence.foundation',
+    };
+    for (const [prodDomain, devDomain] of Object.entries(prodMap)) {
+      if (href.startsWith(prodDomain)) {
+        const sub = href.substring(prodDomain.length);
+        if (devDomain.endsWith('/') && sub.startsWith('/')) {
+          return `${devDomain.slice(0, -1)}${sub}`;
+        }
+        return `${devDomain}${sub}`;
+      }
+    }
+  }
+
+  // Handle Localhost / Direct Cloud Run path prefixing
+  if (isSingleHost) {
+    const pathMap = {
+      'https://admin.credence.run': '/admin.credence.run/',
+      'https://credence.run': '/credence.run/',
+      'https://credence.report': '/credence.report/',
+      'https://credence.nexus': '/credence.nexus/',
+      'https://credence.foundation': '/credence.foundation/',
+      'https://dev.admin.credence.run': '/admin.credence.run/',
+      'https://dev.credence.run': '/credence.run/',
+      'https://dev.credence.report': '/credence.report/',
+      'https://dev.credence.nexus': '/credence.nexus/',
+      'https://dev.credence.foundation': '/credence.foundation/',
+    };
+    if (href === '/' || href === 'https://credence.run' || href === 'https://credence.run/' || href === 'https://dev.credence.run' || href === 'https://dev.credence.run/') {
+      return '/credence.run/';
+    }
+    for (const [domain, localPath] of Object.entries(pathMap)) {
+      if (href.startsWith(domain)) {
+        return `${localPath}${href.substring(domain.length).replace(/^\//, '')}`;
+      }
+    }
+  }
+
+  return href;
+}
+
+export function normalizeLocalLinks() {
+  if (typeof document === 'undefined') return;
 
   document.querySelectorAll('a[href]').forEach(a => {
     const href = a.getAttribute('href');
     if (!href) return;
-
-    if (href === '/' || href === 'https://credence.run' || href === 'https://credence.run/') {
-      a.setAttribute('href', '/credence.run/');
-      return;
-    }
-
-    for (const [prodDomain, localPath] of Object.entries(domainMap)) {
-      if (href.startsWith(prodDomain)) {
-        const sub = href.substring(prodDomain.length);
-        a.setAttribute('href', `${localPath}${sub.replace(/^\//, '')}`);
-        break;
-      }
+    const transformed = transformTargetUrl(href);
+    if (transformed !== href) {
+      a.setAttribute('href', transformed);
     }
   });
 }
 
-// Auto-run link normalization on DOM ready
+// Auto-run link normalization on DOM ready and capture clicks
 if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', normalizeLocalLinks);
   } else {
     normalizeLocalLinks();
   }
+
+  // Capture-phase link click interceptor to guarantee zero-escape environment isolation
+  document.addEventListener('click', (e) => {
+    const anchor = e.target.closest && e.target.closest('a[href]');
+    if (!anchor) return;
+    const rawHref = anchor.getAttribute('href');
+    if (!rawHref) return;
+    const transformed = transformTargetUrl(rawHref);
+    if (transformed !== rawHref) {
+      anchor.setAttribute('href', transformed);
+    }
+  }, true);
 }
 
 // -----------------------------------------------------------------------------
@@ -1663,12 +1711,13 @@ if (typeof document !== 'undefined') {
 // -----------------------------------------------------------------------------
 
 export function initWorkstation(config = {}) {
+  const options = typeof config === 'string' ? { defaultTab: config } : (config || {});
   const {
     tabButtonsSelector = '[data-tab], .deck-nav-item, .workstation-tab-btn, .deck-admin-link',
     tabPanelsSelector = '.tab-panel',
     defaultTab = null,
     onTabChange = null,
-  } = config;
+  } = options;
 
   initTuiMode();
   injectOperatorModal();
@@ -1697,6 +1746,8 @@ export function initWorkstation(config = {}) {
     if (window.location.hash !== `#${tabId}`) {
       history.replaceState(null, '', `#${tabId}`);
     }
+
+    normalizeLocalLinks();
 
     if (typeof onTabChange === 'function') {
       onTabChange(tabId);
@@ -1748,11 +1799,6 @@ export function initWorkstation(config = {}) {
       return;
     }
 
-    if (e.key === 't' || e.key === 'T') {
-      toggleTuiMode();
-      return;
-    }
-
     if (e.key === '/') {
       const search = document.querySelector('input[type="text"], input[type="search"]');
       if (search) {
@@ -1763,8 +1809,8 @@ export function initWorkstation(config = {}) {
       return;
     }
 
-    // Number keys 1-5 for tab switching
-    if (['1', '2', '3', '4', '5'].includes(e.key)) {
+    // Number keys 1-7 for tab switching
+    if (['1', '2', '3', '4', '5', '6', '7'].includes(e.key)) {
       const idx = parseInt(e.key, 10) - 1;
       const tabBtns = document.querySelectorAll(tabButtonsSelector);
       if (tabBtns[idx]) {

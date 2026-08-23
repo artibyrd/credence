@@ -12,7 +12,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.7.2</span>
+      🛡️ Credence <span class="badge">v2.8.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -24,13 +24,20 @@
   </nav>
 
   <div class="workstation-container">
-    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
-    <header class="workstation-header">
-      <span class="badge-pill">🔬 Article &amp; Publisher Forensics</span>
-      <h1 class="hero-title">Credence Reports</h1>
-      <p class="hero-subtitle">
-        Interactive search, temporal diffing, and forensic evaluations for articles across the open web.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🔬</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Reports</h1>
+            <span class="masthead-tag">Forensic Verification Lab</span>
+          </div>
+          <p class="masthead-desc">
+            Interactive search, temporal diffing, 3-tier epistemic lensing, and forensic evaluations for articles across the open web.
+          </p>
+        </div>
+      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -64,38 +71,11 @@
             <div id="pinned-sources-container" style="display:flex; flex-direction:column; gap:0.35rem;">
               <!-- Dynamically populated from localStorage -->
             </div>
-
-
-          </div>
-
-          <!-- Lower Section: Global Ecosystem Switcher -->
-          <div class="deck-rail-global">
-            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
-            <a href="https://credence.run" class="deck-domain-link">
-              <span>Home Hub</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
-            </a>
-            <a href="https://credence.report" class="deck-domain-link active-domain">
-              <span class="domain-name">🛡️ Reports Lab</span>
-              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
-            </a>
-            <a href="https://credence.nexus" class="deck-domain-link">
-              <span>🕸️ Nexus NOC</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">nexus ↗</span>
-            </a>
-            <a href="https://credence.foundation" class="deck-domain-link">
-              <span>🏛️ Foundation</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">vault ↗</span>
-            </a>
-            <a href="https://docs.credence.run" class="deck-domain-link">
-              <span>📚 Docs &amp; Tools</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
-            </a>
           </div>
 
           <!-- Bottom Pinned Operator & Standalone Footer -->
           <div class="deck-rail-admin-footer">
-            <button type="button" class="btn-secondary" style="width:100%; text-align:center; font-size:0.78rem; padding:0.4rem; margin-bottom:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;" onclick="window.CredenceWS.openShortcutsModal()">
+            <button type="button" class="btn-secondary" style="width:100%; text-align:center; font-size:0.78rem; padding:0.4rem; margin-bottom:0.35rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;" onclick="window.CredenceWS.openShortcutsModal()">
               <span>⌨️ Hotkeys Reference</span>
               <span class="nav-badge" style="background:var(--bg-card); color:var(--text-dim);">[?]</span>
             </button>
@@ -338,18 +318,18 @@
                     <!-- ===================================================================
                WORKSPACE 2: BROWSE DIRECTORY & SOURCE DOSSIERS (UNIFIED)
                =================================================================== -->
-          <div id="tab-browse" class="tab-panel">
-            <div class="deck-card" style="padding:1.25rem;">
+          <div id="tab-browse" class="tab-panel" style="height: 100%; overflow: hidden;">
+            <div class="deck-card" style="padding:1.25rem; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
               
               <!-- Browse Header with Subview Switcher -->
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:0.85rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
                     <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.3); font-size:0.72rem;">FORENSIC DIRECTORY &amp; SOURCES</span>
                     <button class="info-btn" onclick="window.CredenceWS.openInfoModal('browse')" title="Info: Browse Directory &amp; Case Studies">ℹ</button>
                   </div>
                   <h2 style="font-size:1.25rem; color:#fff; margin:0 0 0.25rem 0;">Directory &amp; Publisher Dossiers</h2>
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0; max-width:760px; line-height:1.5;">
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0; max-width:760px; line-height:1.4;">
                     Explore curated empirical reports or inspect comprehensive longitudinal publisher profiles across the open web.
                   </p>
                 </div>
@@ -368,9 +348,9 @@
               <!-- ===============================================================
                    SUBVIEW A: CURATED ARTICLES CATALOG
                    =============================================================== -->
-              <div id="browse-subview-articles">
+              <div id="browse-subview-articles" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                 <!-- Quick Category Filter Chips -->
-                <div style="display:flex; gap:0.4rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
+                <div style="display:flex; gap:0.4rem; margin-bottom:0.75rem; flex-wrap:wrap; align-items:center;">
                   <span style="font-size:0.75rem; color:var(--text-dim); font-weight:600;">Category:</span>
                   <button class="btn-secondary active-chip" id="chip-cat-all" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('ALL')">All Audits (16)</button>
                   <button class="btn-secondary" id="chip-cat-clean" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('CLEAN')">Clean Wire / Journals (4)</button>
@@ -379,8 +359,8 @@
                   <button class="btn-secondary" id="chip-cat-local" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (2)</button>
                 </div>
 
-                <!-- Selection Hub Cards Grid (Bounded Vertical Scrollpane) -->
-                <div class="ws-scroll-pane" style="max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                <!-- Selection Hub Cards Grid (Single Scrollpane with max-height:580px) -->
+                <div class="ws-scroll-pane" style="flex: 1; max-height:580px; overflow-y:auto; padding-right:0.35rem;">
                   <div id="selection-hub-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
                     <!-- Populated dynamically via renderSelectionHub() -->
                   </div>
@@ -390,18 +370,18 @@
               <!-- ===============================================================
                    SUBVIEW B: PUBLISHER CATALOG & INLINE DOSSIER VIEW
                    =============================================================== -->
-              <div id="browse-subview-sources" style="display:none;">
+              <div id="browse-subview-sources" style="flex: 1; display: none; flex-direction: column; overflow: hidden;">
                 
                 <!-- Publisher Catalog Grid (Shown when browsing all publishers) -->
-                <div id="publishers-catalog-container">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                <div id="publishers-catalog-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
                     <input type="text" id="publishers-filter-input" class="form-input" placeholder="Search publishers (e.g. reuters, onion, nature, maricopa)..." style="max-width:340px; font-size:0.85rem; padding:0.4rem 0.65rem;" oninput="filterPublishersCatalog(this.value)">
                     <div style="font-size:0.78rem; color:var(--text-dim);">
                       Showing <b id="publishers-count-badge" style="color:#fff;">16 Verified Publishers</b>
                     </div>
                   </div>
 
-                  <div class="ws-scroll-pane" style="max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                  <div class="ws-scroll-pane" style="flex: 1; max-height:580px; overflow-y:auto; padding-right:0.35rem;">
                     <div id="publishers-catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
                       <!-- Populated dynamically via renderPublishersCatalog() -->
                     </div>
@@ -619,8 +599,8 @@
           <!-- ===================================================================
                WORKSPACE 4: SIFTER STREAM (LIVE NETWORK INGESTION)
                =================================================================== -->
-          <div id="tab-sifter" class="tab-panel">
-            <div class="deck-card">
+          <div id="tab-sifter" class="tab-panel" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="deck-card" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 0;">
               <div class="deck-card-header">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -637,7 +617,7 @@
                 </div>
               </div>
 
-              <div id="sifter-stream-container" class="ws-scroll-pane" style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem; max-height:560px; overflow-y:auto;">
+              <div id="sifter-stream-container" class="ws-scroll-pane" style="flex: 1; max-height: 580px; overflow-y: auto; display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem; padding-right: 0.35rem;">
                 <!-- Populated dynamically via window.renderSifterStream() -->
               </div>
             </div>

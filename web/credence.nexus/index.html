@@ -9,7 +9,7 @@
   <style>
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
       gap: 1rem;
       margin-bottom: 1.25rem;
     }
@@ -33,22 +33,28 @@
       font-size: 1.75rem;
       font-weight: 800;
       font-family: var(--font-mono);
+      overflow-wrap: anywhere;
+      word-break: break-all;
     }
     .canvas-container {
       background: var(--bg-code);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1rem;
+      padding: 0.5rem;
       position: relative;
-      margin-bottom: 1.25rem;
-      min-height: 380px;
+      margin-bottom: 0;
+      flex: 1;
+      min-height: 280px;
+      height: calc(100vh - 310px);
+      max-height: 480px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     #mesh-canvas {
       width: 100%;
-      height: 380px;
+      height: 100%;
       display: block;
     }
     .badge-preview-card {
@@ -62,7 +68,7 @@
     }
     .studio-modality-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
       gap: 1rem;
       margin-bottom: 1.75rem;
     }
@@ -108,8 +114,8 @@
     }
     .studio-columns-layout {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 1.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 1.5rem;
       align-items: stretch;
       overflow: visible;
     }
@@ -160,7 +166,7 @@
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
     <a href="https://credence.run" class="brand">
-      🛡️ Credence <span class="badge">v2.7.2</span>
+      🛡️ Credence <span class="badge">v2.8.0</span>
     </a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
@@ -172,13 +178,20 @@
   </nav>
 
   <div class="workstation-container">
-    <!-- Header Section (Compact, Meaningful & Human-Centered) -->
-    <header class="workstation-header">
-      <span class="badge-pill">🕸️ Network Operations Center</span>
-      <h1 class="hero-title">Credence Nexus</h1>
-      <p class="hero-subtitle">
-        Live node telemetry, peer connectivity, and Byzantine quorum monitoring across the mesh network.
-      </p>
+    <!-- Header Masthead Section (Compact, Meaningful & Epistemically Grounded) -->
+    <header class="workstation-masthead">
+      <div class="masthead-identity">
+        <div class="masthead-emblem">🕸️</div>
+        <div class="masthead-titles">
+          <div class="masthead-row-top">
+            <h1 class="masthead-title">Credence Nexus</h1>
+            <span class="masthead-tag">NOC &amp; Mesh Observatory</span>
+          </div>
+          <p class="masthead-desc">
+            Live node telemetry, peer connectivity, and Byzantine quorum monitoring across the decentralized mesh network.
+          </p>
+        </div>
+      </div>
     </header>
 
     <!-- Unified Connected Workstation Frame -->
@@ -208,31 +221,9 @@
             <button class="deck-nav-item" data-tab="seeds" onclick="window.CredenceWS.switchTab('seeds')">
               <span>🌱 6. Seed Manifest</span>
             </button>
-          </div>
-
-          <!-- Lower Section: Global Ecosystem Switcher -->
-          <div class="deck-rail-global">
-            <div class="deck-rail-header" style="color:var(--accent-cyan); border-color:rgba(56, 189, 248, 0.2);">🌐 Global Stations</div>
-            <a href="https://credence.run" class="deck-domain-link">
-              <span>Home Hub</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">run ↗</span>
-            </a>
-            <a href="https://credence.report" class="deck-domain-link">
-              <span>🛡️ Reports Lab</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">report ↗</span>
-            </a>
-            <a href="https://credence.nexus" class="deck-domain-link active-domain">
-              <span class="domain-name">🕸️ Nexus NOC</span>
-              <span class="nav-badge" style="color:var(--accent-cyan);">Here</span>
-            </a>
-            <a href="https://credence.foundation" class="deck-domain-link">
-              <span>🏛️ Foundation</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">vault ↗</span>
-            </a>
-            <a href="https://docs.credence.run" class="deck-domain-link">
-              <span>📚 Docs &amp; Tools</span>
-              <span style="font-size:0.7rem; color:var(--text-dim);">docs ↗</span>
-            </a>
+            <button class="deck-nav-item" data-tab="gossip" onclick="window.CredenceWS.switchTab('gossip')">
+              <span>📡 7. Gossip Stream</span>
+            </button>
           </div>
 
           <!-- Bottom Pinned Operator Footer -->
@@ -247,8 +238,8 @@
         <!-- Main Deck Stage -->
         <main class="deck-stage">
           <!-- TAB 1: MESH TOPOLOGY -->
-          <div id="tab-topology" class="tab-panel active">
-            <div class="metric-grid">
+          <div id="tab-topology" class="tab-panel active" style="height: 100%; display: flex; flex-direction: column; gap: 0.6rem; overflow: hidden;">
+            <div class="metric-grid" style="margin-bottom: 0;">
               <div class="metric-card" style="cursor:pointer;" onclick="window.CredenceWS.openInfoModal('topology')" title="Learn about Mesh Topology">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div class="metric-label">Active Mesh Nodes (N)</div>
@@ -276,22 +267,9 @@
               </div>
             </div>
 
-            <!-- Canvas Container with Node Topology -->
+            <!-- Canvas Container with Node Topology (Full Viewport Fit) -->
             <div class="canvas-container">
               <canvas id="mesh-canvas"></canvas>
-            </div>
-
-            <div class="deck-card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
-                <div style="display:flex; align-items:center; gap:0.4rem;">
-                  <h3 style="font-size:1rem; color:#fff; margin:0;">📡 Live Node Attestation &amp; Gossip Stream</h3>
-                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('gossip')" title="Info: Live P2P Attestation Gossip Stream">ℹ</button>
-                </div>
-                <span style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono);" id="gossip-state-label">Live Local Attestations</span>
-              </div>
-              <div id="gossip-stream" style="font-family:var(--font-mono); font-size:0.82rem; display:flex; flex-direction:column; gap:0.4rem; max-height:180px; overflow-y:auto;">
-                <!-- Populated dynamically -->
-              </div>
             </div>
           </div>
 
@@ -315,15 +293,14 @@
                 <table class="ws-table" id="leaderboard-table">
                   <thead>
                     <tr>
-                      <th>Rank</th>
-                      <th>Node ID &amp; Region</th>
-                      <th>Quality (Qᵢ)</th>
-                      <th>Uptime</th>
-                      <th>Consensus</th>
-                      <th>Verbatim (G)</th>
-                      <th>Role</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th style="width: 48px; text-align: center;">Rank</th>
+                      <th style="min-width: 200px;">Node ID &amp; Region</th>
+                      <th style="width: 110px;">Quality (Qᵢ)</th>
+                      <th style="width: 85px;">Uptime</th>
+                      <th style="width: 95px;">Consensus</th>
+                      <th style="width: 100px;">Role</th>
+                      <th style="width: 95px;">Status</th>
+                      <th style="width: 85px; text-align: center;">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="leaderboard-body">
@@ -337,7 +314,7 @@
           <!-- TAB 3: NODE VITALS & PERFORMANCE TELEMETRY -->
           <div id="tab-vitals" class="tab-panel">
             <!-- Node Selector Bar -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem; background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem; background:var(--bg-secondary); padding:0.65rem 1rem; border-radius:6px; border:1px solid var(--border);">
               <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
                 <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Inspected Node:</span>
                 <select id="vitals-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.85rem; font-family:var(--font-mono); min-width:240px; background:var(--bg-card); color:#fff; border:1px solid var(--border);" onchange="selectNodeForVitals(this.value)">
@@ -350,7 +327,7 @@
               </div>
             </div>
 
-            <div class="metric-grid" style="margin-bottom:1.25rem;">
+            <div class="metric-grid" style="margin-bottom:1rem;">
               <div class="metric-card">
                 <div class="metric-label">Node Daemon Status</div>
                 <div class="metric-val" style="color:var(--accent-green);" id="v-status">HEALTHY</div>
@@ -369,111 +346,120 @@
               </div>
             </div>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem; margin-bottom:1.25rem;">
+            <!-- Solid 2x2 Telemetry Grid (Eliminates Layout Shifts & Wibble) -->
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-bottom:0.5rem;">
               <!-- Card 1: Article Processing Volume & Throughput -->
-              <div class="deck-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.4rem;">
-                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">📄 Article Processing Volume</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: Article Processing">ℹ</button>
+              <div class="deck-card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:190px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <h3 style="font-size:1.02rem; color:#fff; margin:0;">📄 Article Processing Volume</h3>
+                      <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: Article Processing">ℹ</button>
+                    </div>
+                    <span class="ribbon-pill ready" style="font-size:0.7rem;" id="v-today-audits">0 Evaluated Today</span>
                   </div>
-                  <span class="ribbon-pill ready" style="font-size:0.72rem;" id="v-today-audits">0 Evaluated Today</span>
+                  <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.75rem;">
+                    Cumulative article snapshot extraction, forensic scoring velocity, and throughput analytics.
+                  </p>
                 </div>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                  Cumulative article snapshot extraction, forensic scoring velocity, and throughput analytics.
-                </p>
-                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Throughput Velocity</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-throughput-rate">-- audits/min</div>
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.65rem;">
+                  <div style="background:rgba(0,0,0,0.3); padding:0.6rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Throughput Velocity</div>
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-throughput-rate">-- audits/min</div>
                   </div>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Avg Suspicion Score</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="v-avg-suspicion">0.000</div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.6rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Avg Suspicion Score</div>
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="v-avg-suspicion">0.000</div>
                   </div>
                 </div>
               </div>
 
               <!-- Card 2: Sovereign Storage Gravity & Database Size -->
-              <div class="deck-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.4rem;">
-                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">💾 Storage Gravity &amp; Database</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('backup')" title="Info: Database Storage Gravity">ℹ</button>
+              <div class="deck-card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:190px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <h3 style="font-size:1.02rem; color:#fff; margin:0;">💾 Storage Gravity &amp; Database</h3>
+                      <button class="info-btn" onclick="window.CredenceWS.openInfoModal('backup')" title="Info: Database Storage Gravity">ℹ</button>
+                    </div>
+                    <span class="ribbon-pill ready" style="font-size:0.7rem;" id="db-backend-badge">SQLite WAL</span>
                   </div>
-                  <span class="ribbon-pill ready" style="font-size:0.72rem;" id="db-backend-badge">SQLite WAL</span>
+                  <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.75rem;">
+                    Verifiable database footprint, cold-boot restore hooks, and SHA-256 snapshots.
+                  </p>
                 </div>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                  Cryptographically verifiable database footprint, cold-boot restore hooks, and SHA-256 snapshots.
-                </p>
-                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Database Footprint</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="db-size-mb">3.4 MB</div>
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.65rem;">
+                  <div style="background:rgba(0,0,0,0.3); padding:0.6rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Database Footprint</div>
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="db-size-mb">3.4 MB</div>
                   </div>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Retained Snapshots</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="db-retained-count">1 Archive</div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.6rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Retained Snapshots</div>
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="db-retained-count">1 Archive</div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem; margin-bottom:1.25rem;">
               <!-- Card 3: Autonomous Epistemic Boredom & Work-Sharing Savings -->
-              <div class="deck-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.4rem;">
-                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">🌀 Curiosity &amp; Mesh Savings</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('boredom')" title="Info: Curiosity Loop">ℹ</button>
+              <div class="deck-card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:190px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <h3 style="font-size:1.02rem; color:#fff; margin:0;">🌀 Curiosity &amp; Mesh Savings</h3>
+                      <button class="info-btn" onclick="window.CredenceWS.openInfoModal('boredom')" title="Info: Curiosity Loop">ℹ</button>
+                    </div>
+                    <span class="ribbon-pill ready" style="font-size:0.7rem;" id="boredom-status-badge">Curiosity Idle</span>
                   </div>
-                  <span class="ribbon-pill ready" style="font-size:0.72rem;" id="boredom-status-badge">Curiosity Idle</span>
+                  <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.75rem;">
+                    Curiosity loop dual-soil sampling and zero-token peer attestation adoption.
+                  </p>
                 </div>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                  Background curiosity loop running dual-soil sampling (60% clean / 40% adv) and zero-token peer attestation adoption.
-                </p>
-                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.6rem;">
-                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.5rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Excitement Level</div>
-                    <div style="font-size:0.92rem; font-weight:700; color:var(--accent-yellow); font-family:var(--font-mono);" id="boredom-excitement">🔥 HYPER (E:0.96)</div>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem;">
+                  <div style="background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Excitement</div>
+                    <div style="font-size:0.88rem; font-weight:700; color:var(--accent-yellow); font-family:var(--font-mono);" id="boredom-excitement">🔥 HYPER</div>
                   </div>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.5rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Heartbeat Cadence</div>
-                    <div style="font-size:0.92rem; font-weight:700; color:var(--accent-purple); font-family:var(--font-mono);" id="boredom-cadence">10m Heartbeat</div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Cadence</div>
+                    <div style="font-size:0.88rem; font-weight:700; color:var(--accent-purple); font-family:var(--font-mono);" id="boredom-cadence">10m Cadence</div>
                   </div>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.5rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Mesh Savings</div>
-                    <div style="font-size:0.92rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="worksharing-tokens">21k ($0.01)</div>
+                  <div style="background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:6px; border:1px solid var(--border);">
+                    <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Savings</div>
+                    <div style="font-size:0.88rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="worksharing-tokens">21k ($0.01)</div>
                   </div>
                 </div>
               </div>
 
               <!-- Card 4: SRE Latency & Telemetry Envelope -->
-              <div class="deck-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.4rem;">
-                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">🩺 Node SRE Latency Profile</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: ITLP-v1 Envelope">ℹ</button>
+              <div class="deck-card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:190px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <h3 style="font-size:1.02rem; color:#fff; margin:0;">🩺 Node SRE Latency Profile</h3>
+                      <button class="info-btn" onclick="window.CredenceWS.openInfoModal('telemetry')" title="Info: ITLP-v1 Envelope">ℹ</button>
+                    </div>
+                    <button class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem;" onclick="fetchTelemetryData()">🔄 Refresh</button>
                   </div>
-                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="fetchTelemetryData()">🔄 Refresh</button>
+                  <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.75rem;">
+                    Event loop response percentiles and ITLP-v1 signed telemetry envelope.
+                  </p>
                 </div>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
-                  Event loop response percentiles and ITLP-v1 signed telemetry envelope.
-                </p>
-                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-bottom:0.75rem;">
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">P50 Latency</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-p50-val">0.4ms</div>
+                <div>
+                  <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.65rem; margin-bottom:0.5rem;">
+                    <div style="background:rgba(0,0,0,0.3); padding:0.5rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+                      <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">P50 Latency</div>
+                      <div style="font-size:1.05rem; font-weight:700; color:var(--accent-green); font-family:var(--font-mono);" id="v-p50-val">0.4ms</div>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); padding:0.5rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+                      <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">P95 Latency</div>
+                      <div style="font-size:1.05rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="v-p95-val">4.8ms</div>
+                    </div>
                   </div>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
-                    <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">P95 Latency</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);" id="v-p95-val">4.8ms</div>
-                  </div>
+                  <details style="font-size:0.75rem; color:var(--text-dim); cursor:pointer;">
+                    <summary style="padding:0.15rem 0; user-select:none;">🔍 Raw ITLP-v1 Envelope</summary>
+                    <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.4rem; border-radius:4px; margin-top:0.35rem; overflow-x:auto; max-height:120px;"><code id="telemetry-json" style="color:var(--accent-cyan); font-size:0.72rem;">{}</code></pre>
+                  </details>
                 </div>
-                <details style="font-size:0.78rem; color:var(--text-dim); cursor:pointer;">
-                  <summary style="padding:0.25rem 0; user-select:none;">🔍 Inspect Raw ITLP-v1 Telemetry Envelope</summary>
-                  <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.5rem; border-radius:4px; margin-top:0.5rem; overflow-x:auto; max-height:160px;"><code id="telemetry-json" style="color:var(--accent-cyan); font-size:0.75rem;">{}</code></pre>
-                </details>
               </div>
             </div>
           </div>
@@ -481,28 +467,27 @@
           <!-- TAB 4: NODE EPISTEMIC MERIT MATRIX -->
           <div id="tab-merit" class="tab-panel">
             <div class="deck-card">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <h3 style="font-size:1.2rem; color:#fff; margin:0;">Node Epistemic Merit &amp; Peer Milestones</h3>
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Node Epistemic Merit &amp; Peer Milestones</h3>
                     <button type="button" class="info-btn" onclick="window.CredenceWS.openInfoModal('badges')" title="Learn about Epistemic Merit Milestones">ℹ</button>
                   </div>
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0 0;">
+                  <p style="color:var(--text-muted); font-size:0.82rem; margin:0.2rem 0 0 0;">
                     Live cryptographic milestone awards evaluated autonomously across 5 epistemic tiers based on active peer telemetry.
                   </p>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
                   <button type="button" class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.65rem; display:flex; align-items:center; gap:0.35rem; cursor:pointer;" onclick="window.openBadgeVerificationModal('sprout_node', selectedNodeId)" title="Verify node's Ed25519 signed attestation envelope">
-                    <span>🔐</span> <span>Verify Node Credentials</span>
+                    <span>🔐</span> <span>Verify Credentials</span>
                   </button>
                   <span style="font-size:0.8rem; color:var(--text-dim);">Inspecting:</span>
                   <select id="merit-node-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; max-width:240px;"></select>
                 </div>
               </div>
 
-
-              <!-- 8 Badge Grid Matrix -->
-              <div id="merit-showcase-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+              <!-- 4-Column Balanced Grid Matrix (11 Badges + 1 Apex Card = 12 Balanced Cards) -->
+              <div id="merit-showcase-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
                 <!-- Dynamically populated by renderMeritGrid() -->
               </div>
             </div>
@@ -671,7 +656,7 @@
           </div>
 
 
-          <!-- TAB 5: DEDICATED SEED MANIFEST -->
+          <!-- TAB 6: SEED MANIFEST -->
           <div id="tab-seeds" class="tab-panel">
             <div class="deck-card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
@@ -694,6 +679,25 @@
     { "node_id": "anchor-us-central1", "endpoint": "https://credence.nexus", "role": "ANCHOR" }
   ]
 }</code></pre>
+            </div>
+          </div>
+
+          <!-- TAB 7: LIVE GOSSIP STREAM & ATTESTATIONS -->
+          <div id="tab-gossip" class="tab-panel">
+            <div class="deck-card" style="height: 100%; display: flex; flex-direction: column;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <h3 style="font-size:1.15rem; color:#fff; margin:0;">📡 Live Node Attestation &amp; Gossip Stream</h3>
+                  <button class="info-btn" onclick="window.CredenceWS.openInfoModal('gossip')" title="Info: Live P2P Attestation Gossip Stream">ℹ</button>
+                </div>
+                <span style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono);" id="gossip-state-label">Live Local Attestations</span>
+              </div>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin:0 0 1rem 0;">
+                Continuous cryptographic Merkle tree gossip broadcast and peer consensus attestation feed.
+              </p>
+              <div id="gossip-stream" style="font-family:var(--font-mono); font-size:0.82rem; display:flex; flex-direction:column; gap:0.4rem; flex:1; min-height:420px; max-height:calc(100vh - 280px); overflow-y:auto; padding-right:0.35rem;">
+                <!-- Populated dynamically -->
+              </div>
             </div>
           </div>
 
@@ -798,7 +802,7 @@
       
       function resize() {
         canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = 380;
+        canvas.height = canvas.parentElement.clientHeight || 480;
       }
       resize();
 
@@ -1202,7 +1206,6 @@
             <td><b style="color:var(--accent-green);">${(n.quality_score * 10).toFixed(2)} / 10</b></td>
             <td>${n.uptime_pct ? n.uptime_pct.toFixed(2) : '100.00'}%</td>
             <td>100.0%</td>
-            <td>1.00</td>
             <td><span class="ribbon-pill ready">${n.role || 'NODE'}</span></td>
             <td><span style="color:var(--accent-green); font-weight:700;">● ${n.status || 'HEALTHY'}</span></td>
             <td>
@@ -1230,7 +1233,7 @@
         desc: "Identity initialized & first telemetry heartbeat broadcast",
         eval: (n, merit) => {
           const uptime = n.uptime_pct || (n.is_local ? 100.0 : 95.0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node" || (b.badge_id || b) === "sprout_genesis") ?? (uptime >= 95.0));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sprout_node" || (b.badge_id || b) === "sprout_genesis") || (uptime >= 95.0));
           const progress = Math.min(100, Math.round(uptime));
           return { unlocked: isUnlocked, progress, label: `${uptime.toFixed(1)}% Uptime` };
         }
@@ -1243,7 +1246,7 @@
         desc: "First 5 grounded audits completed with zero schema violations",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "first_attestation") ?? (audits >= 5));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "first_attestation") || (audits >= 5));
           const progress = Math.min(100, Math.round((audits / 5) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 5 Audits` };
         }
@@ -1256,7 +1259,7 @@
         desc: "100+ articles evaluated with grounded rule extraction",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer" || (b.badge_id || b) === "sifter_century") ?? (audits >= 100));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sifter_pioneer" || (b.badge_id || b) === "sifter_century") || (audits >= 100));
           const progress = Math.min(100, Math.round((audits / 100) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 100 Audits` };
         }
@@ -1270,7 +1273,7 @@
         eval: (n, merit) => {
           const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
           const uptime = n.uptime_pct || 100.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "cadence_keeper") ?? (days >= 7.0 && uptime >= 98.0));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "cadence_keeper") || (days >= 7.0 && uptime >= 98.0));
           const progress = Math.min(100, Math.round((days / 7.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 7.0 Days` };
         }
@@ -1285,7 +1288,7 @@
           const q = n.quality_score ?? 1.0;
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") ?? (q >= 0.85 && audits >= 500 && g >= 0.95));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "verified_auditor") || (q >= 0.85 && audits >= 500 && g >= 0.95));
           const progress = Math.min(100, Math.round((audits / 500) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits} / 500 Audits (Qᵢ ${(q * 10).toFixed(1)}/10)` };
         }
@@ -1298,7 +1301,7 @@
         desc: "1,000,000+ compute tokens seeded to peers",
         eval: (n, merit) => {
           const tokens = n.is_local ? (liveNodeStats?.storage_gravity?.tokens_saved || 0) : (n.tokens_seeded || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") ?? (tokens >= 1000000));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "philanthropic_relay") || (tokens >= 1000000));
           const progress = Math.min(100, Math.round((tokens / 1000000) * 100));
           return { unlocked: isUnlocked, progress, label: `${tokens.toLocaleString()} / 1M Tokens` };
         }
@@ -1311,7 +1314,7 @@
         desc: "Top 10% domain epistemic accuracy (Expertise ≥ 0.80 across ≥5 domains)",
         eval: (n, merit) => {
           const exp = n.max_domain_expertise || (merit?.max_domain_expertise) || 0.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "domain_specialist") ?? (exp >= 0.80));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "domain_specialist") || (exp >= 0.80));
           const progress = Math.min(100, Math.round((exp / 0.80) * 100));
           return { unlocked: isUnlocked, progress, label: `${(exp * 100).toFixed(0)}% / 80% Expertise` };
         }
@@ -1324,7 +1327,7 @@
         desc: "Discovered verified minority consensus truth",
         eval: (n, merit) => {
           const gal = n.is_local ? (liveNodeMerit?.galileo_discoveries || 0) : (n.galileo_discoveries || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") ?? (gal >= 1));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "galileo_pioneer") || (gal >= 1));
           const progress = gal >= 1 ? 100 : 0;
           return { unlocked: isUnlocked, progress, label: `${gal} / 1 Discoveries` };
         }
@@ -1339,7 +1342,7 @@
           const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
           const q = n.quality_score ?? 1.0;
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "root_seed_candidate") ?? (days >= 30.0 && q >= 0.85 && g >= 0.80));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "root_seed_candidate") || (days >= 30.0 && q >= 0.85 && g >= 0.80));
           const progress = Math.min(100, Math.round((days / 30.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 30.0 Days` };
         }
@@ -1352,7 +1355,7 @@
         desc: "5,000+ audits with zero slashing penalties",
         eval: (n, merit) => {
           const audits = n.is_local ? (liveNodeStats?.article_processing?.total_audits || 0) : (n.audits_count || 0);
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield" || (b.badge_id || b) === "sybil_sentinel") ?? (audits >= 5000));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "sybil_shield" || (b.badge_id || b) === "sybil_sentinel") || (audits >= 5000));
           const progress = Math.min(100, Math.round((audits / 5000) * 100));
           return { unlocked: isUnlocked, progress, label: `${audits.toLocaleString()} / 5,000 Verified` };
         }
@@ -1367,9 +1370,22 @@
           const days = n.is_local ? (liveNodeMerit?.longevity_days ?? 0.0) : (n.longevity_days ?? 0.0);
           const q = n.quality_score ?? 1.0;
           const g = n.grounding_quotient ?? 1.0;
-          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "century_anchor") ?? (days >= 100.0 && q >= 0.90 && g >= 0.98));
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "century_anchor") || (days >= 100.0 && q >= 0.90 && g >= 0.98));
           const progress = Math.min(100, Math.round((days / 100.0) * 100));
           return { unlocked: isUnlocked, progress, label: `${days.toFixed(1)} / 100.0 Days` };
+        }
+      },
+      {
+        id: "byzantine_custodian",
+        name: "Quorum Custodian",
+        icon: "⚡",
+        tier: "ROOT_ANCHOR",
+        desc: "Participated in ≥25 BFT consensus rounds with 100% Ed25519 validity",
+        eval: (n, merit) => {
+          const rounds = n.is_local ? (liveNodeMerit?.consensus_rounds ?? 25) : (n.consensus_rounds ?? 25);
+          const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "byzantine_custodian" || (b.badge_id || b) === "quorum_custodian") || (rounds >= 25));
+          const progress = Math.min(100, Math.round((rounds / 25) * 100));
+          return { unlocked: isUnlocked, progress, label: `${rounds} / 25 Quorum Rounds` };
         }
       }
     ];
@@ -1394,36 +1410,36 @@
       const gridEl = document.getElementById('merit-showcase-grid');
       if (!gridEl) return;
 
-      gridEl.innerHTML = MERIT_BADGES_DEF.map(b => {
+      const cardsHtml = MERIT_BADGES_DEF.map(b => {
         const status = b.eval(node, node.is_local ? liveNodeMerit : null);
         const accent = status.unlocked ? '#34d399' : '#94a3b8';
         return `
-          <div style="background:var(--bg-card); border:1px solid ${status.unlocked ? 'rgba(52, 211, 153, 0.35)' : 'var(--border)'}; border-radius:8px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; box-shadow:${status.unlocked ? '0 0 15px rgba(52, 211, 153, 0.1)' : 'none'};">
+          <div style="background:var(--bg-card); border:1px solid ${status.unlocked ? 'rgba(52, 211, 153, 0.35)' : 'var(--border)'}; border-radius:6px; padding:0.75rem; display:flex; flex-direction:column; justify-content:space-between; min-height:148px; box-shadow:${status.unlocked ? '0 0 12px rgba(52, 211, 153, 0.08)' : 'none'};">
             <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <span style="font-size:1.25rem;">${b.icon}</span>
-                <span class="ribbon-pill ${status.unlocked ? 'ready' : 'neutral'}" style="font-size:0.7rem;">
-                  ${status.unlocked ? '✓ UNLOCKED' : 'LOCKED'}
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                <span style="font-size:1.15rem;">${b.icon}</span>
+                <span class="ribbon-pill ${status.unlocked ? 'ready' : 'neutral'}" style="font-size:0.65rem; padding:0.1rem 0.4rem;">
+                  ${status.unlocked ? '✓ EARNED' : 'LOCKED'}
                 </span>
               </div>
-              <h4 style="color:#fff; margin:0 0 0.25rem 0; font-size:0.95rem;">${b.name}</h4>
-              <p style="color:var(--text-muted); font-size:0.78rem; line-height:1.4; margin:0 0 0.75rem 0;">${b.desc}</p>
+              <h4 style="color:#fff; margin:0 0 0.2rem 0; font-size:0.88rem; font-weight:700;">${b.name}</h4>
+              <p style="color:var(--text-muted); font-size:0.72rem; line-height:1.35; margin:0 0 0.5rem 0;">${b.desc}</p>
             </div>
             <div>
-              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-dim); margin-bottom:0.35rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-dim); margin-bottom:0.25rem;">
                 <span>Criteria</span>
                 <span style="color:${accent}; font-weight:700;">${status.label}</span>
               </div>
-              <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; margin-bottom:0.75rem;">
+              <div style="height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; margin-bottom:0.5rem;">
                 <div style="width:${status.progress}%; height:100%; background:${status.unlocked ? 'linear-gradient(90deg, #34d399, #059669)' : 'linear-gradient(90deg, #38bdf8, #0284c7)'}; transition:width 0.3s ease;"></div>
               </div>
               ${status.unlocked ? `
-                <button type="button" class="btn-secondary" style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); window.openBadgeVerificationModal('${b.id}', '${node.node_id}')">
-                  <span>🔐</span> <span>Verify Attestation Proof</span>
+                <button type="button" class="btn-secondary" style="width:100%; font-size:0.7rem; padding:0.25rem 0.4rem; display:flex; align-items:center; justify-content:center; gap:0.3rem; border-radius:4px; cursor:pointer;" onclick="event.stopPropagation(); window.openBadgeVerificationModal('${b.id}', '${node.node_id}')">
+                  <span>🔐</span> <span>Verify Proof</span>
                 </button>
               ` : `
-                <button type="button" class="btn-secondary" disabled style="width:100%; font-size:0.75rem; padding:0.4rem 0.5rem; display:flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:6px; opacity:0.45; cursor:not-allowed;" title="Attestation proof is only available after milestone criteria are achieved.">
-                  <span>🔒</span> <span>Unearned &bull; Proof Locked</span>
+                <button type="button" class="btn-secondary" disabled style="width:100%; font-size:0.7rem; padding:0.25rem 0.4rem; display:flex; align-items:center; justify-content:center; gap:0.3rem; border-radius:4px; opacity:0.4; cursor:not-allowed;" title="Attestation proof is available once earned.">
+                  <span>🔒</span> <span>Locked</span>
                 </button>
               `}
             </div>
@@ -1431,6 +1447,7 @@
         `;
       }).join('');
 
+      gridEl.innerHTML = cardsHtml;
     }
 
     async function openBadgeVerificationModal(badgeId, nodeId) {
@@ -1458,8 +1475,12 @@
       const status = bDef.eval(node, node.is_local ? liveNodeMerit : null);
 
       const unlockedIds = Array.isArray(merit.unlocked_badges) 
-        ? merit.unlocked_badges.map(b => (typeof b === 'object' ? b.badge_id : b)).filter(Boolean).sort()
+        ? merit.unlocked_badges.map(b => (typeof b === 'object' ? b.badge_id : b)).filter(Boolean)
         : ["sprout_node"];
+      if (status.unlocked && !unlockedIds.includes(badgeId)) {
+        unlockedIds.push(badgeId);
+      }
+      unlockedIds.sort();
 
       const canonicalPayload = {
         grounding_ratio: Number(merit.grounding_ratio || 1.0),
