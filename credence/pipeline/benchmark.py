@@ -7,7 +7,6 @@ Bayesian consensus convergence.
 
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -153,8 +152,10 @@ async def run_epistemic_benchmark(
     base_dir = fixtures_dir or Path("tests/fixtures/html")
     fixture_files = sorted([f for f in base_dir.glob("*.html") if f.name in GOLDEN_12_METADATA])
 
-    tasks = [run_single_fixture_benchmark(f, session=session) for f in fixture_files]
-    results = await asyncio.gather(*tasks)
+    results: List[BenchmarkItemResult] = []
+    for f in fixture_files:
+        res = await run_single_fixture_benchmark(f, session=session)
+        results.append(res)
 
     free_scores = [r.reports["free"].suspicion_score for r in results]
     bal_scores = [r.reports["balanced"].suspicion_score for r in results]

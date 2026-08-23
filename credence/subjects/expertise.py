@@ -35,17 +35,25 @@ def compute_subject_expertise(metrics: DomainMetrics) -> float:
     Formula:
         E_i(subject) = 0.40 * C_{i, sub} + 0.35 * G_{i, sub} + 0.15 * V_{i, sub} + 0.10 * L_{i, sub}
         Adjusted by slashing penalties for hallucinated/erratic findings.
+        Includes Galileo Rule protection: verified verbatim grounding (G >= 0.85)
+        mitigates swarm deviation penalties to allow whistleblowers to build authority.
     """
     if metrics.evaluations_count <= 0:
         return 0.05
 
-    # 1. Domain Concordance C (40%): Deviation from Robust Median
-    avg_deviation = metrics.median_deviations_sum / max(1, metrics.evaluations_count)
-    concordance = max(0.0, 1.0 - (avg_deviation / 25.0))
-
-    # 2. Domain Citation Grounding G (35%): Ratio of verbatim DOM-grounded quotes
+    # 1. Domain Citation Grounding G (35%): Ratio of verbatim DOM-grounded quotes
     total_q = max(1, metrics.total_quotes_count)
     grounding_ratio = min(1.0, max(0.0, metrics.grounded_quotes_count / total_q))
+
+    # 2. Domain Concordance C (40%): Deviation from Robust Median with Galileo Protection
+    avg_deviation = metrics.median_deviations_sum / max(1, metrics.evaluations_count)
+    raw_concordance = max(0.0, 1.0 - (avg_deviation / 25.0))
+
+    if grounding_ratio >= 0.85 and metrics.grounded_quotes_count >= 5:
+        # Galileo Adjustment: Grounded discovery cannot be suppressed by swarm divergence
+        concordance = max(raw_concordance, 0.70 * grounding_ratio)
+    else:
+        concordance = raw_concordance
 
     # 3. Domain Volume & Entropy V (15%): Requires >= 25 evaluations across >= 5 distinct domains (Anti-Sybil)
     volume_count_ratio = min(1.0, metrics.evaluations_count / 25.0)
@@ -124,6 +132,8 @@ async def record_domain_evaluation(
     median_deviation: float,
     grounded_quotes: int,
     total_quotes: int,
+    origin_fqdn: Optional[str] = None,
+    unique_domains: Optional[int] = None,
 ) -> DomainMetric:
     """Update historical metrics and recalculate expertise for an observed audit."""
     stmt = select(DomainMetric).where(
@@ -135,6 +145,7 @@ async def record_domain_evaluation(
 
     now = utc_now()
     if not record:
+        initial_domains = unique_domains if unique_domains is not None else 1
         record = DomainMetric(
             node_pubkey=node_pubkey,
             subject_id=subject_id,
@@ -142,6 +153,7 @@ async def record_domain_evaluation(
             median_deviations_sum=median_deviation,
             grounded_quotes_count=grounded_quotes,
             total_quotes_count=total_quotes,
+            unique_domains_count=initial_domains,
             slashing_count=0,
             first_evaluated_at=now,
             last_evaluated_at=now,
@@ -152,6 +164,10 @@ async def record_domain_evaluation(
         record.median_deviations_sum += median_deviation
         record.grounded_quotes_count += grounded_quotes
         record.total_quotes_count += total_quotes
+        if unique_domains is not None:
+            record.unique_domains_count = unique_domains
+        elif origin_fqdn and record.unique_domains_count < 5:
+            record.unique_domains_count = min(5, record.unique_domains_count + 1)
         record.last_evaluated_at = now
 
     metrics = DomainMetrics(
@@ -159,6 +175,7 @@ async def record_domain_evaluation(
         median_deviations_sum=record.median_deviations_sum,
         grounded_quotes_count=record.grounded_quotes_count,
         total_quotes_count=record.total_quotes_count,
+        unique_domains_count=record.unique_domains_count,
         slashing_count=record.slashing_count,
         first_evaluated_at=record.first_evaluated_at,
         last_evaluated_at=record.last_evaluated_at,
@@ -191,6 +208,7 @@ async def slash_domain_expertise(
         median_deviations_sum=record.median_deviations_sum,
         grounded_quotes_count=record.grounded_quotes_count,
         total_quotes_count=record.total_quotes_count,
+        unique_domains_count=record.unique_domains_count,
         slashing_count=record.slashing_count,
         first_evaluated_at=record.first_evaluated_at,
         last_evaluated_at=record.last_evaluated_at,

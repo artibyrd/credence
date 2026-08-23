@@ -155,6 +155,7 @@ def compute_feed_quality_score(
     reports: List[AuditReport],
     published_dates: Optional[List[datetime]] = None,
     now: Optional[datetime] = None,
+    article_texts: Optional[List[str]] = None,
 ) -> FeedQualityMetrics:
     """Calculate the 4-factor Epistemic Feed Quality Metric (F_j)."""
     current_time = now or datetime.now(timezone.utc)
@@ -180,9 +181,24 @@ def compute_feed_quality_score(
     grounded_violations = sum(sum(1 for v in r.violations if v.is_grounded) for r in reports)
     grounding_ratio = (grounded_violations / total_violations) if total_violations > 0 else 1.0
 
-    # Factor 3: Topic Entropy (H_topic)
-    article_texts = [r.url for r in reports]  # Fallback text representation
-    topic_entropy = compute_topic_entropy(article_texts)
+    # Factor 3: Topic Entropy (H_topic) - prioritize genuine article texts / summaries
+    if article_texts:
+        texts_to_analyze = article_texts
+    else:
+        # Fallback text representation from report metadata and violations
+        texts_to_analyze = []
+        for r in reports:
+            fragments = [r.url]
+            if r.satire_notes:
+                fragments.append(r.satire_notes)
+            for v in r.violations:
+                if v.reasoning:
+                    fragments.append(v.reasoning)
+                if v.quote_or_element:
+                    fragments.append(v.quote_or_element)
+            texts_to_analyze.append(" ".join(fragments))
+
+    topic_entropy = compute_topic_entropy(texts_to_analyze)
 
     # Factor 4: Freshness Index (T_freshness)
     freshness = 0.8
@@ -285,17 +301,7 @@ async def run_preflight_feed_audit(
         )
 
     # Compute topic entropy over sampled article texts
-    topic_entropy = compute_topic_entropy(article_texts)
-    metrics = compute_feed_quality_score(reports, published_dates=published_dates)
-    # Overwrite with actual text entropy
-    metrics.topic_entropy = topic_entropy
-    metrics.composite_score_fj = round(
-        0.35 * (1.0 - metrics.avg_suspicion_score / 100.0)
-        + 0.25 * metrics.grounding_ratio
-        + 0.20 * metrics.topic_entropy
-        + 0.20 * metrics.freshness_index,
-        3,
-    )
+    metrics = compute_feed_quality_score(reports, published_dates=published_dates, article_texts=article_texts)
 
     if metrics.topic_entropy < 0.25:
         quarantine_reasons.append(

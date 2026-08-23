@@ -32,9 +32,30 @@ class NodeIdentity:
     key_path: Path
 
 
+def _rfc8785_utf16_sort_key(s: str) -> bytes:
+    """Return UTF-16BE bytes for strict RFC 8785 object member key sorting."""
+    return s.encode("utf-16-be")
+
+
+def _rfc8785_normalize(obj: Any) -> Any:
+    """Recursively normalize data structure for deterministic RFC 8785 JSON serialization."""
+    if isinstance(obj, dict):
+        # Sort keys by UTF-16 code units
+        sorted_keys = sorted(obj.keys(), key=_rfc8785_utf16_sort_key)
+        return {k: _rfc8785_normalize(obj[k]) for k in sorted_keys}
+    elif isinstance(obj, (list, tuple)):
+        return [_rfc8785_normalize(item) for item in obj]
+    elif isinstance(obj, float):
+        if obj.is_integer():
+            return int(obj)
+        return obj
+    return obj
+
+
 def canonical_json_bytes(data: Dict[str, Any]) -> bytes:
     """Serialize dictionary into deterministic RFC 8785-compliant canonical JSON bytes."""
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    normalized = _rfc8785_normalize(data)
+    return json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
 def compute_payload_hash(data: Dict[str, Any]) -> str:

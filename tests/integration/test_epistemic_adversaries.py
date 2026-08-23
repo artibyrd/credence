@@ -213,6 +213,8 @@ async def test_structural_disclosure_and_confidence_capping(db_session: Any) -> 
 
     # Force quota_preserved = True to simulate offline governor activation
     report = await evaluate_snapshot(snapshot, session=db_session, sign_result=True)
-    # When evaluated without LLM in test environment:
-    assert report.evaluation_method in ("offline_structural_heuristic", "llm_multi_agent")
+    # When evaluated in test environment:
+    assert report.evaluation_method.startswith("offline_structural_heuristic") or report.evaluation_method.startswith(
+        "llm_multi_agent"
+    )
     assert report.confidence_score <= 1.0

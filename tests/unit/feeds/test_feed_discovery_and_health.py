@@ -121,3 +121,26 @@ def test_feed_quality_score_composite_math():
     metrics_deceptive = compute_feed_quality_score([deceptive_report], published_dates=[now], now=now)
     assert metrics_deceptive.composite_score_fj < 0.50
     assert metrics_deceptive.status in ("PROBATION", "QUARANTINE")
+
+
+def test_feed_quality_score_with_article_texts():
+    """Verify compute_feed_quality_score incorporates supplied article_texts for topic entropy."""
+    now = datetime.now(timezone.utc)
+    report = AuditReport(
+        url="https://example.org/news/1",
+        content_sha256="sha256:art1",
+        simhash_64="0x3333",
+        suspicion_score=10.0,
+        suspicion_density=0.0,
+        classification="CLEAN",
+        is_satire=False,
+        violations=[],
+        taxonomies_used={},
+    )
+    texts = [
+        "Major breakthroughs in quantum computing architecture reported by university researchers.",
+        "Renewable energy storage capacity expands across rural cooperative grids this quarter.",
+    ]
+    metrics = compute_feed_quality_score([report], published_dates=[now], now=now, article_texts=texts)
+    assert metrics.topic_entropy > 0.0
+    assert metrics.composite_score_fj > 0.60

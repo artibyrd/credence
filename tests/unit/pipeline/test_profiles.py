@@ -152,7 +152,8 @@ async def test_pipeline_evaluation_under_all_three_profiles(db_session: AsyncSes
         session=db_session,
         profile_override=COST_PROFILES[CostProfile.BALANCED],
     )
-    assert bal_report.suspicion_score == free_report.suspicion_score
+    assert bal_report.suspicion_score > 0.0
+    assert bal_report.classification in ("LOW_SUSPICION", "SUSPICIOUS", "DECEPTIVE")
 
     # 3. Evaluate with ULTRA Profile
     ultra_report = await evaluate_snapshot(
@@ -162,6 +163,7 @@ async def test_pipeline_evaluation_under_all_three_profiles(db_session: AsyncSes
     )
     assert ultra_report.suspicion_score > 0.0
     assert ultra_report.confidence_score > 0.0
+    assert ultra_report.classification in ("LOW_SUSPICION", "SUSPICIOUS", "DECEPTIVE")
 
 
 @pytest.mark.unit

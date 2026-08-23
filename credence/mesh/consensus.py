@@ -114,19 +114,21 @@ class BayesianConsensusAggregator:
     def _compute_median_score(
         self,
         peer_meta: List[Dict[str, Any]],
-        subject_id: Optional[str],
+        subject_id: Optional[str] = None,
     ) -> float:
+        if not peer_meta:
+            return 0.0
         sorted_peers = sorted(peer_meta, key=lambda p: p["score"])
         total_weight = sum(p["weight"] for p in sorted_peers)
-        cum_weight = 0.0
-        median_score = float(sorted_peers[len(sorted_peers) // 2]["score"])
+        if total_weight <= 0:
+            return float(sorted_peers[len(sorted_peers) // 2]["score"])
 
-        if subject_id and total_weight > 0:
-            for p in sorted_peers:
-                cum_weight += p["weight"]
-                if cum_weight >= (total_weight / 2.0):
-                    return float(p["score"])
-        return median_score
+        cum_weight = 0.0
+        for p in sorted_peers:
+            cum_weight += p["weight"]
+            if cum_weight >= (total_weight / 2.0):
+                return float(p["score"])
+        return float(sorted_peers[-1]["score"])
 
     def _filter_outliers(
         self,
@@ -175,11 +177,24 @@ class BayesianConsensusAggregator:
         median_score = self._compute_median_score(peer_meta, subject_id)
         outlier_pubkeys, valid_peers = self._filter_outliers(peer_meta, median_score)
 
-        # Recalculate without rogue outliers if valid peers remain
+        # Calculate true Domain Authority Weighted Median over active non-outlier peers
         active_peers = valid_peers if valid_peers else peer_meta
         active_total_weight = sum(p["weight"] for p in active_peers)
-        consensus_score = sum(p["score"] * p["weight"] for p in active_peers) / active_total_weight
+        consensus_score = self._compute_median_score(active_peers, subject_id)
         consensus_score = round(max(0.0, min(100.0, consensus_score)), 1)
+
+        # Galileo Rule Anchor: If verified authorities with grounded citations exist,
+        # their discoveries cannot be silenced by low-expertise swarms reporting absence of evidence
+        authoritative_evidentiary_peers = [
+            p
+            for p in active_peers
+            if (p.get("domain_exp", 0.0) >= 0.70 or p["weight"] >= 0.50)
+            and p["grounded_ratio"] >= 0.80
+            and len(p["att"].violations) > 0
+        ]
+        if authoritative_evidentiary_peers and consensus_score == 0.0:
+            consensus_score = self._compute_median_score(authoritative_evidentiary_peers, subject_id)
+            consensus_score = round(max(0.0, min(100.0, consensus_score)), 1)
 
         # Step 4: Satire consensus
         satire_votes = sum(1 for p in active_peers if p["is_satire"])

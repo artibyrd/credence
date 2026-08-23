@@ -103,7 +103,7 @@ async def api_get_badge_svg(request: Any) -> Any:
     return Response(
         content=svg_content,
         media_type="image/svg+xml",
-        headers={"Cache-Control": "public, max-age=60"},
+        headers={"Cache-Control": "public, max-age=300"},
     )
 
 

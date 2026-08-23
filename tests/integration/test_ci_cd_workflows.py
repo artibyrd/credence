@@ -139,10 +139,14 @@ def test_workflow_branch_and_pr_staging_triggers() -> None:
 @pytest.mark.integration
 def test_local_production_deploy_safety_gate() -> None:
     """Verify that local production deployments are strictly gated with warning banners and confirmation prompts."""
-    justfile_path = Path(__file__).resolve().parents[2] / "Justfile"
+    credence_root = Path(__file__).resolve().parents[2]
+    justfile_path = credence_root / "Justfile"
+    deploy_just_path = credence_root / "just" / "deploy.just"
     assert justfile_path.exists(), f"Justfile not found at {justfile_path}"
 
     justfile_content = justfile_path.read_text(encoding="utf-8")
+    if deploy_just_path.exists():
+        justfile_content += "\n" + deploy_just_path.read_text(encoding="utf-8")
 
     assert "PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)" in justfile_content
     assert "DEPLOY-PROD" in justfile_content
