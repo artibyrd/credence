@@ -158,7 +158,9 @@ export default {
 
       // Build target asset path
       let finalPath;
-      if (reqPath === '/' || reqPath === '' || reqPath === '/index.html') {
+      if (reqPath.startsWith('/assets/')) {
+        finalPath = reqPath;
+      } else if (reqPath === '/' || reqPath === '' || reqPath === '/index.html') {
         finalPath = `/${prefix}/index.html`;
       } else if (reqPath.endsWith('/')) {
         finalPath = `/${prefix}${reqPath}index.html`;
@@ -171,7 +173,15 @@ export default {
 
       if (env && env.ASSETS) {
         response = await env.ASSETS.fetch(new Request(assetUrl));
-        // Clean URL fallback: try .html if extensionless path returns 404
+        // Fallback 1: try root path if domain-prefixed path returned 404
+        if (response.status === 404 && finalPath !== reqPath) {
+          const rootAssetUrl = new URL(reqPath, request.url);
+          const rootResponse = await env.ASSETS.fetch(new Request(rootAssetUrl));
+          if (rootResponse.status < 400) {
+            response = rootResponse;
+          }
+        }
+        // Fallback 2: try .html if extensionless path returns 404
         if (response.status === 404 && !reqPath.includes('.')) {
           const htmlAssetUrl = new URL(finalPath + '.html', request.url);
           const htmlResponse = await env.ASSETS.fetch(new Request(htmlAssetUrl));
