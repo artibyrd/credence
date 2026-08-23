@@ -37,9 +37,10 @@ export default {
         if (!subPath || subPath === '') {
           subPath = '/';
         }
-        const pagesUrl = new URL(subPath + url.search, 'https://credence-docs.pages.dev');
+        const targetPagesDomain = isDev ? 'dev.credence-docs.pages.dev' : 'credence-docs.pages.dev';
+        const pagesUrl = new URL(subPath + url.search, `https://${targetPagesDomain}`);
         const reqHeaders = new Headers(request.headers);
-        reqHeaders.set('Host', 'credence-docs.pages.dev');
+        reqHeaders.set('Host', targetPagesDomain);
         
         const res = await fetch(pagesUrl, {
           method: request.method,
