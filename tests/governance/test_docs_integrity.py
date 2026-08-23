@@ -104,8 +104,8 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
 
     for html_file in html_files:
         content = html_file.read_text(encoding="utf-8")
-        if '<nav class="credence-nav">' in content and "🛡️ Credence" in content:
-            badge_match = re.search(r'🛡️ Credence\s*<span class="badge">([^<]+)</span>', content)
+        if '<nav class="credence-nav">' in content and "Credence" in content:
+            badge_match = re.search(r'Credence\s*<span class="badge">([^<]+)</span>', content)
             if badge_match:
                 found_version = badge_match.group(1).strip()
                 assert found_version == expected_tag, (
@@ -123,7 +123,7 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
 
 @pytest.mark.governance
 def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
-    """Verify open-standard Open Graph (og:*) and W3C social preview metadata across all ecosystem surfaces."""
+    """Verify open-standard Open Graph (og:*), brand logos, and W3C favicons across all ecosystem surfaces."""
     ecosystem_root = docs_root.parent
     credence_root = ecosystem_root / "credence"
 
@@ -133,11 +133,23 @@ def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
     docs_og_svg = docs_root / "assets" / "og-card.svg"
     web_og_svg = credence_root / "web" / "assets" / "og-card.svg"
 
+    # Brand logo & Favicon assets
+    docs_logo = docs_root / "assets" / "logo.svg"
+    web_logo = credence_root / "web" / "assets" / "logo.svg"
+    docs_fav = docs_root / "assets" / "favicon.svg"
+    web_fav = credence_root / "web" / "assets" / "favicon.svg"
+    docs_touch = docs_root / "assets" / "apple-touch-icon.png"
+    web_touch = credence_root / "web" / "assets" / "apple-touch-icon.png"
+
     assert docs_og_png.exists(), "credence-docs/assets/og-card.png must exist for link embeds"
     assert web_og_png.exists(), "credence/web/assets/og-card.png must exist for link embeds"
     assert docs_og_svg.exists(), "credence-docs/assets/og-card.svg must exist"
     assert web_og_svg.exists(), "credence/web/assets/og-card.svg must exist"
     assert docs_og_png.stat().st_size > 1000, "og-card.png must be a valid non-empty image"
+
+    assert docs_logo.exists() and web_logo.exists(), "logo.svg must exist in docs and web"
+    assert docs_fav.exists() and web_fav.exists(), "favicon.svg must exist in docs and web"
+    assert docs_touch.exists() and web_touch.exists(), "apple-touch-icon.png must exist in docs and web"
 
     # Canonical version verification in social card SVGs
     pyproject_path = credence_root / "pyproject.toml"
@@ -153,7 +165,7 @@ def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
         f"credence/web/assets/og-card.svg version badge does not match {expected_tag}"
     )
 
-    # 2. Verify all ecosystem HTML entry points define complete open standard preview meta tags
+    # 2. Verify all ecosystem HTML entry points define complete open standard preview meta tags and favicons
     html_surfaces = list((credence_root / "web").rglob("*.html"))
     html_surfaces.append(docs_root / "index.html")
 
@@ -173,10 +185,11 @@ def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
         assert 'name="theme-color"' in content or "name='theme-color'" in content, (
             f"Missing theme-color meta tag in {html_file.name}"
         )
-        # Enforce sovereign open web standards: zero proprietary twitter:* vendor lock-in tags
-        assert "twitter:" not in content, (
-            f"Proprietary twitter:* tag found in {html_file.name}; use open standard og:* tags only"
+        assert 'rel="icon"' in content or "rel='icon'" in content, f"Missing favicon link in {html_file.name}"
+        assert 'rel="apple-touch-icon"' in content or "rel='apple-touch-icon'" in content, (
+            f"Missing apple-touch-icon link in {html_file.name}"
         )
+        assert "twitter:" not in content, f"Found forbidden proprietary twitter card meta tag in {html_file.name}"
 
     # 3. Verify app.js dynamic social meta updater is exported
     app_js_content = (docs_root / "app.js").read_text(encoding="utf-8")
