@@ -1628,15 +1628,19 @@ export function transformTargetUrl(href) {
       'https://credence.report': 'https://dev.credence.report',
       'https://credence.nexus': 'https://dev.credence.nexus',
       'https://credence.foundation': 'https://dev.credence.foundation',
-      'https://docs.credence.run': 'https://dev.docs.credence.run',
-      'https://blog.credence.run': 'https://dev.blog.credence.run',
+      'https://docs.credence.run': 'https://dev.credence.run/docs/',
+      'https://blog.credence.run': 'https://dev.credence.run/blog/',
       'https://mcp.credence.run': 'https://mcp.dev.credence.run',
       'https://seeds.credence.nexus': 'https://dev.seeds.credence.nexus',
       'https://keys.credence.foundation': 'https://dev.keys.credence.foundation',
     };
     for (const [prodDomain, devDomain] of Object.entries(prodMap)) {
       if (href.startsWith(prodDomain)) {
-        return `${devDomain}${href.substring(prodDomain.length)}`;
+        const sub = href.substring(prodDomain.length);
+        if (devDomain.endsWith('/') && sub.startsWith('/')) {
+          return `${devDomain.slice(0, -1)}${sub}`;
+        }
+        return `${devDomain}${sub}`;
       }
     }
   }
