@@ -1596,3 +1596,46 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
     assert app_js_path.exists()
     app_js_text = app_js_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_interactive_diagram_controls_and_lightbox_integrity(docs_root: Path) -> None:
+    """Verify that app.js implements interactive zoom/pan controls, fullscreen lightbox, and styles.css enforces WCAG contrast."""
+    app_js_path = docs_root / "app.js"
+    styles_css_path = docs_root / "styles.css"
+    assert app_js_path.exists()
+    assert styles_css_path.exists()
+
+    app_js_text = app_js_path.read_text(encoding="utf-8")
+    styles_css_text = styles_css_path.read_text(encoding="utf-8")
+
+    # 1. Interactive diagram controls & lightbox modal in app.js
+    assert "setupDiagramControls" in app_js_text, "app.js must define setupDiagramControls"
+    assert "openDiagramLightbox" in app_js_text, "app.js must define openDiagramLightbox"
+    assert "getOrCreateDiagramLightbox" in app_js_text, "app.js must define getOrCreateDiagramLightbox"
+    assert "mermaid-window-controls" in app_js_text, "app.js must create mermaid window controls"
+    assert "diagram-zoom-btn" in app_js_text, "app.js must create diagram zoom buttons"
+    assert "diagram-lightbox" in app_js_text, "app.js must wire diagram lightbox modal"
+
+    # 2. Stylesheet rules for diagram interactivity & WCAG high-contrast palette
+    assert ".mermaid-wrapper" in styles_css_text, "styles.css must style .mermaid-wrapper"
+    assert ".mermaid-window-controls" in styles_css_text, "styles.css must style .mermaid-window-controls"
+    assert ".diagram-lightbox" in styles_css_text, "styles.css must style .diagram-lightbox"
+    assert "cursor: grab" in styles_css_text, "styles.css must provide grab cursor for draggable diagrams"
+    assert "#1e293b" in styles_css_text, "styles.css must enforce dark slate (#1e293b) fills for Mermaid nodes"
+    assert "#38bdf8" in styles_css_text, "styles.css must enforce sky-cyan (#38bdf8) borders for Mermaid nodes"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_edge_router_dynamic_opengraph_rewrite() -> None:
+    """Verify that web/_worker.js transforms og:image and og:url via HTMLRewriter for dynamic origin resolution."""
+    worker_path = Path(__file__).resolve().parents[2] / "web" / "_worker.js"
+    assert worker_path.exists(), "web/_worker.js must exist"
+    worker_text = worker_path.read_text(encoding="utf-8")
+
+    assert "new HTMLRewriter()" in worker_text, "_worker.js must use HTMLRewriter for dynamic metadata"
+    assert 'meta[property="og:image"]' in worker_text, "_worker.js must rewrite og:image meta tag"
+    assert 'meta[property="og:url"]' in worker_text, "_worker.js must rewrite og:url meta tag"
+    assert "originUrl" in worker_text, "_worker.js must resolve to active request originUrl"
