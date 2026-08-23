@@ -2,6 +2,7 @@ name = "credence"
 compatibility_date = "2026-08-17"
 main = "_worker.js"
 
+# Top-level (Production Default) Routes: ONLY Production Apex & Prod Subdomains
 routes = [
   # credence.run zone
   { pattern = "credence.run/*", zone_name = "credence.run" },
@@ -9,27 +10,17 @@ routes = [
   { pattern = "docs.credence.run/*", zone_name = "credence.run" },
   { pattern = "blog.credence.run/*", zone_name = "credence.run" },
   { pattern = "mcp.credence.run/*", zone_name = "credence.run" },
-  { pattern = "dev.credence.run/*", zone_name = "credence.run" },
-  { pattern = "dev.admin.credence.run/*", zone_name = "credence.run" },
-  { pattern = "dev.docs.credence.run/*", zone_name = "credence.run" },
-  { pattern = "dev.blog.credence.run/*", zone_name = "credence.run" },
-  { pattern = "mcp.dev.credence.run/*", zone_name = "credence.run" },
 
   # credence.nexus zone
   { pattern = "credence.nexus/*", zone_name = "credence.nexus" },
-  { pattern = "dev.credence.nexus/*", zone_name = "credence.nexus" },
   { pattern = "seeds.credence.nexus/*", zone_name = "credence.nexus" },
-  { pattern = "dev.seeds.credence.nexus/*", zone_name = "credence.nexus" },
 
   # credence.foundation zone
   { pattern = "credence.foundation/*", zone_name = "credence.foundation" },
-  { pattern = "dev.credence.foundation/*", zone_name = "credence.foundation" },
   { pattern = "keys.credence.foundation/*", zone_name = "credence.foundation" },
-  { pattern = "dev.keys.credence.foundation/*", zone_name = "credence.foundation" },
 
   # credence.report zone
-  { pattern = "credence.report/*", zone_name = "credence.report" },
-  { pattern = "dev.credence.report/*", zone_name = "credence.report" }
+  { pattern = "credence.report/*", zone_name = "credence.report" }
 ]
 
 [assets]
