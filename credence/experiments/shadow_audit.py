@@ -93,43 +93,30 @@ def run_differential_item_audit(
 
     dev_cost = 0.0  # Heuristic stage is $0.00
 
-    # 2. Prod Sovereign Path (Simulated / Calibrated 4k Thinking Multi-Agent)
-    # Ground truth mapping based on Golden 12 expected epistemic calibrations
-    fixture_stem = fixture_path.stem.lower()
-    if "clean" in fixture_stem or "transparent" in fixture_stem:
-        prod_score = 0.0
-        prod_violations_count = 0
-    elif "satire" in fixture_stem and "cloaked" not in fixture_stem:
-        # Satire properly neutralized by 4k thinking (Poe's Law invariant)
-        prod_score = 0.0
-        prod_violations_count = 0
-    elif "cloaked_satire" in fixture_stem:
-        # SPJ-1.6 cloaking override (defamatory allegations bypass satire protection)
-        prod_score = 65.0
-        prod_violations_count = 3
-    elif "medical" in fixture_stem or "clickbait" in fixture_stem:
-        prod_score = 75.0
-        prod_violations_count = 4
-    elif (
-        "deceptive" in fixture_stem
-        or "fallacious" in fixture_stem
-        or "propaganda" in fixture_stem
-        or "distortion" in fixture_stem
-    ):
-        prod_score = 85.0
-        prod_violations_count = 5
-    elif "slop" in fixture_stem:
-        prod_score = 90.0
-        prod_violations_count = 6
-    else:
-        prod_score = dev_score
-        prod_violations_count = len(dev_violations)
+    # 2. Prod Sovereign Path (Full Calibrated Multi-Agent Scoring)
+    from credence.pipeline.scoring import compute_calibrated_score, compute_raw_suspicion
+    from credence.pipeline.subagents import validate_all_violations
 
+    validated_violations = validate_all_violations(
+        dev_violations,
+        raw_text=extracted.clean_text,
+        raw_html=raw_html,
+    )
+    raw_susp = compute_raw_suspicion(validated_violations)
+    is_satire_clean = extracted.is_satire_cue and not any(v.rule_id == "SPJ-1.6" for v in validated_violations)
+    has_cloaked = any(v.rule_id == "SPJ-1.6" for v in validated_violations)
+
+    prod_score = compute_calibrated_score(
+        raw_score=raw_susp,
+        is_satire=is_satire_clean,
+        has_cloaked_disinfo=has_cloaked,
+    )
+    prod_violations_count = len([v for v in validated_violations if v.is_grounded])
     prod_cost = compute_cost(tokens, 350, 4096, "gemini-3.7-flash")
 
     # 3. Cascaded Bicameral Routing Logic:
     # If Dev suspicion is below escalation_threshold, skip Prod. Otherwise, escalate to Prod.
-    should_escalate = dev_score >= escalation_threshold or "satire" in fixture_stem
+    should_escalate = dev_score >= escalation_threshold or extracted.is_satire_cue
     cascaded_cost = (dev_cost + prod_cost) if should_escalate else dev_cost
 
     delta_s = round(abs(dev_score - prod_score), 1)

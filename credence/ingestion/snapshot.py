@@ -147,7 +147,13 @@ async def capture_webpage(
                 await page.wait_for_timeout(1000)
 
                 raw_html = await page.content()
-                screenshot_bytes = await page.screenshot(full_page=True, type="png")
+                try:
+                    screenshot_bytes = await page.screenshot(full_page=True, type="png", timeout=10000)
+                except Exception:
+                    try:
+                        screenshot_bytes = await page.screenshot(full_page=False, type="png", timeout=5000)
+                    except Exception:
+                        screenshot_bytes = b""
             finally:
                 await context.close()
                 await browser.close()

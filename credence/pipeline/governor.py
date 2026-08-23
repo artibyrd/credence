@@ -103,7 +103,7 @@ def get_active_api_key() -> Tuple[Optional[str], str]:
 
 
 async def record_token_usage(
-    session: AsyncSession,
+    session: Optional[AsyncSession],
     model_name: str,
     prompt_tokens: int,
     completion_tokens: int,
@@ -126,9 +126,23 @@ async def record_token_usage(
         caller=caller,
         was_escalated=was_escalated,
     )
-    session.add(record)
-    await session.commit()
-    await session.refresh(record)
+    if session is not None:
+        try:
+            session.add(record)
+            await session.commit()
+            await session.refresh(record)
+        except Exception:
+            pass
+    else:
+        from credence.db import get_async_session
+
+        try:
+            async with get_async_session() as s:
+                s.add(record)
+                await s.commit()
+                await s.refresh(record)
+        except Exception:
+            pass
     return record
 
 

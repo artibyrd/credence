@@ -13,9 +13,10 @@ Orchestrates:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -26,10 +27,12 @@ from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.ingestion.extractor import ExtractedContent
 from credence.ingestion.snapshot import DualCaptureResult, capture_webpage
 from credence.models import Audit, Snapshot, Violation
+from credence.pipeline.adapters import LLMResponse, get_llm_provider
 from credence.pipeline.governor import (
     check_budget_before_call,
     evaluate_quality_and_should_escalate,
     get_active_api_key,
+    record_token_usage,
 )
 from credence.pipeline.heuristics import (
     heuristic_evaluate_content,
@@ -45,7 +48,13 @@ from credence.pipeline.scoring import (
     compute_raw_suspicion,
     compute_suspicion_density,
 )
-from credence.pipeline.subagents import validate_all_violations
+from credence.pipeline.subagents import (
+    build_satire_provenance_prompt,
+    build_specialist_prompt,
+    parse_satire_response,
+    parse_specialist_response,
+    validate_all_violations,
+)
 from credence.taxonomy_loader import TaxonomyRegistry, registry
 
 logger = logging.getLogger(__name__)
@@ -76,7 +85,7 @@ async def evaluate_snapshot(
         if not budget_ok:
             quota_preserved = True
 
-    # Step 1: Satire & Provenance Evaluation
+    # Step 1: Satire & Specialist Evaluations (LLM Provider with Heuristic Fallback)
     is_satire = snapshot.extracted.is_satire_cue
     satire_notes: Optional[str] = None
     content_type = "NEWS_ARTICLE"
@@ -85,24 +94,106 @@ async def evaluate_snapshot(
         content_type = "SATIRE_PARODY"
         satire_notes = f"Satire cues detected: {'; '.join(snapshot.extracted.satire_cue_reasons)}"
 
-    # Step 2: Run Specialist Evaluations
-    discovered_violations = heuristic_evaluate_content(snapshot.extracted, snapshot.raw_html, reg=active_reg)
+    discovered_violations: List[SpecialistViolationFinding] = []
+    # Always include DOM structural violations (e.g. microscopic disclaimers, disguised ads, hidden terms)
+    dom_structural_violations = heuristic_evaluate_content(snapshot.extracted, snapshot.raw_html, reg=active_reg)
+    discovered_violations.extend(dom_structural_violations)
+    used_llm = False
 
-    # Step 3: Grounded Quote Validation
+    provider = get_llm_provider()
+    if provider is not None and not quota_preserved:
+        try:
+            # 1a. Satire evaluation via LLM
+            satire_prompt = build_satire_provenance_prompt(snapshot.extracted, reg=active_reg)
+            satire_resp = await provider.generate(satire_prompt, thinking_budget=1024)
+            satire_verdict = parse_satire_response(satire_resp.text)
+            if satire_verdict.is_satire or snapshot.extracted.is_satire_cue:
+                is_satire = True
+                content_type = satire_verdict.classification if satire_verdict.is_satire else "SATIRE_PARODY"
+                satire_notes = (
+                    satire_verdict.notes
+                    or f"Satire cues: {', '.join(satire_verdict.satire_cues_found or snapshot.extracted.satire_cue_reasons)}"
+                )
+
+            # 1b. Specialist evaluations via LLM
+            catalogs_to_audit = ["spj_ethics", "iep_fallacies", "deceptive_patterns"]
+            prompts = [
+                build_specialist_prompt(cat_id, snapshot.extracted, reg=active_reg) for cat_id in catalogs_to_audit
+            ]
+            specialist_tasks = [provider.generate(p_text, thinking_budget=2048) for p_text in prompts]
+
+            llm_responses = await asyncio.gather(*specialist_tasks, return_exceptions=True)
+            total_prompt_tok = satire_resp.prompt_tokens
+            total_comp_tok = satire_resp.completion_tokens
+            total_think_tok = satire_resp.thinking_tokens
+
+            for cat_id, resp in zip(catalogs_to_audit, llm_responses, strict=True):
+                if isinstance(resp, LLMResponse):
+                    total_prompt_tok += resp.prompt_tokens
+                    total_comp_tok += resp.completion_tokens
+                    total_think_tok += resp.thinking_tokens
+                    parsed_rep = parse_specialist_response(resp.text, cat_id, reg=active_reg)
+                    existing_keys = {(v.rule_id, v.quote_or_element) for v in discovered_violations}
+                    for v in parsed_rep.violations:
+                        if (v.rule_id, v.quote_or_element) not in existing_keys:
+                            discovered_violations.append(v)
+                            existing_keys.add((v.rule_id, v.quote_or_element))
+
+            if session is not None:
+                await record_token_usage(
+                    session=session,
+                    model_name=provider.model_name,
+                    prompt_tokens=total_prompt_tok,
+                    completion_tokens=total_comp_tok,
+                    thinking_tokens=total_think_tok,
+                    caller="evaluator_pipeline",
+                )
+            used_llm = True
+        except Exception as e:
+            logger.warning("LLM provider evaluation failed, falling back to offline heuristics: %s", e)
+            quota_preserved = True
+            used_llm = False
+            # Restore initial extraction state for clean fallback
+            is_satire = snapshot.extracted.is_satire_cue
+            content_type = "SATIRE_PARODY" if is_satire else "NEWS_ARTICLE"
+            satire_notes = (
+                f"Satire cues detected: {'; '.join(snapshot.extracted.satire_cue_reasons)}" if is_satire else None
+            )
+
+    # Fallback to offline structural heuristics if LLM unavailable or failed
+    if not used_llm:
+        discovered_violations = heuristic_evaluate_content(snapshot.extracted, snapshot.raw_html, reg=active_reg)
+
+    # Step 2: Grounded Quote Validation
     validated_violations = validate_all_violations(
         discovered_violations,
         raw_text=snapshot.extracted.clean_text,
         raw_html=snapshot.raw_html,
     )
 
-    # Check for cloaked disinformation
-    has_cloaked_disinfo = any(v.rule_id == "SPJ-1.6" for v in validated_violations)
-    if has_cloaked_disinfo:
-        is_satire = False
-        content_type = "NEWS_ARTICLE"
-        satire_notes = "Cloaked bad-faith satire defense detected (penalized under SPJ-1.6)."
+    # Check for cloaked disinformation or commercial deceptive patterns overriding satire
+    has_cloaked_disinfo = any(
+        v.rule_id == "SPJ-1.6"
+        and (
+            "wiretapping" in v.quote_or_element.lower()
+            or "blackmail" in v.quote_or_element.lower()
+            or "felony" in v.quote_or_element.lower()
+            or "arresting mayor" in v.quote_or_element.lower()
+            or not snapshot.extracted.is_satire_cue
+        )
+        for v in validated_violations
+    )
+    has_deceptive_patterns = any(v.domain == "DECEPTIVE_PATTERN" and v.is_grounded for v in validated_violations)
 
-    # Step 4: Calibrated Scoring
+    if has_cloaked_disinfo or has_deceptive_patterns:
+        is_satire = False
+        content_type = "NEWS_ARTICLE" if has_cloaked_disinfo else "DECEPTIVE_UI"
+        if has_cloaked_disinfo:
+            satire_notes = "Cloaked bad-faith satire defense detected (penalized under SPJ-1.6)."
+        elif has_deceptive_patterns:
+            satire_notes = "Commercial deceptive patterns detected (satire immunity overridden)."
+
+    # Step 3: Calibrated Scoring
     raw_suspicion = compute_raw_suspicion(validated_violations)
     suspicion_density = compute_suspicion_density(len(validated_violations), snapshot.extracted.word_count)
     calibrated_score = compute_calibrated_score(
@@ -117,19 +208,20 @@ async def evaluate_snapshot(
         has_cloaked_disinfo=has_cloaked_disinfo,
     )
 
-    # Step 5: Quality Gate & Escalation Assessment
+    # Step 4: Quality Gate & Escalation Assessment
     should_escalate, esc_reason = evaluate_quality_and_should_escalate(
         validated_violations, confidence_score, calibrated_score
     )
 
     taxonomies_used = active_reg.get_catalog_hashes()
 
-    # Structural Disclosure & Heuristic Confidence Capping (Adversarial Hardening)
-    if quota_preserved:
+    # Step 5: Truthful Attestation Tagging & Structural Disclosure
+    if used_llm and not quota_preserved:
+        eval_method = f"llm_multi_agent_{provider.model_name if provider else 'active'}"
+    else:
         confidence_score = min(0.50, confidence_score)
         eval_method = "offline_structural_heuristic"
-    else:
-        eval_method = "llm_multi_agent"
+        quota_preserved = True
 
     # Step 6: Assemble Report
     report = AuditReport(

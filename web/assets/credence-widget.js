@@ -30,7 +30,7 @@ class CredenceBadge extends HTMLElement {
       activeLens: 'surface',
       url: '',
       pubkey: '',
-      version: 'v2.7.0',
+      version: 'v2.10.0',
       violationsCount: 0,
       groundingPct: 100.0,
       auditsCount: 1,
@@ -105,7 +105,7 @@ class CredenceBadge extends HTMLElement {
     this.state.url = this.getAttribute('url') || window.location.href;
     this.state.pubkey = this.getAttribute('pubkey') || '';
     if (this.getAttribute('score')) this.state.score = parseFloat(this.getAttribute('score')) || 100.0;
-    if (this.getAttribute('version')) this.state.version = this.getAttribute('version') || 'v2.7.0';
+    if (this.getAttribute('version')) this.state.version = this.getAttribute('version') || 'v2.10.0';
     if (this.getAttribute('uptime')) this.state.uptimeDays = parseFloat(this.getAttribute('uptime')) || 0.0;
     if (this.getAttribute('violations')) this.state.violationsCount = parseInt(this.getAttribute('violations'), 10) || 0;
     if (this.getAttribute('grounding')) this.state.groundingPct = parseFloat(this.getAttribute('grounding')) || 100.0;
