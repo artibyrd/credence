@@ -55,7 +55,7 @@ release version message:
     echo -e "\033[1;36m💡 NEXT STEP: Monitor production deployment workflows ('just ci-watch').\033[0m"
     echo -e "\033[1;36m💡 NEXT STEP: Trigger '/learn' to capture session insights and formulate the next lean patch.\033[0m"
 
-# Interactive agent command approval bootstrapping runner for fresh workspaces
+# Interactive agent command approval bootstrapping runner for open-source developers and forks (core tools only)
 [group('bootstrap')]
-bootstrap-approvals:
-    @python3 scripts/bootstrap_approvals.py --execute
+bootstrap-approvals scope="core":
+    @python3 scripts/bootstrap_approvals.py --scope {{scope}} --execute

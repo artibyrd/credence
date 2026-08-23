@@ -4,6 +4,10 @@
 Walks through standard, prefix-matchable command shapes used by the agent during
 development. Executing each safe command once allows the human developer to grant
 "Always Allow" in a fresh workspace, enabling autonomous agent workflows.
+
+Supports two discrete scopes:
+1. 'core': Open-source developer & fork tooling (local tests, quality gates, vcs).
+2. 'hosted': Artibyrd maintainer cloud telemetry, multi-cloud probes & live URLs.
 """
 
 from __future__ import annotations
@@ -24,6 +28,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 class CommandShape(NamedTuple):
     name: str
+    scope: str
     category: str
     command: List[str]
     description: str
@@ -31,9 +36,12 @@ class CommandShape(NamedTuple):
 
 
 BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
-    # 1. Preflight & Quality Gates
+    # --------------------------------------------------------------------------
+    # CORE SCOPE: Open-Source Developers, Contributors & Forks (Local Only)
+    # --------------------------------------------------------------------------
     CommandShape(
         name="Preflight Toolchain",
+        scope="core",
         category="core: preflight",
         command=["just", "preflight", "all"],
         description="Verify developer CLI dependencies across all planes",
@@ -41,6 +49,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Pre-Commit QA Gauntlet",
+        scope="core",
         category="core: quality",
         command=["just", "check"],
         description="Parallel multi-plane verification (<3s)",
@@ -48,6 +57,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Static Linting & Format Check",
+        scope="core",
         category="core: quality",
         command=["just", "lint"],
         description="Ruff linter and Mypy type validation",
@@ -55,6 +65,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Hermetic Unit Tests",
+        scope="core",
         category="core: test",
         command=["just", "test-unit"],
         description="Fast in-memory unit tests (<35s, $0.00 tokens)",
@@ -62,6 +73,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Documentation Integrity",
+        scope="core",
         category="core: test",
         command=["just", "test-docs"],
         description="Frontmatter, 7-manifest parity & living canon tests",
@@ -69,6 +81,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Declarative Agent Health",
+        scope="core",
         category="core: quality",
         command=["just", "agent-check"],
         description="AGENTS.md, skills schema and token budget check",
@@ -76,6 +89,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Skills Linter",
+        scope="core",
         category="core: quality",
         command=["just", "audit-skills"],
         description="Validate .agents/skills schema and YAML frontmatter",
@@ -83,14 +97,15 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Demotions Audit",
+        scope="core",
         category="core: quality",
         command=["just", "audit-demotions"],
         description="Audit invariant demotion candidates and token savings",
         is_safe=True,
     ),
-    # 2. Version Control & PR Inspection
     CommandShape(
         name="Ecosystem Git Status",
+        scope="core",
         category="vcs: safe",
         command=["just", "status"],
         description="3-repo clean status check (credence, docs, agent)",
@@ -98,6 +113,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Ecosystem Git Diff",
+        scope="core",
         category="vcs: safe",
         command=["just", "git-diff"],
         description="View uncommitted diffs across all ecosystem repos",
@@ -105,6 +121,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Ecosystem Git Log",
+        scope="core",
         category="vcs: safe",
         command=["just", "git-log", "5"],
         description="Compact git log across ecosystem repos",
@@ -112,6 +129,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Pull Request Triad Status",
+        scope="core",
         category="vcs: safe",
         command=["just", "pr-status"],
         description="Inspect active staged PRs across the ecosystem triad",
@@ -119,6 +137,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Pull Request Checks View",
+        scope="core",
         category="vcs: safe",
         command=["just", "pr-checks"],
         description="Inspect CI/CD status on open pull requests",
@@ -126,6 +145,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Pull Request Markdown View",
+        scope="core",
         category="vcs: safe",
         command=["just", "pr-view"],
         description="View details and diff of open pull requests",
@@ -133,6 +153,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="GitHub CLI PR Checks",
+        scope="core",
         category="vcs: safe",
         command=["gh", "pr", "checks"],
         description="Direct GitHub CLI check run inspection",
@@ -140,14 +161,26 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="GitHub CLI PR View",
+        scope="core",
         category="vcs: safe",
         command=["gh", "pr", "view"],
         description="Direct GitHub CLI pull request viewer",
         is_safe=True,
     ),
-    # 3. Cloud & Infrastructure Telemetry (Read-Only)
+    CommandShape(
+        name="GitHub CLI Run List",
+        scope="core",
+        category="vcs: safe",
+        command=["gh", "run", "list", "--limit", "5"],
+        description="Direct GitHub Actions workflow run listing",
+        is_safe=True,
+    ),
+    # --------------------------------------------------------------------------
+    # HOSTED SCOPE: Artibyrd Maintainer Infrastructure, Cloud Run & Edge Probes
+    # --------------------------------------------------------------------------
     CommandShape(
         name="Cloud Run Compute Status",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "cloud-status"],
         description="Inspect Cloud Run revisions and traffic splits",
@@ -155,6 +188,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Cloud Run Dev Probe",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "cloud-probe", "credence-dev", "dev"],
         description="Probe live Dev HTTP and SSE endpoints with latency metrics",
@@ -162,6 +196,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Cloud Run Prod Probe",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "cloud-probe", "credence-server", "prod"],
         description="Probe live Prod HTTP and SSE endpoints with latency metrics",
@@ -169,6 +204,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Cloudflare Edge Status",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "edge-status"],
         description="Inspect Cloudflare worker routing and pages deployments",
@@ -176,20 +212,15 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="GitHub Actions CI Status",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "ci-status"],
         description="List recent workflow runs across ecosystem repos",
         is_safe=True,
     ),
     CommandShape(
-        name="GitHub CLI Run List",
-        category="hosted: safe",
-        command=["gh", "run", "list", "--limit", "5"],
-        description="Direct GitHub Actions workflow run listing",
-        is_safe=True,
-    ),
-    CommandShape(
         name="Terraform Configuration Validation",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "tf-validate"],
         description="Terraform formatting and HCL syntax validation",
@@ -197,21 +228,23 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Multi-Plane Diagnostic Health",
+        scope="hosted",
         category="hosted: safe",
         command=["just", "doctor"],
         description="Complete multi-plane diagnostic health check",
         is_safe=True,
     ),
-    # 4. Live URL & Web Endpoint Telemetry (HTTP / curl)
     CommandShape(
         name="Live Dev Health Endpoint Probe",
+        scope="hosted",
         category="url: telemetry",
-        command=["curl", "-sI", "https://credence-dev-663899237633.us-central1.run.app/health"],
+        command=["curl", "-sI", "https://credence-dev-865363499314.us-central1.run.app/health"],
         description="Direct HTTP probe on Cloud Run Dev container health",
         is_safe=True,
     ),
     CommandShape(
         name="Live Prod Health Endpoint Probe",
+        scope="hosted",
         category="url: telemetry",
         command=["curl", "-sI", "https://credence-server-663899237633.us-central1.run.app/health"],
         description="Direct HTTP probe on Cloud Run Production container health",
@@ -219,6 +252,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Live Edge Domain Probe",
+        scope="hosted",
         category="url: telemetry",
         command=["curl", "-sI", "https://credence.run/health"],
         description="Direct HTTP probe on Cloudflare Edge proxy and router",
@@ -226,6 +260,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     ),
     CommandShape(
         name="Live Docs Portal Probe",
+        scope="hosted",
         category="url: telemetry",
         command=["curl", "-sI", "https://docs.credence.run"],
         description="Direct HTTP probe on zero-build documentation portal",
@@ -234,33 +269,48 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
 ]
 
 
-def display_catalog() -> None:
-    """Print the complete catalog of bootstrap command shapes."""
+def display_catalog(scope: str = "core") -> None:
+    """Print the catalog of bootstrap command shapes for the selected scope."""
+    selected_shapes = [s for s in BOOTSTRAP_COMMAND_SHAPES if scope == "all" or s.scope == scope]
+    scope_title = (
+        "Open-Source & Contributor Core"
+        if scope == "core"
+        else ("Maintainer Hosted Operations" if scope == "hosted" else "All Ecosystem")
+    )
+
     table = Table(
-        title="[bold cyan]Credence Autonomous Command Approval Catalog[/bold cyan]",
+        title=f"[bold cyan]Credence Autonomous Command Approval Catalog ({scope_title})[/bold cyan]",
         show_header=True,
         header_style="bold magenta",
     )
     table.add_column("#", justify="right", style="cyan", width=4)
+    table.add_column("Scope", justify="center", style="green" if scope == "core" else "yellow", width=8)
     table.add_column("Category", style="yellow", width=16)
     table.add_column("Command Shape", style="bold white", width=36)
     table.add_column("Safety Domain", justify="center", width=12)
     table.add_column("Purpose", style="dim")
 
-    for i, shape in enumerate(BOOTSTRAP_COMMAND_SHAPES, 1):
+    for i, shape in enumerate(selected_shapes, 1):
         safety_badge = "[green]SAFE (READ)[/green]" if shape.is_safe else "[red]GATED (WRITE)[/red]"
         cmd_str = " ".join(shape.command)
-        table.add_row(f"#{i}", shape.category, cmd_str, safety_badge, shape.description)
+        table.add_row(f"#{i}", shape.scope.upper(), shape.category, cmd_str, safety_badge, shape.description)
 
     console.print(table)
 
 
-def run_bootstrapping(dry_run: bool = False) -> None:
-    """Execute all safe command shapes sequentially."""
+def run_bootstrapping(scope: str = "core", dry_run: bool = False) -> None:
+    """Execute all safe command shapes sequentially for the specified scope."""
+    selected_shapes = [s for s in BOOTSTRAP_COMMAND_SHAPES if scope == "all" or s.scope == scope]
+    scope_desc = (
+        "Open-source core developer commands (fork-safe)"
+        if scope == "core"
+        else "Artibyrd maintainer cloud telemetry, deployment, and live URL probes"
+    )
+
     console.print(
         Panel(
-            "[bold green]Credence Agent Approval Bootstrapping Runner[/bold green]\n\n"
-            "This utility executes each safe, read-only command pattern once.\n"
+            f"[bold green]Credence Agent Approval Bootstrapping Runner[/bold green] [bold cyan]({scope.upper()} SCOPE)[/bold cyan]\n\n"
+            f"{scope_desc}.\n"
             "When the Antigravity IDE approval dialog appears for each command,\n"
             "select [bold cyan]'Always Allow'[/bold cyan] to authorize autonomous workflows.",
             title="[bold]Workflow Safety Dance[/bold]",
@@ -268,21 +318,21 @@ def run_bootstrapping(dry_run: bool = False) -> None:
         )
     )
 
-    display_catalog()
+    display_catalog(scope)
 
     if dry_run:
         console.print(
-            "\n[bold yellow]DRY-RUN MODE:[/bold yellow] Listed all command shapes. Run with [bold green]--execute[/bold green] to run through approvals."
+            f"\n[bold yellow]DRY-RUN MODE:[/bold yellow] Listed {len(selected_shapes)} command shapes. Run with [bold green]--execute[/bold green] to run through approvals."
         )
         return
 
-    console.print("\n[bold cyan]=== Initiating Sequential Execution Pass ===[/bold cyan]\n")
+    console.print(
+        f"\n[bold cyan]=== Initiating Sequential Execution Pass ({len(selected_shapes)} Commands) ===[/bold cyan]\n"
+    )
 
-    for i, shape in enumerate(BOOTSTRAP_COMMAND_SHAPES, 1):
+    for i, shape in enumerate(selected_shapes, 1):
         cmd_str = " ".join(shape.command)
-        console.print(
-            f"[bold cyan][{i}/{len(BOOTSTRAP_COMMAND_SHAPES)}][/bold cyan] Running: [bold]{cmd_str}[/bold] ..."
-        )
+        console.print(f"[bold cyan][{i}/{len(selected_shapes)}][/bold cyan] Running: [bold]{cmd_str}[/bold] ...")
         try:
             res = subprocess.run(  # noqa: S603
                 shape.command,
@@ -299,20 +349,26 @@ def run_bootstrapping(dry_run: bool = False) -> None:
             console.print(f"   [red]❌ Execution error:[/red] {e}")
 
     console.print(
-        "\n[bold green]🎉 Approval Bootstrapping Complete![/bold green]\n"
-        "[dim]All primary safe command shapes have been executed and are ready for autonomous development.[/dim]\n"
+        f"\n[bold green]🎉 Approval Bootstrapping Complete for Scope '{scope.upper()}'![/bold green]\n"
+        "[dim]Primary safe command shapes have been executed and are ready for autonomous development.[/dim]\n"
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Bootstrap Agent Command Approvals")
     parser.add_argument(
+        "--scope",
+        choices=["core", "hosted", "all"],
+        default="core",
+        help="Command scope to bootstrap: 'core' (open-source/fork-safe) or 'hosted' (maintainer infrastructure).",
+    )
+    parser.add_argument(
         "--execute",
         action="store_true",
         help="Execute all safe commands sequentially for IDE approval prompting.",
     )
     args = parser.parse_args()
-    run_bootstrapping(dry_run=not args.execute)
+    run_bootstrapping(scope=args.scope, dry_run=not args.execute)
 
 
 if __name__ == "__main__":

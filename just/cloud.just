@@ -67,8 +67,9 @@ cloud-probe service="credence-server" env="prod": (preflight "poetry")
     #!/usr/bin/env bash
     set -euo pipefail
     PROJECT="{{ if env == 'dev' { GCP_DEV_PROJECT } else { GCP_PROD_PROJECT } }}"
-    SVC_URL=$(gcloud run services describe "{{service}}" --region "{{GCP_REGION}}" --project "$PROJECT" --format="value(status.url)" 2>/dev/null || echo "https://credence-server-663899237633.us-central1.run.app")
-    echo "=== Probing Live Cloud Run Endpoints ({{service}} -> $SVC_URL) ==="
+    DEFAULT_URL="{{ if env == 'dev' { 'https://credence-dev-865363499314.us-central1.run.app' } else { 'https://credence-server-663899237633.us-central1.run.app' } }}"
+    SVC_URL=$(gcloud run services describe "{{service}}" --region "{{GCP_REGION}}" --project "$PROJECT" --format="value(status.url)" 2>/dev/null || echo "$DEFAULT_URL")
+    echo "=== Probing Live Cloud Run Endpoints ({{service}} [{{env}}] -> $SVC_URL) ==="
     poetry run python scripts/probe_cloud_endpoints.py "$SVC_URL"
 
 # Cloudflare Edge Plane deployment and worker router status
@@ -277,3 +278,9 @@ tf-apply env="prod" extra="": (preflight "terraform")
     if [ ! -f "terraform/${VAR_FILE}" ]; then VAR_FILE="terraform.tfvars"; fi
     terraform -chdir=terraform apply -var-file="${VAR_FILE}" -state="${STATE_FILE}" {{extra}}
     echo -e "\033[1;32m✅ Terraform infrastructure applied successfully.\033[0m"
+
+# Interactive agent command approval bootstrapping runner for maintainer cloud & URL telemetry
+[group('bootstrap')]
+bootstrap-approvals-hosted:
+    @python3 scripts/bootstrap_approvals.py --scope hosted --execute
+
