@@ -110,6 +110,13 @@ BADGE_REGISTRY: Dict[str, BadgeInfo] = {
         icon="🏛️",
         description="Achieved 100+ days uninterrupted sovereign operation with Qi >= 0.90 and G >= 0.98.",
     ),
+    "quorum_sentinel": BadgeInfo(
+        badge_id="quorum_sentinel",
+        name="Quorum Sentinel",
+        tier=EpistemicTier.ROOT_ANCHOR,
+        icon="🛡️",
+        description="Maintained Byzantine consensus participation during 3f+1 peer quorum rounds.",
+    ),
 }
 
 # Add alias mappings for seamless backward & forward naming compatibility

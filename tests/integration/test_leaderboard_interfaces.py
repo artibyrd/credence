@@ -77,6 +77,25 @@ async def test_fastmcp_merit_and_leaderboard_tools() -> None:
     data_b = json.loads(_extract_mcp_text(res_b))
     assert isinstance(data_b, list)
 
+    # 7. Test credence_generate_badge tool across 3 modalities
+    res_badge_node = await server.call_tool(
+        "credence_generate_badge", {"modality": "node", "identifier": "sprout_node", "format": "svg"}
+    )
+    assert "<svg" in _extract_mcp_text(res_badge_node)
+
+    res_badge_pub = await server.call_tool(
+        "credence_generate_badge", {"modality": "publisher", "identifier": "reuters.com", "format": "component"}
+    )
+    assert "<credence-badge" in _extract_mcp_text(res_badge_pub)
+
+    res_badge_attest = await server.call_tool(
+        "credence_generate_badge",
+        {"modality": "attestation", "identifier": "https://example.com/test", "format": "json"},
+    )
+    data_attest = json.loads(_extract_mcp_text(res_badge_attest))
+    assert data_attest["modality"] == "attestation"
+    assert "<svg" in data_attest["svg"]
+
 
 def test_rest_api_leaderboards_and_badges() -> None:
     """Verify REST API endpoints and SVG badge content-types."""
@@ -105,12 +124,18 @@ def test_rest_api_leaderboards_and_badges() -> None:
     assert "image/svg+xml" in resp_pub.headers["content-type"]
     assert "<svg" in resp_pub.text
 
-    # 5. GET /api/rankings/domains
+    # 5. GET /api/badge/attestation/https://example.com/article.svg
+    resp_attest = client.get("/api/badge/attestation/https://example.com/article.svg")
+    assert resp_attest.status_code == 200
+    assert "image/svg+xml" in resp_attest.headers["content-type"]
+    assert "<svg" in resp_attest.text
+
+    # 6. GET /api/rankings/domains
     resp_dom = client.get("/api/rankings/domains?category=best")
     assert resp_dom.status_code == 200
     assert "rankings" in resp_dom.json()
 
-    # 6. GET /api/weather
+    # 7. GET /api/weather
     resp_w = client.get("/api/weather")
     assert resp_w.status_code == 200
     assert "global_weather_score" in resp_w.json()
@@ -128,12 +153,25 @@ async def test_cli_commands_execution(tmp_path) -> None:
     svg_out = str(tmp_path / "test_badge.svg")
     await cli_merit(export_svg=svg_out)
     assert (tmp_path / "test_badge.svg").exists()
-    await cli_merit()
+    await cli_merit(mesh=True)
 
-    # Test standalone badge export
+    # Test standalone badge export across modalities
     badge_out = str(tmp_path / "root_seed.svg")
-    cli_badge_export(badge_id="root_seed_candidate", output_path=badge_out, node="node-1")
+    cli_badge_export(badge_id="root_seed_candidate", output_path=badge_out, node="node-1", modality="node")
     assert (tmp_path / "root_seed.svg").exists()
+
+    pub_badge_out = str(tmp_path / "reuters_badge.svg")
+    cli_badge_export(badge_id="reuters.com", output_path=pub_badge_out, modality="publisher")
+    assert (tmp_path / "reuters_badge.svg").exists()
+
+    attest_badge_out = str(tmp_path / "attest_badge.html")
+    cli_badge_export(
+        badge_id="https://example.com/article",
+        output_path=attest_badge_out,
+        modality="attestation",
+        format_type="component",
+    )
+    assert (tmp_path / "attest_badge.html").exists()
 
     # Test rankings
     await cli_rankings(ranking_type="domains", category="best", limit=5, format_type="human")

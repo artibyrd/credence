@@ -402,12 +402,13 @@ footer.footer {
 }
 
 @media (min-width: 921px) {
-  html, body {
+  html:has(.workstation-container),
+  body:has(.workstation-container) {
     height: 100vh;
     overflow: hidden;
   }
 
-  body {
+  body:has(.workstation-container) {
     display: flex;
     flex-direction: column;
   }

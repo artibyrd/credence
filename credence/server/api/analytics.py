@@ -140,6 +140,64 @@ async def api_get_publisher_badge(request: Any) -> Any:
     )
 
 
+async def api_get_attestation_badge(request: Any) -> Any:
+    """REST API: Dynamic Article Attestation SVG badge endpoint."""
+    from sqlmodel import col, select
+
+    from credence.mesh.badges import generate_attestation_badge_svg
+    from credence.models import Audit, Snapshot
+
+    ident = request.path_params.get("identifier", "").replace(".svg", "")
+    style = request.query_params.get("style", "shield")
+    theme = request.query_params.get("theme", "dark")
+
+    suspicion_score = 0.0
+    classification = "VERIFIED"
+    content_sha = ""
+    is_found = False
+
+    await init_db()
+    async with get_async_session() as s:
+        if ident.startswith("sha256:") or len(ident) == 64:
+            clean_hash = ident if ident.startswith("sha256:") else f"sha256:{ident}"
+            stmt = select(Audit).where(Audit.content_sha256 == clean_hash).order_by(col(Audit.audited_at).desc())
+            audit = (await s.exec(stmt)).first()
+        else:
+            stmt = select(Audit).join(Snapshot).where(Snapshot.url == ident).order_by(col(Audit.audited_at).desc())
+            audit = (await s.exec(stmt)).first()
+
+        if audit:
+            suspicion_score = audit.suspicion_score
+            classification = audit.classification
+            content_sha = audit.content_sha256
+            is_found = True
+
+    if not is_found:
+        svg = generate_attestation_badge_svg(
+            content_sha256=ident,
+            suspicion_score=0.0,
+            classification="UNAUDITED",
+            style=style,
+            theme=theme,
+            is_modified=False,
+        )
+    else:
+        svg = generate_attestation_badge_svg(
+            content_sha256=content_sha,
+            suspicion_score=suspicion_score,
+            classification=classification,
+            style=style,
+            theme=theme,
+            is_modified=False,
+        )
+
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=300"},
+    )
+
+
 async def api_rankings_rules(request: Any) -> Any:
     """REST API: Query Top 10 most violated rules."""
     from dataclasses import asdict

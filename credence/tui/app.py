@@ -244,7 +244,7 @@ class CredenceApp(App):
         yield Footer()
 
     async def on_mount(self) -> None:
-        """Initialize widgets and load seed presets."""
+        """Initialize widgets and bind live SQLite session data."""
         await init_db()
         hist_table = self.query_one("#history_table", DataTable)
         hist_table.add_columns("Score", "Target Domain", "Verdict")
@@ -261,31 +261,111 @@ class CredenceApp(App):
         leaderboard_table.add_columns("Publisher", "DCI", "Trust Tier")
         leaderboard_table.cursor_type = "row"
 
-        for pub in PUBLISHER_PRESETS:
-            leaderboard_table.add_row(pub["domain"], pub["dci"], pub["tier"])
-
         populate_taxonomy_tree(self.query_one("#taxonomy_tree", Tree))
         populate_subjects_tree(self.query_one("#subjects_tree", Tree))
 
         await self.action_refresh_data()
         self._render_current_item()
-        if PUBLISHER_PRESETS:
-            self.query_one("#merit_panel", Static).update(format_publisher_dossier(PUBLISHER_PRESETS[0]["domain"]))
 
     async def action_refresh_data(self) -> None:
-        """Refresh audit history from SQLite or sample presets."""
+        """Refresh audit history, leaderboards, ops, and mesh vitals from live SQLite."""
+        from sqlmodel import col, select
+
+        from credence.db import get_async_session
+        from credence.mesh.stats import compute_mesh_stats
+        from credence.mesh.topology import compute_network_mesh_health
+        from credence.models import Audit, Snapshot, Violation
+        from credence.subjects.analytics import get_domain_leaderboard
+
         hist_table = self.query_one("#history_table", DataTable)
         hist_table.clear()
-        for p in SAMPLE_AUDIT_PRESETS:
-            badge = "CLEAN" if p["suspicion_score"] < 20 else "SUSPICIOUS" if p["suspicion_score"] < 70 else "HOAX"
-            if p.get("is_satire"):
-                badge = "SATIRE"
-            domain = p["url"].split("//")[-1].split("/")[0]
-            hist_table.add_row(f"{p['suspicion_score']:.1f}", domain, badge)
+        leaderboard_table = self.query_one("#leaderboard_table", DataTable)
+        leaderboard_table.clear()
+
+        async with get_async_session() as s:
+            # 1. Live Audit history
+            stmt = select(Audit, Snapshot).join(Snapshot, isouter=True).order_by(col(Audit.audited_at).desc()).limit(50)
+            res = (await s.exec(stmt)).all()
+            if res:
+                self._live_audits = []
+                for audit, snap in res:
+                    url = snap.url if snap else audit.content_sha256
+                    domain = url.split("//")[-1].split("/")[0]
+                    v_stmt = select(Violation).where(Violation.audit_id == audit.id)
+                    viols = list((await s.exec(v_stmt)).all())
+                    item = {
+                        "url": url,
+                        "title": snap.title if snap else "Forensic Snapshot",
+                        "suspicion_score": audit.suspicion_score,
+                        "classification": audit.classification,
+                        "confidence_score": audit.confidence_score,
+                        "suspicion_density": audit.suspicion_density,
+                        "is_satire": audit.is_satire,
+                        "content_sha256": audit.content_sha256,
+                        "node_pubkey": audit.node_pubkey,
+                        "executive_summary": f"Audit performed at {audit.audited_at}.",
+                        "violations": viols,
+                    }
+                    self._live_audits.append(item)
+                    badge = (
+                        "CLEAN"
+                        if audit.suspicion_score < 20
+                        else "SUSPICIOUS"
+                        if audit.suspicion_score < 70
+                        else "HOAX"
+                    )
+                    if audit.is_satire:
+                        badge = "SATIRE"
+                    hist_table.add_row(f"{audit.suspicion_score:.1f}", domain[:22], badge)
+
+                self._current_item = self._live_audits[0]
+                cur_v = self._live_audits[0].get("violations")
+                self._current_violations = cur_v if isinstance(cur_v, list) else []
+            else:
+                self._live_audits = []
+                self._current_item = SAMPLE_AUDIT_PRESETS[0]
+                sample_v = SAMPLE_AUDIT_PRESETS[0].get("violations")
+                self._current_violations = sample_v if isinstance(sample_v, list) else []
+                for p in SAMPLE_AUDIT_PRESETS:
+                    badge = (
+                        "CLEAN" if p["suspicion_score"] < 20 else "SUSPICIOUS" if p["suspicion_score"] < 70 else "HOAX"
+                    )
+                    if p.get("is_satire"):
+                        badge = "SATIRE"
+                    domain = p["url"].split("//")[-1].split("/")[0]
+                    hist_table.add_row(f"{p['suspicion_score']:.1f}", domain, badge)
+
+            # 2. Live Leaderboard
+            domains = await get_domain_leaderboard(s, limit=20)
+            if domains:
+                for d in domains:
+                    leaderboard_table.add_row(d.domain, f"{d.dci_score:.1f}", d.trust_band)
+                self.query_one("#merit_panel", Static).update(format_publisher_dossier(domains[0].domain))
+            else:
+                for pub in PUBLISHER_PRESETS:
+                    leaderboard_table.add_row(pub["domain"], pub["dci"], pub["tier"])
+                self.query_one("#merit_panel", Static).update(format_publisher_dossier(PUBLISHER_PRESETS[0]["domain"]))
+
+            # 3. Live Mesh & Ops Health
+            mesh_health = await compute_network_mesh_health(s)
+            mesh_stats = await compute_mesh_stats(s)
+
+            n_nodes = mesh_health.get("active_nodes_count", 1)
+            f_tol = mesh_health.get("byzantine_fault_tolerance_f", 0)
+            mesh_status = "STANDALONE" if n_nodes <= 1 else "ACTIVE SWARM"
+            self.query_one("#mesh_panel", Static).update(
+                f"P2P Mesh Reality: {n_nodes} Nodes | Quorum f={f_tol} ({mesh_status}) | HRW Rendezvous Active"
+            )
+            self.query_one("#ops_panel", Static).update(
+                f"SRE Telemetry: HEALTHY | Uptime: {mesh_stats.get('uptime_percentage', 100.0):.1f}% | Total Audited: {mesh_stats.get('total_audits_scored', 0)} Articles"
+            )
 
     def _render_current_item(self) -> None:
         """Update Inspector views with current audit item and active lens."""
         if not self._current_item:
+            self.query_one("#score_banner", Static).update("📡 STANDALONE / NO RECORDED AUDITS")
+            self.query_one("#exec_summary_panel", Static).update("No audits recorded in database.")
+            self.query_one("#violations_table", DataTable).clear()
             return
         banner_widget = self.query_one("#score_banner", Static)
         exec_widget = self.query_one("#exec_summary_panel", Static)

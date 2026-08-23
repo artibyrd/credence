@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.8.1";
+export const CREDENCE_VERSION = "v2.9.0";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -1462,9 +1462,32 @@ export function openInfoModal(topicKey) {
   if (key === "mesh" || key === "nodes") key = "topology";
   if (key === "admin" || key === "governor" || key === "cost") key = "operator_admin";
   if (key === "qi" || key === "leaderboard") key = "qi_scoring";
-  if (key === "identity" || key === "pubkey") key = "custody";
-
-  const info = INFO_TOPICS[key] || INFO_TOPICS["score"];
+  let info = INFO_TOPICS[key];
+  if (!info) {
+    const rawTitle = (topicKey || "Epistemic Metric").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    console.warn(`[Credence Workstation] Undeclared info modal key: "${topicKey}". Generating JIT discovery view.`);
+    info = {
+      title: rawTitle,
+      icon: "ℹ️",
+      tag: "DISCOVERY / TOPIC",
+      tier1_plain_english: `Detailed epistemic documentation and invariant rules for "${rawTitle}" are available in the central documentation network.`,
+      tier1_article: {
+        title: `Search "${rawTitle}" in Credence Docs`,
+        url: `https://docs.credence.run#?query=${encodeURIComponent(topicKey || "")}`,
+        desc: "Open live instant documentation search across all blueprints, guides, and invariants.",
+      },
+      tier2_mechanics: [
+        "Inspect and audit this metric via CLI or query the FastMCP 2.0 reverse proxy.",
+        "All metrics are bound by RFC 8785 canonical JSON and Ed25519 root signatures.",
+      ],
+      cli: `credence audit --topic ${topicKey || "metric"}`,
+      invariants: ["inv-verbatim-grounding", "inv-4way-feature-parity"],
+      links: [
+        { label: "📘 Master Topic Index", url: "https://docs.credence.run#docs/topic-index" },
+        { label: "🏛️ The Invariant Bible", url: "https://docs.credence.run#docs/invariants" },
+      ],
+    };
+  }
 
   const titleEl = document.getElementById("info-modal-title");
   const iconEl = document.getElementById("info-modal-icon");
