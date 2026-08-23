@@ -7,7 +7,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 ## 1. Tier 0: Universal Core Invariants (Prioritized Cognitive Hierarchy)
 
 ### Class α (Alpha): Sovereign Safety, Custody & Human Authority (P0 Non-Negotiables)
-- **`inv-mk1-eyeball` — Human Review Gate ("Mk1 Eyeball") with Staged PRs & Live Dev Links**: Tags, PR merges, and prod deploys require human Mk1 sign-off. Verify changes locally in browser/CLI first; link open 3-repo PRs and live Dev endpoints after monitoring `deploy-dev.yml` before review.
+- **`inv-mk1-eyeball` — Human Review Gate ("Mk1 Eyeball") with Staged PRs & Live Dev Links**: Tags, PR merges, and prod deploys require human Mk1 sign-off. Zero speculative UI additions. Sync version manifests before PR staging; link open 3-repo PRs and live Dev endpoints after monitoring `deploy-dev.yml` before review.
 - **`inv-verbatim-grounding` — Epistemic Verbatim Grounding ($G=1.00$) & Anti-Truncation UI**: Citations match source DOM text character-for-character with zero ellipsis masking on rules or forensic evidence. Hallucinations incur an autonomous 50% score slash.
 - **`inv-canonical-json-ed25519` — RFC 8785 Canonical JSON & Ed25519 Custody**: Envelopes use RFC 8785 canonical bytes with UTC timestamps; payload alterations invalidate Ed25519 verification.
 - **`inv-untrusted-ingestion` — Untrusted Ingestion Boundary & Network Defense**: Block cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback, and private IPs unless `allow_local=True`. Reject `<!DOCTYPE` / `<!ENTITY>`. Wrap LLM inputs in `<untrusted_source_text>`.
@@ -15,9 +15,9 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 
 ### Class β (Beta): Execution Topology, Lifecycle & Release Architecture (P1 Process Boundaries)
 - **`inv-incremental-commits-staging` — Incremental Commits & Staging Topology**: Feature branches (`feat/...`, `release/...`) deploy to Dev (`credence-dev-495173`); `main` merges require Code Owner review (`.github/CODEOWNERS`) and deploy to Prod (`credence-prod-505902`) and Edge.
-- **`inv-4phase-release-learning` — 4-Phase Release & Lean Learning Lifecycle**: 1. Code & Local QA (`just check`) $\rightarrow$ 2. Open Staged PR Triad & Watch Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge PRs, Tag Release (`vX.Y.0`), Watch Prod $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Lean Patch (`vX.Y.1`).
+- **`inv-4phase-release-learning` — 4-Phase Release & Lean Learning Lifecycle**: 1. Local QA $\rightarrow$ 2. Open Staged PR Triad & Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge, Tag (`vX.Y.0`), Prod Deploy $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Lean Patch (`vX.Y.1`).
 - **`inv-cart-before-horse` — The Cart-Before-the-Horse Order-of-Operations Invariant**: Prerequisite models and scrubbers must precede downstream APIs, UIs, and tests. Verify tests before drafting case studies.
-- **`inv-commit-before-deploy` — Commit-Before-Deploy & Push-and-Delegate with CI/CD Verification Gate**: Clean working tree before tags. Never push without human Mk1 sign-off. Post-push, verify GitHub Actions (`gh run watch` / `just pipeline watch`) instead of local deploys.
+- **`inv-commit-before-deploy` — Commit-Before-Deploy & Push-and-Delegate CI/CD Gate**: Clean tree before tags. Never push without Mk1 sign-off. Post-push, verify GitHub Actions (`gh run watch`) instead of local deploys.
 - **`inv-3plane-governance` — 3-Plane Deployment Governance**: 3 decoupled planes: **Edge Plane** (`web/`, `credence-docs`), **Compute Plane** (`credence-server`), and **Infra Plane** (Terraform).
 - **`inv-dual-env-least-privilege-cicd` — Dual-Environment Least-Privilege CI/CD**: Keyless WIF with `permissions: { id-token: write }`, repo assertions, and least-privilege roles.
 - **`inv-hermetic-unit-tests` — Hermetic Unit Test Isolation & Zero-Browser CI**: Unit tests (`@pytest.mark.unit`) execute in-memory in <35s with zero browser runtimes or daemons.
