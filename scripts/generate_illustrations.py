@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Precision SVG Illustration Engine for Credence Ecosystem.
+"""Credence Clean Vector SVG Technical Illustration Engine (Zero-Overlap Precision).
 
-Overhauls all vector SVG illustrations with exact card-to-card geometry,
-clean interconnects, tailored archetypes, and zero floating/orphan lines.
+Design Principles:
+- Zero decorative pill/badge clutter
+- Exact line heights and generous card padding to prevent text overflow
+- Clean, directional card-to-card connectors with non-overlapping labels
+- Contextual, topic-specific technical diagrams
+- 860x360 responsive viewBox with obsidian #090d16 background
 """
 
 import html
@@ -11,10 +15,10 @@ from pathlib import Path
 from typing import List, Optional
 
 
-class SVGCanvas:
-    """Modular SVG Canvas Builder with Credence Dark-Mode Styling."""
+class CleanSVGCanvas:
+    """Spacious, pill-free SVG Canvas with Credence Dark-Mode Styling."""
 
-    def __init__(self, width: int = 860, height: int = 360, title: str = "", category: str = "CREDENCE ARCHITECTURE"):
+    def __init__(self, width: int = 860, height: int = 360, title: str = "", category: str = "CREDENCE ECOSYSTEM"):
         self.width = width
         self.height = height
         self.title = title
@@ -28,7 +32,7 @@ class SVGCanvas:
         w: float,
         h: float,
         rx: float = 8,
-        fill: str = "#1e293b",
+        fill: str = "#0f172a",
         stroke: str = "rgba(56, 189, 248, 0.25)",
         stroke_width: float = 1.0,
         filter_id: Optional[str] = None,
@@ -62,7 +66,7 @@ class SVGCanvas:
         x: float,
         y: float,
         content: str,
-        font_size: float = 13,
+        font_size: float = 12,
         fill: str = "#f8fafc",
         font_family: str = "sans-serif",
         font_weight: str = "normal",
@@ -104,69 +108,42 @@ class SVGCanvas:
         subtitle: str = "",
         icon: str = "",
         accent: str = "#38bdf8",
-        badge: str = "",
         fill: str = "#0f172a",
     ) -> None:
-        """Render a sleek Credence dark slate card with glowing accent border and metadata."""
+        """Render a clean card with generous padding, accent border, and zero decorative pills."""
         self.rect(x, y, w, h, rx=8, fill=fill, stroke=accent, stroke_width=1.2, filter_id="card-shadow")
         self.rect(x, y, w, 3, rx=1.5, fill=accent, stroke="none")
 
-        header_x = x + 12
+        header_x = x + 14
         if icon:
-            self.text(header_x, y + 21, icon, font_size=14, anchor="start")
+            self.text(header_x, y + 22, icon, font_size=14, anchor="start")
             header_x += 22
 
-        self.text(header_x, y + 21, title[:28], font_size=12.5, fill="#f8fafc", font_weight="600")
-
-        if badge:
-            badge_w = min(110, len(badge) * 7.0 + 12)
-            badge_x = x + w - badge_w - 10
-            self.rect(
-                badge_x, y + 8, badge_w, 18, rx=4, fill="rgba(56, 189, 248, 0.12)", stroke=accent, stroke_width=0.8
-            )
-            self.text(
-                badge_x + badge_w / 2,
-                y + 20.5,
-                badge,
-                font_size=9.5,
-                fill=accent,
-                font_family="monospace",
-                font_weight="bold",
-                anchor="middle",
-            )
+        self.text(header_x, y + 22, title, font_size=12, fill="#f8fafc", font_weight="600")
 
         if subtitle:
             sub_lines = subtitle.split("\n")
-            line_y = y + 40
-            for s_line in sub_lines[:4]:
-                self.text(x + 12, line_y, s_line[:48], font_size=10.5, fill="#94a3b8", font_family="sans-serif")
-                line_y += 15
+            line_y = y + 42
+            for s_line in sub_lines:
+                self.text(x + 14, line_y, s_line, font_size=10.5, fill="#94a3b8", font_family="sans-serif")
+                line_y += 17
 
-    def cluster(
+    def container(
         self,
         x: float,
         y: float,
         w: float,
         h: float,
-        title: str,
-        color: str = "#38bdf8",
-        bg: str = "rgba(9, 13, 22, 0.75)",
-        dashed: bool = False,
+        title: str = "",
+        color: str = "rgba(56, 189, 248, 0.3)",
+        bg: str = "rgba(15, 23, 42, 0.5)",
     ) -> None:
-        """Render a subgraph/plane cluster boundary."""
-        self.rect(x, y, w, h, rx=10, fill=bg, stroke=color, stroke_width=1.0, dashed=dashed, opacity=0.9)
-        tw = min(w - 20, len(title) * 7.2 + 18)
-        self.rect(x + 12, y - 9, tw, 18, rx=4, fill="#090d16", stroke=color, stroke_width=1.0)
-        self.text(
-            x + 12 + tw / 2,
-            y + 3.5,
-            title,
-            font_size=9.5,
-            fill=color,
-            font_family="sans-serif",
-            font_weight="bold",
-            anchor="middle",
-        )
+        """Render a clean grouping container without overlapping header pills."""
+        self.rect(x, y, w, h, rx=10, fill=bg, stroke=color, stroke_width=1.0)
+        if title:
+            self.text(
+                x + 14, y + 18, title.upper(), font_size=9.5, fill=color, font_family="monospace", font_weight="bold"
+            )
 
     def arrow(
         self,
@@ -179,21 +156,19 @@ class SVGCanvas:
         dashed: bool = False,
         marker: str = "url(#arrow-cyan)",
     ) -> None:
-        """Render directional connection arrow with non-overlapping label pill."""
+        """Render clean directional connection arrow."""
         dx = x2 - x1
         dy = y2 - y1
         dist = (dx * dx + dy * dy) ** 0.5
-        if dist < 5:
+        if dist < 8:
             return
 
         self.line(x1, y1, x2, y2, stroke=color, stroke_width=1.4, dashed=dashed, marker_end=marker)
 
-        if label and dist >= 45:
+        if label:
             mx = (x1 + x2) / 2
-            my = (y1 + y2) / 2
-            lw = min(dist - 10, len(label) * 6.5 + 12)
-            self.rect(mx - lw / 2, my - 8, lw, 16, rx=3, fill="#090d16", stroke=color, stroke_width=0.8)
-            self.text(mx, my + 3.5, label, font_size=9, fill="#e2e8f0", font_family="monospace", anchor="middle")
+            my = (y1 + y2) / 2 - 6
+            self.text(mx, my, label, font_size=9, fill="#94a3b8", font_family="monospace", anchor="middle")
 
     def pipeline_step(
         self,
@@ -201,35 +176,37 @@ class SVGCanvas:
         y: float,
         w: float,
         h: float,
-        step: str,
+        step_num: str,
         title: str,
         desc: str = "",
         color: str = "#38bdf8",
         fill: str = "#0f172a",
     ) -> None:
-        """Render an ingestion/lifecycle pipeline card with step badge."""
+        """Render a clean horizontal pipeline card."""
         self.rect(x, y, w, h, rx=8, fill=fill, stroke=color, stroke_width=1.2, filter_id="card-shadow")
-        self.circle(x + 20, y + h / 2, 11, fill="#1e293b", stroke=color, stroke_width=1.2)
-        self.text(x + 20, y + h / 2 + 3.5, step, font_size=9.5, fill=color, font_weight="bold", anchor="middle")
+        self.rect(x, y, w, 3, rx=1.5, fill=color, stroke="none")
 
-        self.text(x + 38, y + 20, title[:30], font_size=12, fill="#f8fafc", font_weight="600")
+        self.circle(x + 20, y + 24, 10, fill="#1e293b", stroke=color, stroke_width=1.2)
+        self.text(x + 20, y + 27.5, step_num, font_size=9.5, fill=color, font_weight="bold", anchor="middle")
+
+        self.text(x + 38, y + 27.5, title, font_size=12, fill="#f8fafc", font_weight="600")
         if desc:
-            self.text(x + 38, y + 36, desc[:42], font_size=10, fill="#94a3b8", font_family="monospace")
+            desc_lines = desc.split("\n")
+            dy = y + 48
+            for d in desc_lines:
+                self.text(x + 14, dy, d, font_size=10, fill="#94a3b8", font_family="sans-serif")
+                dy += 16
 
     def render(self) -> str:
-        """Generate clean, standalone SVG XML."""
+        """Generate final clean SVG XML."""
         return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.width} {self.height}" width="100%" height="auto" style="background: transparent;">
   <defs>
     <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
     </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#60a5fa" />
-    </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.6" />
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
     </filter>
     <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
@@ -254,9 +231,9 @@ class SVGCanvas:
   <!-- Background Base -->
   <rect width="{self.width}" height="{self.height}" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
 
-  <!-- Top Header Bar -->
-  <text x="24" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">{html.escape(self.category.upper())}</text>
-  <text x="24" y="46" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="bold" letter-spacing="0.01em">{html.escape(self.title.upper())}</text>
+  <!-- Top Header -->
+  <text x="28" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">{html.escape(self.category.upper())}</text>
+  <text x="28" y="48" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="bold">{html.escape(self.title.upper())}</text>
 
   <!-- Elements -->
   {"".join(self.elements)}
@@ -264,129 +241,184 @@ class SVGCanvas:
 """
 
 
-def build_three_plane_architecture(title: str = "3-PLANE DECOUPLED GOVERNANCE ARCHITECTURE") -> SVGCanvas:
-    c = SVGCanvas(860, 360, title, "INFRASTRUCTURE TOPOLOGY")
+def build_three_plane_architecture(title: str = "3-PLANE DECOUPLED GOVERNANCE ARCHITECTURE") -> CleanSVGCanvas:
+    c = CleanSVGCanvas(860, 360, title, "INFRASTRUCTURE PLANE TOPOLOGY")
 
-    c.cluster(25, 65, 255, 275, "EDGE PLANE (Cloudflare)", "#38bdf8")
+    col_w = 244
+    gap = 26
+    x1 = 28
+    x2 = x1 + col_w + gap
+    x3 = x2 + col_w + gap
+
+    c.container(x1, 68, col_w, 266, "Edge Plane (Cloudflare)", "#38bdf8")
     c.card(
-        40,
-        95,
-        225,
-        65,
+        x1 + 12,
+        94,
+        col_w - 24,
+        70,
         "Zero-Build Web UI",
-        "Vanilla HTML5 / ES Modules\nZero npm dependencies",
+        "• Vanilla HTML5 / ES Modules\n• Zero npm dependencies",
         "🌐",
         "#38bdf8",
-        "Edge",
     )
     c.card(
-        40, 175, 225, 65, "Interactive Docs", "docs.credence.run\nZero-latency client search", "📘", "#60a5fa", "Pages"
+        x1 + 12,
+        174,
+        col_w - 24,
+        70,
+        "Interactive Docs",
+        "• docs.credence.run\n• Fast client search index",
+        "📘",
+        "#60a5fa",
     )
     c.card(
-        40,
-        255,
-        225,
-        65,
+        x1 + 12,
+        254,
+        col_w - 24,
+        70,
         "Edge Router (_worker.js)",
-        "Multi-domain routing\nTiered CDN cache headers",
+        "• Multi-domain routing\n• Tiered CDN cache headers",
         "⚡",
         "#38bdf8",
-        "Worker",
     )
 
-    c.cluster(302, 65, 255, 275, "COMPUTE PLANE (Cloud Run)", "#22c55e")
+    c.container(x2, 68, col_w, 266, "Compute Plane (Cloud Run)", "#22c55e")
     c.card(
-        317,
-        95,
-        225,
-        65,
+        x2 + 12,
+        94,
+        col_w - 24,
+        70,
         "FastMCP 2.0 Engine",
-        "Stdio & SSE Transports\nAutomated tools & resources",
+        "• Stdio & SSE Transports\n• Automated tools & resources",
         "⚙️",
         "#22c55e",
-        "FastMCP",
     )
     c.card(
-        317,
-        175,
-        225,
-        65,
+        x2 + 12,
+        174,
+        col_w - 24,
+        70,
         "Starlette Core Server",
-        "Ingestion, Scrubber & API\nRate limiting & Prometheus",
+        "• Ingestion & Scrubber API\n• Rate limiting & Prometheus",
         "🚀",
         "#38bdf8",
-        ":8000",
     )
     c.card(
-        317,
-        255,
-        225,
-        65,
+        x2 + 12,
+        254,
+        col_w - 24,
+        70,
         "SQLite + Vector Store",
-        "Relational audit trails\nVector embeddings (WAL)",
+        "• Relational audit logs\n• Vector embeddings (WAL)",
         "💾",
         "#a855f7",
-        "Storage",
     )
 
-    c.cluster(580, 65, 255, 275, "INFRASTRUCTURE PLANE", "#a855f7")
+    c.container(x3, 68, col_w, 266, "Infra Plane (Multi-Cloud)", "#a855f7")
     c.card(
-        595, 95, 225, 65, "Terraform Multi-Cloud", "GCP Cloud Run + WIF\nCloudflare DNS & Pages", "🏛️", "#a855f7", "HCL"
+        x3 + 12, 94, col_w - 24, 70, "Terraform HCL", "• GCP Cloud Run + WIF\n• Cloudflare DNS & Pages", "🏛️", "#a855f7"
     )
     c.card(
-        595,
-        175,
-        225,
-        65,
+        x3 + 12,
+        174,
+        col_w - 24,
+        70,
         "GitHub Actions CI/CD",
-        "Keyless WIF deploy\nAutomated dev staging",
+        "• Keyless WIF deploy\n• Automated dev staging",
         "🔄",
         "#60a5fa",
-        "Actions",
     )
     c.card(
-        595,
-        255,
-        225,
-        65,
+        x3 + 12,
+        254,
+        col_w - 24,
+        70,
         "Genesis Key Custody",
-        "RFC 8785 Canonical JSON\nEd25519 root authority",
+        "• RFC 8785 Canonical JSON\n• Ed25519 root authority",
         "🔐",
         "#22c55e",
-        "Sovereign",
     )
 
-    c.arrow(265, 127, 317, 127, "API / SSE", "#38bdf8", marker="url(#arrow-cyan)")
-    c.arrow(542, 127, 595, 127, "WIF Auth", "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(x1 + col_w, 129, x2, 129, "API / SSE", "#38bdf8")
+    c.arrow(x2 + col_w, 129, x3, 129, "WIF Auth", "#22c55e", marker="url(#arrow-emerald)")
     return c
 
 
-def build_pipeline_architecture(
+def build_satire_and_entropy_defense(
+    title: str = "TOPIC ENTROPY ASTROTURFING & SATIRE CLOAK DEFENSE",
+) -> CleanSVGCanvas:
+    c = CleanSVGCanvas(860, 360, title, "DEFENSIVE REASONING & POE'S LAW")
+
+    w = 384
+    c.container(28, 68, w, 266, "Satire Detection (Poe's Law)", "#38bdf8")
+    c.card(
+        42,
+        94,
+        w - 28,
+        102,
+        "Humor & Parody Surface",
+        "• Satirical cues, irony, or farce detected\n• Score safely neutralized (0.00)\n• Zero false-positive misinformation flags",
+        "🎭",
+        "#38bdf8",
+    )
+    c.card(
+        42,
+        208,
+        w - 28,
+        114,
+        "Invariant Guardrail",
+        "• Protects legitimate comedy and satire from AI censorship\n• Avoids over-enforcement and algorithmic bias\n• Grounding exactness preserved character-for-character",
+        "🛡️",
+        "#60a5fa",
+    )
+
+    c.container(448, 68, w, 266, "Factual Allegation Override (SPJ-1.6)", "#ef4444")
+    c.card(
+        462,
+        94,
+        w - 28,
+        102,
+        "Factual Defamation / Claims",
+        "• Specific named entities & financial allegations\n• Verified real-world harm potential\n• SPJ-1.6 mandatory override active",
+        "⚖️",
+        "#ef4444",
+    )
+    c.card(
+        462,
+        208,
+        w - 28,
+        114,
+        "Shannon Entropy Defense (H < 0.30)",
+        "• Low-entropy astroturfing campaigns detected\n• Forensic audit applied when satire cloaks real attacks\n• Cryptographic Ed25519 tamper-evident attestation",
+        "🔬",
+        "#f59e0b",
+    )
+
+    c.arrow(412, 145, 448, 145, "Override", "#ef4444", marker="url(#arrow-rose)")
+    return c
+
+
+def build_four_stage_pipeline(
     title: str,
     step1: tuple[str, str],
     step2: tuple[str, str],
     step3: tuple[str, str],
     step4: tuple[str, str],
-    footer: tuple[str, str],
-    category: str = "SECURITY & PIPELINE",
-) -> SVGCanvas:
-    c = SVGCanvas(860, 360, title, category)
+    banner_title: str = "Security & Epistemic Invariant",
+    banner_desc: str = "Zero-trust ingestion boundary • Epistemic verbatim grounding (G=1.00) • Deterministic verification",
+    category: str = "PROCESSING PIPELINE",
+) -> CleanSVGCanvas:
+    c = CleanSVGCanvas(860, 360, title, category)
 
-    s_w = 175
-    s_h = 75
-    gap = 25
-    x_start = 42
-    y_top = 75
+    s_w = 180
+    s_h = 100
+    gap = 28
+    x_start = 28
+    y_top = 70
 
     steps = [
         ("1", step1[0], step1[1], "#38bdf8", "url(#arrow-cyan)"),
-        (
-            "2",
-            step2[0],
-            step2[1],
-            "#ef4444" if "ssrf" in step2[0].lower() or "filter" in step2[0].lower() else "#60a5fa",
-            "url(#arrow-blue)",
-        ),
+        ("2", step2[0], step2[1], "#60a5fa", "url(#arrow-blue)"),
         ("3", step3[0], step3[1], "#a855f7", "url(#arrow-purple)"),
         ("4", step4[0], step4[1], "#22c55e", "url(#arrow-emerald)"),
     ]
@@ -398,311 +430,250 @@ def build_pipeline_architecture(
             next_sx = x_start + (idx + 1) * (s_w + gap)
             c.arrow(sx + s_w, y_top + s_h / 2, next_sx, y_top + s_h / 2, "", col, marker=marker)
 
-    c.card(42, 175, 775, 150, footer[0], footer[1], "🛡️", "#22c55e", "INVARIANT")
+    c.card(28, 188, 804, 146, banner_title, banner_desc, "🛡️", "#22c55e")
     return c
 
 
-def build_demotion_highway(title: str = "THE DEMOTION HIGHWAY & KNOWLEDGE SCALABILITY MATRIX") -> SVGCanvas:
-    c = SVGCanvas(860, 360, title, "KNOWLEDGE GOVERNANCE")
+def build_mesh_cluster(title: str = "13-NODE WATTS-STROGATZ PEER-TO-PEER MESH TOPOLOGY") -> CleanSVGCanvas:
+    c = CleanSVGCanvas(860, 360, title, "CONSENSUS & BYZANTINE DEFENSE")
 
-    c.cluster(25, 65, 255, 275, "TIER 0: UNIVERSAL INVARIANTS", "#ef4444")
+    w = 384
+    c.container(28, 68, w, 266, "High-Merit Peer Ring (M_i >= 0.70)", "#22c55e")
+    c.card(42, 94, 164, 66, "Node 0 (Genesis)", "• M=0.98 | Root Seed\n• Sovereign Authority", "🛡️", "#22c55e")
+    c.card(234, 94, 164, 66, "Node 1 (Relay)", "• M=0.92 | Active\n• Feed Rendezvous", "⚡", "#38bdf8")
+    c.card(42, 172, 164, 66, "Node 2 (Auditor)", "• M=0.88 | Active\n• Heuristic Verifier", "🔬", "#60a5fa")
+    c.card(234, 172, 164, 66, "Node 3 (Sifter)", "• M=0.85 | Active\n• Boredom Sifter", "🔍", "#38bdf8")
+    c.card(138, 250, 164, 66, "Node 4 (Digest)", "• M=0.82 | Active\n• Briefing Generator", "📰", "#a855f7")
+
+    c.line(206, 127, 234, 127, "#22c55e", 1.2, marker_end=None)
+    c.line(206, 205, 234, 205, "#22c55e", 1.2, marker_end=None)
+    c.line(124, 160, 124, 172, "#22c55e", 1.2, marker_end=None)
+    c.line(316, 160, 316, 172, "#22c55e", 1.2, marker_end=None)
+
+    c.container(448, 68, w, 266, "Byzantine Sybil Cartel Defense", "#ef4444")
+    c.card(462, 94, 164, 66, "Quarantine Node 9", "• Suspicion: 88.4%\n• Cartel Isolated", "🛑", "#ef4444")
+    c.card(654, 94, 164, 66, "Quarantine Node 10", "• Suspicion: 92.1%\n• Score Slash 50%", "🛑", "#ef4444")
     c.card(
-        40,
-        95,
-        225,
-        65,
-        "P0 Sovereign Safety",
-        "Always-on LLM prompt\n<800 tokens hard ceiling",
-        "🧠",
-        "#ef4444",
-        "Tier 0",
-    )
-    c.card(
-        40,
-        175,
-        225,
-        145,
-        "Cognitive Hierarchy",
-        "• Class α: Safety & Authority\n• Class β: Lifecycle Topology\n• Class γ: Interface Symmetry\n• Strict Mk1 Eyeball Gate",
+        462,
+        172,
+        356,
+        144,
+        "Consensus Quarantine Isolation",
+        "• Watts-Strogatz HRW hashing routes feeds\n• Nodes with S_j > 70.0% isolated autonomously\n• Cartels cannot skew consensus medians\n• Byzantine tolerance: f = floor((N-1)/3)",
         "⚖️",
         "#f59e0b",
-        "Bible",
     )
 
-    c.cluster(302, 65, 255, 275, "TIER 1: PROGRESSIVE SKILLS", "#38bdf8")
-    c.card(
-        317, 95, 225, 65, "Subsystem Skills", "Loaded dynamically on-demand\n.agents/skills/*", "☁️", "#38bdf8", "Tier 1"
-    )
-    c.card(
-        317,
-        175,
-        225,
-        145,
-        "Domain Capabilities",
-        "• cloudrun-ops\n• mesh-cluster\n• white-label-ops\n• architecture-governance\n• epistemic-benchmark",
-        "🏛️",
-        "#60a5fa",
-        "On-Demand",
-    )
-
-    c.cluster(580, 65, 255, 275, "TIER 2: SHIFT-LEFT TESTS", "#22c55e")
-    c.card(
-        595,
-        95,
-        225,
-        65,
-        "Deterministic Test Gates",
-        "Shift-left automated QA\n<0.3s local execution",
-        "⚡",
-        "#22c55e",
-        "Tier 2",
-    )
-    c.card(
-        595,
-        175,
-        225,
-        145,
-        "Mechanical Rules",
-        "• Zero-npm invariant\n• 7-Manifest parity sync\n• Code fence indentation\n• Sitemap route coverage\n• Tiered cache headers",
-        "🛡️",
-        "#22c55e",
-        "Justfile",
-    )
-
-    c.arrow(280, 127, 302, 127, "Graduate", "#38bdf8", marker="url(#arrow-cyan)")
-    c.arrow(557, 127, 580, 127, "Demote", "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(412, 127, 448, 127, "Gossip", "#60a5fa", marker="url(#arrow-blue)")
     return c
 
 
-def build_mesh_cluster(title: str = "13-NODE WATTS-STROGATZ PEER-TO-PEER MESH TOPOLOGY") -> SVGCanvas:
-    c = SVGCanvas(860, 360, title, "CONSENSUS PROTOCOL")
-
-    c.cluster(25, 65, 395, 275, "High-Merit Peer Ring (M_i >= 0.70)", "#22c55e")
-    c.card(40, 95, 170, 60, "Node 0 (Genesis)", "M=0.98 | f=4", "🛡️", "#22c55e", "Root")
-    c.card(235, 95, 170, 60, "Node 1 (Relay)", "M=0.92 | f=4", "⚡", "#38bdf8", "Active")
-    c.card(40, 175, 170, 60, "Node 2 (Auditor)", "M=0.88 | f=4", "🔬", "#60a5fa", "Active")
-    c.card(235, 175, 170, 60, "Node 3 (Sifter)", "M=0.85 | f=4", "🔍", "#38bdf8", "Active")
-    c.card(137, 255, 170, 60, "Node 4 (Digest)", "M=0.82 | f=4", "📰", "#a855f7", "Active")
-
-    c.line(210, 125, 235, 125, "#22c55e", 1.2, marker_end=None)
-    c.line(210, 205, 235, 205, "#22c55e", 1.2, marker_end=None)
-    c.line(125, 155, 125, 175, "#22c55e", 1.2, marker_end=None)
-    c.line(320, 155, 320, 175, "#22c55e", 1.2, marker_end=None)
-    c.line(125, 235, 170, 255, "#22c55e", 1.2, marker_end=None)
-    c.line(320, 235, 275, 255, "#22c55e", 1.2, marker_end=None)
-
-    c.cluster(440, 65, 395, 275, "Byzantine Sybil Cartel Defense (N >= 3f + 1)", "#ef4444")
-    c.card(455, 95, 175, 60, "Quarantine Node 9", "Suspicion: 88.4%", "🛑", "#ef4444", "Isolated")
-    c.card(645, 95, 175, 60, "Quarantine Node 10", "Suspicion: 92.1%", "🛑", "#ef4444", "Isolated")
-    c.card(
-        455,
-        175,
-        365,
-        140,
-        "Consensus Quarantine & Cartel Isolation",
-        "• HRW rendezvous hashing partitions feed topics.\n• Nodes with S_j > 70.0% quarantined autonomously.\n• Cartels cannot achieve 3f+1 threshold to skew scores.\n• Byzantine fault tolerance: f = floor((N-1)/3).",
-        "⚖️",
-        "#f59e0b",
-        "Sybil Shield",
-    )
-
-    c.arrow(405, 125, 455, 125, "Gossip", "#60a5fa", marker="url(#arrow-blue)")
-    return c
-
-
-def build_information_pyramid(title: str = "THE EPISTEMIC LENSING & INFORMATION PYRAMID") -> SVGCanvas:
-    c = SVGCanvas(860, 360, title, "EPISTEMIC LENSING")
+def build_information_pyramid(title: str = "THE EPISTEMIC LENSING & INFORMATION PYRAMID") -> CleanSVGCanvas:
+    c = CleanSVGCanvas(860, 360, title, "EPISTEMIC LENSING")
 
     c.card(
-        260,
-        65,
-        340,
+        250,
         70,
-        "1. SURFACE LENS (Glance)",
+        360,
+        70,
+        "1. Surface Lens (Glance)",
         "• Overall Credence score gauge (0-100)\n• Quick verified / suspicious badge",
         "⚡",
         "#22c55e",
-        "Tier 1",
     )
     c.card(
-        160,
-        155,
-        540,
-        75,
-        "2. FOCUS LENS (Explore)",
+        150,
+        156,
+        560,
+        74,
+        "2. Focus Lens (Explore)",
         "• Deconstructed claims & deceptive pattern tags\n• Verbatim DOM citations (G=1.00) & sparklines",
         "🔍",
         "#38bdf8",
-        "Tier 2",
     )
     c.card(
-        60,
-        250,
-        740,
-        80,
-        "3. DEEP SPECTRUM LENS (Forensic Audit)",
+        50,
+        246,
+        760,
+        84,
+        "3. Deep Spectrum Lens (Forensic Audit)",
         "• Cryptographic Ed25519 signatures & RFC 8785 canonical envelopes\n• Raw DOM SHA-256 hash & full temporal diff timeline",
         "🔬",
         "#a855f7",
-        "Tier 3",
     )
 
-    c.arrow(430, 135, 430, 155, "", "#38bdf8", marker="url(#arrow-cyan)")
-    c.arrow(430, 230, 430, 250, "", "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(430, 140, 430, 156, "", "#38bdf8", marker="url(#arrow-cyan)")
+    c.arrow(430, 230, 430, 246, "", "#a855f7", marker="url(#arrow-purple)")
     return c
 
 
-def build_interface_parity_hub(title: str = "UNIVERSAL 4-WAY FEATURE PARITY & INTERFACE HUB") -> SVGCanvas:
-    c = SVGCanvas(860, 360, title, "INTERFACE SYMMETRY")
+def build_demotion_highway(title: str = "THE DEMOTION HIGHWAY & KNOWLEDGE SCALABILITY MATRIX") -> CleanSVGCanvas:
+    c = CleanSVGCanvas(860, 360, title, "KNOWLEDGE GOVERNANCE")
 
+    col_w = 244
+    gap = 26
+    x1 = 28
+    x2 = x1 + col_w + gap
+    x3 = x2 + col_w + gap
+
+    c.container(x1, 68, col_w, 266, "Tier 0: Universal Invariants", "#ef4444")
     c.card(
-        310,
-        135,
-        240,
-        90,
-        "FastMCP 2.0 Core Engine",
-        "Stdio & SSE Transports\nShared Heuristics & Scoring",
-        "⚙️",
-        "#22c55e",
-        "Core Hub",
-    )
-
-    c.card(40, 85, 210, 70, "Command Line (CLI)", "credence audit <url>\nFast terminal outputs", "💻", "#38bdf8", "CLI")
-    c.card(
-        40, 205, 210, 70, "Textual TUI Workstation", "credence-tui\nKeyboard-first dashboard", "📟", "#60a5fa", "TUI"
-    )
-
-    c.card(610, 85, 210, 70, "Zero-Build Web UI", "Vanilla HTML5/ES6\n5 invariant nav links", "🌐", "#a855f7", "Web")
-    c.card(
-        610,
-        205,
-        210,
-        70,
-        "Claude / Agent SDK",
-        "Automated MCP prompts\nEpistemic brake tool",
-        "🤖",
-        "#f59e0b",
-        "Agents",
-    )
-
-    c.arrow(250, 120, 310, 160, "CLI API", "#38bdf8", marker="url(#arrow-cyan)")
-    c.arrow(250, 240, 310, 200, "TUI SSE", "#60a5fa", marker="url(#arrow-blue)")
-    c.arrow(550, 160, 610, 120, "Web API", "#a855f7", marker="url(#arrow-purple)")
-    c.arrow(550, 200, 610, 240, "FastMCP", "#f59e0b", marker="url(#arrow-amber)")
-
-    c.card(
-        40,
-        295,
-        780,
-        45,
-        "Class γ Invariant: 100% Feature Parity Across All 4 Interfaces",
-        "Every capability available in Web is accessible via CLI, TUI, and FastMCP.",
-        "✨",
-        "#22c55e",
-        "Symmetry",
-    )
-    return c
-
-
-def build_generic_topic_illustration(slug: str, title: str, category: str = "ARCHITECTURE") -> SVGCanvas:
-    clean_title = title.replace("#", "").strip()[:60]
-    c = SVGCanvas(860, 360, clean_title, category)
-
-    c.cluster(25, 65, 255, 205, "INGESTION & SCRUBBING", "#38bdf8")
-    c.card(
-        40,
-        95,
-        225,
-        70,
-        "Input Boundary",
-        "Target URLs, text, and feeds\nSSRF & private IP filter",
-        "📥",
-        "#38bdf8",
-        "Boundary",
-    )
-    c.card(
-        40,
-        180,
-        225,
-        75,
-        "DOM Extractor & Scrubber",
-        "Strip script & XML entities\nGrounding text quarantine",
-        "🧹",
-        "#60a5fa",
-        "Sanitized",
-    )
-    c.arrow(152, 165, 152, 180, "", "#38bdf8", marker="url(#arrow-cyan)")
-
-    c.cluster(302, 65, 255, 205, "EPISTEMIC EVALUATION", "#22c55e")
-    c.card(
-        317,
-        95,
-        225,
-        70,
-        "Multi-Model Heuristics",
-        "Heuristic rules & claim extract\nQuota preserved fallback",
+        x1 + 12,
+        94,
+        col_w - 24,
+        76,
+        "P0 Sovereign Safety",
+        "• Always-on LLM prompt context\n• <800 tokens hard ceiling\n• Zero speculative code",
         "🧠",
-        "#22c55e",
-        "Reasoning",
+        "#ef4444",
     )
     c.card(
-        317,
+        x1 + 12,
         180,
-        225,
-        75,
-        "Consensus Aggregator",
-        "Expertise-weighted medians\nShannon entropy astroturf def",
+        col_w - 24,
+        136,
+        "Cognitive Canon",
+        "• Class α: Safety & Authority\n• Class β: Lifecycle Topology\n• Class γ: Interface Symmetry\n• Strict Mk1 Human Gate",
         "⚖️",
         "#f59e0b",
-        "Consensus",
     )
-    c.arrow(429, 165, 429, 180, "", "#22c55e", marker="url(#arrow-emerald)")
 
-    c.cluster(580, 65, 255, 205, "ATTESTATION & CUSTODY", "#a855f7")
+    c.container(x2, 68, col_w, 266, "Tier 1: Progressive Skills", "#38bdf8")
     c.card(
-        595,
-        95,
-        225,
-        70,
-        "RFC 8785 Canonical JSON",
-        "Deterministic UTF-8 serialization\nSorted keys byte stream",
-        "📜",
-        "#a855f7",
-        "Receipt",
+        x2 + 12,
+        94,
+        col_w - 24,
+        76,
+        "Subsystem Skills",
+        "• Loaded dynamically on demand\n• .agents/skills/*\n• Context economy preserved",
+        "☁️",
+        "#38bdf8",
     )
     c.card(
-        595,
+        x2 + 12,
         180,
-        225,
-        75,
-        "Ed25519 Cryptographic Seal",
-        "Genesis root authority sign\nTamper-evident verification",
-        "🔐",
-        "#22c55e",
-        "Sovereign",
+        col_w - 24,
+        136,
+        "Specialized Domains",
+        "• cloudrun-ops\n• mesh-cluster\n• white-label-ops\n• architecture-governance\n• epistemic-benchmark",
+        "🏛️",
+        "#60a5fa",
     )
-    c.arrow(707, 165, 707, 180, "", "#a855f7", marker="url(#arrow-purple)")
 
-    c.arrow(280, 130, 302, 130, "Clean Text", "#38bdf8", marker="url(#arrow-cyan)")
-    c.arrow(557, 130, 580, 130, "Attest", "#22c55e", marker="url(#arrow-emerald)")
-
+    c.container(x3, 68, col_w, 266, "Tier 2: Shift-Left Tests", "#22c55e")
     c.card(
-        25,
-        285,
-        810,
-        55,
-        "Living Invariant Compliance",
-        "Zero-trust untrusted source isolation • Grounding exactness G=1.00 • Hermetic execution <35s",
+        x3 + 12,
+        94,
+        col_w - 24,
+        76,
+        "Deterministic Tests",
+        "• Shift-left automated QA\n• <0.3s local execution\n• Immediate feedback loop",
+        "⚡",
+        "#22c55e",
+    )
+    c.card(
+        x3 + 12,
+        180,
+        col_w - 24,
+        136,
+        "Mechanical Invariants",
+        "• Zero-npm invariant\n• 7-Manifest parity sync\n• Code fence validation\n• Sitemap route coverage\n• Tiered edge caching",
         "🛡️",
         "#22c55e",
-        "Verified",
     )
+
+    c.arrow(x1 + col_w, 132, x2, 132, "Graduate", "#38bdf8", marker="url(#arrow-cyan)")
+    c.arrow(x2 + col_w, 132, x3, 132, "Demote", "#22c55e", marker="url(#arrow-emerald)")
     return c
 
 
-def get_illustration_for_topic(slug: str, title: str, category_path: str) -> SVGCanvas:
+def build_generic_clean_illustration(slug: str, title: str, category: str = "ARCHITECTURE") -> CleanSVGCanvas:
+    clean_title = title.replace("#", "").strip()[:65]
+    c = CleanSVGCanvas(860, 360, clean_title, category)
+
+    col_w = 244
+    gap = 26
+    x1 = 28
+    x2 = x1 + col_w + gap
+    x3 = x2 + col_w + gap
+
+    c.container(x1, 68, col_w, 266, "Ingestion & Security", "#38bdf8")
+    c.card(
+        x1 + 12,
+        94,
+        col_w - 24,
+        104,
+        "Network Boundary",
+        "• Target URLs, text & feeds\n• SSRF & metadata IP filter\n• XML entity injection defense\n• Private subnets blocked",
+        "📥",
+        "#38bdf8",
+    )
+    c.card(
+        x1 + 12,
+        210,
+        col_w - 24,
+        106,
+        "DOM Extractor",
+        "• Strips scripts & styling\n• Sanitizes HTML elements\n• Isolates untrusted text\n• Verbatim ground G=1.00",
+        "🧹",
+        "#60a5fa",
+    )
+
+    c.container(x2, 68, col_w, 266, "Epistemic Evaluation", "#22c55e")
+    c.card(
+        x2 + 12,
+        94,
+        col_w - 24,
+        104,
+        "Multi-Model Consensus",
+        "• Heuristic rules & claim check\n• Circuit breaker headroom\n• Verbatim citation matching\n• Multi-model Pareto scoring",
+        "🧠",
+        "#22c55e",
+    )
+    c.card(
+        x2 + 12,
+        210,
+        col_w - 24,
+        106,
+        "Entropy Defense",
+        "• Shannon entropy astroturf def\n• Expertise-weighted medians\n• Galileo minority rule override\n• Poe's law satire balance",
+        "⚖️",
+        "#f59e0b",
+    )
+
+    c.container(x3, 68, col_w, 266, "Attestation & Storage", "#a855f7")
+    c.card(
+        x3 + 12,
+        94,
+        col_w - 24,
+        104,
+        "RFC 8785 Canonical JSON",
+        "• Deterministic serialization\n• UTF-8 sorted key envelope\n• Tamper-evident byte stream\n• UTC ISO-8601 timestamps",
+        "📜",
+        "#a855f7",
+    )
+    c.card(
+        x3 + 12,
+        210,
+        col_w - 24,
+        106,
+        "Ed25519 Signature",
+        "• Genesis root authority sign\n• SQLite + vector persistence\n• Zero-trust verification\n• Sovereign key custody",
+        "🔐",
+        "#22c55e",
+    )
+
+    c.arrow(x1 + col_w, 146, x2, 146, "Sanitized", "#38bdf8", marker="url(#arrow-cyan)")
+    c.arrow(x2 + col_w, 146, x3, 146, "Attest", "#22c55e", marker="url(#arrow-emerald)")
+    return c
+
+
+def get_clean_illustration(slug: str, title: str, category_path: str) -> CleanSVGCanvas:
     s = slug.lower()
     cat = category_path.split("/")[0].upper() if category_path and category_path != "." else "ECOSYSTEM"
+
+    if any(k in s for k in ["pun-terest", "satire", "poe", "astroturf", "pizza-hut", "conflict"]):
+        return build_satire_and_entropy_defense(title)
 
     if any(k in s for k in ["three-plane", "architecture", "cloudrun", "deployment", "single-vs-dual"]):
         return build_three_plane_architecture(title)
@@ -713,33 +684,25 @@ def get_illustration_for_topic(slug: str, title: str, category_path: str) -> SVG
     if any(k in s for k in ["mesh", "watts-strogatz", "rendezvous", "sybil", "airgapped", "swarm"]):
         return build_mesh_cluster(title)
 
-    if any(k in s for k in ["pyramid", "lensing", "spectrum", "galileo", "satire", "poes-law"]):
+    if any(k in s for k in ["pyramid", "lensing", "spectrum", "galileo"]):
         return build_information_pyramid(title)
 
-    if any(k in s for k in ["parity", "tui", "cli", "fastmcp", "browser-extension", "four-way"]):
-        return build_interface_parity_hub(title)
-
     if any(k in s for k in ["ssrf", "scrubber", "security", "threat-model", "grounding", "canonical", "ed25519"]):
-        return build_pipeline_architecture(
+        return build_four_stage_pipeline(
             title,
-            ("Raw Input", "URL / untrusted text"),
+            ("Raw Input", "Target URL / untrusted payload"),
             ("SSRF Guard", "Block private IPs & 169.254"),
-            ("DOM Extractor", "Strip scripts & entities"),
+            ("DOM Scrubber", "Strip scripts & entities"),
             ("Attestation", "RFC 8785 Ed25519 sign"),
-            (
-                "Epistemic Security & Untrusted Ingestion Boundary",
-                "Citations match source character-for-character (G=1.00). Private IPs blocked autonomously.",
-            ),
+            banner_title="Epistemic Security & Untrusted Ingestion Boundary",
+            banner_desc="Citations match source text character-for-character (G=1.00). Cloud metadata and private IPs blocked autonomously.",
             category=cat,
         )
 
-    return build_generic_topic_illustration(slug, title, category=cat)
+    return build_generic_clean_illustration(slug, title, category=cat)
 
 
-def regenerate_all_illustrations(
-    docs_dir: Path,
-    output_dirs: List[Path],
-) -> tuple[int, int]:
+def regenerate_all_illustrations(docs_dir: Path, output_dirs: List[Path]) -> tuple[int, int]:
     for d in output_dirs:
         d.mkdir(parents=True, exist_ok=True)
 
@@ -760,7 +723,7 @@ def regenerate_all_illustrations(
 
         matches = re.findall(r"!\[([^\]]*)\]\(assets/illustrations/([^)]+\.svg)\)", text)
         if not matches:
-            canvas = get_illustration_for_topic(slug, title, rel_cat)
+            canvas = get_clean_illustration(slug, title, rel_cat)
             svg_content = canvas.render()
             for out_dir in output_dirs:
                 (out_dir / f"{slug}.svg").write_text(svg_content, encoding="utf-8")
@@ -770,7 +733,7 @@ def regenerate_all_illustrations(
         for alt_title, svg_filename in matches:
             svg_slug = svg_filename.replace(".svg", "")
             use_title = alt_title.strip() if alt_title.strip() else title
-            canvas = get_illustration_for_topic(svg_slug, use_title, rel_cat)
+            canvas = get_clean_illustration(svg_slug, use_title, rel_cat)
             svg_content = canvas.render()
 
             for out_dir in output_dirs:
@@ -779,7 +742,7 @@ def regenerate_all_illustrations(
 
         total_files += 1
 
-    print(f"✅ Precision SVG overhaul complete: {total_svgs} SVG illustrations generated across {total_files} files.")
+    print(f"✅ Clean SVG generation complete: {total_svgs} SVG illustrations generated across {total_files} files.")
     return total_files, total_svgs
 
 
