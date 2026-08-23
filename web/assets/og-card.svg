@@ -68,7 +68,7 @@
     
     <!-- Version Badge -->
     <rect x="375" y="24" width="92" height="32" rx="16" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="1.5"/>
-    <text x="421" y="45" font-family="ui-monospace, monospace" font-size="14" font-weight="700" fill="#38bdf8" text-anchor="middle">v2.10.1</text>
+    <text x="421" y="45" font-family="ui-monospace, monospace" font-size="14" font-weight="700" fill="#38bdf8" text-anchor="middle">v2.11.0</text>
   </g>
 
   <!-- Tagline / Mission -->
