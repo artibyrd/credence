@@ -6,7 +6,7 @@ development. Executing each safe command once allows the human developer to gran
 "Always Allow" in a fresh workspace, enabling autonomous agent workflows.
 
 Supports two discrete scopes:
-1. 'core': Open-source developer & fork tooling (local tests, quality gates, vcs).
+1. 'core': Open-source developer & fork tooling (local tests, quality gates, vcs, git, curl).
 2. 'hosted': Artibyrd maintainer cloud telemetry, multi-cloud probes & live URLs.
 """
 
@@ -37,8 +37,9 @@ class CommandShape(NamedTuple):
 
 BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     # --------------------------------------------------------------------------
-    # CORE SCOPE: Open-Source Developers, Contributors & Forks (Local Only)
+    # 1. CORE SCOPE: Open-Source Developers, Contributors & Forks (Local Only)
     # --------------------------------------------------------------------------
+    # Justfile Quality & Testing Gates
     CommandShape(
         name="Preflight Toolchain",
         scope="core",
@@ -103,6 +104,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         description="Audit invariant demotion candidates and token savings",
         is_safe=True,
     ),
+    # Justfile VCS Inspection
     CommandShape(
         name="Ecosystem Git Status",
         scope="core",
@@ -151,10 +153,85 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         description="View details and diff of open pull requests",
         is_safe=True,
     ),
+    # Direct Everyday Git Read Operations (Outside Just)
+    CommandShape(
+        name="Direct Git Status",
+        scope="core",
+        category="git: read",
+        command=["git", "status", "-s"],
+        description="Everyday git status inspection",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Direct Git Diff",
+        scope="core",
+        category="git: read",
+        command=["git", "diff", "--stat"],
+        description="Everyday git diff summary inspection",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Direct Git Log",
+        scope="core",
+        category="git: read",
+        command=["git", "log", "-n", "3", "--oneline"],
+        description="Everyday git commit history inspection",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Direct Git Branch List",
+        scope="core",
+        category="git: read",
+        command=["git", "branch", "--list"],
+        description="Everyday git local branch listing",
+        is_safe=True,
+    ),
+    # Direct Everyday Python & Poetry Tooling (Outside Just)
+    CommandShape(
+        name="Direct Poetry Version Check",
+        scope="core",
+        category="python: read",
+        command=["poetry", "version"],
+        description="Inspect current project version",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Direct Ruff Linter Check",
+        scope="core",
+        category="python: read",
+        command=["poetry", "run", "ruff", "check", "credence"],
+        description="Direct linter invocation on credence package",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Direct Mypy Type Analysis",
+        scope="core",
+        category="python: read",
+        command=["poetry", "run", "mypy", "credence"],
+        description="Direct type checker invocation on codebase",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Direct Hermetic Unit Test Pass",
+        scope="core",
+        category="python: read",
+        command=["poetry", "run", "pytest", "tests/governance/test_docs_integrity.py", "-k", "test_zero_npm_invariant"],
+        description="Direct targeted pytest execution",
+        is_safe=True,
+    ),
+    # Direct GitHub CLI Inspection (Outside Just)
+    CommandShape(
+        name="GitHub CLI Auth Status",
+        scope="core",
+        category="github: read",
+        command=["gh", "auth", "status"],
+        description="Inspect GitHub authentication state",
+        is_safe=True,
+    ),
     CommandShape(
         name="GitHub CLI PR Checks",
         scope="core",
-        category="vcs: safe",
+        category="github: read",
         command=["gh", "pr", "checks"],
         description="Direct GitHub CLI check run inspection",
         is_safe=True,
@@ -162,7 +239,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     CommandShape(
         name="GitHub CLI PR View",
         scope="core",
-        category="vcs: safe",
+        category="github: read",
         command=["gh", "pr", "view"],
         description="Direct GitHub CLI pull request viewer",
         is_safe=True,
@@ -170,14 +247,32 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     CommandShape(
         name="GitHub CLI Run List",
         scope="core",
-        category="vcs: safe",
+        category="github: read",
         command=["gh", "run", "list", "--limit", "5"],
         description="Direct GitHub Actions workflow run listing",
         is_safe=True,
     ),
+    # Local Dev HTTP Probes
+    CommandShape(
+        name="Local FastMCP / Backend Probe",
+        scope="core",
+        category="url: local",
+        command=["curl", "-sI", "http://localhost:8000/health"],
+        description="Direct HTTP probe on local backend server",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Local Web Workstations Probe",
+        scope="core",
+        category="url: local",
+        command=["curl", "-sI", "http://localhost:8080"],
+        description="Direct HTTP probe on local zero-build web workstations",
+        is_safe=True,
+    ),
     # --------------------------------------------------------------------------
-    # HOSTED SCOPE: Artibyrd Maintainer Infrastructure, Cloud Run & Edge Probes
+    # 2. HOSTED SCOPE: Artibyrd Maintainer Infrastructure, Cloud Run & Edge
     # --------------------------------------------------------------------------
+    # Justfile Cloud Telemetry
     CommandShape(
         name="Cloud Run Compute Status",
         scope="hosted",
@@ -234,12 +329,38 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         description="Complete multi-plane diagnostic health check",
         is_safe=True,
     ),
+    # Direct GCloud CLI Inspection (Outside Just)
+    CommandShape(
+        name="GCloud Account Inspection",
+        scope="hosted",
+        category="gcloud: read",
+        command=["gcloud", "config", "get-value", "account"],
+        description="Inspect authenticated Google Cloud account",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="GCloud Project Inspection",
+        scope="hosted",
+        category="gcloud: read",
+        command=["gcloud", "config", "get-value", "project"],
+        description="Inspect active Google Cloud project ID",
+        is_safe=True,
+    ),
+    # Live Cloud & Edge URL Probes (Dev, Prod, Edge, Docs)
     CommandShape(
         name="Live Dev Health Endpoint Probe",
         scope="hosted",
         category="url: telemetry",
         command=["curl", "-sI", "https://credence-dev-865363499314.us-central1.run.app/health"],
         description="Direct HTTP probe on Cloud Run Dev container health",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Live Dev Health JSON Probe",
+        scope="hosted",
+        category="url: telemetry",
+        command=["curl", "-s", "https://credence-dev-865363499314.us-central1.run.app/health"],
+        description="Direct JSON payload probe on Cloud Run Dev container",
         is_safe=True,
     ),
     CommandShape(
@@ -251,6 +372,14 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         is_safe=True,
     ),
     CommandShape(
+        name="Live Prod Health JSON Probe",
+        scope="hosted",
+        category="url: telemetry",
+        command=["curl", "-s", "https://credence-server-663899237633.us-central1.run.app/health"],
+        description="Direct JSON payload probe on Cloud Run Production container",
+        is_safe=True,
+    ),
+    CommandShape(
         name="Live Edge Domain Probe",
         scope="hosted",
         category="url: telemetry",
@@ -259,11 +388,43 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         is_safe=True,
     ),
     CommandShape(
+        name="Live Dev Edge Preview Domain Probe",
+        scope="hosted",
+        category="url: telemetry",
+        command=["curl", "-sI", "https://dev.credence.run/health"],
+        description="Direct HTTP probe on Cloudflare Dev preview router",
+        is_safe=True,
+    ),
+    CommandShape(
         name="Live Docs Portal Probe",
         scope="hosted",
         category="url: telemetry",
         command=["curl", "-sI", "https://docs.credence.run"],
         description="Direct HTTP probe on zero-build documentation portal",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Live Reports Workstation Probe",
+        scope="hosted",
+        category="url: telemetry",
+        command=["curl", "-sI", "https://credence.report"],
+        description="Direct HTTP probe on investigative reports workstation",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Live Nexus Workstation Probe",
+        scope="hosted",
+        category="url: telemetry",
+        command=["curl", "-sI", "https://credence.nexus"],
+        description="Direct HTTP probe on node telemetry & admin deck",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Live Foundation Workstation Probe",
+        scope="hosted",
+        category="url: telemetry",
+        command=["curl", "-sI", "https://credence.foundation"],
+        description="Direct HTTP probe on public trust index & bylaws",
         is_safe=True,
     ),
 ]
@@ -286,7 +447,7 @@ def display_catalog(scope: str = "core") -> None:
     table.add_column("#", justify="right", style="cyan", width=4)
     table.add_column("Scope", justify="center", style="green" if scope == "core" else "yellow", width=8)
     table.add_column("Category", style="yellow", width=16)
-    table.add_column("Command Shape", style="bold white", width=36)
+    table.add_column("Command Shape", style="bold white", width=38)
     table.add_column("Safety Domain", justify="center", width=12)
     table.add_column("Purpose", style="dim")
 
@@ -302,7 +463,7 @@ def run_bootstrapping(scope: str = "core", dry_run: bool = False) -> None:
     """Execute all safe command shapes sequentially for the specified scope."""
     selected_shapes = [s for s in BOOTSTRAP_COMMAND_SHAPES if scope == "all" or s.scope == scope]
     scope_desc = (
-        "Open-source core developer commands (fork-safe)"
+        "Open-source core developer commands (fork-safe, local git/python/curl)"
         if scope == "core"
         else "Artibyrd maintainer cloud telemetry, deployment, and live URL probes"
     )
