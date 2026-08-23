@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 360" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <!-- Background & Card Gradients -->
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#4ade80" />
+    </linearGradient>
+    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#f87171" />
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <!-- Drop Shadow & Glow Filters -->
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Directional Arrow Markers -->
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Base -->
+  <rect width="860" height="360" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <!-- Canvas Header -->
+  <text x="24" y="32" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold" letter-spacing="0.02em">TUTORIAL 01: AUDITING ANONYMOUS CLICKBAIT</text>
+
+  <!-- Canvas Elements -->
+  <rect x="30" y="60" width="380" height="270" rx="10" fill="rgba(9, 13, 22, 0.75)" stroke="#38bdf8" stroke-width="1.0" opacity="0.9" /><rect x="42" y="50" width="252.5" height="20" rx="5" fill="#090d16" stroke="#38bdf8" stroke-width="1.0" /><text x="168.25" y="64" fill="#38bdf8" font-size="10.5" font-family="sans-serif" font-weight="bold" text-anchor="middle">Architecture &amp; Processing Nodes</text><rect x="50" y="95" width="340" height="65" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="50" y="95" width="340" height="3" rx="1.5" fill="#38bdf8" stroke="none" stroke-width="1.0" /><text x="64" y="117" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">⚙️</text><text x="88" y="117" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Core Engine: 01-clickbait-teardown</text><rect x="319.0" y="105" width="59.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="0.8" /><text x="348.5" y="118" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Active</text><text x="64" y="137" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Autonomous evaluation pipeline</text><text x="64" y="153" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Epistemic verification &amp; scoring</text><rect x="50" y="175" width="340" height="65" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="50" y="175" width="340" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.0" /><text x="64" y="197" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">📊</text><text x="88" y="197" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Telemetry &amp; Governance</text><rect x="304.0" y="185" width="74.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#22c55e" stroke-width="0.8" /><text x="341.0" y="198" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Verified</text><text x="64" y="217" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Real-time metrics, node statistics</text><text x="64" y="233" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Living invariant compliance</text><rect x="50" y="255" width="340" height="60" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="50" y="255" width="340" height="3" rx="1.5" fill="#a855f7" stroke="none" stroke-width="1.0" /><text x="64" y="277" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="88" y="277" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Cryptographic Custody</text><rect x="296.5" y="265" width="81.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#a855f7" stroke-width="0.8" /><text x="337.25" y="278" fill="#a855f7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Sovereign</text><text x="64" y="297" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">RFC 8785 Ed25519 attestation</text><text x="64" y="313" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Zero-trust validation boundary</text><rect x="450" y="60" width="380" height="270" rx="10" fill="rgba(9, 13, 22, 0.75)" stroke="#60a5fa" stroke-width="1.0" opacity="0.9" /><rect x="462" y="50" width="275.0" height="20" rx="5" fill="#090d16" stroke="#60a5fa" stroke-width="1.0" /><text x="599.5" y="64" fill="#60a5fa" font-size="10.5" font-family="sans-serif" font-weight="bold" text-anchor="middle">Execution Flow &amp; Safety Guarantees</text><rect x="470" y="95" width="340" height="55" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="490" cy="122.5" r="12" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2" /><text x="490" y="126.5" fill="#38bdf8" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">1</text><text x="510" y="117" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">Ingestion Boundary</text><text x="510" y="133" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">Sanitize inputs &amp; filter private IPs</text><rect x="470" y="160" width="340" height="55" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="490" cy="187.5" r="12" fill="#1e293b" stroke="#a855f7" stroke-width="1.2" /><text x="490" y="191.5" fill="#a855f7" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">2</text><text x="510" y="182" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">Epistemic Evaluation</text><text x="510" y="198" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">Multi-model consensus &amp; evidence check</text><rect x="470" y="225" width="340" height="55" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="490" cy="252.5" r="12" fill="#1e293b" stroke="#22c55e" stroke-width="1.2" /><text x="490" y="256.5" fill="#22c55e" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">3</text><text x="510" y="247" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">Attestation Receipt</text><text x="510" y="263" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">Cryptographic signature &amp; storage</text><line x1="410" y1="125" x2="470" y2="125" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><rect x="422.0" y="109.0" width="36.0" height="16" rx="3" fill="#090d16" stroke="#38bdf8" stroke-width="0.7" /><text x="440.0" y="121.0" fill="#cbd5e1" font-size="9.5" font-family="monospace" font-weight="normal" text-anchor="middle">Flow</text>
+</svg>

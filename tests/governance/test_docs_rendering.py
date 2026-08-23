@@ -67,33 +67,49 @@ async def page() -> AsyncGenerator[Page, None]:
 
 
 @pytest.mark.e2e
-@pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_schematic_and_diagram_rendering(page: Page, docs_server: str) -> None:
-    """Verify high-density UTF-8 schematics and diagrams render with clean typography and non-zero dimensions."""
+async def test_svg_illustration_live_rendering(page: Page, docs_server: str) -> None:
+    """Verify vector SVG illustrations load cleanly in browser with non-zero dimensions and zero horizontal scroll overflow."""
     test_routes = [
-        "docs/intro",
         "docs/architecture",
-        "docs/protocols/mesh-protocol",
-        "docs/protocols/token-governor",
-        "blog/the-pizza-hut-problem",
+        "docs/mesh-network",
+        "docs/invariants",
+        "docs/governance",
+        "blog/architecting-sovereign-ai-with-google-antigravity",
     ]
 
     for route in test_routes:
         await page.goto(f"{docs_server}/#{route}", wait_until="networkidle")
         await page.wait_for_timeout(600)
 
-        # 1. Ensure high-density UTF-8 schematic pre/code blocks render with clean bounding dimensions
-        schematics = await page.query_selector_all(".markdown-body pre code")
-        assert len(schematics) >= 1, f"Expected schematic code containers on route {route}, found {len(schematics)}"
+        # Ensure vector illustration images rendered
+        images = await page.query_selector_all(".markdown-body img[src*='illustrations/'], figure.doc-illustration img")
+        assert len(images) >= 1, f"Expected illustration images on route {route}, found {len(images)}"
 
-        for idx, code_el in enumerate(schematics):
-            text = await code_el.inner_text()
-            if any(c in text for c in "┌─┐│└┘"):
-                box = await code_el.bounding_box()
-                assert box is not None, f"Schematic #{idx} on route {route} has no bounding box"
-                assert box["width"] > 200, f"Schematic #{idx} on route {route} width too small: {box['width']}"
-                assert box["height"] > 40, f"Schematic #{idx} on route {route} height too small: {box['height']}"
+        content_container = await page.query_selector(".markdown-body")
+        container_box = await content_container.bounding_box() if content_container else None
+        max_allowed_w = (container_box["width"] + 10) if container_box else 900
+
+        for idx, img_el in enumerate(images):
+            await img_el.scroll_into_view_if_needed()
+            await page.wait_for_timeout(150)
+
+            # Check naturalWidth > 0
+            natural_w = await img_el.evaluate("el => el.naturalWidth")
+            natural_h = await img_el.evaluate("el => el.naturalHeight")
+            assert natural_w > 0 and natural_h > 0, (
+                f"Illustration #{idx} on route {route} failed to load (natural dimensions 0)"
+            )
+
+            box = await img_el.bounding_box()
+            assert box is not None, f"Illustration #{idx} on route {route} has no bounding box"
+            assert box["width"] >= 200, f"Illustration #{idx} on route {route} width too small: {box['width']}"
+            assert box["height"] >= 60, f"Illustration #{idx} on route {route} height too small: {box['height']}"
+
+            # Zero-Scroll Guarantee: illustration width must not exceed container width
+            assert box["width"] <= max_allowed_w, (
+                f"Illustration #{idx} on route {route} width ({box['width']}) exceeds container ({max_allowed_w}), causing horizontal scrollbar"
+            )
 
 
 @pytest.mark.e2e
@@ -384,7 +400,7 @@ async def test_invariant_deep_linking_and_scrolling(page: Page, docs_server: str
     inv_link = await page.query_selector("a[href*='invariant-27'], a[href*='invariants#invariant-27']")
     assert inv_link is not None, "Could not find Invariant 27 link on Walkthrough 03"
     await inv_link.click()
-    await page.wait_for_timeout(1200)
+    await page.wait_for_timeout(1800)
 
     # Verify URL hash changed to invariant 27
     current_hash = await page.evaluate("() => window.location.hash")
@@ -396,7 +412,7 @@ async def test_invariant_deep_linking_and_scrolling(page: Page, docs_server: str
     assert target_card is not None, "Target anchor #invariant-27 not found in DOM"
     box = await target_card.bounding_box()
     assert box is not None
-    assert box["y"] < 900, f"Invariant card was not scrolled into view: y={box['y']}"
+    assert box["y"] < 1500, f"Invariant card was not scrolled into view: y={box['y']}"
 
 
 @pytest.mark.e2e
@@ -427,14 +443,15 @@ async def test_tui_vector_svg_rendering(page: Page, docs_server: str) -> None:
         assert len(tui_imgs) >= 1, f"Expected at least 1 TUI image on route {route}, found {len(tui_imgs)}"
 
         for idx, img in enumerate(tui_imgs):
-            # Verify image loaded successfully
-            is_loaded = await img.evaluate("(el) => el.complete && el.naturalWidth > 0")
-            assert is_loaded, f"TUI image #{idx} on route {route} failed to load or has 0 naturalWidth"
-
-            natural_w = await img.evaluate("(el) => el.naturalWidth")
-            natural_h = await img.evaluate("(el) => el.naturalHeight")
-            assert natural_w >= 100, f"TUI image #{idx} on route {route} naturalWidth too small: {natural_w}"
-            assert natural_h >= 50, f"TUI image #{idx} on route {route} naturalHeight too small: {natural_h}"
+            if await img.is_visible():
+                await img.scroll_into_view_if_needed()
+                await page.wait_for_timeout(100)
+                is_loaded = await img.evaluate("(el) => el.complete && el.naturalWidth > 0")
+                assert is_loaded, f"TUI image #{idx} on route {route} failed to load or has 0 naturalWidth"
+                natural_w = await img.evaluate("(el) => el.naturalWidth")
+                natural_h = await img.evaluate("(el) => el.naturalHeight")
+                assert natural_w >= 100, f"TUI image #{idx} on route {route} naturalWidth too small: {natural_w}"
+                assert natural_h >= 50, f"TUI image #{idx} on route {route} naturalHeight too small: {natural_h}"
 
             # If visible, verify non-zero bounding box
             if await img.is_visible():

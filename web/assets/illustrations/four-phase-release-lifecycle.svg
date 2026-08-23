@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 360" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <!-- Background & Card Gradients -->
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#4ade80" />
+    </linearGradient>
+    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#f87171" />
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <!-- Drop Shadow & Glow Filters -->
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Directional Arrow Markers -->
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Base -->
+  <rect width="860" height="360" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <!-- Canvas Header -->
+  <text x="24" y="32" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold" letter-spacing="0.02em">4-PHASE DELIVERY &amp; LEAN LEARNING LIFECYCLE</text>
+
+  <!-- Canvas Elements -->
+  <rect x="30" y="60" width="245" height="110" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="30" y="60" width="245" height="3" rx="1.5" fill="#38bdf8" stroke="none" stroke-width="1.0" /><text x="44" y="82" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">💻</text><text x="68" y="82" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">1. Code &amp; Local QA</text><rect x="196.5" y="70" width="66.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="0.8" /><text x="229.75" y="83" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Phase 1</text><text x="44" y="102" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Implement capabilities</text><text x="44" y="118" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Fast local QA (just check)</text><text x="44" y="134" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Hermetic in-memory tests</text><rect x="305" y="60" width="250" height="110" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="305" y="60" width="250" height="3" rx="1.5" fill="#60a5fa" stroke="none" stroke-width="1.0" /><text x="319" y="82" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🚀</text><text x="343" y="82" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">2. PR Staging &amp; Dev Probing</text><rect x="476.5" y="70" width="66.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#60a5fa" stroke-width="0.8" /><text x="509.75" y="83" fill="#60a5fa" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Phase 2</text><text x="319" y="102" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Open 3-repo PR triad</text><text x="319" y="118" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Automated deploy-dev.yml</text><text x="319" y="134" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Live /health &amp; mesh probing</text><rect x="585" y="60" width="245" height="110" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="585" y="60" width="245" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.0" /><text x="599" y="82" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">👁️</text><text x="623" y="82" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">3. Mk1 Eyeball Review</text><rect x="751.5" y="70" width="66.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#22c55e" stroke-width="0.8" /><text x="784.75" y="83" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Phase 3</text><text x="599" y="102" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Human review gate</text><text x="599" y="118" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Inspect live Dev preview</text><text x="599" y="134" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Zero speculative code</text><line x1="275" y1="115" x2="305" y2="115" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><line x1="555" y1="115" x2="585" y2="115" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><rect x="585" y="210" width="245" height="110" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="585" y="210" width="245" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.0" /><text x="599" y="232" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">📦</text><text x="623" y="232" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">4. Feature Release</text><rect x="751.5" y="220" width="66.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#22c55e" stroke-width="0.8" /><text x="784.75" y="233" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Phase 4</text><text x="599" y="252" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Merge staged PR triad</text><text x="599" y="268" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Tag release (vX.Y.0)</text><text x="599" y="284" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Prod deploy &amp; Edge purge</text><rect x="305" y="210" width="250" height="110" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="305" y="210" width="250" height="3" rx="1.5" fill="#a855f7" stroke="none" stroke-width="1.0" /><text x="319" y="232" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🧠</text><text x="343" y="232" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">5. /learn Retrospective</text><rect x="476.5" y="220" width="66.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#a855f7" stroke-width="0.8" /><text x="509.75" y="233" fill="#a855f7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Phase 5</text><text x="319" y="252" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Session post-mortem</text><text x="319" y="268" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Edge-case synthesis</text><text x="319" y="284" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Draft learning_proposal.md</text><rect x="30" y="210" width="245" height="110" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="30" y="210" width="245" height="3" rx="1.5" fill="#38bdf8" stroke="none" stroke-width="1.0" /><text x="44" y="232" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="68" y="232" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">6. Lean Patch Release</text><rect x="196.5" y="220" width="66.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="0.8" /><text x="229.75" y="233" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Phase 6</text><text x="44" y="252" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Apply rules to AGENTS.md</text><text x="44" y="268" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Add Tier 2 shift-left tests</text><text x="44" y="284" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Mint patch tag (vX.Y.1)</text><line x1="707" y1="170" x2="707" y2="210" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><rect x="676.0" y="174.0" width="62.0" height="16" rx="3" fill="#090d16" stroke="#22c55e" stroke-width="0.7" /><text x="707.0" y="186.0" fill="#cbd5e1" font-size="9.5" font-family="monospace" font-weight="normal" text-anchor="middle">Sign-off</text><line x1="585" y1="265" x2="555" y2="265" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><line x1="305" y1="265" x2="275" y2="265" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
+</svg>

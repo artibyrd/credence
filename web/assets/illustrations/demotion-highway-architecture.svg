@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 350" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <!-- Background & Card Gradients -->
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#4ade80" />
+    </linearGradient>
+    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#f87171" />
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <!-- Drop Shadow & Glow Filters -->
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Directional Arrow Markers -->
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Base -->
+  <rect width="860" height="350" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <!-- Canvas Header -->
+  <text x="24" y="32" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold" letter-spacing="0.02em">THE DEMOTION HIGHWAY &amp; KNOWLEDGE SCALABILITY MATRIX</text>
+
+  <!-- Canvas Elements -->
+  <rect x="30" y="60" width="245" height="260" rx="10" fill="rgba(9, 13, 22, 0.75)" stroke="#ef4444" stroke-width="1.0" opacity="0.9" /><rect x="42" y="50" width="147.5" height="20" rx="5" fill="#090d16" stroke="#ef4444" stroke-width="1.0" /><text x="115.75" y="64" fill="#ef4444" font-size="10.5" font-family="sans-serif" font-weight="bold" text-anchor="middle">TIER 0: AGENTS.md</text><rect x="45" y="95" width="215" height="65" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="45" y="95" width="215" height="3" rx="1.5" fill="#ef4444" stroke="none" stroke-width="1.0" /><text x="59" y="117" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🧠</text><text x="83" y="117" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">P0 Core Invariants</text><rect x="189.0" y="105" width="59.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#ef4444" stroke-width="0.8" /><text x="218.5" y="118" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Tier 0</text><text x="59" y="137" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Always-on LLM prompt</text><text x="59" y="153" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">&lt;800 tokens hard ceiling</text><rect x="45" y="175" width="215" height="120" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="45" y="175" width="215" height="3" rx="1.5" fill="#f59e0b" stroke="none" stroke-width="1.0" /><text x="59" y="197" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">⚖️</text><text x="83" y="197" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Cognitive Taxonomy</text><rect x="144.0" y="185" width="104.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#f59e0b" stroke-width="0.8" /><text x="196.0" y="198" fill="#f59e0b" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Living Canon</text><text x="59" y="217" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Class α: Sovereign Safety</text><text x="59" y="233" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Class β: Lifecycle Topology</text><text x="59" y="249" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Class γ: Symmetry &amp; Parity</text><rect x="305" y="60" width="250" height="260" rx="10" fill="rgba(9, 13, 22, 0.75)" stroke="#38bdf8" stroke-width="1.0" opacity="0.9" /><rect x="317" y="50" width="215.0" height="20" rx="5" fill="#090d16" stroke="#38bdf8" stroke-width="1.0" /><text x="424.5" y="64" fill="#38bdf8" font-size="10.5" font-family="sans-serif" font-weight="bold" text-anchor="middle">TIER 1: PROGRESSIVE SKILLS</text><rect x="320" y="95" width="220" height="65" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="320" y="95" width="220" height="3" rx="1.5" fill="#38bdf8" stroke="none" stroke-width="1.0" /><text x="334" y="117" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">☁️</text><text x="358" y="117" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Subsystem Skills</text><rect x="469.0" y="105" width="59.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="0.8" /><text x="498.5" y="118" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Tier 1</text><text x="334" y="137" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Loaded on-demand</text><text x="334" y="153" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">.agents/skills/*</text><rect x="320" y="175" width="220" height="120" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="320" y="175" width="220" height="3" rx="1.5" fill="#60a5fa" stroke="none" stroke-width="1.0" /><text x="334" y="197" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🏛️</text><text x="358" y="197" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Specialized Domains</text><rect x="446.5" y="185" width="81.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#60a5fa" stroke-width="0.8" /><text x="487.25" y="198" fill="#60a5fa" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">On-Demand</text><text x="334" y="217" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• cloudrun-ops</text><text x="334" y="233" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• mesh-cluster</text><text x="334" y="249" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• white-label-ops</text><text x="334" y="265" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• epistemic-benchmark</text><rect x="585" y="60" width="245" height="260" rx="10" fill="rgba(9, 13, 22, 0.75)" stroke="#22c55e" stroke-width="1.0" opacity="0.9" /><rect x="597" y="50" width="155.0" height="20" rx="5" fill="#090d16" stroke="#22c55e" stroke-width="1.0" /><text x="674.5" y="64" fill="#22c55e" font-size="10.5" font-family="sans-serif" font-weight="bold" text-anchor="middle">TIER 2: TEST GATES</text><rect x="600" y="95" width="215" height="65" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="600" y="95" width="215" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.0" /><text x="614" y="117" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">⚡</text><text x="638" y="117" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Shift-Left Test Gates</text><rect x="744.0" y="105" width="59.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#22c55e" stroke-width="0.8" /><text x="773.5" y="118" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Tier 2</text><text x="614" y="137" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">Deterministic validation</text><text x="614" y="153" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">&lt;0.3s local execution</text><rect x="600" y="175" width="215" height="120" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="600" y="175" width="215" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.0" /><text x="614" y="197" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="638" y="197" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Mechanical Rules</text><rect x="729.0" y="185" width="74.0" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#22c55e" stroke-width="0.8" /><text x="766.0" y="198" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Justfile</text><text x="614" y="217" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Zero-npm invariant</text><text x="614" y="233" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• 7-Manifest parity sync</text><text x="614" y="249" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Code fence indentation</text><text x="614" y="265" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Sitemap coverage</text><line x1="275" y1="125" x2="320" y2="125" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><rect x="266.5" y="109.0" width="62.0" height="16" rx="3" fill="#090d16" stroke="#38bdf8" stroke-width="0.7" /><text x="297.5" y="121.0" fill="#cbd5e1" font-size="9.5" font-family="monospace" font-weight="normal" text-anchor="middle">Graduate</text><line x1="555" y1="125" x2="600" y2="125" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><rect x="553.0" y="109.0" width="49.0" height="16" rx="3" fill="#090d16" stroke="#22c55e" stroke-width="0.7" /><text x="577.5" y="121.0" fill="#cbd5e1" font-size="9.5" font-family="monospace" font-weight="normal" text-anchor="middle">Demote</text>
+</svg>

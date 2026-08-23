@@ -433,35 +433,106 @@ def test_zero_legacy_mermaid_diagrams_invariant(docs_root: Path) -> None:
 
 
 @pytest.mark.governance
-def test_schematic_box_diagram_integrity(docs_root: Path) -> None:
-    """Verify that all high-density UTF-8 box schematics have valid border syntax, enclosed boundaries, and no excessive overflow."""
-    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
-    schematic_count = 0
+def test_zero_ascii_box_art_invariant(docs_root: Path) -> None:
+    """Invariant 34: Verify zero retro ASCII/UTF-8 box art remains anywhere in documentation or blog posts.
 
+    All technical illustrations must use high-fidelity, resolution-independent vector SVG assets.
+    """
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
-        blocks = re.findall(r"```(?:text|)\n([\s\S]*?)```", text)
-        for idx, block in enumerate(blocks):
-            if any(c in block for c in "┌╔"):
-                schematic_count += 1
-                lines = [line.rstrip() for line in block.strip().splitlines() if line.strip()]
-                assert len(lines) >= 3, f"Schematic block #{idx + 1} in {md_file.name} too short ({len(lines)} lines)"
+        boxes = re.findall(r"```(?:text|)\n([\s\S]*?)```", text)
+        for idx, block in enumerate(boxes):
+            assert not any(c in block for c in "┌╔"), (
+                f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII/UTF-8 box art. "
+                f"All diagrams must use native vector SVG illustrations in assets/illustrations/."
+            )
 
-                # Check for top and bottom border characters
-                has_top = any("┌" in ln or "╔" in ln for ln in lines[:2])
-                has_bottom = any("└" in ln or "╚" in ln for ln in lines[-2:])
-                assert has_top and has_bottom, (
-                    f"Schematic block #{idx + 1} in {md_file.name} missing enclosed top/bottom box border"
-                )
 
-                for line_no, line in enumerate(lines, 1):
-                    assert len(line) <= 150, (
-                        f"Schematic line #{line_no} in {md_file.name} exceeds 150 chars ({len(line)} chars): {line[:40]}..."
-                    )
+@pytest.mark.governance
+def test_doc_illustration_assets_integrity(docs_root: Path) -> None:
+    """Verify that all referenced vector SVG illustrations exist on disk, have valid XML markup, and declare explicit viewBox."""
+    import xml.etree.ElementTree as ET
 
-    assert schematic_count >= 100, (
-        f"Expected at least 100 high-density schematics in documentation suite, found {schematic_count}"
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    illustrations_dir = docs_root / "assets" / "illustrations"
+    assert illustrations_dir.exists(), "assets/illustrations/ directory must exist in credence-docs"
+
+    referenced_svgs: set[str] = set()
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        matches = re.findall(
+            r"(?:!\[[^\]]*\]\((?:assets/illustrations/|\.\./assets/illustrations/|/assets/illustrations/)([^)]+\.svg)\)|src=[\"'](?:assets/illustrations/|\.\./assets/illustrations/|/assets/illustrations/)([^\"']+\.svg)[\"'])",
+            text,
+        )
+        for m in matches:
+            svg_name = m[0] or m[1]
+            if svg_name:
+                referenced_svgs.add(svg_name)
+
+    assert len(referenced_svgs) >= 50, (
+        f"Expected at least 50 referenced vector illustrations, found {len(referenced_svgs)}"
     )
+
+    for svg_name in referenced_svgs:
+        svg_path = illustrations_dir / svg_name
+        assert svg_path.exists(), f"Referenced SVG illustration '{svg_name}' does not exist on disk at {svg_path}"
+
+        # Validate XML structure & viewBox
+        content = svg_path.read_text(encoding="utf-8")
+        assert 'xmlns="http://www.w3.org/2000/svg"' in content, f"{svg_name} missing SVG namespace"
+        assert 'viewBox="' in content, f"{svg_name} missing explicit viewBox for zero-scroll scaling"
+        assert "#090d16" in content or "#050810" in content or "#1e293b" in content, (
+            f"{svg_name} missing dark-theme color tokens"
+        )
+
+        try:
+            root = ET.fromstring(content)
+            assert root.tag.endswith("svg"), f"{svg_name} root XML tag must be svg"
+        except Exception as e:
+            pytest.fail(f"Invalid XML syntax in SVG illustration {svg_name}: {e}")
+
+
+@pytest.mark.governance
+def test_ecosystem_illustration_checksum_parity() -> None:
+    """Verify 100% file parity and identical SHA-256 checksums between credence-docs and web assets/illustrations/."""
+    import hashlib
+
+    credence_root = Path(__file__).resolve().parents[2]
+    docs_illustrations = credence_root.parent / "credence-docs" / "assets" / "illustrations"
+    web_illustrations = credence_root / "web" / "assets" / "illustrations"
+
+    assert docs_illustrations.exists(), f"Missing {docs_illustrations}"
+    assert web_illustrations.exists(), f"Missing {web_illustrations}"
+
+    docs_files = sorted([f.name for f in docs_illustrations.glob("*.svg")])
+    web_files = sorted([f.name for f in web_illustrations.glob("*.svg")])
+
+    assert len(docs_files) >= 50, f"Expected >=50 SVG illustrations in docs, found {len(docs_files)}"
+    assert docs_files == web_files, (
+        f"Illustration file list mismatch between docs and web: {set(docs_files) ^ set(web_files)}"
+    )
+
+    for filename in docs_files:
+        docs_hash = hashlib.sha256((docs_illustrations / filename).read_bytes()).hexdigest()
+        web_hash = hashlib.sha256((web_illustrations / filename).read_bytes()).hexdigest()
+        assert docs_hash == web_hash, f"SHA-256 checksum mismatch for illustration '{filename}' between docs and web"
+
+
+@pytest.mark.governance
+def test_edge_router_tiered_cache_headers() -> None:
+    """Verify that web/_worker.js enforces tiered edge caching (s-maxage=2592000 for SVGs/static vs max-age=0 for dynamic docs)."""
+    worker_path = Path(__file__).resolve().parents[2] / "web" / "_worker.js"
+    assert worker_path.exists(), "web/_worker.js must exist"
+    worker_text = worker_path.read_text(encoding="utf-8")
+
+    assert "s-maxage=2592000" in worker_text, "_worker.js must define long-lived edge CDN cache for static assets"
+    assert "stale-while-revalidate=86400" in worker_text, (
+        "_worker.js must define background revalidation for static assets"
+    )
+    assert (
+        "public, max-age=0, must-revalidate" in worker_text or "no-cache, no-store, must-revalidate" in worker_text
+    ), "_worker.js must enforce zero-cache revalidation on mutable HTML and markdown docs"
 
 
 @pytest.mark.governance

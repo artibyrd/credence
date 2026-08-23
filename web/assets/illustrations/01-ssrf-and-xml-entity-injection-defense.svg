@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 350" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <!-- Background & Card Gradients -->
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#4ade80" />
+    </linearGradient>
+    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#f87171" />
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <!-- Drop Shadow & Glow Filters -->
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Directional Arrow Markers -->
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Base -->
+  <rect width="860" height="350" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <!-- Canvas Header -->
+  <text x="24" y="32" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold" letter-spacing="0.02em">UNTRUSTED INGESTION SCRUBBER &amp; SSRF DEFENSE PIPELINE</text>
+
+  <!-- Canvas Elements -->
+  <rect x="30" y="60" width="180" height="70" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="50" cy="95.0" r="12" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2" /><text x="50" y="99.0" fill="#38bdf8" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">1</text><text x="70" y="82" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">Network Request</text><text x="70" y="98" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">Target public URL</text><rect x="240" y="60" width="180" height="70" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="260" cy="95.0" r="12" fill="#1e293b" stroke="#ef4444" stroke-width="1.2" /><text x="260" y="99.0" fill="#ef4444" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">2</text><text x="280" y="82" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">SSRF IP Filter</text><text x="280" y="98" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">Block 169.254.169.254, loopback</text><rect x="450" y="60" width="180" height="70" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="470" cy="95.0" r="12" fill="#1e293b" stroke="#60a5fa" stroke-width="1.2" /><text x="470" y="99.0" fill="#60a5fa" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">3</text><text x="490" y="82" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">DOM Extractor</text><text x="490" y="98" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">Strip scripts, styles, XML entities</text><rect x="650" y="60" width="180" height="70" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><circle cx="670" cy="95.0" r="12" fill="#1e293b" stroke="#22c55e" stroke-width="1.2" /><text x="670" y="99.0" fill="#22c55e" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">4</text><text x="690" y="82" fill="#f8fafc" font-size="12.5" font-family="sans-serif" font-weight="600" text-anchor="start">LLM Prompt Wrapper</text><text x="690" y="98" fill="#94a3b8" font-size="10.5" font-family="monospace" font-weight="normal" text-anchor="start">&lt;untrusted_source_text&gt;</text><line x1="210" y1="95" x2="240" y2="95" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><line x1="420" y1="95" x2="450" y2="95" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><line x1="630" y1="95" x2="650" y2="95" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><rect x="30" y="160" width="800" height="160" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" /><rect x="30" y="160" width="800" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.0" /><text x="44" y="182" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="68" y="182" fill="#f8fafc" font-size="13.5" font-family="sans-serif" font-weight="600" text-anchor="start">Untrusted Source Security Guarantees</text><rect x="676.5" y="170" width="141.5" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="#22c55e" stroke-width="0.8" /><text x="747.25" y="183" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Class α Invariant</text><text x="44" y="202" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• SSRF Defense: Rejects private subnets (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) and cloud metadata.</text><text x="44" y="218" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• XML Entity Defense: Autonomous rejection of &lt;!DOCTYPE&gt; and &lt;!ENTITY&gt; injection.</text><text x="44" y="234" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Epistemic Isolation: Untrusted content strictly quarantined inside XML tags to prevent prompt injection.</text><text x="44" y="250" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="normal" text-anchor="start">• Verbatim Grounding: Citations must match source DOM text character-for-character (G=1.00).</text>
+</svg>
