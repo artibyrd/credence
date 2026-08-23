@@ -18,21 +18,28 @@ export default {
       const targetBackendHost = new URL(targetBackend).hostname;
 
       // 2. Dynamic Zero-Cache Docs & Blog Proxy (docs.credence.run, blog.credence.run, or /docs & /blog on dev)
-      if (
+      const isDocsOrBlogDomain =
         host === 'docs.credence.run' ||
         host === 'dev.docs.credence.run' ||
         host === 'blog.credence.run' ||
-        host === 'dev.blog.credence.run' ||
+        host === 'dev.blog.credence.run';
+
+      if (
+        isDocsOrBlogDomain ||
         (isDev && (url.pathname === '/docs' || url.pathname.startsWith('/docs/') || url.pathname === '/blog' || url.pathname.startsWith('/blog/')))
       ) {
         let subPath = url.pathname;
-        if (subPath === '/docs' || subPath === '/blog') {
-          return Response.redirect(`${url.origin}${subPath}/`, 301);
-        }
-        if (subPath.startsWith('/docs/')) {
-          subPath = subPath.substring(5);
-        } else if (subPath.startsWith('/blog/')) {
-          subPath = subPath.substring(5);
+        if (!isDocsOrBlogDomain) {
+          if (subPath === '/docs' || subPath === '/blog') {
+            return Response.redirect(`${url.origin}${subPath}/`, 301);
+          }
+          if (subPath === '/docs/' || subPath === '/blog/') {
+            subPath = '/';
+          } else if (subPath.startsWith('/docs/')) {
+            subPath = subPath.substring(5);
+          } else if (subPath.startsWith('/blog/')) {
+            subPath = subPath.substring(5);
+          }
         }
         if (!subPath || subPath === '') {
           subPath = '/';

@@ -1488,3 +1488,33 @@ def test_info_modals_integrity_and_sync(docs_root: Path) -> None:
             slug = u.split("#")[1]
             target_blog = docs_root / "blog" / (slug + ".md")
             assert target_blog.exists(), f"Broken blog link in INFO_TOPICS: {u} (expected {target_blog})"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> None:
+    """Verify that global html/body scroll locks are avoided and docs edge router preserves markdown subpaths."""
+    credence_root = docs_root.parent / "credence"
+
+    # 1. Verify credence-ui.css scopes overflow: hidden to workstation containers
+    for css_path in [
+        credence_root / "web" / "assets" / "credence-ui.css",
+        docs_root / "assets" / "credence-ui.css",
+    ]:
+        assert css_path.exists()
+        css_text = css_path.read_text(encoding="utf-8")
+        assert "html:has(.workstation-container)" in css_text, (
+            f"{css_path} must scope 100vh overflow:hidden to :has(.workstation-container)"
+        )
+
+    # 2. Verify _worker.js preserves docs subpaths
+    worker_path = credence_root / "web" / "_worker.js"
+    assert worker_path.exists()
+    worker_text = worker_path.read_text(encoding="utf-8")
+    assert "isDocsOrBlogDomain" in worker_text, "_worker.js must explicitly check isDocsOrBlogDomain"
+
+    # 3. Verify app.js rejects HTML payloads for markdown
+    app_js_path = docs_root / "app.js"
+    assert app_js_path.exists()
+    app_js_text = app_js_path.read_text(encoding="utf-8")
+    assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
