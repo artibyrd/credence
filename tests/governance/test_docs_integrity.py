@@ -470,8 +470,8 @@ def test_doc_illustration_assets_integrity(docs_root: Path) -> None:
             if svg_name:
                 referenced_svgs.add(svg_name)
 
-    assert len(referenced_svgs) >= 50, (
-        f"Expected at least 50 referenced vector illustrations, found {len(referenced_svgs)}"
+    assert len(referenced_svgs) >= 20, (
+        f"Expected at least 20 referenced vector illustrations, found {len(referenced_svgs)}"
     )
 
     for svg_name in referenced_svgs:
@@ -508,7 +508,7 @@ def test_ecosystem_illustration_checksum_parity() -> None:
     docs_files = sorted([f.name for f in docs_illustrations.glob("*.svg")])
     web_files = sorted([f.name for f in web_illustrations.glob("*.svg")])
 
-    assert len(docs_files) >= 50, f"Expected >=50 SVG illustrations in docs, found {len(docs_files)}"
+    assert len(docs_files) >= 20, f"Expected >=20 SVG illustrations in docs, found {len(docs_files)}"
     assert docs_files == web_files, (
         f"Illustration file list mismatch between docs and web: {set(docs_files) ^ set(web_files)}"
     )

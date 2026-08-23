@@ -72,10 +72,11 @@ async def test_svg_illustration_live_rendering(page: Page, docs_server: str) -> 
     """Verify vector SVG illustrations load cleanly in browser with non-zero dimensions and zero horizontal scroll overflow."""
     test_routes = [
         "docs/architecture",
-        "docs/mesh-network",
+        "docs/protocols/mesh-protocol",
         "docs/invariants",
-        "docs/governance",
+        "docs/blueprints/invariant-scalability-and-knowledge-governance",
         "blog/architecting-sovereign-ai-with-google-antigravity",
+        "blog/conflict-of-pun-terest",
     ]
 
     for route in test_routes:
