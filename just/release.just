@@ -39,7 +39,7 @@ render-assets: render-og-web render-og-docs
 # Execute full atomic ecosystem release pipeline
 [group('release')]
 [confirm('⚠️ Are you sure you want to execute an ATOMIC ECOSYSTEM RELEASE?')]
-release version message:
+release version message: (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
     if ! git diff --quiet || ! git diff --cached --quiet; then

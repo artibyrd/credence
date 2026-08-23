@@ -115,3 +115,116 @@ setup: (preflight "poetry")
     poetry run playwright install chromium
     @echo -e "\033[1;32m✅ Development environment dependencies installed.\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: Run 'just check' to verify QA gates or 'just dev' to launch local services.\033[0m"
+
+# Verify that active authentication sessions and credentials are warm and unexpired
+[group('core: preflight')]
+auth-check target="all":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    check_auth_gh() {
+        if ! command -v gh &>/dev/null; then
+            echo -e "\033[0;31m❌ GitHub CLI (gh) not installed.\033[0m"
+            return 1
+        fi
+        if gh auth status &>/dev/null; then
+            local user
+            user=$(gh api user -q .login 2>/dev/null || echo "active")
+            echo -e "\033[0;32m✅ GitHub CLI Auth:\033[0m Warm & authenticated (@$user)"
+            return 0
+        else
+            echo -e "\033[0;31m❌ GitHub CLI Auth:\033[0m Expired or not logged in. Run '\033[1;36mgh auth login\033[0m'."
+            return 1
+        fi
+    }
+
+    check_auth_gcloud() {
+        if ! command -v gcloud &>/dev/null; then
+            echo -e "\033[0;31m❌ Google Cloud SDK (gcloud) not installed.\033[0m"
+            return 1
+        fi
+        if gcloud auth print-access-token &>/dev/null; then
+            local acc proj
+            acc=$(gcloud config get-value account 2>/dev/null || echo "unknown")
+            proj=$(gcloud config get-value project 2>/dev/null || echo "unknown")
+            echo -e "\033[0;32m✅ Google Cloud Auth:\033[0m Warm ($acc / $proj)"
+            return 0
+        else
+            local acc
+            acc=$(gcloud config get-value account 2>/dev/null || echo "unknown")
+            echo -e "\033[0;31m❌ Google Cloud Auth:\033[0m Session expired for $acc. Run '\033[1;36mgcloud auth login\033[0m'."
+            return 1
+        fi
+    }
+
+    check_auth_wrangler() {
+        if (cd web && npx wrangler whoami 2>&1 | grep -q "You are logged in"); then
+            local who
+            who=$(cd web && npx wrangler whoami 2>&1 | grep "You are logged in" | head -n 1)
+            echo -e "\033[0;32m✅ Cloudflare Wrangler Auth:\033[0m Warm ($who)"
+            return 0
+        elif [ -n "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo -e "\033[0;32m✅ Cloudflare Auth:\033[0m Warm (via CLOUDFLARE_API_TOKEN)"
+            return 0
+        else
+            echo -e "\033[0;31m❌ Cloudflare Wrangler Auth:\033[0m Not logged in. Run '\033[1;36mjust edge-login\033[0m' or set CLOUDFLARE_API_TOKEN."
+            return 1
+        fi
+    }
+
+    check_auth_docker() {
+        if ! command -v docker &>/dev/null; then
+            echo -e "\033[0;31m❌ Docker not installed.\033[0m"
+            return 1
+        fi
+        if docker info &>/dev/null; then
+            echo -e "\033[0;32m✅ Docker Daemon:\033[0m Reachable and active"
+            return 0
+        else
+            echo -e "\033[0;31m❌ Docker Daemon:\033[0m Not running or inaccessible. Start Docker daemon."
+            return 1
+        fi
+    }
+
+    check_auth_env() {
+        echo "=== Environment Secrets & API Keys ==="
+        for var in GEMINI_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY; do
+            if [ -n "${!var:-}" ]; then
+                echo -e "\033[0;32m✅ $var:\033[0m Set (${#var} chars)"
+            else
+                echo -e "\033[0;33m⚠️ $var:\033[0m Unset (optional for local mock tests, required for live LLM calls)"
+            fi
+        done
+    }
+
+    case "{{target}}" in
+        gh|github)
+            check_auth_gh
+            ;;
+        gcloud|gcp)
+            check_auth_gcloud
+            ;;
+        wrangler|cloudflare|edge)
+            check_auth_wrangler
+            ;;
+        docker)
+            check_auth_docker
+            ;;
+        env|llm)
+            check_auth_env
+            ;;
+        all)
+            echo "=== Credence Authentication Freshness Preflight ==="
+            check_auth_gh || true
+            check_auth_gcloud || true
+            check_auth_wrangler || true
+            check_auth_docker || true
+            check_auth_env || true
+            echo "=== Authentication Check Complete ==="
+            ;;
+        *)
+            echo "❌ Unknown auth-check target '{{target}}'. Valid options: gh, gcloud, wrangler, docker, env, all."
+            exit 1
+            ;;
+    esac
+

@@ -16,8 +16,11 @@ cloud-status env="prod": (preflight "gcloud")
     PROJECT="{{ if env == 'dev' { GCP_DEV_PROJECT } else { GCP_PROD_PROJECT } }}"
     SERVICE="{{ if env == 'dev' { 'credence-dev' } else { 'credence-server' } }}"
     echo "=== Cloud Run Compute Plane Status: $SERVICE ($PROJECT / {{GCP_REGION}}) ==="
-    gcloud run services describe "$SERVICE" --region "{{GCP_REGION}}" --project "$PROJECT" \
-        --format="table(metadata.name:label=SERVICE, status.url:label=URL, status.latestReadyRevisionName:label=LATEST_REVISION, spec.template.spec.containers[0].image:label=CONTAINER_IMAGE, spec.template.spec.containers[0].resources.limits.cpu:label=CPU, spec.template.spec.containers[0].resources.limits.memory:label=MEMORY, status.traffic[0].percent:label=TRAFFIC_PCT)"
+    if ! gcloud run services describe "$SERVICE" --region "{{GCP_REGION}}" --project "$PROJECT" \
+        --format="table(metadata.name:label=SERVICE, status.url:label=URL, status.latestReadyRevisionName:label=LATEST_REVISION, spec.template.spec.containers[0].image:label=CONTAINER_IMAGE, spec.template.spec.containers[0].resources.limits.cpu:label=CPU, spec.template.spec.containers[0].resources.limits.memory:label=MEMORY, status.traffic[0].percent:label=TRAFFIC_PCT)" 2>/dev/null; then
+        echo -e "\033[1;33mℹ️ Local gcloud session requires re-auth. Verifying live HTTP endpoint directly:\033[0m"
+        just cloud-probe "$SERVICE" "{{env}}"
+    fi
 
 # Read recent Cloud Run logs
 [group('hosted: safe')]
@@ -177,7 +180,7 @@ doctor env="prod":
 
 # Build container and deploy backend to Cloud Run Dev environment (credence-dev-495173)
 [group('hosted: gated')]
-cloud-deploy-dev: (preflight "gcloud")
+cloud-deploy-dev: (preflight "gcloud") (auth-check "gcloud")
     #!/usr/bin/env bash
     set -euo pipefail
     if [ -n "$(git status --porcelain)" ]; then
@@ -205,7 +208,7 @@ cloud-deploy-dev: (preflight "gcloud")
 # Build container and deploy backend to Cloud Run Production (credence-prod-505902)
 [group('hosted: gated')]
 [confirm('⚠️ Are you sure you want to execute a LOCAL PRODUCTION deployment to Cloud Run?')]
-cloud-deploy-prod: (preflight "gcloud")
+cloud-deploy-prod: (preflight "gcloud") (auth-check "gcloud")
     #!/usr/bin/env bash
     set -euo pipefail
     if [ -n "$(git status --porcelain)" ]; then
@@ -232,7 +235,7 @@ cloud-deploy-prod: (preflight "gcloud")
 # Roll back Cloud Run traffic 100% to a specified revision
 [group('hosted: gated')]
 [confirm('⚠️ Are you sure you want to roll back Cloud Run traffic?')]
-cloud-rollback revision env="prod": (preflight "gcloud")
+cloud-rollback revision env="prod": (preflight "gcloud") (auth-check "gcloud")
     #!/usr/bin/env bash
     set -euo pipefail
     PROJECT="{{ if env == 'dev' { GCP_DEV_PROJECT } else { GCP_PROD_PROJECT } }}"
@@ -255,7 +258,7 @@ cloud-germinate burst="3" env="prod": (preflight "poetry")
 # Deploy Cloudflare Edge Router and Web Assets
 [group('hosted: gated')]
 [confirm('⚠️ Are you sure you want to deploy Cloudflare Edge Router & Web Assets?')]
-edge-deploy: (preflight "wrangler")
+edge-deploy: (preflight "wrangler") (auth-check "wrangler")
     #!/usr/bin/env bash
     set -euo pipefail
     echo "=== Deploying Cloudflare Edge Router & Web Assets ==="

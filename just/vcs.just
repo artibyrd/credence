@@ -73,17 +73,17 @@ git-branches:
 
 # View active Pull Request triad status and review approvals
 [group('vcs: safe')]
-pr-status:
+pr-status: (preflight "gh") (auth-check "gh")
     @python3 ../credence-agent/scripts/manage_pr.py status
 
 # View detailed markdown summary and diff of open Pull Requests
 [group('vcs: safe')]
-pr-view pr_num="":
+pr-view pr_num="": (preflight "gh") (auth-check "gh")
     @gh pr view ${pr_num:+"$pr_num"}
 
 # Inspect CI/CD check runs and status on open Pull Requests
 [group('vcs: safe')]
-pr-checks pr_num="":
+pr-checks pr_num="": (preflight "gh") (auth-check "gh")
     @gh pr checks ${pr_num:+"$pr_num"}
 
 # Switch or create feature branch across all 3 ecosystem repositories
@@ -139,7 +139,7 @@ git-push:
 
 # Create staged Pull Request triad with cross-repo links and automated Dev deployment trigger
 [group('vcs: gated')]
-pr-create title:
+pr-create title: (preflight "gh") (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
     python3 ../credence-agent/scripts/manage_pr.py "create" "{{title}}"
@@ -148,14 +148,14 @@ pr-create title:
 
 # Update description and companion links across open PR triad
 [group('vcs: gated')]
-pr-update title:
+pr-update title: (preflight "gh") (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
     python3 ../credence-agent/scripts/manage_pr.py "update" "{{title}}"
 
 # Merge Pull Request triad into main following human Mk1 Eyeball sign-off
 [group('vcs: gated')]
-pr-merge pr_num="":
+pr-merge pr_num="": (preflight "gh") (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
     python3 ../credence-agent/scripts/manage_pr.py merge ${pr_num:+"$pr_num"}
@@ -164,12 +164,12 @@ pr-merge pr_num="":
 
 # Force merge Pull Request triad bypassing check gates (emergency use only)
 [group('vcs: gated')]
-pr-merge-force pr_num="":
+pr-merge-force pr_num="": (preflight "gh") (auth-check "gh")
     @python3 ../credence-agent/scripts/manage_pr.py merge ${pr_num:+"$pr_num"} --force
 
 # Apply GitHub branch protection rules on main branch across triad
 [group('vcs: gated')]
-branch-protect:
+branch-protect: (preflight "gh") (auth-check "gh")
     @python3 ../credence-agent/scripts/configure_branch_protection.py
 
 # Install conventional commit pre-commit hooks across all 3 ecosystem repositories

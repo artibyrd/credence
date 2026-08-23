@@ -33,13 +33,14 @@ class CommandShape(NamedTuple):
     command: List[str]
     description: str
     is_safe: bool
+    timeout: int = 45
 
 
 BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
     # --------------------------------------------------------------------------
     # 1. CORE SCOPE: Open-Source Developers, Contributors & Forks (Local Only)
     # --------------------------------------------------------------------------
-    # Justfile Quality & Testing Gates
+    # Preflight & Authentication Checks
     CommandShape(
         name="Preflight Toolchain",
         scope="core",
@@ -49,12 +50,30 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         is_safe=True,
     ),
     CommandShape(
+        name="GitHub CLI Auth Verification",
+        scope="core",
+        category="core: preflight",
+        command=["just", "auth-check", "gh"],
+        description="Verify active GitHub authentication session",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Environment Secrets Verification",
+        scope="core",
+        category="core: preflight",
+        command=["just", "auth-check", "env"],
+        description="Inspect environment API keys and secrets",
+        is_safe=True,
+    ),
+    # Quality & Testing Gates
+    CommandShape(
         name="Pre-Commit QA Gauntlet",
         scope="core",
         category="core: quality",
         command=["just", "check"],
         description="Parallel multi-plane verification (<3s)",
         is_safe=True,
+        timeout=120,
     ),
     CommandShape(
         name="Static Linting & Format Check",
@@ -71,6 +90,7 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         command=["just", "test-unit"],
         description="Fast in-memory unit tests (<35s, $0.00 tokens)",
         is_safe=True,
+        timeout=120,
     ),
     CommandShape(
         name="Documentation Integrity",
@@ -252,26 +272,51 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         description="Direct GitHub Actions workflow run listing",
         is_safe=True,
     ),
-    # Local Dev HTTP Probes
+    # Public & Local HTTP Probes
     CommandShape(
-        name="Local FastMCP / Backend Probe",
+        name="Live Public Docs Probe",
         scope="core",
-        category="url: local",
-        command=["curl", "-sI", "http://localhost:8000/health"],
-        description="Direct HTTP probe on local backend server",
+        category="url: read",
+        command=["curl", "-sI", "https://docs.credence.run"],
+        description="Direct HTTP probe on live public docs portal",
         is_safe=True,
     ),
     CommandShape(
-        name="Local Web Workstations Probe",
+        name="Live GitHub Raw Endpoint Probe",
         scope="core",
-        category="url: local",
-        command=["curl", "-sI", "http://localhost:8080"],
-        description="Direct HTTP probe on local zero-build web workstations",
+        category="url: read",
+        command=["curl", "-sI", "https://raw.githubusercontent.com/artibyrd/credence/main/README.md"],
+        description="Direct HTTP probe on public GitHub repository assets",
         is_safe=True,
     ),
     # --------------------------------------------------------------------------
     # 2. HOSTED SCOPE: Artibyrd Maintainer Infrastructure, Cloud Run & Edge
     # --------------------------------------------------------------------------
+    # Preflight Cloud Authentication Verification
+    CommandShape(
+        name="Google Cloud Auth Verification",
+        scope="hosted",
+        category="hosted: safe",
+        command=["just", "auth-check", "gcloud"],
+        description="Verify active GCP OAuth/WIF credentials",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="Cloudflare Edge Auth Verification",
+        scope="hosted",
+        category="hosted: safe",
+        command=["just", "auth-check", "wrangler"],
+        description="Verify active Cloudflare API session",
+        is_safe=True,
+    ),
+    CommandShape(
+        name="All Ecosystem Auth Verification",
+        scope="hosted",
+        category="hosted: safe",
+        command=["just", "auth-check", "all"],
+        description="Verify complete ecosystem authentication freshness",
+        is_safe=True,
+    ),
     # Justfile Cloud Telemetry
     CommandShape(
         name="Cloud Run Compute Status",
@@ -500,7 +545,7 @@ def run_bootstrapping(scope: str = "core", dry_run: bool = False) -> None:
                 cwd=REPO_ROOT,
                 capture_output=True,
                 text=True,
-                timeout=45,
+                timeout=shape.timeout,
             )
             if res.returncode == 0:
                 console.print(f"   [green]✅ Verified:[/green] {shape.name}")
