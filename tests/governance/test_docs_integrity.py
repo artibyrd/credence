@@ -1038,9 +1038,7 @@ def test_app_js_directive_and_alert_resilience(docs_root: Path) -> None:
 
     # 1. Verify GFM alert regex
     assert "alertMatch" in content, "app.js must support GFM alertCallouts"
-    assert (
-        r"^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]" in content or "NOTE|TIP|IMPORTANT|WARNING|CAUTION" in content
-    )
+    assert "NOTE|TIP" in content and "IMPORTANT|WARNING|CAUTION" in content
 
     # 2. Verify container directive regex
     assert "directiveMatch" in content, "app.js must support container directives"
@@ -1079,7 +1077,7 @@ def test_raw_html_code_entity_escaping(docs_root: Path) -> None:
 
 @pytest.mark.governance
 def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
-    """Execute Node.js runtime smoke test on all documentation files via app.js parseMarkdown()."""
+    """Execute Node.js runtime test on all documentation files via app.js parseMarkdown() with leak checks."""
     import shutil
     import subprocess
 
@@ -1097,6 +1095,8 @@ def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
 
     import(`file://${{appJsPath}}`).then(({{ parseMarkdown }}) => {{
       let count = 0;
+      const leakViolations = [];
+
       function scan(dir) {{
         for (const f of fs.readdirSync(dir, {{ withFileTypes: true }})) {{
           const full = path.join(dir, f.name);
@@ -1108,6 +1108,16 @@ def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
               if (typeof html !== 'string' || html.length === 0) {{
                 throw new Error(`Empty HTML output for ${{full}}`);
               }}
+
+              // Invariant: Zero unrendered blockquote '>' leaks or split raw markers
+              const lines = html.split('\\n');
+              for (let idx = 0; idx < lines.length; idx++) {{
+                const trimmed = lines[idx].trim();
+                if (trimmed === '>' || trimmed === '&gt;' || trimmed === '<p>&gt;</p>' || trimmed === '<p>&gt; </p>') {{
+                  leakViolations.push(`${{path.relative(docsDir, full)}}:${{idx + 1}} -> "${{trimmed}}"`);
+                }}
+              }}
+
               count++;
             }} catch (err) {{
               console.error(`PARSER ERROR on ${{full}}:`, err);
@@ -1117,7 +1127,13 @@ def test_javascript_markdown_parser_runtime_integrity(docs_root: Path) -> None:
         }}
       }}
       scan(docsDir);
-      console.log(`Successfully verified ${{count}} markdown files.`);
+
+      if (leakViolations.length > 0) {{
+        console.error('Found unrendered blockquote leaks:\\n' + leakViolations.join('\\n'));
+        process.exit(1);
+      }}
+
+      console.log(`Successfully verified ${{count}} markdown files with zero parser leaks.`);
     }}).catch(err => {{
       console.error('Import error:', err);
       process.exit(1);
