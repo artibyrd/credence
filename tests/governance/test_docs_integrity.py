@@ -9,6 +9,7 @@ Validates:
 """
 
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -126,12 +127,31 @@ def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
     ecosystem_root = docs_root.parent
     credence_root = ecosystem_root / "credence"
 
-    # 1. Verify 1200x630 social preview image assets exist
+    # 1. Verify 1200x630 social preview image and vector assets exist and match canonical version
     docs_og_png = docs_root / "assets" / "og-card.png"
     web_og_png = credence_root / "web" / "assets" / "og-card.png"
+    docs_og_svg = docs_root / "assets" / "og-card.svg"
+    web_og_svg = credence_root / "web" / "assets" / "og-card.svg"
+
     assert docs_og_png.exists(), "credence-docs/assets/og-card.png must exist for link embeds"
     assert web_og_png.exists(), "credence/web/assets/og-card.png must exist for link embeds"
+    assert docs_og_svg.exists(), "credence-docs/assets/og-card.svg must exist"
+    assert web_og_svg.exists(), "credence/web/assets/og-card.svg must exist"
     assert docs_og_png.stat().st_size > 1000, "og-card.png must be a valid non-empty image"
+
+    # Canonical version verification in social card SVGs
+    pyproject_path = credence_root / "pyproject.toml"
+    with open(pyproject_path, "rb") as f:
+        pyproject_data = tomllib.load(f)
+    canonical_version = pyproject_data["tool"]["poetry"]["version"]
+    expected_tag = f"v{canonical_version}"
+
+    assert f">{expected_tag}<" in docs_og_svg.read_text(encoding="utf-8"), (
+        f"credence-docs/assets/og-card.svg version badge does not match {expected_tag}"
+    )
+    assert f">{expected_tag}<" in web_og_svg.read_text(encoding="utf-8"), (
+        f"credence/web/assets/og-card.svg version badge does not match {expected_tag}"
+    )
 
     # 2. Verify all ecosystem HTML entry points define complete open standard preview meta tags
     html_surfaces = list((credence_root / "web").rglob("*.html"))
