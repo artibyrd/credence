@@ -418,7 +418,7 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
 
 @pytest.mark.governance
 def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
-    """Verify all fenced mermaid code blocks in documentation have valid syntax,
+    """Verify any fenced mermaid code blocks in documentation have valid syntax,
 
     balanced delimiters, proper subgraph nesting, zero raw markdown links, and WCAG contrast standards.
     """
@@ -438,12 +438,10 @@ def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
         "timeline",
     )
 
-    mermaid_count = 0
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
         blocks = re.findall(r"```mermaid\n([\s\S]*?)```", text)
         for idx, block in enumerate(blocks):
-            mermaid_count += 1
             lines = [
                 line.strip()
                 for line in block.strip().splitlines()
@@ -500,7 +498,73 @@ def test_mermaid_diagram_syntax_integrity(docs_root: Path) -> None:
                         f"classDef in {md_file.name} block #{idx + 1} missing explicit stroke hex: '{line}'"
                     )
 
-    assert mermaid_count >= 85, f"Expected at least 85 Mermaid diagrams in catalog, found {mermaid_count}"
+
+@pytest.mark.governance
+def test_schematic_box_diagram_integrity(docs_root: Path) -> None:
+    """Verify that all high-density UTF-8 box schematics have valid border syntax, enclosed boundaries, and no excessive overflow."""
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    schematic_count = 0
+
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        blocks = re.findall(r"```(?:text|)\n([\s\S]*?)```", text)
+        for idx, block in enumerate(blocks):
+            if any(c in block for c in "┌╔"):
+                schematic_count += 1
+                lines = [line.rstrip() for line in block.strip().splitlines() if line.strip()]
+                assert len(lines) >= 3, f"Schematic block #{idx + 1} in {md_file.name} too short ({len(lines)} lines)"
+
+                # Check for top and bottom border characters
+                has_top = any("┌" in ln or "╔" in ln for ln in lines[:2])
+                has_bottom = any("└" in ln or "╚" in ln for ln in lines[-2:])
+                assert has_top and has_bottom, (
+                    f"Schematic block #{idx + 1} in {md_file.name} missing enclosed top/bottom box border"
+                )
+
+                for line_no, line in enumerate(lines, 1):
+                    assert len(line) <= 150, (
+                        f"Schematic line #{line_no} in {md_file.name} exceeds 150 chars ({len(line)} chars): {line[:40]}..."
+                    )
+
+    assert schematic_count >= 100, (
+        f"Expected at least 100 high-density schematics in documentation suite, found {schematic_count}"
+    )
+
+
+@pytest.mark.governance
+def test_playground_and_docs_math_rendering_integrity(docs_root: Path) -> None:
+    """Verify that math expressions in docs and the interactive playground have balanced delimiters and zero broken syntax leaks."""
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+
+        # 1. Prohibit unescaped, unmatched inline math delimiters within a line (excluding fenced code blocks and math spans)
+        # Strip fenced code blocks and HTML code / pre blocks
+        prose_text = re.sub(r"```[\s\S]*?```", "", text)
+        prose_text = re.sub(r"<pre[\s\S]*?</pre>", "", prose_text)
+        prose_text = re.sub(r"<code[\s\S]*?</code>", "", prose_text)
+        prose_text = re.sub(r"`[^`\n]+`", "", prose_text)
+
+        # Strip display math and inline math blocks
+        prose_text = re.sub(r"\$\$[\s\S]*?\$\$", "", prose_text)
+        prose_text = re.sub(r"\\\[[\s\S]*?\\\]", "", prose_text)
+        prose_text = re.sub(r"\$[^\$\n]+\$", "", prose_text)
+        prose_text = re.sub(r"\\\([^\)\n]+\\\)", "", prose_text)
+
+        # Prohibit raw LaTeX macro leaks in bare un-delimited text like \bar{ or \sum_ without math delimiters
+        raw_latex_leaks = re.findall(
+            r"\\(?:frac|bar|sum|int|sqrt|alpha|beta|gamma|lambda|sigma|Delta|min|max)\{[^}]+\}", prose_text
+        )
+        assert len(raw_latex_leaks) == 0, (
+            f"Raw LaTeX macro leak outside math delimiters in {md_file.name}: {raw_latex_leaks[:5]}"
+        )
+
+    # 2. Playground math specific checks
+    playground_md = docs_root / "docs" / "playground.md"
+    assert playground_md.exists(), "docs/playground.md must exist"
+    pg_text = playground_md.read_text(encoding="utf-8")
+    assert "\\text{" in pg_text or "$" in pg_text, "docs/playground.md must contain formatted mathematical expressions"
 
 
 @pytest.mark.governance

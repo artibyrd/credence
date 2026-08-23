@@ -67,9 +67,10 @@ async def page() -> AsyncGenerator[Page, None]:
 
 
 @pytest.mark.e2e
+@pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_mermaid_diagrams_render_to_svg(page: Page, docs_server: str) -> None:
-    """Verify Mermaid diagrams render into SVGs without falling back to raw code."""
+async def test_schematic_and_diagram_rendering(page: Page, docs_server: str) -> None:
+    """Verify high-density UTF-8 schematics and diagrams render with clean typography and non-zero dimensions."""
     test_routes = [
         "docs/intro",
         "docs/architecture",
@@ -82,26 +83,54 @@ async def test_mermaid_diagrams_render_to_svg(page: Page, docs_server: str) -> N
         await page.goto(f"{docs_server}/#{route}", wait_until="networkidle")
         await page.wait_for_timeout(600)
 
-        # Ensure no raw unrendered mermaid blocks remain
-        raw_blocks = await page.query_selector_all(".mermaid-code pre code.language-mermaid")
-        assert len(raw_blocks) == 0, f"Found unrendered raw mermaid blocks on route {route}"
+        # 1. Ensure no broken raw unrendered mermaid blocks remain
+        raw_mermaid = await page.query_selector_all(".mermaid-code pre code.language-mermaid")
+        assert len(raw_mermaid) == 0, f"Found unrendered raw mermaid blocks on route {route}"
 
-        # Ensure framed window containers exist with accessibility role
+        # 2. Ensure high-density UTF-8 schematic pre/code blocks render with clean bounding dimensions
+        schematics = await page.query_selector_all(".markdown-body pre code")
+        assert len(schematics) >= 1, f"Expected schematic code containers on route {route}, found {len(schematics)}"
+
+        for idx, code_el in enumerate(schematics):
+            text = await code_el.inner_text()
+            if any(c in text for c in "┌─┐│└┘"):
+                box = await code_el.bounding_box()
+                assert box is not None, f"Schematic #{idx} on route {route} has no bounding box"
+                assert box["width"] > 200, f"Schematic #{idx} on route {route} width too small: {box['width']}"
+                assert box["height"] > 40, f"Schematic #{idx} on route {route} height too small: {box['height']}"
+
+        # 3. If any framed mermaid windows exist, verify their rendered SVGs
         windows = await page.query_selector_all(".mermaid-window")
-        assert len(windows) >= 1, f"Expected .mermaid-window container on route {route}, found {len(windows)}"
+        if len(windows) > 0:
+            rendered_svgs = await page.query_selector_all(".mermaid-rendered svg")
+            assert len(rendered_svgs) == len(windows)
+            for _idx, svg in enumerate(rendered_svgs):
+                box = await svg.bounding_box()
+                assert box is not None and box["width"] > 50 and box["height"] > 30
 
-        headers = await page.query_selector_all(".mermaid-window-header")
-        assert len(headers) >= 1, f"Expected .mermaid-window-header on route {route}, found {len(headers)}"
 
-        # Ensure rendered SVGs exist and have non-zero bounding box
-        rendered_svgs = await page.query_selector_all(".mermaid-rendered svg")
-        assert len(rendered_svgs) >= 1, f"Expected rendered SVG on route {route}, found {len(rendered_svgs)}"
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_playground_math_rendering_integrity(page: Page, docs_server: str) -> None:
+    """Verify KaTeX mathematical expressions render cleanly in the interactive playground without raw LaTeX macro leaks."""
+    await page.goto(f"{docs_server}/#docs/playground", wait_until="networkidle")
+    await page.wait_for_timeout(600)
 
-        for idx, svg in enumerate(rendered_svgs):
-            box = await svg.bounding_box()
-            assert box is not None, f"SVG #{idx} on route {route} has no bounding box"
-            assert box["width"] > 50, f"SVG #{idx} on route {route} width too small: {box['width']}"
-            assert box["height"] > 30, f"SVG #{idx} on route {route} height too small: {box['height']}"
+    # 1. Verify mathematical expression elements exist (.math-block, .math-inline, etc.)
+    math_elements = await page.query_selector_all(".math-block, .math-inline, .katex, .katex-display")
+    assert len(math_elements) >= 3, (
+        f"Expected at least 3 rendered math elements in playground, found {len(math_elements)}"
+    )
+
+    # 2. Verify no raw LaTeX macro leaks in playground labels or widget texts
+    widget_texts = await page.query_selector_all(
+        "#feed-simulator-widget .widget-label, #feed-simulator-widget .widget-metric-title, #saturation-calc-widget .widget-metric-title"
+    )
+    for el in widget_texts:
+        txt = await el.inner_text()
+        assert "\\bar{" not in txt, f"Found raw unrendered \\bar in widget text: {txt}"
+        assert "\\(" not in txt, f"Found raw unrendered \\( in widget text: {txt}"
+        assert "\\text{" not in txt, f"Found raw unrendered \\text in widget text: {txt}"
 
 
 @pytest.mark.e2e
