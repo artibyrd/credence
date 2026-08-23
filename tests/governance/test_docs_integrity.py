@@ -1393,3 +1393,51 @@ def test_ecosystem_naming_conventions_and_guardrails():
     ]
     for ib in invalid_branches:
         assert not branch_pattern.match(ib), f"Invalid branch '{ib}' unexpectedly passed regex match"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_wrangler_route_isolation() -> None:
+    """Verify that top-level production routes in wrangler.toml never contain dev preview subdomains."""
+    wrangler_file = Path(__file__).resolve().parents[2] / "web" / "wrangler.toml"
+    assert wrangler_file.exists(), "web/wrangler.toml must exist"
+    content = wrangler_file.read_text(encoding="utf-8")
+
+    # Split between top-level routes and [env.dev] block
+    top_level_section = content.split("[env.dev")[0]
+    dev_matches = re.findall(r'pattern\s*=\s*"([^"]*dev\.[^"]*)"', top_level_section)
+    assert not dev_matches, (
+        f"Found dev subdomains in top-level production routes of wrangler.toml: {dev_matches}. "
+        "Dev routes must be isolated exclusively under [env.dev] to prevent Cloudflare worker route collisions."
+    )
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_deploy_dev_branch_isolation() -> None:
+    """Verify that deploy-dev.yml deploys Pages to the dev preview branch and never to main."""
+    workflow_file = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "deploy-dev.yml"
+    assert workflow_file.exists(), ".github/workflows/deploy-dev.yml must exist"
+    content = workflow_file.read_text(encoding="utf-8")
+
+    assert "--branch=dev" in content or "--branch=${{ github.head_ref" in content, (
+        "deploy-dev.yml must specify --branch=dev or dynamic branch for Cloudflare Pages deploy"
+    )
+    # Ensure no pages deploy with --branch=main exists in deploy-dev.yml
+    pages_deploys = [line for line in content.splitlines() if "pages deploy" in line]
+    for pd in pages_deploys:
+        assert "--branch=main" not in pd, f"deploy-dev.yml contains forbidden --branch=main in pages deploy: {pd}"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_worker_assets_routing_invariant() -> None:
+    """Verify that web/_worker.js handles /assets/ paths without domain prefixing and contains root fallback."""
+    worker_file = Path(__file__).resolve().parents[2] / "web" / "_worker.js"
+    assert worker_file.exists(), "web/_worker.js must exist"
+    content = worker_file.read_text(encoding="utf-8")
+
+    assert "reqPath.startsWith('/assets/')" in content, (
+        "_worker.js must handle /assets/ requests directly without domain prefixing"
+    )
+    assert "new URL(reqPath, request.url)" in content, "_worker.js must include root reqPath fallback on 404"
