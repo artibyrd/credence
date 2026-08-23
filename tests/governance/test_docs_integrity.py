@@ -520,6 +520,65 @@ def test_ecosystem_illustration_checksum_parity() -> None:
 
 
 @pytest.mark.governance
+def test_doc_illustrations_require_descriptive_figcaptions(docs_root: Path) -> None:
+    """Verify that all vector SVG illustrations declare substantive, non-duplicate alt text rendered as visible figcaptions."""
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    generic_words = {"diagram", "illustration", "image", "svg", "alt", "graphic", "picture", "figure"}
+
+    found_illustrations = 0
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8")
+
+        # Extract title from frontmatter or top header
+        doc_title = ""
+        fm_match = re.search(r"^title:\s*['\"]?(.*?)['\"]?$", content, re.MULTILINE)
+        if fm_match:
+            doc_title = fm_match.group(1).strip().lower()
+        header_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+        h1_title = header_match.group(1).strip().lower() if header_match else ""
+
+        # Extract markdown image tags referencing illustrations
+        matches = re.finditer(
+            r"!\[([^\]]*)\]\((?:assets/illustrations/|\.\./assets/illustrations/|/assets/illustrations/)([^)]+\.svg)\)",
+            content,
+        )
+        for match in matches:
+            found_illustrations += 1
+            alt_text = match.group(1).strip()
+            svg_filename = match.group(2)
+            rel_file = md_file.relative_to(docs_root)
+
+            # 1. Alt text must not be empty and must have sufficient descriptive length
+            assert len(alt_text) >= 20, (
+                f"Illustration '{svg_filename}' in {rel_file} has insufficient alt text ('{alt_text}'). "
+                f"Must provide a substantive technical description (at least 20 chars)."
+            )
+
+            # 2. Alt text must NOT blindly duplicate article title
+            alt_lower = alt_text.lower()
+            if doc_title:
+                assert alt_lower != doc_title, (
+                    f"Illustration '{svg_filename}' in {rel_file} duplicates document title '{doc_title}'. "
+                    f"Alt text must describe what the diagram illustrates, not the page title."
+                )
+            if h1_title:
+                assert alt_lower != h1_title, (
+                    f"Illustration '{svg_filename}' in {rel_file} duplicates H1 title '{h1_title}'. "
+                    f"Alt text must describe what the diagram illustrates, not the page title."
+                )
+
+            # 3. Alt text must not be a single generic filler word
+            cleaned_words = set(re.findall(r"\b\w+\b", alt_lower))
+            meaningful_words = cleaned_words - generic_words
+            assert len(meaningful_words) >= 3, (
+                f"Illustration '{svg_filename}' in {rel_file} contains only generic placeholder words ('{alt_text}'). "
+                f"Must describe specific architectural components, flows, or state machines."
+            )
+
+    assert found_illustrations >= 20, f"Expected >=20 captioned illustrations in docs, found {found_illustrations}"
+
+
+@pytest.mark.governance
 def test_edge_router_tiered_cache_headers() -> None:
     """Verify that web/_worker.js enforces tiered edge caching (s-maxage=2592000 for SVGs/static vs max-age=0 for dynamic docs)."""
     worker_path = Path(__file__).resolve().parents[2] / "web" / "_worker.js"
