@@ -38,6 +38,8 @@ routes = [
   # dev.credence.run subdomains
   { pattern = "dev.credence.run/*", zone_name = "credence.run" },
   { pattern = "dev.admin.credence.run/*", zone_name = "credence.run" },
+  { pattern = "dev.docs.credence.run/*", zone_name = "credence.run" },
+  { pattern = "dev.blog.credence.run/*", zone_name = "credence.run" },
   { pattern = "mcp.dev.credence.run/*", zone_name = "credence.run" },
 
   # dev.credence.nexus subdomains
