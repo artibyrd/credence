@@ -121,6 +121,51 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
 
 
 @pytest.mark.governance
+def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
+    """Verify open-standard Open Graph (og:*) and W3C social preview metadata across all ecosystem surfaces."""
+    ecosystem_root = docs_root.parent
+    credence_root = ecosystem_root / "credence"
+
+    # 1. Verify 1200x630 social preview image assets exist
+    docs_og_png = docs_root / "assets" / "og-card.png"
+    web_og_png = credence_root / "web" / "assets" / "og-card.png"
+    assert docs_og_png.exists(), "credence-docs/assets/og-card.png must exist for link embeds"
+    assert web_og_png.exists(), "credence/web/assets/og-card.png must exist for link embeds"
+    assert docs_og_png.stat().st_size > 1000, "og-card.png must be a valid non-empty image"
+
+    # 2. Verify all ecosystem HTML entry points define complete open standard preview meta tags
+    html_surfaces = list((credence_root / "web").rglob("*.html"))
+    html_surfaces.append(docs_root / "index.html")
+
+    for html_file in html_surfaces:
+        content = html_file.read_text(encoding="utf-8")
+        if 'http-equiv="refresh"' in content or "http-equiv='refresh'" in content:
+            continue  # Skip redirect shells
+        assert 'property="og:title"' in content or "property='og:title'" in content, (
+            f"Missing og:title meta tag in {html_file.name}"
+        )
+        assert 'property="og:description"' in content or "property='og:description'" in content, (
+            f"Missing og:description meta tag in {html_file.name}"
+        )
+        assert 'property="og:image"' in content or "property='og:image'" in content, (
+            f"Missing og:image meta tag in {html_file.name}"
+        )
+        assert 'name="theme-color"' in content or "name='theme-color'" in content, (
+            f"Missing theme-color meta tag in {html_file.name}"
+        )
+        # Enforce sovereign open web standards: zero proprietary twitter:* vendor lock-in tags
+        assert "twitter:" not in content, (
+            f"Proprietary twitter:* tag found in {html_file.name}; use open standard og:* tags only"
+        )
+
+    # 3. Verify app.js dynamic social meta updater is exported
+    app_js_content = (docs_root / "app.js").read_text(encoding="utf-8")
+    assert "export function updateSocialMetadata" in app_js_content, (
+        "app.js must export updateSocialMetadata for dynamic client-side article embeds"
+    )
+
+
+@pytest.mark.governance
 def test_docs_registry_parity(docs_root: Path) -> None:
     """Verify all paths in app.js DOCS_REGISTRY exist on disk and are non-empty."""
     app_js = docs_root / "app.js"
