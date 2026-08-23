@@ -12,7 +12,7 @@ sync-version version: (preflight "poetry")
     @find web ../credence-docs -name "*.html" -exec sed -i -E 's/Credence <span class="badge">v[^<]+<\/span>/Credence <span class="badge">v{{version}}<\/span>/g' {} +
     @sed -i -E 's/v[0-9]+\.[0-9]+\.[0-9]+ Stable/v{{version}} Stable/' web/credence.run/index.html
     @sed -i -E 's/"version": "[^"]+"/"version": "{{version}}"/' ../credence-agent/plugin.json
-    @sed -i -E 's/<text x="421" y="45" [^>]+>v[^<]+<\/text>/<text x="421" y="45" font-family="ui-monospace, monospace" font-size="14" font-weight="700" fill="#38bdf8" text-anchor="middle">v{{version}}<\/text>/' web/assets/og-card.svg ../credence-docs/assets/og-card.svg
+    @sed -i -E 's/>v[0-9]+\.[0-9]+\.[0-9]+</>v{{version}}</g' web/assets/og-card.svg ../credence-docs/assets/og-card.svg
     @rsvg-convert -w 1200 -h 630 web/assets/og-card.svg -o web/assets/og-card.png
     @rsvg-convert -w 1200 -h 630 ../credence-docs/assets/og-card.svg -o ../credence-docs/assets/og-card.png
     @poetry run pytest tests/governance/test_docs_integrity.py -k "test_ecosystem_version_parity or test_social_sharing_open_graph_parity"
