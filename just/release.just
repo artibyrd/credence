@@ -17,9 +17,9 @@ sync-version version: (preflight "poetry")
     @sed -i -E 's/>v[0-9]+\.[0-9]+\.[0-9]+</>v{{version}}</g' web/assets/og-card.svg ../credence-docs/assets/og-card.svg
     @poetry run credence audit-docs --update
     @just render-assets
-    @poetry run pytest tests/governance/test_docs_integrity.py -k "test_ecosystem_version_parity or test_social_sharing_open_graph_parity"
-    @echo -e "\033[1;32m✅ All 7 ecosystem version manifests, docs attestations, and social preview assets synchronized to {{version}}.\033[0m"
-    @echo -e "\033[1;33m⚠️ GUARDRAIL: Ensure 'docs/changelog.md' contains release section '## [{{version}}] - YYYY-MM-DD' before running 'just release'.\033[0m"
+    @poetry run pytest tests/governance/test_docs_integrity.py -k "test_ecosystem_version_parity or test_social_sharing_open_graph_parity or test_roadmap_pure_forward_looking_and_horizon_integrity"
+    @echo -e "\033[1;32m✅ All 7 ecosystem version manifests, docs attestations, roadmap purity, and social preview assets synchronized to {{version}}.\033[0m"
+    @echo -e "\033[1;33m⚠️ GUARDRAIL: Ensure 'docs/changelog.md' (## [{{version}}]) AND 'docs/roadmap.md' are updated before running 'just release'.\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: If working on a feature branch, run 'just pr-create <title>'. If releasing on main, run 'just release {{version}} <msg>'.\033[0m"
 
 # Render Web Open Graph card asset

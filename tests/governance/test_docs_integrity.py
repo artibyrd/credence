@@ -2115,7 +2115,11 @@ def test_zero_pseudo_box_art_and_dashed_boundaries_invariant(docs_root: Path) ->
                 violations.append(f"{md_file.name}:{line_no} -> Dashed pseudo-box boundary: {line_s}")
 
             # Disallow loose box art pipes
-            if "|" in line_s and not line_s.startswith("<!--") and not (line_s.startswith("$") and line_s.endswith("$")):
+            if (
+                "|" in line_s
+                and not line_s.startswith("<!--")
+                and not (line_s.startswith("$") and line_s.endswith("$"))
+            ):
                 if re.search(r"\|\s*•|\|\s*🚀|\|\s*🛡️|\|\s*✅|\|\s*❌", line_s):
                     violations.append(f"{md_file.name}:{line_no} -> Pseudo-box pipe line: {line_s}")
                 elif line_s.startswith("- ") and "|" in line_s and "•" in line_s:
@@ -2129,5 +2133,63 @@ def test_zero_pseudo_box_art_and_dashed_boundaries_invariant(docs_root: Path) ->
             if all_caps_pat.match(line_s) and not line_s.startswith("#"):
                 violations.append(f"{md_file.name}:{line_no} -> Unformatted ALL CAPS title: {line_s}")
 
-    assert not violations, "Pseudo-box art, dashed borders, or loose arrows found in documentation:\n" + "\n".join(violations)
+    assert not violations, "Pseudo-box art, dashed borders, or loose arrows found in documentation:\n" + "\n".join(
+        violations
+    )
 
+
+@pytest.mark.governance
+def test_roadmap_pure_forward_looking_and_horizon_integrity(docs_root: Path) -> None:
+    """Shift-Left Automated Integrity Gate 9: Asserts roadmap.md is 100% forward-looking.
+
+    Invariants enforced:
+    1. Zero retrospective foundation lists (e.g. '## 1. Verified Stable Foundation' or past version catalogs).
+    2. Exactly contains the 6 required forward-looking sections.
+    3. The Comprehensive Horizon Decision Matrix table is present with Difficulty and Impact ratings.
+    4. Zero completed features (such as 'agent-check') linger in the active horizon queue.
+    5. Frontmatter contains valid metadata and semantic invariant slugs.
+    """
+    roadmap_path = docs_root / "docs" / "roadmap.md"
+    assert roadmap_path.exists(), "docs/roadmap.md must exist"
+
+    content = roadmap_path.read_text(encoding="utf-8")
+
+    # 1. Prohibit retrospective foundation or past milestone sections
+    assert "Verified Stable Foundation" not in content, (
+        "docs/roadmap.md must not contain retrospective 'Verified Stable Foundation' lists. "
+        "Past milestones belong exclusively in docs/changelog.md."
+    )
+    assert "### Verified Foundation" not in content
+
+    # 2. Assert all 6 required forward-looking sections exist
+    required_sections = [
+        "## 1. Empirical Drivers & Real-World Telemetry",
+        "## 2. Comprehensive Horizon Decision Matrix",
+        "## 3. Strategic Execution Pathways",
+        "## 4. Detailed Architecture Horizons",
+        "## 5. Known Operational Edge Cases & Target Resolutions",
+        "## 6. Guiding Invariants for Roadmap Contributions",
+    ]
+    for section in required_sections:
+        assert section in content, f"docs/roadmap.md missing required section: '{section}'"
+
+    # 3. Assert the Horizon Decision Matrix table exists with proper columns
+    assert (
+        "| Item # | Horizon | Initiative | Difficulty (Effort) | Impact / Value | Primary Subsystem | Key Strategic Trade-Off & Capability |"
+        in content
+    ), "docs/roadmap.md missing the Comprehensive Horizon Decision Matrix table"
+
+    # 4. Assert that already completed features do not linger in active horizons
+    assert "Automated Prompt Context Linter (`just agent-check`)" not in content, (
+        "docs/roadmap.md retains already-shipped feature 'agent-check' in active horizons. "
+        "Completed features must be retired upon landing."
+    )
+
+    # 5. Parse frontmatter
+    match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
+    assert match, "docs/roadmap.md must contain valid YAML frontmatter"
+    frontmatter = yaml.safe_load(match.group(1))
+    assert "verified_version" in frontmatter
+    assert "last_verified" in frontmatter
+    assert "invariants" in frontmatter
+    assert "inv-mk1-eyeball" in frontmatter["invariants"]

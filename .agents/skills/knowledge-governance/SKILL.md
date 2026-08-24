@@ -153,8 +153,9 @@ Before presenting `walkthrough.md` for human Mk1 Eyeball review, the agent must 
 - Draft and present `learning_proposal.md` for human review and explicit approval.
 
 ### Phase 4: Apply Lessons as Lean Patch Release (`vX.Y.1`)
-- Upon human approval of `learning_proposal.md`, synthesize insights into `.agents/skills/`, `AGENTS.md`, and shift-left tests.
-- Bump the version to the next patch release (e.g. `vX.Y.1`), run `just check`, present changes for Mk1 review, and commit/tag directly on `main` (`just release X.Y.1 "..."`).
+- Upon human approval of `learning_proposal.md` or a targeted patch plan, synthesize insights into `.agents/skills/`, `AGENTS.md`, and shift-left tests.
+- Bump the version to the next patch release (e.g. `vX.Y.1`), run `just sync-version <version>`, run `just check`, and **immediately execute the deployment** (`just commit` + `just git-tag` + `just git-push` or `just release X.Y.1 "..."`).
+- **Autonomous Fast-Follow Deploy Invariant**: Because fast-follow patches and learning releases bypass standard PR CI/CD staging, the agent must **never stop after local QA without pushing**. The agent must execute the push and monitor CI/CD (`gh run watch` / Cloudflare Pages) within the same turn to ensure changes actually deploy live to edge and compute planes.
 - **Lean Governance Invariant**: Learning patches bypass redundant PR ceremony because the changes consist of declarative skills, documentation, and tests already approved via `learning_proposal.md` and verified locally via `just check`.
 
 ### The Lean Governance Matrix
@@ -162,15 +163,30 @@ Before presenting `walkthrough.md` for human Mk1 Eyeball review, the agent must 
 | :--- | :--- | :--- |
 | **Branching Topology** | Feature/Milestone Branch (`release/vX.Y.0`, `feat/...`) | Direct on `main` |
 | **Staging Environment** | Automated Cloud Run Dev via PR (`credence-dev-495173`) | Hermetic Local QA Gate (`just check` in <25s) |
-| **Human Authority Gate** | Code Owner Review on PR + Mk1 Eyeball (with Live Dev Links) | `learning_proposal.md` Approval + Mk1 Eyeball |
+| **Human Authority Gate** | Code Owner Review on PR + Mk1 Eyeball (with Live Dev Links) | `learning_proposal.md` / Plan Approval |
 | **Delivery Vehicle** | `just pr merge` $\rightarrow$ CI/CD Prod Deploy | `just release vX.Y.1` $\rightarrow$ CI/CD Prod Deploy |
-| **Ceremony Overhead** | High rigor (staged feature changes & dev verification) | Zero friction (fast crystallization of session wisdom) |
+| **Ceremony Overhead** | High rigor (staged feature changes & dev verification) | Zero friction (autonomous push & CI/CD deployment) |
+
+### 3.1 Target Version & Scope Alignment Invariant
+Before beginning execution on any task or implementation plan, the agent and operator must explicitly establish the **Target Release Version**:
+1. **Feature Milestone (`vX.Y.0`)**: Used when picking up new capabilities, major protocol expansions, or new endpoints. Requires milestone branch (`release/vX.Y.0`), PR triad staging, Dev deployment probing, and Code Owner review.
+2. **Targeted Patch Release (`vX.Y.Z`)**: Used for documentation enhancements, shift-left test gates, bugfixes, and continuous learning updates. Executed directly on `main` following local QA (`just check`).
+
+*Why This Matters*: Explicitly identifying the target version during implementation planning forces immediate alignment on the boundaries of work, eliminating ambiguity between exploratory prototyping, maintenance patches, and full milestone feature releases.
 
 ---
 
 ## 4. Documentation Progressive Disclosure & Search Indexing
 
 Whenever creating or modifying documentation across `credence-docs/` or landing pages (`credence.run`):
+
+### 4.1 The Pure Forward-Looking Roadmap Standard (`docs/roadmap.md`)
+The ecosystem roadmap serves exclusively as a **forward-looking decision engine and strategic compass**:
+1. **Zero Retrospective Milestones**: Prohibits backward-looking "Verified Foundation" or past version lists. Past change records belong exclusively to `docs/changelog.md`.
+2. **Zero Architecture Summary Duplication**: Prohibits redundant high-level system summaries that already exist in `docs/intro.md`, `docs/architecture.md`, or `docs/topic-index.md`.
+3. **Embedded Horizon Decision Matrix**: Directly embeds an 11-initiative triage matrix evaluating Difficulty (Effort) vs. Impact / Value to enable rapid vs. structural prioritization.
+4. **Concrete Strategic Execution Pathways**: Codifies Pathway A (Low-Hanging Fruit Rapid Wins), Pathway B (High-Impact Structural Leap), and Pathway C (Balanced Hybrid).
+5. **Retirement upon Landing**: When an item ships, it is recorded in `changelog.md` and immediately removed from the active horizon queue.
 
 ### The 5-Level Progressive Disclosure Hierarchy (Anti-Firehose)
 1. **Level 1: The Hook & Value Prop**: Explain the project in plain English with everyday relatable examples (cut clickbait, spot fallacies, zero AI hallucinations). Never lead with Greek notation ($Q_i$), raw enum identifiers, or complex consensus math.
