@@ -137,6 +137,8 @@ git-push:
     done
     echo -e "\033[1;32m✅ All ecosystem branches and tags pushed to GitHub.\033[0m"
 
+alias git-sync := git-push
+
 # Create staged Pull Request triad with cross-repo links and automated Dev deployment trigger
 [group('vcs: gated')]
 pr-create title: (preflight "gh") (auth-check "gh")

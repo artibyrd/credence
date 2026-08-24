@@ -287,3 +287,20 @@ tf-apply env="prod" extra="": (preflight "terraform")
 bootstrap-approvals-hosted:
     @python3 scripts/bootstrap_approvals.py --scope hosted --execute
 
+# Compatibility aliases for deployment commands
+alias deploy-dev := cloud-deploy-dev
+alias deploy-prod := cloud-deploy-prod
+alias deploy-backend := cloud-deploy-prod
+alias deploy-edge := edge-deploy
+alias deploy := cloud-deploy-dev
+
+# Parameterized GCP operator command dispatcher
+[group('hosted: safe')]
+gcp action="status" +args="":
+    @just cloud-{{action}} {{args}}
+
+# Parameterized Terraform command dispatcher
+[group('hosted: safe')]
+tf action="validate" +args="":
+    @just tf-{{action}} {{args}}
+

@@ -9,6 +9,9 @@ test-unit extra="": (preflight "poetry")
     @echo -e "\033[1;32m✅ Hermetic unit tests passed cleanly.\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: Run 'just check' for full multi-plane pre-commit validation.\033[0m"
 
+alias test := test-unit
+alias test-e2e := test-mock
+
 # Run documentation integrity, frontmatter, parity, and living canon test suite
 [group('core: test')]
 test-docs extra="": (preflight "poetry")

@@ -228,3 +228,8 @@ auth-check target="all":
             ;;
     esac
 
+# Run automated dual-tier environment verification gate
+[group('core: preflight')]
+config-verify extra="": (preflight "poetry")
+    poetry run python -m credence.experiments.env_verifier {{extra}}
+

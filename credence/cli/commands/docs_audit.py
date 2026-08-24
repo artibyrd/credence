@@ -16,12 +16,13 @@ from typing import Any, List, Optional
 from rich.console import Console
 from rich.table import Table
 
+from credence import __version__
 from credence.identity import canonical_json_bytes, load_or_create_node_identity
 from credence.ingestion.hasher import compute_content_sha256, compute_simhash, normalize_text
 
 console = Console()
 
-CURRENT_VERSION = "v2.1.1"
+CURRENT_VERSION = f"v{__version__}"
 _HARDCODED_INVARIANT_COUNT_PATTERN = re.compile(r"\b(36|38|39|40)\s+core\s+invariants\b", re.IGNORECASE)
 
 
