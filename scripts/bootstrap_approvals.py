@@ -374,23 +374,6 @@ BOOTSTRAP_COMMAND_SHAPES: List[CommandShape] = [
         description="Complete multi-plane diagnostic health check",
         is_safe=True,
     ),
-    # Direct GCloud CLI Inspection (Outside Just)
-    CommandShape(
-        name="GCloud Account Inspection",
-        scope="hosted",
-        category="gcloud: read",
-        command=["gcloud", "config", "get-value", "account"],
-        description="Inspect authenticated Google Cloud account",
-        is_safe=True,
-    ),
-    CommandShape(
-        name="GCloud Project Inspection",
-        scope="hosted",
-        category="gcloud: read",
-        command=["gcloud", "config", "get-value", "project"],
-        description="Inspect active Google Cloud project ID",
-        is_safe=True,
-    ),
     # Live Cloud & Edge URL Probes (Dev, Prod, Edge, Docs)
     CommandShape(
         name="Live Dev Health Endpoint Probe",

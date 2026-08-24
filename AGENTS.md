@@ -43,6 +43,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - 🏛️ [`white-label-ops`](.agents/skills/white-label-ops/SKILL.md): Sovereign org scaffolding (`credence init-org`), multi-cloud Terraform, and zero-build multi-domain edge routing.
 - 🏛️ [`architecture-governance`](.agents/skills/architecture-governance/SKILL.md): 500 LOC Ceiling Law, `compute_*` naming ontology, and modular subpackage decoupling.
 - 📊 [`epistemic-benchmark`](.agents/skills/epistemic-benchmark/SKILL.md): Golden 12 benchmark suite, Expertise-Weighted Consensus Medians, and Galileo Rule.
+- 🛡️ [`bootstrap-approvals`](.agents/skills/bootstrap-approvals/SKILL.md): Fresh workspace agent permission bootstrapping, sequential IDE command shape firing, and discrete scope isolation.
 
 ---
 
