@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <rect width="880" height="380" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">PEER QUALITY &amp; TRAFFIC SHAPING</text>
+  <text x="32" y="56" fill="#f8fafc" font-size="16" font-family="system-ui, sans-serif" font-weight="bold">THE 4-TIER MERIT LATTICE &amp; ADAPTIVE BANDWIDTH ALLOCATION</text>
+
+  <!-- Tier 1: Core Beacon -->
+  <rect x="32" y="80" width="190" height="260" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="32" y="80" width="190" height="26" rx="10" fill="rgba(34, 197, 94, 0.15)" />
+  <text x="44" y="98" fill="#22c55e" font-size="10.5" font-family="monospace" font-weight="bold">CORE BEACON</text>
+  <text x="44" y="126" fill="#22c55e" font-size="12" font-family="monospace" font-weight="bold">$Q_i \ge 0.85$</text>
+  <text x="44" y="150" fill="#f8fafc" font-size="11" font-family="system-ui, sans-serif" font-weight="600">Full Relay Priority</text>
+  <text x="44" y="172" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• 100% Attestation gossip</text>
+  <text x="44" y="192" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Zero rate limits</text>
+  <text x="44" y="212" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Preferred seed status</text>
+  <rect x="40" y="235" width="174" height="90" rx="6" fill="#052e16" stroke="#22c55e" stroke-width="1.0" />
+  <text x="48" y="260" fill="#86efac" font-size="10" font-family="monospace">Weight: $1.00$</text>
+  <text x="48" y="280" fill="#bbf7d0" font-size="9.5" font-family="system-ui, sans-serif">Highest consensus impact</text>
+
+  <!-- Tier 2: Standard Peer -->
+  <rect x="238" y="80" width="190" height="260" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="238" y="80" width="190" height="26" rx="10" fill="rgba(56, 189, 248, 0.15)" />
+  <text x="250" y="98" fill="#38bdf8" font-size="10.5" font-family="monospace" font-weight="bold">STANDARD PEER</text>
+  <text x="250" y="126" fill="#38bdf8" font-size="12" font-family="monospace" font-weight="bold">0.50 ≤ $Q_i$ &lt; 0.85</text>
+  <text x="250" y="150" fill="#f8fafc" font-size="11" font-family="system-ui, sans-serif" font-weight="600">Standard Relay</text>
+  <text x="250" y="172" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• 50 req/min rate limit</text>
+  <text x="250" y="192" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Standard queue priority</text>
+  <text x="250" y="212" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Verified node keys</text>
+  <rect x="246" y="235" width="174" height="90" rx="6" fill="#082f49" stroke="#38bdf8" stroke-width="1.0" />
+  <text x="254" y="260" fill="#7dd3fc" font-size="10" font-family="monospace">Weight: $0.70$</text>
+  <text x="254" y="280" fill="#bae6fd" font-size="9.5" font-family="system-ui, sans-serif">Solid validator rating</text>
+
+  <!-- Tier 3: Throttled Peer -->
+  <rect x="444" y="80" width="190" height="260" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="444" y="80" width="190" height="26" rx="10" fill="rgba(245, 158, 11, 0.15)" />
+  <text x="456" y="98" fill="#f59e0b" font-size="10.5" font-family="monospace" font-weight="bold">THROTTLED PEER</text>
+  <text x="456" y="126" fill="#f59e0b" font-size="12" font-family="monospace" font-weight="bold">0.25 ≤ $Q_i$ &lt; 0.50</text>
+  <text x="456" y="150" fill="#f8fafc" font-size="11" font-family="system-ui, sans-serif" font-weight="600">Strict Rate Limit</text>
+  <text x="456" y="172" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• 10 req/min rate cap</text>
+  <text x="456" y="192" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• High latency drops</text>
+  <text x="456" y="212" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Secondary queue only</text>
+  <rect x="452" y="235" width="174" height="90" rx="6" fill="#451a03" stroke="#f59e0b" stroke-width="1.0" />
+  <text x="460" y="260" fill="#fcd34d" font-size="10" font-family="monospace">Weight: $0.30$</text>
+  <text x="460" y="280" fill="#fef3c7" font-size="9.5" font-family="system-ui, sans-serif">Reduced consensus power</text>
+
+  <!-- Tier 4: Isolated / Slashed -->
+  <rect x="650" y="80" width="198" height="260" rx="10" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="650" y="80" width="198" height="26" rx="10" fill="rgba(239, 68, 68, 0.15)" />
+  <text x="662" y="98" fill="#ef4444" font-size="10.5" font-family="monospace" font-weight="bold">ISOLATED / SLASHED</text>
+  <text x="662" y="126" fill="#ef4444" font-size="12" font-family="monospace" font-weight="bold">$Q_i &lt; 0.25$</text>
+  <text x="662" y="150" fill="#f8fafc" font-size="11" font-family="system-ui, sans-serif" font-weight="600">Quarantine Zone</text>
+  <text x="662" y="172" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Disconnected from mesh</text>
+  <text x="662" y="192" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• 0 req/min (Ignored)</text>
+  <text x="662" y="212" fill="#94a3b8" font-size="10.5" font-family="system-ui, sans-serif">• Sybil / Cartel isolation</text>
+  <rect x="658" y="235" width="182" height="90" rx="6" fill="#450a0a" stroke="#ef4444" stroke-width="1.0" />
+  <text x="666" y="260" fill="#fca5a5" font-size="10" font-family="monospace">Weight: $0.00$</text>
+  <text x="666" y="280" fill="#fee2e2" font-size="9.5" font-family="system-ui, sans-serif">Zero network influence</text>
+</svg>

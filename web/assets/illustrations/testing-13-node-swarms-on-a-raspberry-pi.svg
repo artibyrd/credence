@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <rect width="880" height="380" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">EDGE RESOURCE GOVERNOR</text>
+  <text x="32" y="56" fill="#f8fafc" font-size="16" font-family="system-ui, sans-serif" font-weight="bold">ADAPTIVE SWARM TOPOLOGY &amp; MEMORY THROTTLING</text>
+
+  <!-- Left: Full 13-Node Cluster -->
+  <rect x="32" y="80" width="395" height="260" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="32" y="80" width="395" height="30" rx="10" fill="rgba(34, 197, 94, 0.15)" />
+  <text x="48" y="100" fill="#22c55e" font-size="11" font-family="monospace" font-weight="bold">🚀 FULL 13-NODE SWARM (RAM ≥ 2.0 GB)</text>
+  <text x="48" y="134" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Full Watts-Strogatz Small-World Lattice</text>
+  <text x="48" y="156" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• 13 Active WebSocket Relay daemons</text>
+  <text x="48" y="176" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Byzantine Quorum Safety ($N=13, f=4$ tolerance)</text>
+  <text x="48" y="196" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• 128MB Cgroup caps (`mem_limit: 128m`)</text>
+  <rect x="48" y="220" width="363" height="100" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.0" />
+  <text x="60" y="244" fill="#22c55e" font-size="10.5" font-family="monospace">Execution Time: 4.5s (Full Gauntlet)</text>
+  <text x="60" y="264" fill="#38bdf8" font-size="10.5" font-family="monospace">Total RAM: 150MB across 13 nodes</text>
+  <text x="60" y="284" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Validates Sybil cartel demolition &amp; Barbell netsplit</text>
+
+  <!-- Right: Graceful 3-Node Fallback -->
+  <rect x="453" y="80" width="395" height="260" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="453" y="80" width="395" height="30" rx="10" fill="rgba(245, 158, 11, 0.15)" />
+  <text x="469" y="100" fill="#f59e0b" font-size="11" font-family="monospace" font-weight="bold">🛡️ 3-NODE FALLBACK (RAM &lt; 2.0 GB)</text>
+  <text x="469" y="134" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Graceful Low-Memory Edge Triangle</text>
+  <text x="469" y="156" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• 3 Connected Peer Relays ($N=3, f=0$)</text>
+  <text x="469" y="176" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Zero OOM panics on $35 Raspberry Pi 4/5</text>
+  <text x="469" y="196" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Emits non-fatal educational warning</text>
+  <rect x="469" y="220" width="363" height="100" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.0" />
+  <text x="481" y="244" fill="#f59e0b" font-size="10.5" font-family="monospace">Execution Time: 0.8s (Triangle Test)</text>
+  <text x="481" y="264" fill="#38bdf8" font-size="10.5" font-family="monospace">Total RAM: &lt;45MB total memory</text>
+  <text x="481" y="284" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Preserves core gossip &amp; attestation validation</text>
+</svg>

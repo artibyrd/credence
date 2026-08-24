@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <rect width="880" height="380" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">DISASTER RECOVERY &amp; RESILIENCE</text>
+  <text x="32" y="56" fill="#f8fafc" font-size="16" font-family="system-ui, sans-serif" font-weight="bold">ACTIVE-ACTIVE MULTI-REGION REPLICATION &amp; DNS FAILOVER</text>
+
+  <!-- Region 1: us-central1 -->
+  <rect x="32" y="80" width="395" height="260" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="32" y="80" width="395" height="30" rx="10" fill="rgba(34, 197, 94, 0.15)" />
+  <text x="48" y="100" fill="#22c55e" font-size="11" font-family="monospace" font-weight="bold">PRIMARY COMPUTE (US-CENTRAL1)</text>
+  <text x="48" y="134" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Active Production Origin</text>
+  <text x="48" y="156" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Primary Cloud Run server container</text>
+  <text x="48" y="176" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• SQLite WAL ledger with hourly R2 CAS snapshots</text>
+  <text x="48" y="196" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Serves 95% of continental traffic</text>
+  <rect x="48" y="220" width="363" height="100" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.0" />
+  <text x="60" y="244" fill="#22c55e" font-size="10.5" font-family="monospace">Health Status: HEALTHY (200 OK)</text>
+  <text x="60" y="264" fill="#38bdf8" font-size="10.5" font-family="monospace">RTO: 0 seconds (Active-Active)</text>
+  <text x="60" y="284" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Cloudflare Edge Anycast routes to lowest latency origin</text>
+
+  <!-- Region 2: europe-west1 -->
+  <rect x="453" y="80" width="395" height="260" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="453" y="80" width="395" height="30" rx="10" fill="rgba(56, 189, 248, 0.15)" />
+  <text x="469" y="100" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold">STANDBY / REPLICA (EUROPE-WEST1)</text>
+  <text x="469" y="134" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Cross-Region Warm Standby</text>
+  <text x="469" y="156" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Secondary Cloud Run container instance</text>
+  <text x="469" y="176" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Synchronized via Cloudflare R2 bucket replication</text>
+  <text x="469" y="196" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Sub-second automated DNS reroute on failure</text>
+  <rect x="469" y="220" width="363" height="100" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.0" />
+  <text x="481" y="244" fill="#38bdf8" font-size="10.5" font-family="monospace">Health Status: STANDBY (200 OK)</text>
+  <text x="481" y="264" fill="#38bdf8" font-size="10.5" font-family="monospace">RPO: &lt;1 hour (CAS Snapshot Lag)</text>
+  <text x="481" y="284" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Automated failover triggered if primary probe fails 3x</text>
+</svg>

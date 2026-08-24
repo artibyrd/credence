@@ -48,6 +48,11 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
 - **Markdown Figure Embedding**: Embed via standard markdown figure syntax `![Figure X.Y: Substantive Description](assets/illustrations/<slug>.svg)` which `app.js` mounts as `<figure class="doc-illustration"><img ... /><figcaption>...</figcaption></figure>`.
 - **Structured Markdown Tables**: Accompany every illustration with a structured GitHub-flavored Markdown table defining parameter lattices, operational stages, or component responsibilities.
 
+### 6. Anti-Pseudo-Box & Truncation Guardrail (Shift-Left Gate 8)
+- **Zero Pseudo-Boxes**: Disallow dashed lines (`--- ---`, `--------------------+`), loose pipe characters outside valid markdown tables (`| •`, `| 🚀`, `- ... | • ...`), and bare ASCII arrow flows (`▼`, `▲`, `--►`) in documentation prose.
+- **Zero Truncation**: Disallow truncated lines or broken box borders (`<300M|`).
+- **Enforcement**: Gate 8 in `tests/governance/test_docs_integrity.py` statically enforces this invariant across all 194 markdown files.
+
 ---
 
 ## 2. Shift-Left Intelligent Guidance & Workflow Chaining
