@@ -318,7 +318,7 @@
 
   <!-- Unified Ecosystem Navigation Bar (5 Invariant Links) -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.15.1</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.16.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -344,8 +344,8 @@
         <label for="endpoint-select"><strong>Endpoint:</strong></label>
         <select id="endpoint-select">
           <option value="http://localhost:8000" selected>Local Node (http://localhost:8000)</option>
+          <option value="https://dev.credence.report">Dev Preview (https://dev.credence.report)</option>
           <option value="custom">Custom Node URL...</option>
-          <option value="demo">Demo Swarm Simulation</option>
         </select>
         <input type="text" id="custom-endpoint-input" placeholder="http://my-node:8000" style="display:none; width: 200px;">
       </div>
@@ -795,21 +795,32 @@
 
     async function fetchStats() {
       const endpoint = getActiveEndpoint();
-      if (endpoint === 'demo') {
-        renderStats(getDemoData());
-        return;
-      }
-
       try {
         const res = await fetch(`${endpoint.replace(/\/$/, '')}/api/v1/mesh/stats`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         renderStats(data);
       } catch (err) {
-        // Fallback to local or demo with notification
-        console.warn('Live endpoint error, displaying available snapshot:', err);
-        renderStats(getDemoData());
+        console.warn('Live endpoint unreachable:', err);
+        renderOfflineState(endpoint, err);
       }
+    }
+
+    function renderOfflineState(endpoint, err) {
+      document.getElementById('node-headline').textContent = 'Credence Node: OFFLINE / DISCONNECTED';
+      document.getElementById('node-id-pill').textContent = 'unreachable';
+      document.getElementById('node-merit-pill').textContent = 'Merit: —';
+      document.getElementById('last-updated-text').textContent = `Cannot connect to ${endpoint} (${new Date().toLocaleTimeString()})`;
+      const dot = document.getElementById('node-status-dot');
+      if (dot) dot.className = 'status-dot error';
+      document.getElementById('kpi-status-uptime').textContent = '🔴 Offline';
+      document.getElementById('kpi-runtime-memory').textContent = `Start node: credence start`;
+      document.getElementById('kpi-total-audits').textContent = '—';
+      document.getElementById('kpi-today-audits').textContent = '0 evaluated';
+      document.getElementById('kpi-mesh-peers').textContent = '0 Active';
+      document.getElementById('kpi-seed-status').textContent = 'Bootstrap: 🔴 Unreachable';
+      document.getElementById('kpi-tokens-saved').textContent = '0';
+      document.getElementById('kpi-usd-saved').textContent = '$0.00';
     }
 
     function renderStats(data) {
@@ -819,29 +830,31 @@
       const savings = mesh.compute_savings || {};
       const sre = data.sre_telemetry || {};
 
+      const isStandalone = !mesh.connected_peers_count || mesh.connected_peers_count === 0;
+
       // 1. Update Hero
-      document.getElementById('node-headline').textContent = `My Credence Node: ${my.status ? my.status.toUpperCase() : 'HEALTHY'}`;
+      document.getElementById('node-headline').textContent = `My Credence Node: ${isStandalone ? 'STANDALONE (UNPEERED)' : (my.status ? my.status.toUpperCase() : 'HEALTHY')}`;
       document.getElementById('node-id-pill').textContent = my.node_id || 'node_local';
       document.getElementById('node-merit-pill').textContent = `Merit: ${my.merit?.score || 100.0} (${my.merit?.tier || 'Verified'})`;
       document.getElementById('last-updated-text').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
 
       const dot = document.getElementById('node-status-dot');
-      dot.className = 'status-dot' + (my.status === 'degraded' ? ' degraded' : (my.status === 'error' ? ' error' : ''));
+      dot.className = 'status-dot' + (my.status === 'degraded' ? ' degraded' : (my.status === 'error' ? ' error' : (isStandalone ? ' degraded' : '')));
 
-      document.getElementById('kpi-status-uptime').textContent = my.status === 'healthy' ? '🟢 Healthy' : `🟡 ${my.status}`;
-      document.getElementById('kpi-runtime-memory').textContent = `Uptime: ${my.uptime_human || '0h'} | Memory: ${Math.round(my.memory_mb || 140)} MB (${my.memory_percent || 16.5}%)`;
-      document.getElementById('kpi-profile-headroom').textContent = `Engine: ${(my.active_profile || 'BALANCED').toUpperCase()} | Headroom: ${(my.token_headroom?.remaining_quota || 500000).toLocaleString()} tokens`;
+      document.getElementById('kpi-status-uptime').textContent = isStandalone ? '🟡 Standalone' : (my.status === 'healthy' ? '🟢 Healthy' : `🟡 ${my.status}`);
+      document.getElementById('kpi-runtime-memory').textContent = `Uptime: ${my.uptime_human || '0h'} | Memory: ${Math.round(my.memory_mb || 0)} MB (${my.memory_percent || 0}%)`;
+      document.getElementById('kpi-profile-headroom').textContent = `Engine: ${(my.active_profile || 'BALANCED').toUpperCase()} | Headroom: ${(my.token_headroom?.remaining_quota || 0).toLocaleString()} tokens`;
 
       document.getElementById('kpi-total-audits').textContent = (my.total_audited_lifetime || 0).toLocaleString();
       document.getElementById('kpi-today-audits').textContent = `${my.total_audited_today || 0} evaluated today`;
       document.getElementById('kpi-avg-grounding').textContent = `Avg Suspicion: ${my.avg_suspicion_score || 0.0} | Grounding: G = ${(my.avg_grounding_quotient || 1.0).toFixed(2)}`;
 
-      document.getElementById('kpi-mesh-peers').textContent = `${mesh.connected_peers_count || 4} Active`;
-      document.getElementById('kpi-seed-status').textContent = `Bootstrap: ${mesh.seeds_status?.is_reachable ? '🟢 Connected' : '🔴 Unreachable'}`;
+      document.getElementById('kpi-mesh-peers').textContent = isStandalone ? '0 Active (f=0)' : `${mesh.connected_peers_count} Active`;
+      document.getElementById('kpi-seed-status').textContent = `Bootstrap: ${mesh.seeds_status?.is_reachable ? '🟢 Connected' : '🟡 Standalone'}`;
 
-      document.getElementById('kpi-tokens-saved').textContent = (savings.tokens_saved_estimate || 21000).toLocaleString();
-      document.getElementById('kpi-usd-saved').textContent = `$${(savings.usd_saved_estimate || 0.01).toFixed(2)} avoided at $0.00 spend`;
-      document.getElementById('kpi-mesh-efficiency').textContent = `${savings.work_sharing_efficiency_pct || 92.3}% Work-Sharing Efficiency`;
+      document.getElementById('kpi-tokens-saved').textContent = (savings.tokens_saved_estimate || 0).toLocaleString();
+      document.getElementById('kpi-usd-saved').textContent = `$${(savings.usd_saved_estimate || 0.00).toFixed(2)} avoided at $0.00 spend`;
+      document.getElementById('kpi-mesh-efficiency').textContent = `${savings.work_sharing_efficiency_pct || 0}% Work-Sharing Efficiency`;
 
       // 1.1 Render Epistemic Excitement Telemetry
       const totalAudits = my.total_audited_lifetime || 0;
@@ -1040,78 +1053,6 @@
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    function getDemoData() {
-      return {
-        service: "credence",
-        version: "1.15.0",
-        my_node: {
-          node_id: "node_9580dc91",
-          status: "healthy",
-          active_profile: "BALANCED",
-          uptime_human: "2d 14h 22m",
-          memory_mb: 142.5,
-          memory_percent: 16.8,
-          total_audited_lifetime: 635,
-          total_audited_today: 414,
-          avg_suspicion_score: 18.4,
-          avg_grounding_quotient: 1.0,
-          merit: { score: 85.0, tier: "SPROUT" },
-          token_headroom: { remaining_quota: 500000, circuit_breaker: "NORMAL" }
-        },
-        mesh_dynamics: {
-          connected_peers_count: 4,
-          seeds_status: { canonical_domain: "seeds.credence.nexus", is_reachable: true },
-          compute_savings: {
-            tokens_saved_estimate: 21000,
-            usd_saved_estimate: 0.01,
-            work_sharing_efficiency_pct: 92.3,
-            adopted_from_mesh_count: 5
-          }
-        },
-        sre_telemetry: {
-          status: "healthy",
-          latencies_ms: { p50: 12.4, p95: 45.2, p99: 82.0 },
-          requests_2xx: 142,
-          requests_4xx: 2,
-          requests_5xx: 0
-        },
-        score_histogram: [
-          { bucket: "0-10 (Pristine)", count: 299 },
-          { bucket: "11-25 (Clean)", count: 130 },
-          { bucket: "26-50 (Low Suspicion)", count: 148 },
-          { bucket: "51-75 (Suspicious)", count: 56 },
-          { bucket: "76-100 (Deceptive)", count: 2 }
-        ],
-        verdict_distribution: {
-          CLEAN: 298,
-          LOW_SUSPICION: 266,
-          SUSPICIOUS: 66,
-          HIGH_DECEPTION: 3,
-          SATIRE_PARODY: 2
-        },
-        categories_breakdown: {
-          NEWS_ARTICLE: 632,
-          OPINION: 0,
-          SATIRE_PARODY: 1,
-          ADVERTORIAL: 2
-        },
-        top_violations: [
-          { rule_id: "FALLACY-1.1", domain: "LOGICAL_FALLACY", count: 272 },
-          { rule_id: "FALLACY-2.2", domain: "LOGICAL_FALLACY", count: 272 },
-          { rule_id: "SPJ-4.1", domain: "JOURNALISTIC_ETHICS", count: 29 }
-        ],
-        sources_breakdown: [
-          { domain: "The Global Science Journal", total_audits: 222, avg_suspicion: 0.0, trust_band: "Tier A (Pristine)", grounding_rate: 1.0, clean_count: 222, flagged_count: 0 },
-          { domain: "inmaricopa.com", total_audits: 52, avg_suspicion: 54.6, trust_band: "Tier C (Suspicious)", grounding_rate: 1.0, clean_count: 2, flagged_count: 50 },
-          { domain: "www.propublica.org", total_audits: 4, avg_suspicion: 0.6, trust_band: "Tier A (Pristine)", grounding_rate: 1.0, clean_count: 4, flagged_count: 0 }
-        ],
-        recent_audits: [
-          { domain: "The Global Science Journal", title: "Global Renewable Energy Adoption Reaches New Record", suspicion_score: 0.0, classification: "CLEAN", content_sha256: "sha256:25a84451..." },
-          { domain: "inline://raw", title: "Test Fallacy Snippet", suspicion_score: 37.8, classification: "LOW_SUSPICION", content_sha256: "sha256:5c43ae7f..." }
-        ]
-      };
     }
 
     // Initial Load

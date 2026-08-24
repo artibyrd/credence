@@ -127,7 +127,7 @@
 
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.15.1</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.16.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -604,11 +604,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ burst: burstSize, sync_mesh: true })
         });
-        showToast(`🌱 Germination burst complete (${burstSize} batches)`, 'success');
-        appendLog(`Miracle-Gro burst completed successfully. Seeded ${burstSize} batches.`, 'success');
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`🌱 Germination burst complete (${data.germinated_count || burstSize} items)`, 'success');
+          appendLog(`Miracle-Gro burst completed successfully. Seeded ${data.germinated_count || burstSize} items.`, 'success');
+        } else {
+          showToast('❌ Germination burst failed', 'error');
+          appendLog(`Germination burst failed with status ${res.status}`, 'error');
+        }
       } catch (e) {
-        showToast(`🌱 Germination burst complete (${burstSize} batches)`, 'success');
-        appendLog(`Miracle-Gro burst completed locally (${burstSize} batches)`, 'success');
+        showToast('❌ Network error executing germination burst', 'error');
+        appendLog(`Germination error: ${e.message}`, 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = '🚀 Execute Germination Burst';
@@ -617,14 +623,38 @@
 
     window.triggerSifterLoop = async function() {
       appendLog('Triggering Sifter RSS feed ingestion loop...', 'info');
-      showToast('📡 Sifter RSS cycle initiated', 'info');
-      setTimeout(() => appendLog('Sifter loop complete: 8 feeds polled, 0 new violations', 'success'), 800);
+      try {
+        const res = await fetchWithAuth('/api/sifter/cycle', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`📡 Sifter cycle complete (${data.polled_count || 0} feeds polled)`, 'success');
+          appendLog(`Sifter cycle complete: ${data.polled_count || 0} feeds polled, ${data.audited_count || 0} audits executed`, 'success');
+        } else {
+          showToast('❌ Sifter cycle request failed', 'error');
+          appendLog(`Sifter cycle failed with status ${res.status}`, 'error');
+        }
+      } catch (e) {
+        showToast('❌ Network error contacting Sifter API', 'error');
+        appendLog(`Sifter error: ${e.message}`, 'error');
+      }
     };
 
     window.triggerBoredomLoop = async function() {
       appendLog('Triggering Boredom opportunistic audit pass...', 'info');
-      showToast('💤 Boredom audit cycle initiated', 'info');
-      setTimeout(() => appendLog('Boredom pass complete: Queue processed (depth=0)', 'success'), 800);
+      try {
+        const res = await fetchWithAuth('/api/boredom/cycle', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`💤 Boredom cycle complete (${data.audits_executed || 0} audits executed)`, 'success');
+          appendLog(`Boredom cycle complete: ${data.audits_executed || 0} audits executed, queue depth=${data.queue_depth || 0}`, 'success');
+        } else {
+          showToast('❌ Boredom cycle request failed', 'error');
+          appendLog(`Boredom cycle failed with status ${res.status}`, 'error');
+        }
+      } catch (e) {
+        showToast('❌ Network error contacting Boredom API', 'error');
+        appendLog(`Boredom error: ${e.message}`, 'error');
+      }
     };
 
     window.copyNodePubKey = function() {
@@ -656,8 +686,8 @@
           appendLog('Backup failed', 'error');
         }
       } catch (e) {
-        showToast('💾 Database snapshot saved locally', 'info');
-        appendLog('Database snapshot created locally', 'info');
+        showToast('❌ Network error during backup', 'error');
+        appendLog(`Backup error: ${e.message}`, 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = '💾 Create Backup';
@@ -685,8 +715,8 @@
           appendLog('Restore failed', 'error');
         }
       } catch (e) {
-        showToast('🔄 Database restore simulated locally', 'info');
-        appendLog('Database restored in local session', 'info');
+        showToast('❌ Network error during database restore', 'error');
+        appendLog(`Restore error: ${e.message}`, 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = '🔄 Restore Latest';

@@ -60,6 +60,12 @@ from credence.server.api.feeds import (
     api_sifter_cycle,
     api_sifter_status,
 )
+from credence.server.api.governance import (
+    api_benchmark_rfc,
+    api_get_rfc,
+    api_list_rfcs,
+    api_validate_rfc,
+)
 from credence.server.api.mesh import api_mesh_network_health, api_mesh_stats
 from credence.server.api.system import (
     api_auth_config,
@@ -129,6 +135,10 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/config/profile", endpoint=api_set_operational_profile, methods=["POST", "OPTIONS"]),
         Route("/api/reports", endpoint=api_reports, methods=["GET", "OPTIONS"]),
         Route("/api/reports/{identifier:path}", endpoint=api_get_report, methods=["GET", "OPTIONS"]),
+        Route("/api/rfcs", endpoint=api_list_rfcs, methods=["GET", "OPTIONS"]),
+        Route("/api/rfcs/validate", endpoint=api_validate_rfc, methods=["POST", "OPTIONS"]),
+        Route("/api/rfcs/benchmark", endpoint=api_benchmark_rfc, methods=["POST", "OPTIONS"]),
+        Route("/api/rfcs/{rfc_id:path}", endpoint=api_get_rfc, methods=["GET", "OPTIONS"]),
         Route("/api/cost/telemetry", endpoint=api_cost_telemetry, methods=["GET", "OPTIONS"]),
         Route("/api/cost/recommendations", endpoint=api_cost_recommendations, methods=["GET", "OPTIONS"]),
         Route("/api/cost/budget", endpoint=api_cost_budget, methods=["POST", "GET", "OPTIONS"]),

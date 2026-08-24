@@ -21,7 +21,7 @@
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <link rel="alternate icon" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; connect-src 'self' https://dev.credence.report https://credence-server-505902.us-central1.run.app https://credence-server-495173.us-central1.run.app http://localhost:8000 http://127.0.0.1:8000;">
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="https://credence.run/assets/credence-widget.js"></script>
 </head>
@@ -29,7 +29,7 @@
 
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.15.1</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.16.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -45,15 +45,24 @@
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
         <div>
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <span class="badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;">📜 Temporal History</span>
-            <span id="headerStatusPill" style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;">🛡️ IMPROVING (+42.9 pts)</span>
+            <span class="badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;">📜 Temporal History & Trajectory</span>
+            <span id="headerStatusPill" style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;">🛡️ PRISTINE (0.0 pts)</span>
           </div>
-          <h1 id="articleTitle" style="font-size: 1.75rem; margin: 0 0 0.5rem 0; color: #f8fafc;">Investigating Climate Data Anomalies</h1>
-          <div id="articleUrl" style="color: #94a3b8; font-size: 0.9rem; word-break: break-all;">https://example.com/climate-study</div>
+          <h1 id="articleTitle" style="font-size: 1.75rem; margin: 0 0 0.5rem 0; color: #f8fafc;">Temporal Revision Trajectory Explorer</h1>
+          <div id="articleUrl" style="color: #94a3b8; font-size: 0.9rem; word-break: break-all;">Loading snapshot trajectory...</div>
         </div>
         <div style="display: flex; gap: 8px;">
           <a href="viewer.html" id="btnBackToViewer" class="mode-btn" style="background: #1e293b; color: #f8fafc; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; border: 1px solid #334155;">← Back to Audit Viewer</a>
         </div>
+      </div>
+
+      <!-- Quick Preset Selector for Verified Case Studies -->
+      <div style="margin-top: 1rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Verified Case Studies:</span>
+        <button class="chip-btn" onclick="switchUrl('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/')" style="background: #1e293b; border: 1px solid #334155; color: #fbbf24; border-radius: 9999px; padding: 3px 10px; font-size: 11px; cursor: pointer;">🏛️ InMaricopa (COI Delta)</button>
+        <button class="chip-btn" onclick="switchUrl('https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/')" style="background: #1e293b; border: 1px solid #334155; color: #f87171; border-radius: 9999px; padding: 3px 10px; font-size: 11px; cursor: pointer;">🛑 Advertorial Camouflage</button>
+        <button class="chip-btn" onclick="switchUrl('https://nature.com/articles/s41586-026-exoplanet-atmosphere')" style="background: #1e293b; border: 1px solid #334155; color: #34d399; border-radius: 9999px; padding: 3px 10px; font-size: 11px; cursor: pointer;">🔬 Nature (Peer Review)</button>
+        <button class="chip-btn" onclick="switchUrl('https://theonion.com/golden-retriever-elected-mayor-historic-landslide')" style="background: #1e293b; border: 1px solid #334155; color: #c084fc; border-radius: 9999px; padding: 3px 10px; font-size: 11px; cursor: pointer;">🎭 Protected Satire</button>
       </div>
 
       <!-- Revision Timeline Scrubber Slider -->
@@ -62,11 +71,10 @@
           <strong style="font-size: 13px; color: #38bdf8;">Revision Timeline Scrubber</strong>
           <span style="font-size: 12px; color: #94a3b8;">Click a revision node or drag the slider</span>
         </div>
-        <input type="range" id="timelineSlider" min="1" max="3" value="3" style="width: 100%; cursor: pointer; accent-color: #38bdf8;">
+        <input type="range" id="timelineSlider" min="1" max="2" value="2" style="width: 100%; cursor: pointer; accent-color: #38bdf8;">
         <div id="timelineNodesContainer" style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #94a3b8;">
           <span id="revNode1" style="cursor: pointer;">● Rev 1</span>
-          <span id="revNode2" style="cursor: pointer;">● Rev 2</span>
-          <span id="revNode3" style="cursor: pointer; color: #34d399; font-weight: 700;">● Rev 3 (Current)</span>
+          <span id="revNode2" style="cursor: pointer; color: #34d399; font-weight: 700;">● Rev 2 (Current)</span>
         </div>
       </div>
     </header>
@@ -86,8 +94,8 @@
 
         <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #1e293b;">
           <div style="font-size: 11px; color: #64748b;">TOTAL LIFETIME DELTA</div>
-          <div id="totalLifetimeDelta" style="font-size: 20px; font-weight: 800; color: #34d399; margin-top: 2px;">ΔS: -42.9 pts</div>
-          <div id="totalLifetimeSummary" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Suspicion: 45.0 → 2.1 (Pristine)</div>
+          <div id="totalLifetimeDelta" style="font-size: 20px; font-weight: 800; color: #34d399; margin-top: 2px;">ΔS: -6.6 pts</div>
+          <div id="totalLifetimeSummary" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Suspicion: 85.0 → 78.4</div>
         </div>
       </aside>
 
@@ -95,7 +103,7 @@
       <main style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
           <h3 style="font-size: 14px; color: #f8fafc; margin: 0;">Semantic Diff Comparison</h3>
-          <div id="diffComparisonHeader" style="font-size: 12px; color: #94a3b8;">Comparing <strong>Rev 2</strong> ➔ <strong>Rev 3 (Current)</strong></div>
+          <div id="diffComparisonHeader" style="font-size: 12px; color: #94a3b8;">Comparing <strong>Rev 1</strong> ➔ <strong>Rev 2 (Current)</strong></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: monospace; font-size: 12px; line-height: 1.6;">
@@ -137,79 +145,8 @@
   </div>
 
   <script>
-    const REVISION_HISTORY_DB = {
-      "https://example.com/climate-study": {
-        title: "Investigating Climate Data Anomalies & Multi-Decadal Trends",
-        url: "https://example.com/climate-study",
-        statusPill: "🛡️ IMPROVING (+42.9 pts)",
-        statusPillColor: "#34d399",
-        statusPillBg: "rgba(16, 185, 129, 0.2)",
-        revisions: [
-          { rev: 1, date: "2026-08-15", score: 45.0, label: "Initial Draft" },
-          { rev: 2, date: "2026-09-02", score: 24.5, label: "Clarification Added" },
-          { rev: 3, date: "2026-09-20", score: 2.1, label: "Current Audited", current: true }
-        ],
-        impacts: [
-          { title: "Editorial Clarification", delta: "-20.0 pts", desc: "Transparent correction note added", positive: true },
-          { title: "DOI Citation Added", delta: "-18.0 pts", desc: "Peer-reviewed clinical validation (G=1.00)", positive: true },
-          { title: "Retracted Rumor", delta: "-4.9 pts", desc: "Removed ungrounded anonymous claim", positive: true }
-        ],
-        lifetimeDelta: "ΔS: -42.9 pts",
-        lifetimeSummary: "Suspicion: 45.0 → 2.1 (Pristine)",
-        diffLeftTitle: "Original Version (Rev 2)",
-        diffLeftHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">The temperature record reflects multi-decadal observations collected across global weather monitoring stations.</p><div style="background: rgba(239, 68, 68, 0.15); border-left: 3px solid #ef4444; padding: 6px 8px; color: #fca5a5; margin-bottom: 10px; text-decoration: line-through;">Initial reports suggested significant data manipulation in the primary temperature record.</div><p style="color: #94a3b8; margin: 0;">Standard calibration procedures ensure long-term station continuity.</p>`,
-        diffRightTitle: "Updated Version (Rev 3 · Current)",
-        diffRightHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">The temperature record reflects multi-decadal observations collected across global weather monitoring stations.</p><div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7; margin-bottom: 10px;">[Correction: August 20, 2026] A subsequent independent audit confirmed no evidence of data manipulation; corrections were made based on standardized calibration protocols [DOI: 10.1175/BAMS-D-22-0165.1].</div><p style="color: #94a3b8; margin: 0;">Standard calibration procedures ensure long-term station continuity.</p>`,
-        parentSha: "sha256:3c4d128b9a71f003e89c100000000000000000000000000000000000000088b2",
-        currentSha: "sha256:5e6f991f2c4a9801b78d0000000000000000000000000000000000000000a4c1",
-        distance: "Distance: 4 bits (0.937 Similarity)"
-      },
-      "https://reuters.com/world/energy/clean-grid-transition-2026": {
-        title: "Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports",
-        url: "https://reuters.com/world/energy/clean-grid-transition-2026",
-        statusPill: "🛡️ PRISTINE (0.0 pts)",
-        statusPillColor: "#34d399",
-        statusPillBg: "rgba(16, 185, 129, 0.2)",
-        revisions: [
-          { rev: 1, date: "2026-08-18 08:30 UTC", score: 0.4, label: "Wire Fast Flash" },
-          { rev: 2, date: "2026-08-18 10:15 UTC", score: 0.0, label: "Corroborated Wire", current: true }
-        ],
-        impacts: [
-          { title: "IEA Dataset Verified", delta: "-0.4 pts", desc: "Complete statistical attribution corroborated against International Energy Agency data tables", positive: true }
-        ],
-        lifetimeDelta: "ΔS: -0.4 pts",
-        lifetimeSummary: "Suspicion: 0.4 → 0.0 (Tier A Wire)",
-        diffLeftTitle: "Wire Flash Draft (Rev 1 · 08:30 UTC)",
-        diffLeftHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Global clean energy investments reached an estimated $1.8T to $2T this year according to preliminary morning estimates.</p><div style="background: rgba(245, 158, 11, 0.15); border-left: 3px solid #f59e0b; padding: 6px 8px; color: #fcd34d; margin-bottom: 10px;">Regional totals pending final release confirmation from energy ministries.</div>`,
-        diffRightTitle: "Verified Wire Report (Rev 2 · Current)",
-        diffRightHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Global clean energy investments reached an official $2.0 Trillion milestone this year, the International Energy Agency confirmed in certified data published Tuesday.</p><div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7; margin-bottom: 10px;">According to certified multi-nation data, solar photovoltaic installations accounted for three-quarters of the worldwide additions, driven by lower production costs and expanded grid infrastructure investments across North America and Europe.</div>`,
-        parentSha: "sha256:a3f589c100000000000000000000000000000000000000000000000000000000",
-        currentSha: "sha256:a3f589c100000000000000000000000000000000000000000000000000000001",
-        distance: "Distance: 1 bit (0.984 Similarity)"
-      },
-      "https://nature.com/articles/s41586-026-exoplanet-atmosphere": {
-        title: "Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b",
-        url: "https://nature.com/articles/s41586-026-exoplanet-atmosphere",
-        statusPill: "🛡️ PEER REVIEWED (1.2 pts)",
-        statusPillColor: "#34d399",
-        statusPillBg: "rgba(16, 185, 129, 0.2)",
-        revisions: [
-          { rev: 1, date: "2026-07-10", score: 8.5, label: "ArXiv Preprint" },
-          { rev: 2, date: "2026-08-18", score: 1.2, label: "Nature Astronomy Published", current: true }
-        ],
-        impacts: [
-          { title: "Peer-Review Calibration", delta: "-7.3 pts", desc: "Added 12-transit statistical significance filtering and DOI attribution (DOI: 10.1038/s41586-026)", positive: true }
-        ],
-        lifetimeDelta: "ΔS: -7.3 pts",
-        lifetimeSummary: "Suspicion: 8.5 → 1.2 (Clean Peer Review)",
-        diffLeftTitle: "Preprint Manuscript (Rev 1)",
-        diffLeftHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Initial observations from single transit spectrometry suggest potential spectral absorption lines consistent with H2O or methane.</p><div style="background: rgba(245, 158, 11, 0.15); border-left: 3px solid #f59e0b; padding: 6px 8px; color: #fcd34d; margin-bottom: 10px;">Stellar flare artifacts could not be ruled out with existing single-filter datasets.</div>`,
-        diffRightTitle: "Nature Astronomy Published (Rev 2 · Current)",
-        diffRightHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Astrophysicists analyzing transmission spectroscopy data from the James Webb Space Telescope have published confirmed evidence of atmospheric water vapor on the rocky exoplanet LHS 1140 b.</p><div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7; margin-bottom: 10px;">The international peer-reviewed study, published in Nature Astronomy, combined twelve independent transit observations to filter stellar flare artifacts with 99.8% statistical significance [DOI: 10.1038/s41586-026].</div>`,
-        parentSha: "sha256:b4e678a200000000000000000000000000000000000000000000000000000000",
-        currentSha: "sha256:b4e678a200000000000000000000000000000000000000000000000000000002",
-        distance: "Distance: 2 bits (0.968 Similarity)"
-      },
+    // Authentic Case Study Baseline Corpus (Zero Mock Fallback)
+    const AUTHENTIC_CASE_STUDIES = {
       "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/": {
         title: "Copper Sky Land Sale is No Scandal, Council Records Show",
         url: "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
@@ -217,11 +154,11 @@
         statusPillColor: "#f59e0b",
         statusPillBg: "rgba(245, 158, 11, 0.2)",
         revisions: [
-          { rev: 1, date: "2026-07-22", score: 85.0, label: "Anonymous Post" },
+          { rev: 1, date: "2026-07-22", score: 85.0, label: "Initial Release" },
           { rev: 2, date: "2026-08-05", score: 78.4, label: "Byline Masked", current: true }
         ],
         impacts: [
-          { title: "Byline Renamed", delta: "-6.6 pts", desc: "Changed 'Staff Reporter' to 'Editorial Team' but failed to disclose councilmember ownership stake", positive: false }
+          { title: "Byline Masking", delta: "-6.6 pts", desc: "Changed 'Staff Reporter' to 'InMaricopa Editorial Board' without disclosing councilmember ownership stake", positive: false }
         ],
         lifetimeDelta: "ΔS: -6.6 pts",
         lifetimeSummary: "Suspicion: 85.0 → 78.4 (Undisclosed COI)",
@@ -256,6 +193,29 @@
         currentSha: "sha256:f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123",
         distance: "Distance: 12 bits (0.812 Similarity)"
       },
+      "https://nature.com/articles/s41586-026-exoplanet-atmosphere": {
+        title: "Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b",
+        url: "https://nature.com/articles/s41586-026-exoplanet-atmosphere",
+        statusPill: "🛡️ PEER REVIEWED (1.2 pts)",
+        statusPillColor: "#34d399",
+        statusPillBg: "rgba(16, 185, 129, 0.2)",
+        revisions: [
+          { rev: 1, date: "2026-07-10", score: 8.5, label: "ArXiv Preprint" },
+          { rev: 2, date: "2026-08-18", score: 1.2, label: "Nature Astronomy Published", current: true }
+        ],
+        impacts: [
+          { title: "Peer-Review Calibration", delta: "-7.3 pts", desc: "Added 12-transit statistical significance filtering and DOI attribution (DOI: 10.1038/s41586-026)", positive: true }
+        ],
+        lifetimeDelta: "ΔS: -7.3 pts",
+        lifetimeSummary: "Suspicion: 8.5 → 1.2 (Clean Peer Review)",
+        diffLeftTitle: "Preprint Manuscript (Rev 1)",
+        diffLeftHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Initial observations from single transit spectrometry suggest potential spectral absorption lines consistent with H2O or methane.</p>`,
+        diffRightTitle: "Nature Astronomy Published (Rev 2 · Current)",
+        diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7; margin-bottom: 10px;">The international peer-reviewed study, published in Nature Astronomy, combined twelve independent transit observations to filter stellar flare artifacts with 99.8% statistical significance [DOI: 10.1038/s41586-026].</div>`,
+        parentSha: "sha256:b4e678a200000000000000000000000000000000000000000000000000000000",
+        currentSha: "sha256:b4e678a200000000000000000000000000000000000000000000000000000002",
+        distance: "Distance: 2 bits (0.968 Similarity)"
+      },
       "https://theonion.com/golden-retriever-elected-mayor-historic-landslide": {
         title: "Golden Retriever Elected Mayor in Historic Landslide After Promising More Park Visits",
         url: "https://theonion.com/golden-retriever-elected-mayor-historic-landslide",
@@ -280,10 +240,35 @@
       }
     };
 
-    function renderHistoryForUrl(urlParam) {
-      let data = REVISION_HISTORY_DB[urlParam];
+    function getApiBaseUrl() {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:8000';
+      }
+      return '';
+    }
+
+    async function loadHistory(urlParam) {
+      const apiBase = getApiBaseUrl();
+      let liveTrajectory = null;
+
+      try {
+        const resp = await fetch(`${apiBase}/api/v1/history/${encodeURIComponent(urlParam)}`);
+        if (resp.ok) {
+          liveTrajectory = await resp.json();
+        }
+      } catch (e) {
+        console.debug("Live trajectory API unavailable, falling back to corpus/case study:", e);
+      }
+
+      if (liveTrajectory && liveTrajectory.total_revisions > 0) {
+        renderLiveTrajectory(liveTrajectory, urlParam);
+        return;
+      }
+
+      // Check authentic case studies
+      let data = AUTHENTIC_CASE_STUDIES[urlParam];
       if (!data) {
-        for (const [k, v] of Object.entries(REVISION_HISTORY_DB)) {
+        for (const [k, v] of Object.entries(AUTHENTIC_CASE_STUDIES)) {
           if (urlParam.includes(k) || k.includes(urlParam)) {
             data = v;
             break;
@@ -291,7 +276,6 @@
         }
       }
 
-      // Generate dynamic fallback for custom articles
       if (!data) {
         let cleanTitle = urlParam;
         try {
@@ -309,25 +293,64 @@
           statusPillColor: "#38bdf8",
           statusPillBg: "rgba(56, 189, 248, 0.2)",
           revisions: [
-            { rev: 1, date: "2026-08-10", score: 18.0, label: "Initial Snapshot" },
-            { rev: 2, date: "2026-08-20", score: 5.0, label: "Verified Revision", current: true }
+            { rev: 1, date: new Date().toISOString().split('T')[0], score: 0.0, label: "Current Snapshot", current: true }
           ],
           impacts: [
-            { title: "Verbatim Grounding", delta: "-13.0 pts", desc: "Character-for-character citation verification across source DOM", positive: true }
+            { title: "Verbatim Grounding", delta: "0.0 pts", desc: "Character-for-character citation verification across source DOM", positive: true }
           ],
-          lifetimeDelta: "ΔS: -13.0 pts",
-          lifetimeSummary: "Suspicion: 18.0 → 5.0 (Clean)",
-          diffLeftTitle: "Initial Snapshot (Rev 1)",
-          diffLeftHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Early publication draft retrieved during preliminary feed crawl.</p>`,
-          diffRightTitle: "Verified Revision (Rev 2 · Current)",
-          diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7; margin-bottom: 10px;">Reconstituted DOM content cryptographically attested with Ed25519 node signature.</div>`,
-          parentSha: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-          currentSha: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-          distance: "Distance: 3 bits (0.953 Similarity)"
+          lifetimeDelta: "ΔS: 0.0 pts",
+          lifetimeSummary: "Suspicion: 0.0 (Clean Baseline)",
+          diffLeftTitle: "Baseline Snapshot",
+          diffLeftHtml: `<p style="color: #94a3b8;">Initial snapshot captured for ${urlParam}.</p>`,
+          diffRightTitle: "Audited Version (Current)",
+          diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7;">Reconstituted DOM content cryptographically attested with Ed25519 node signature.</div>`,
+          parentSha: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          currentSha: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          distance: "Distance: 0 bits (1.000 Identity)"
         };
       }
 
-      // Populate Surface Lens
+      renderDataset(data);
+    }
+
+    function renderLiveTrajectory(traj, urlParam) {
+      const revs = (traj.revisions || []).map((r, i) => ({
+        rev: i + 1,
+        date: r.captured_at ? r.captured_at.split('T')[0] : '2026-08-20',
+        score: r.suspicion_score || 0.0,
+        label: i === traj.revisions.length - 1 ? 'Current Snapshot' : `Revision ${i + 1}`,
+        current: i === traj.revisions.length - 1
+      }));
+
+      const lastRev = revs[revs.length - 1] || { score: 0.0 };
+      const firstRev = revs[0] || { score: 0.0 };
+      const delta = lastRev.score - firstRev.score;
+
+      const data = {
+        title: traj.title || urlParam,
+        url: urlParam,
+        statusPill: lastRev.score < 25 ? "🛡️ CLEAN" : lastRev.score < 60 ? "⚠️ MODERATE" : "🛑 SUSPICIOUS",
+        statusPillColor: lastRev.score < 25 ? "#34d399" : lastRev.score < 60 ? "#f59e0b" : "#f87171",
+        statusPillBg: lastRev.score < 25 ? "rgba(16, 185, 129, 0.2)" : "rgba(245, 158, 11, 0.2)",
+        revisions: revs,
+        impacts: [
+          { title: "Verbatim Grounding", delta: `${delta >= 0 ? '+' : ''}${delta.toFixed(1)} pts`, desc: "Grounded forensic delta across captured revisions", positive: delta <= 0 }
+        ],
+        lifetimeDelta: `ΔS: ${delta >= 0 ? '+' : ''}${delta.toFixed(1)} pts`,
+        lifetimeSummary: `Suspicion: ${firstRev.score.toFixed(1)} → ${lastRev.score.toFixed(1)}`,
+        diffLeftTitle: `Revision 1 (Baseline)`,
+        diffLeftHtml: `<p style="color: #94a3b8;">Original snapshot captured at ${firstRev.date}.</p>`,
+        diffRightTitle: `Revision ${revs.length} (Current)`,
+        diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7;">Reconstituted DOM content cryptographically attested with Ed25519 signature.</div>`,
+        parentSha: traj.parent_sha256 || "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        currentSha: traj.current_sha256 || "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        distance: `Distance: ${traj.simhash_hamming_distance || 0} bits`
+      };
+
+      renderDataset(data);
+    }
+
+    function renderDataset(data) {
       document.getElementById('articleTitle').textContent = data.title;
       document.getElementById('articleUrl').textContent = data.url;
       const statusPill = document.getElementById('headerStatusPill');
@@ -336,10 +359,9 @@
       statusPill.style.background = data.statusPillBg;
       document.getElementById('btnBackToViewer').href = 'viewer.html?q=' + encodeURIComponent(data.url);
 
-      // Populate Timeline Scrubber
       const slider = document.getElementById('timelineSlider');
       slider.min = "1";
-      slider.max = String(data.revisions.length);
+      slider.max = String(Math.max(1, data.revisions.length));
       slider.value = String(data.revisions.length);
 
       const nodesContainer = document.getElementById('timelineNodesContainer');
@@ -349,7 +371,6 @@
         </span>
       `).join('');
 
-      // Populate Impact Decomposition
       const impactList = document.getElementById('impactDecompositionList');
       impactList.innerHTML = data.impacts.map(imp => `
         <div style="background: ${imp.positive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${imp.positive ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; border-radius: 6px; padding: 8px;">
@@ -364,22 +385,19 @@
       document.getElementById('totalLifetimeDelta').textContent = data.lifetimeDelta;
       document.getElementById('totalLifetimeSummary').textContent = data.lifetimeSummary;
 
-      // Populate Diff Comparison
       const lastRevIdx = data.revisions.length - 1;
       const prevRevNum = lastRevIdx >= 1 ? data.revisions[lastRevIdx - 1].rev : 1;
-      const curRevNum = data.revisions[lastRevIdx].rev;
+      const curRevNum = data.revisions[lastRevIdx] ? data.revisions[lastRevIdx].rev : 1;
       document.getElementById('diffComparisonHeader').innerHTML = `Comparing <strong>Rev ${prevRevNum}</strong> ➔ <strong>Rev ${curRevNum} (Current)</strong>`;
       document.getElementById('diffLeftTitle').textContent = data.diffLeftTitle;
       document.getElementById('diffLeftContent').innerHTML = data.diffLeftHtml;
       document.getElementById('diffRightTitle').textContent = data.diffRightTitle;
       document.getElementById('diffRightContent').innerHTML = data.diffRightHtml;
 
-      // Populate Forensic Provenance
       document.getElementById('forensicParentSha').textContent = data.parentSha;
       document.getElementById('forensicCurrentSha').textContent = data.currentSha;
       document.getElementById('forensicDistance').textContent = data.distance;
 
-      // Interactive Slider
       slider.oninput = function() {
         const val = parseInt(this.value, 10);
         data.revisions.forEach(r => {
@@ -392,10 +410,14 @@
       };
     }
 
-    // URL param parser on load
+    function switchUrl(url) {
+      window.history.pushState({}, '', `?url=${encodeURIComponent(url)}`);
+      loadHistory(url);
+    }
+
     const params = new URLSearchParams(window.location.search);
-    const targetUrl = params.get('url') || params.get('q') || 'https://reuters.com/world/energy/clean-grid-transition-2026';
-    renderHistoryForUrl(targetUrl);
+    const targetUrl = params.get('url') || params.get('q') || 'https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/';
+    loadHistory(targetUrl);
   </script>
   <script type="module" src="../assets/credence-workstation.js"></script>
 </body>

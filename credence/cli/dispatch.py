@@ -197,6 +197,29 @@ def dispatch_command(args: argparse.Namespace) -> None:
         else:
             code = asyncio.run(run_db_export_pack_command(output_path=args.output or args.file))
         sys.exit(code if isinstance(code, int) else 0)
+    elif args.command == "rfc":
+        from credence.cli.commands.rfc import (
+            run_rfc_benchmark_command,
+            run_rfc_hash_command,
+            run_rfc_list_command,
+            run_rfc_show_command,
+            run_rfc_validate_command,
+            run_rfc_vote_command,
+        )
+
+        if args.action == "show":
+            code = run_rfc_show_command(rfc_id=args.target or "RFC-001")
+        elif args.action == "validate":
+            code = run_rfc_validate_command(yaml_path=args.target)
+        elif args.action == "hash":
+            code = run_rfc_hash_command(yaml_path=args.target)
+        elif args.action == "benchmark":
+            code = run_rfc_benchmark_command(yaml_path=args.target, fixtures_path=args.fixtures)
+        elif args.action == "vote":
+            code = run_rfc_vote_command(rfc_id=args.target or "RFC-001", approve=args.approve)
+        else:
+            code = run_rfc_list_command(tier=args.tier, stage=args.stage)
+        sys.exit(code)
     elif args.command == "subjects":
         console.print(
             "[bold cyan]🧠 Registered Domain Subjects:[/bold cyan] technology, politics, health, finance, science, culture"
