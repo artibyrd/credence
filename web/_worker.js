@@ -56,7 +56,11 @@ export default {
         });
 
         const resHeaders = new Headers(res.headers);
-        const isStaticMedia = subPath.startsWith('/assets/') || subPath.endsWith('.svg') || subPath.endsWith('.png') || subPath.endsWith('.woff2');
+        const isStaticMedia =
+          (subPath.startsWith('/assets/') && !subPath.endsWith('.json')) ||
+          subPath.endsWith('.svg') ||
+          subPath.endsWith('.png') ||
+          subPath.endsWith('.woff2');
         if (isStaticMedia) {
           resHeaders.set('Cache-Control', isDev ? 'public, max-age=300' : 'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400');
         } else {

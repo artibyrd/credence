@@ -9,7 +9,8 @@ sync-version version: (preflight "poetry")
     @poetry version {{version}}
     @sed -i -E 's/__version__ = "[^"]+"/__version__ = "{{version}}"/' credence/__init__.py
     @sed -i -E "s/export const CURRENT_ECOSYSTEM_VERSION = 'v[^']+';/export const CURRENT_ECOSYSTEM_VERSION = 'v{{version}}';/" ../credence-docs/app.js
-    @sed -i -E 's/export const CREDENCE_VERSION = "v[^"]+";/export const CREDENCE_VERSION = "v{{version}}";/' web/assets/credence-workstation.js
+    @sed -i -E "s/export const CREDENCE_VERSION = \"v[^\"]+\";/export const CREDENCE_VERSION = \"v{{version}}\";/" web/assets/credence-workstation.js
+    @sed -i -E "s/version: 'v[^']+'/version: 'v{{version}}'/" ../credence-docs/assets/credence-widget.js web/assets/credence-widget.js
     @find web ../credence-docs -name "*.html" -exec sed -i -E 's/<span class="badge"([^>]*)>v[^<]+<\/span>/<span class="badge"\1>v{{version}}<\/span>/g' {} +
     @sed -i -E 's/v[0-9]+\.[0-9]+\.[0-9]+ Stable/v{{version}} Stable/' web/credence.run/index.html
     @sed -i -E 's/"version": "[^"]+"/"version": "{{version}}"/' ../credence-agent/plugin.json

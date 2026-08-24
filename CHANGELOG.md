@@ -11,6 +11,18 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.14.1] - 2026-08-23
+
+### Fixed
+- **Dynamic Manifest Cache-Busting & Zero-Cache Invariant (`web/_worker.js` & `app.js`)**:
+  - Excluded `.json` dynamic manifest files (`attestations.json`, `reports.json`, `genesis_attestations.json`) from Cloudflare Edge 7-day static media caching headers, guaranteeing strict `Cache-Control: no-cache, no-store, must-revalidate`.
+  - Added cache-busting query parameter (`?v=${CURRENT_ECOSYSTEM_VERSION}`) and `{ cache: 'no-cache' }` to `fetch('assets/attestations.json')` in `app.js`, eliminating stale browser disk cache reuse for attested badges across release cycles.
+  - Updated fallback default state and automated widget synchronization in `just sync-version`.
+
+### Changed
+- **Inline Multi-Repo / Loop Command Prohibition (`inv-clean-scratch-scripts`)**: Explicitly banned inline multiline shell loops (`for r in ...`) when requesting user approval (`BypassSandbox: true`), mandating standalone brain scratch scripts or pre-approved `just` recipes to preserve Mk1 approval legibility.
+- **Codified CLI 3-Tier Subpackage Modularity Pattern**: Documented modular subpackage pattern (`helpers.py`, `dispatch.py`, `main.py`) in architecture governance skill to enforce the 500 LOC Ceiling Law permanently.
+
 ## [2.14.0] - 2026-08-23
 
 ### Added
