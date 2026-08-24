@@ -122,7 +122,34 @@ def audit_single_doc(
     if not fm.get("description"):
         issues.append("Missing required 'description' in frontmatter.")
 
-    # 3. Calculate metrics
+    # 3. Minimum Meaningful Documentation Length Gate
+    rel_str = str(file_path)
+    min_len = 0
+    if "/blog/" in rel_str:
+        min_len = 600
+    elif "/docs/protocols/" in rel_str or "/docs/blueprints/" in rel_str:
+        min_len = 700
+    elif any(
+        d in rel_str
+        for d in [
+            "/docs/operations/",
+            "/docs/tutorials/",
+            "/docs/walkthroughs/",
+            "/docs/security/",
+            "/docs/mathematics/",
+            "/docs/mesh-engineering/",
+        ]
+    ):
+        min_len = 500
+    elif "/docs/" in rel_str:
+        min_len = 450
+
+    if min_len > 0:
+        words = re.findall(r"\b\w+\b", body)
+        if len(words) < min_len:
+            issues.append(f"Under-length document: {len(words)} words (minimum {min_len} required).")
+
+    # 4. Calculate metrics
     content_sha = compute_content_sha256(body)
     simhash = compute_simhash(body)
 

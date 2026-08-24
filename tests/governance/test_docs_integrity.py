@@ -1965,3 +1965,107 @@ def test_zero_hardcoded_invariant_counts_in_docs(docs_root: Path) -> None:
                 violations.append(f"{f.name}: '{match.group(0)}'")
 
     assert not violations, f"Hardcoded invariant counts found (must use 'The Invariant Bible'): {violations}"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_docs_minimum_meaningful_length(docs_root: Path) -> None:
+    """Gate 6: Enforce minimum meaningful documentation length across all documentation archetypes."""
+    thresholds = {
+        "blog": 600,
+        "docs/protocols": 700,
+        "docs/blueprints": 700,
+        "docs/operations": 500,
+        "docs/tutorials": 500,
+        "docs/walkthroughs": 500,
+        "docs/security": 500,
+        "docs/mathematics": 500,
+        "docs/mesh-engineering": 500,
+        "docs/cookbooks": 450,
+        "docs/integrations": 450,
+        "docs/agentic": 450,
+        "docs/portability": 450,
+        "docs": 450,
+    }
+
+    violations = []
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    for md_file in md_files:
+        rel_path = str(md_file.relative_to(docs_root))
+        min_words = 450
+        for prefix, limit in thresholds.items():
+            if rel_path.startswith(prefix):
+                min_words = limit
+                break
+
+        content = md_file.read_text(encoding="utf-8")
+        body = content
+        if content.startswith("---"):
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                body = parts[2]
+
+        words = re.findall(r"\b\w+\b", body)
+        if len(words) < min_words:
+            violations.append(f"{rel_path}: {len(words)} words (minimum {min_words} required)")
+
+    assert not violations, "Under-length documentation files found:\n" + "\n".join(violations)
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_zero_empty_or_sparse_sections(docs_root: Path) -> None:
+    """Gate 7: Assert zero empty or sparse sections across all documentation files."""
+    header_pattern = re.compile(r"^(#{1,6})\s+(.+)$")
+    violations = []
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    for md_file in md_files:
+        if md_file.name == "changelog.md":
+            continue
+
+        content = md_file.read_text(encoding="utf-8")
+        body = content
+        if content.startswith("---"):
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                body = parts[2]
+
+        sections = []
+        current_header = None
+        current_level = 0
+        current_lines = []
+        in_code_fence = False
+
+        for line in body.splitlines():
+            if line.strip().startswith("```"):
+                in_code_fence = not in_code_fence
+                current_lines.append(line)
+                continue
+
+            if in_code_fence:
+                current_lines.append(line)
+                continue
+
+            match = header_pattern.match(line)
+            if match:
+                if current_header is not None:
+                    sections.append((current_header, current_level, current_lines))
+                current_header = match.group(2).strip()
+                current_level = len(match.group(1))
+                current_lines = []
+            else:
+                current_lines.append(line)
+
+        if current_header is not None:
+            sections.append((current_header, current_level, current_lines))
+
+        for i, (header, level, sec_lines) in enumerate(sections):
+            clean_text = "\n".join(
+                [ln for ln in sec_lines if not ln.strip().startswith("<!--") and not ln.strip().startswith("-->")]
+            )
+            clean_words = re.findall(r"\b\w+\b", clean_text)
+            has_subsections = i + 1 < len(sections) and sections[i + 1][1] > level
+            if len(clean_words) == 0 and not has_subsections:
+                violations.append(f"{md_file.name}: Empty leaf section '{header}'")
+
+    assert not violations, "Empty leaf sections found in documentation:\n" + "\n".join(violations)
