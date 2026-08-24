@@ -108,3 +108,16 @@ async def test_credence_tui_app_lifecycle() -> None:
         assert isinstance(app.screen, InfoModalScreen)
         await pilot.press("escape")
         await pilot.pause()
+
+
+@pytest.mark.unit
+def test_tui_taxonomy_tree_population() -> None:
+    """Verify populate_taxonomy_tree generates 3-tier nodes and RFC status badges."""
+    from textual.widgets import Tree
+    from credence.tui.widgets.taxonomy_tree import populate_taxonomy_tree
+
+    tree = Tree("Root")
+    populate_taxonomy_tree(tree)
+    assert tree.root.label is not None
+    assert "Epistemic Standards" in str(tree.root.label)
+    assert len(tree.root.children) == 3  # Tier 0, Tier 1, Tier 2

@@ -141,17 +141,17 @@ def test_local_production_deploy_safety_gate() -> None:
     """Verify that local production deployments are strictly gated with warning banners and confirmation prompts."""
     credence_root = Path(__file__).resolve().parents[2]
     justfile_path = credence_root / "Justfile"
-    deploy_just_path = credence_root / "just" / "deploy.just"
+    cloud_just_path = credence_root / "just" / "cloud.just"
     assert justfile_path.exists(), f"Justfile not found at {justfile_path}"
 
     justfile_content = justfile_path.read_text(encoding="utf-8")
-    if deploy_just_path.exists():
-        justfile_content += "\n" + deploy_just_path.read_text(encoding="utf-8")
+    if cloud_just_path.exists():
+        justfile_content += "\n" + cloud_just_path.read_text(encoding="utf-8")
 
-    assert "PRODUCTION DEPLOYMENT WARNING (LOCAL OVERRIDE)" in justfile_content
-    assert "DEPLOY-PROD" in justfile_content
-    assert "FORCE_PROD_DEPLOY" in justfile_content
-    assert "CLOUDFLARE EDGE PRODUCTION DEPLOYMENT WARNING" in justfile_content
+    assert "cloud-deploy-prod" in justfile_content
+    assert "confirm('⚠️ Are you sure you want to execute a LOCAL PRODUCTION deployment to Cloud Run?')" in justfile_content
+    assert "alias deploy-prod := cloud-deploy-prod" in justfile_content
+    assert "Commit-Before-Deploy invariant" in justfile_content
 
 
 @pytest.mark.integration

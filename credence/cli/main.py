@@ -246,6 +246,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_dig = subparsers.add_parser("digest", help="Generate or display Morning Epistemic Digest")
     p_dig.add_argument("--hours", type=int, default=24, help="Historical window in hours")
 
+    # rfc
+    p_rfc = subparsers.add_parser("rfc", help="Manage standards RFC proposals, synthetic benchmarks, and votes")
+    p_rfc.add_argument(
+        "action",
+        default="list",
+        nargs="?",
+        choices=["list", "show", "validate", "benchmark", "shadow", "hash", "vote"],
+        help="RFC action",
+    )
+    p_rfc.add_argument("target", nargs="?", default="", help="RFC ID or YAML file path")
+    p_rfc.add_argument("--tier", choices=["general", "specialist", "niche"], help="Standard tier filter")
+    p_rfc.add_argument("--stage", help="RFC lifecycle stage filter")
+    p_rfc.add_argument("--fixtures", help="Path to synthetic benchmark fixtures JSON")
+    p_rfc.add_argument("--approve", action="store_true", default=True, help="Vote approval")
+    p_rfc.add_argument("--reject", action="store_false", dest="approve", help="Vote rejection")
+
     # subjects
     p_sub = subparsers.add_parser("subjects", help="List registered domain subjects")
     p_sub.add_argument("action", default="list", nargs="?", choices=["list", "tree", "inspect"])

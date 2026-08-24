@@ -432,9 +432,34 @@ def _register_report_resources(server: MCPServer) -> None:
             return json.dumps(trajectory.model_dump(mode="json"), indent=2)
 
 
+def _register_governance_resources(server: MCPServer) -> None:
+    """Register RFC standards governance resources."""
+
+    @server.resource("credence://governance/rfcs")
+    async def get_rfcs_resource() -> str:
+        from credence.pipeline.rfc import rfc_registry
+
+        proposals = rfc_registry.list_proposals()
+        return json.dumps([p.model_dump(mode="json") for p in proposals], indent=2)
+
+    @server.resource("credence://governance/rfcs/{rfc_id}")
+    async def get_rfc_detail_resource(rfc_id: str) -> str:
+        from credence.pipeline.rfc import rfc_registry
+
+        clean_id = rfc_id.strip().upper()
+        proposal = rfc_registry.get_proposal(clean_id)
+        if not proposal:
+            return json.dumps({"error": f"RFC '{clean_id}' not found."}, indent=2)
+        votes = rfc_registry.get_votes(clean_id)
+        data = proposal.model_dump(mode="json")
+        data["votes"] = [v.model_dump(mode="json") for v in votes]
+        return json.dumps(data, indent=2)
+
+
 def _register_subject_resources(server: MCPServer) -> None:
-    """Register subject catalog, feeds, domains, and report resources via decoupled dispatchers."""
+    """Register subject catalog, feeds, domains, governance, and report resources."""
     _register_subject_core_resources(server)
     _register_feed_and_root_resources(server)
     _register_domain_resources(server)
     _register_report_resources(server)
+    _register_governance_resources(server)
