@@ -59,7 +59,7 @@ This skill enforces the **3-Tier Invariant Scalability Architecture** across fiv
   7. Open Graph card assets (`og-card.svg` and `og-card.png`)
 - **Dynamic Self-Auditing & Attestation Engine**: `just sync-version <version>` automatically triggers `@poetry run credence audit-docs --update`, dynamically deriving `__version__` from package metadata and minting Ed25519 cryptographic signatures in `credence-docs/assets/attestations.json`.
 
-### 6. The 7 Shift-Left Automated Integrity Test Gates (`tests/governance/test_docs_integrity.py`)
+### 6. The 8 Shift-Left Automated Integrity Test Gates (`tests/governance/test_docs_integrity.py`)
 - **Gate 1 (`test_docs_attestation_and_manifest_version_parity`)**: Verifies 100% version synchronization and Ed25519 signature validity.
 - **Gate 2 (`test_all_registered_playgrounds_have_active_dom_mounts`)**: Verifies all registered playgrounds have DOM mount handlers.
 - **Gate 3 (`test_docs_cli_commands_and_flags_validity`)**: Statically verifies that all documented CLI subcommands exist in the parser.
@@ -67,6 +67,7 @@ This skill enforces the **3-Tier Invariant Scalability Architecture** across fiv
 - **Gate 5 (`test_zero_hardcoded_invariant_counts_in_docs`)**: Prohibits hardcoded invariant counts, enforcing "The Invariant Bible".
 - **Gate 6 (`test_docs_minimum_meaningful_length`)**: Enforces minimum word count thresholds per archetype (Blogs $\ge 600$, Protocols/Blueprints $\ge 700$, Operations/Tutorials $\ge 500$, Cookbooks $\ge 450$).
 - **Gate 7 (`test_zero_empty_or_sparse_sections`)**: Prevents unpopulated headings, empty sections, or placeholder text across all documentation.
+- **Gate 8 (`test_zero_pseudo_box_art_and_dashed_boundaries_invariant`)**: Asserts 100% eradication of dashed borders, loose pipe pseudo-boxes, bare arrows, and unformatted ALL CAPS headers across all documentation files.
 
 ### 7. Prioritized Cognitive Taxonomy & Invariant Lifecycle Audit
 - Asserts that all 4 `AGENTS.md` files categorize Tier 0 invariants under the **Class α (Sovereign Safety)**, **Class β (Execution Topology)**, and **Class γ (Interface Symmetry)** headers.
@@ -76,7 +77,7 @@ This skill enforces the **3-Tier Invariant Scalability Architecture** across fiv
 ### 8. Vector SVG Illustration & Anti-Box-Art Integrity Audit
 - **Zero ASCII Box Art Rule**: Prohibits both unicode box drawing (`┌`, `╔`) and ASCII boundary sequences (`+---+`, `+===+`, `+--`, `--►`). Code blocks and essays must use structured GitHub-Flavored Markdown tables, alerts, or vector SVGs.
 - **Vector SVG Integrity**: Requires dark-theme tokens (`#090d16`, `#050810`, `#1e293b`), explicit `viewBox`, descriptive non-generic figcaptions, and 100% SHA-256 checksum parity between `credence-docs` and `credence/web` (`test_ecosystem_illustration_checksum_parity`).
-- **Mk1 Eyeball Human Verification Rigor**: Release walkthroughs must include direct, clickable live Dev preview URLs (`https://dev.credence.run/...`) highlighting specific visual elements to inspect before release sign-off.
+- **Pre-Walkthrough Live HTTP Probe Gate**: Release walkthroughs must never be presented before verifying that GitHub Actions deployment has finished (`deploy-dev.yml`) and probing live Dev URLs directly via `curl -sI <url>` to assert `HTTP/2 200` with the updated asset content.
 
 ### 9. Decoupled Subdomain Routing & Cross-Plane Navigation Audit
 - **Domain Identity Separation**: Enforces strict domain partitioning:
