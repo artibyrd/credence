@@ -68,7 +68,7 @@
     
     <!-- Version Badge -->
     <rect x="300" y="15" width="86" height="28" rx="14" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="1"/>
-    <text x="343" y="34" font-family="ui-monospace, monospace" font-size="13" font-weight="700" fill="#38bdf8" text-anchor="middle">v2.14.0</text>
+    <text x="343" y="34" font-family="ui-monospace, monospace" font-size="13" font-weight="700" fill="#38bdf8" text-anchor="middle">v2.14.1</text>
   </g>
 
   <!-- URL Top Right -->
