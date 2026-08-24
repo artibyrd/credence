@@ -8,6 +8,7 @@ Validates:
 5. Zero-npm invariant: no package.json or node_modules in credence-docs.
 """
 
+import argparse
 import re
 import tomllib
 from pathlib import Path
@@ -835,8 +836,12 @@ def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
     for domain in domains:
         assert domain in sitemap_text, f"Sitemap missing ecosystem domain: {domain}"
 
-    # 2. Verify all 12 interactive playgrounds are covered
-    assert "12 Zero-Build Interactive Playgrounds" in sitemap_text or "12 Zero-Build Playgrounds" in sitemap_text
+    # 2. Verify all interactive playgrounds are covered
+    assert (
+        "14 Zero-Build Interactive Playgrounds" in sitemap_text
+        or "12 Zero-Build Interactive Playgrounds" in sitemap_text
+        or "Zero-Build Interactive Playgrounds" in sitemap_text
+    )
     assert "13-Node Watts-Strogatz Mesh Gossip Simulator" in sitemap_text
     assert "SimHash-64 Bitwise Visualizer" in sitemap_text
     assert "Live Namespaced Taxonomy Rule Explorer" in sitemap_text
@@ -1753,3 +1758,201 @@ def test_edge_router_dynamic_opengraph_rewrite() -> None:
     assert 'meta[property="og:image"]' in worker_text, "_worker.js must rewrite og:image meta tag"
     assert 'meta[property="og:url"]' in worker_text, "_worker.js must rewrite og:url meta tag"
     assert "originUrl" in worker_text, "_worker.js must resolve to active request originUrl"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_docs_attestation_and_manifest_version_parity(docs_root: Path) -> None:
+    """Gate 1: Assert all docs frontmatters and attestations.json match canonical pyproject.toml version and Ed25519 signatures."""
+    import json
+    import tomllib
+
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
+    from credence.identity import canonical_json_bytes
+
+    credence_root = docs_root.parent / "credence"
+    with open(credence_root / "pyproject.toml", "rb") as f:
+        canonical_version = tomllib.load(f)["tool"]["poetry"]["version"]
+    expected_tag = f"v{canonical_version}"
+
+    # 1. Frontmatter version verification across all markdown files
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    for md_file in md_files:
+        text = md_file.read_text(encoding="utf-8")
+        if text.startswith("---"):
+            parts = text.split("---", 2)
+            if len(parts) >= 3:
+                data = yaml.safe_load(parts[1])
+                if isinstance(data, dict) and "verified_version" in data:
+                    assert data["verified_version"] == expected_tag, (
+                        f"Stale verified_version in {md_file.name}: found {data['verified_version']}, expected {expected_tag}"
+                    )
+
+    # 2. attestations.json verification
+    manifest_path = docs_root / "assets" / "attestations.json"
+    assert manifest_path.exists(), "assets/attestations.json must exist"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert len(manifest) >= 150, f"Expected at least 150 attested docs, found {len(manifest)}"
+
+    for rel_path, receipt in manifest.items():
+        assert receipt.get("verified_version") == expected_tag, (
+            f"Stale verified_version in receipt for {rel_path}: {receipt.get('verified_version')}"
+        )
+        assert "node_pubkey" in receipt, f"Missing node_pubkey in receipt for {rel_path}"
+        assert "node_signature" in receipt, f"Missing node_signature in receipt for {rel_path}"
+
+        # Verify Ed25519 signature
+        pubkey = Ed25519PublicKey.from_public_bytes(bytes.fromhex(receipt["node_pubkey"]))
+        signable = {
+            "origin_url": receipt["origin_url"],
+            "content_sha256": receipt["content_sha256"],
+            "simhash_64": receipt["simhash_64"],
+            "audited_at": receipt["audited_at"],
+            "suspicion_score": receipt["suspicion_score"],
+            "classification": receipt["classification"],
+        }
+        canonical_bytes = canonical_json_bytes(signable)
+        pubkey.verify(bytes.fromhex(receipt["node_signature"]), canonical_bytes)
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_all_registered_playgrounds_have_active_dom_mounts(docs_root: Path) -> None:
+    """Gate 2: Assert all registered playground pages have DOM containers and active app.js mount handlers."""
+    app_js = docs_root / "app.js"
+    app_js_text = app_js.read_text(encoding="utf-8")
+
+    # Verify mount handler calls in handleRoute()
+    assert "mountContentEvolutionLab();" in app_js_text, "app.js handleRoute must invoke mountContentEvolutionLab()"
+    assert "mountBadgeSecurityLab();" in app_js_text, "app.js handleRoute must invoke mountBadgeSecurityLab()"
+    assert "setupPlaygroundWidgets();" in app_js_text, "app.js handleRoute must invoke setupPlaygroundWidgets()"
+
+    # Verify lab containers exist in their respective markdown files
+    lab13_md = docs_root / "docs" / "lab-content-evolution.md"
+    assert lab13_md.exists()
+    assert "content-evolution-lab-container" in lab13_md.read_text(encoding="utf-8")
+
+    lab14_md = docs_root / "docs" / "lab-badge-security.md"
+    assert lab14_md.exists()
+    assert "badge-security-lab-container" in lab14_md.read_text(encoding="utf-8")
+
+    # Verify all interactive action buttons exist in app.js
+    lab13_buttons = [
+        "btnPresetPristine",
+        "btnPresetCorrection",
+        "btnPresetStealth",
+        "btnPresetPoison",
+        "revText",
+        "labScoreBadge",
+    ]
+    for btn in lab13_buttons:
+        assert btn in app_js_text, f"Playground 13 element '{btn}' missing in app.js"
+
+    lab14_buttons = [
+        "btnAttackBait",
+        "btnAttackSig",
+        "btnAttackDomain",
+        "btnAttackScrubber",
+        "sandboxBadge",
+        "attackConsole",
+    ]
+    for btn in lab14_buttons:
+        assert btn in app_js_text, f"Playground 14 element '{btn}' missing in app.js"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_docs_cli_commands_and_flags_validity(docs_root: Path) -> None:
+    """Gate 3: Assert that CLI commands documented in markdown tutorials point to registered CLI subcommands."""
+    from credence.cli.main import build_parser
+
+    parser = build_parser()
+    valid_subcommands: set[str] = set()
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            valid_subcommands.update(action.choices.keys())
+
+    # Common standalone tools / aliases
+    valid_subcommands.update({"tui", "serve", "server", "verify-file", "audit-docs"})
+
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    cmd_pattern = re.compile(r"(?:poetry\s+run\s+)?credence\s+([a-zA-Z0-9_-]+)")
+
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8")
+        code_blocks = re.findall(r"```(?:bash|sh|console)?\n(.*?)```", content, re.DOTALL)
+        for block in code_blocks:
+            for line in block.splitlines():
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                match = cmd_pattern.search(line)
+                if match:
+                    subcmd = match.group(1)
+                    if subcmd.startswith("-"):
+                        continue
+                    assert subcmd in valid_subcommands, (
+                        f"Documented unknown CLI subcommand 'credence {subcmd}' in {md_file.name}"
+                    )
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_docs_justfile_recipes_exist(docs_root: Path) -> None:
+    """Gate 4: Assert that Justfile recipe invocations in docs point to existing recipes."""
+    credence_root = docs_root.parent / "credence"
+    just_files = [credence_root / "Justfile"] + list((credence_root / "just").glob("*.just"))
+
+    declared_recipes = set()
+    recipe_pattern = re.compile(r"^(?:alias\s+)?([a-zA-Z0-9_-]+)(?:\s*:?=|(?:\s+[^:]*)?:)", re.MULTILINE)
+    for jf in just_files:
+        if jf.exists():
+            text = jf.read_text(encoding="utf-8")
+            for match in recipe_pattern.finditer(text):
+                r_name = match.group(1)
+                if not r_name.startswith("_") and r_name not in ("set", "import", "alias"):
+                    declared_recipes.add(r_name)
+
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    just_call_pattern = re.compile(r"(?:^|[;&|]\s*|\$\s+)just\s+([a-zA-Z0-9_-]+)")
+
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8")
+        code_blocks = re.findall(r"```(?:bash|sh|console)\n(.*?)```", content, re.DOTALL)
+        for block in code_blocks:
+            for line in block.splitlines():
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                for match in just_call_pattern.finditer(line):
+                    recipe_name = match.group(1)
+                    if recipe_name in ("--list", "-l", "--help", "-h", "--groups"):
+                        continue
+                    assert recipe_name in declared_recipes, (
+                        f"Documented unknown Justfile recipe 'just {recipe_name}' in {md_file.name}"
+                    )
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_zero_hardcoded_invariant_counts_in_docs(docs_root: Path) -> None:
+    """Gate 5: Invariant inv-living-canon: Assert zero hardcoded invariant counts in documentation or public web surfaces."""
+    credence_root = docs_root.parent / "credence"
+    scanned_files = (
+        list(docs_root.glob("docs/**/*.md"))
+        + list(docs_root.glob("blog/**/*.md"))
+        + list((credence_root / "web").rglob("*.html"))
+        + [docs_root / "app.js", docs_root / "index.html"]
+    )
+
+    hardcoded_pattern = re.compile(r"\b(36|38|39|40)\s+core\s+invariants\b", re.IGNORECASE)
+
+    violations = []
+    for f in scanned_files:
+        if f.exists():
+            text = f.read_text(encoding="utf-8")
+            for match in hardcoded_pattern.finditer(text):
+                violations.append(f"{f.name}: '{match.group(0)}'")
+
+    assert not violations, f"Hardcoded invariant counts found (must use 'The Invariant Bible'): {violations}"

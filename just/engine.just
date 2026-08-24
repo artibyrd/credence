@@ -48,6 +48,16 @@ serve transport="sse" port="8000" sifter="false": (preflight "poetry")
             ;;
     esac
 
+# Launch server with background feed sifter daemon
+[group('core: engine')]
+serve-sifter port="8000": (preflight "poetry")
+    poetry run credence serve --transport sse --port {{port}} --sifter
+
+alias sifter-once := sifter-run
+alias seed-reports := sifter-bootstrap
+alias export-catalog := sifter-export
+alias serve-web := preview
+
 # Preview all zero-build multi-domain web workstations locally for browser inspection
 [group('core: engine')]
 preview port="8080":
@@ -181,11 +191,15 @@ mesh-up nodes="13": (preflight "poetry") (preflight "docker")
     @echo -e "\033[1;32m🌐 13-Node Watts-Strogatz Mesh Cluster is UP.\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: View cluster state with 'just mesh-status' or stream logs with 'just mesh-logs'.\033[0m"
 
+alias mesh-cluster-up := mesh-up
+
 # Tear down local P2P mesh cluster simulation
 [group('core: cluster')]
 mesh-down: (preflight "docker")
     docker compose -f docker-compose.mesh.yml down -v
     @echo -e "\033[1;32m🛑 Mesh cluster torn down.\033[0m"
+
+alias mesh-cluster-down := mesh-down
 
 # View P2P mesh cluster container status
 [group('core: cluster')]
@@ -229,3 +243,8 @@ ignite burst="3":
     @just doctor
     @echo -e "\033[1;32m🌱 Credence Node Ignited & Ready for Operations!\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: Run 'just dev' to launch the dual-plane stack on http://localhost:8000 and http://localhost:8080.\033[0m"
+
+# Run bicameral experimentation and shadow audit suites
+[group('core: engine')]
+experiment task="shadow-audit" *args="": (preflight "poetry")
+    poetry run python -m credence.experiments.{{replace(task, "-", "_")}} {{args}}

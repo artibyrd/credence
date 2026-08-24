@@ -11,6 +11,26 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.14.0] - 2026-08-23
+
+### Added
+- **Restored Interactive Playground 13 (Content Evolution Lab)**: Live in-browser text modification simulator tracking token drift, SimHash-64 Hamming distance ($d_H \ge 4$), and real-time score velocity ($\Delta S$) across editorial revisions.
+- **Restored Interactive Playground 14 (Adversarial Badge Lab)**: "Break the Badge" zero-build sandbox testing in-browser WebCrypto DOM text hashing (`crypto.subtle.digest("SHA-256")`), Ed25519 RFC 8785 signature verification, cross-domain replay rejection, and 150-char scrubber limit camouflage defenses.
+- **5 Shift-Left Automated Integrity Test Gates (`tests/governance/test_docs_integrity.py`)**:
+  1. `test_docs_attestation_and_manifest_version_parity`: Asserts all docs frontmatter and `attestations.json` match canonical `pyproject.toml` version with valid Ed25519 signatures.
+  2. `test_all_registered_playgrounds_have_active_dom_mounts`: Asserts all interactive playgrounds have real DOM containers and active `app.js` mount hooks.
+  3. `test_docs_cli_commands_and_flags_validity`: Validates all CLI commands and options in documentation against the active `credence` argparse tree.
+  4. `test_docs_justfile_recipes_exist`: Asserts all `just <recipe>` calls in documentation point to valid modular Justfile recipes.
+  5. `test_zero_hardcoded_invariant_counts_in_docs`: Enforces dynamic Living Canon naming ("The Invariant Bible") with zero hardcoded numbers.
+- **Dynamic Docs Self-Auditing & Attestation Automation**: Integrated `credence audit-docs --update` directly into `just sync-version`, ensuring every subsequent release automatically audits, timestamps, and cryptographically signs the entire documentation catalog.
+
+### Fixed
+- **Playground Route Mounting in `app.js`**: Connected `mountContentEvolutionLab()` and `mountBadgeSecurityLab()` inside `handleRoute()`, resolving blank container rendering on `#docs/lab-content-evolution` and `#docs/lab-badge-security`.
+- **Dynamic Version Resolution in `docs_audit.py`**: Replaced static `CURRENT_VERSION = "v2.1.1"` with dynamic import of `credence.__version__`.
+- **Ecosystem-Wide Attestation Refresh**: Re-evaluated, re-scored, and signed all 188+ documentation and blog articles with Ed25519 receipts at `v2.14.0`.
+
+---
+
 ## [2.11.1] - 2026-08-23
 
 ### Continuous Learning Patch: Plain-English Copy, Edge HTMLRewriter & Callout Parser Governance
