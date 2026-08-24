@@ -2076,3 +2076,58 @@ def test_zero_empty_or_sparse_sections(docs_root: Path) -> None:
                 violations.append(f"{md_file.name}: Empty leaf section '{header}'")
 
     assert not violations, "Empty leaf sections found in documentation:\n" + "\n".join(violations)
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_zero_pseudo_box_art_and_dashed_boundaries_invariant(docs_root: Path) -> None:
+    """Gate 8: Assert zero pseudo-box art, dashed borders, loose pipe connectors, bare arrows, or unformatted ALL CAPS headers in prose."""
+    violations = []
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+
+    dashed_border_pat = re.compile(r"^\-{5,}\s+\-{5,}")
+    loose_arrow_pat = re.compile(r"^(▼|▲|◄--|--►)")
+    all_caps_pat = re.compile(r"^[A-Z\s]{10,}$")
+
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8")
+        body = content
+        if content.startswith("---"):
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                body = parts[2]
+
+        in_code_block = False
+        for line_no, line in enumerate(body.splitlines(), start=1):
+            line_s = line.strip()
+            if line_s.startswith("```"):
+                in_code_block = not in_code_block
+                continue
+            if in_code_block:
+                continue
+
+            # Allow proper markdown table lines
+            if line_s.startswith("|") and line_s.endswith("|"):
+                continue
+
+            # Disallow dashed pseudo-box lines
+            if dashed_border_pat.match(line_s) or line_s.startswith("----------------------------------------+"):
+                violations.append(f"{md_file.name}:{line_no} -> Dashed pseudo-box boundary: {line_s}")
+
+            # Disallow loose box art pipes
+            if "|" in line_s and not line_s.startswith("<!--") and not (line_s.startswith("$") and line_s.endswith("$")):
+                if re.search(r"\|\s*•|\|\s*🚀|\|\s*🛡️|\|\s*✅|\|\s*❌", line_s):
+                    violations.append(f"{md_file.name}:{line_no} -> Pseudo-box pipe line: {line_s}")
+                elif line_s.startswith("- ") and "|" in line_s and "•" in line_s:
+                    violations.append(f"{md_file.name}:{line_no} -> Pseudo-table pipe line: {line_s}")
+
+            # Disallow bare arrow lines in prose
+            if loose_arrow_pat.match(line_s):
+                violations.append(f"{md_file.name}:{line_no} -> Bare arrow line in prose: {line_s}")
+
+            # Disallow unformatted ALL CAPS headers
+            if all_caps_pat.match(line_s) and not line_s.startswith("#"):
+                violations.append(f"{md_file.name}:{line_no} -> Unformatted ALL CAPS title: {line_s}")
+
+    assert not violations, "Pseudo-box art, dashed borders, or loose arrows found in documentation:\n" + "\n".join(violations)
+
