@@ -106,9 +106,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--host", default="0.0.0.0", help="Server bind host")  # noqa: S104
     p_serve.add_argument("--name", "--alias", dest="name", default=None, help="Authoritative node alias / server name")
 
-    # quota (aliases: cost, profile)
+    # quota (aliases: cost, profile, governor)
     p_quota = subparsers.add_parser(
-        "quota", aliases=["cost", "profile"], help="Token headroom, cost governance, spend status"
+        "quota", aliases=["cost", "profile", "governor"], help="Token headroom, cost governance, spend status"
     )
     p_quota.add_argument(
         "action", default="status", nargs="?", choices=["status", "stop", "resume", "optimize", "list"]
@@ -117,7 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_quota.add_argument("--apply", action="store_true", help="Apply cost optimization")
 
     # db
-    p_db = subparsers.add_parser("db", help="Database backup, recovery, and migration operations")
+    p_db = subparsers.add_parser("db", aliases=["backup"], help="Database backup, recovery, and migration operations")
     p_db.add_argument(
         "action",
         default="status",
@@ -218,6 +218,19 @@ def build_parser() -> argparse.ArgumentParser:
     # stats
     p_stats = subparsers.add_parser("stats", help="Display local node and P2P mesh telemetry")
     p_stats.add_argument("--mesh", action="store_true", help="Display whole-mesh topology")
+
+    # domain
+    p_dom = subparsers.add_parser("domain", help="Inspect domain intelligence, reputation, and quarantine status")
+    p_dom.add_argument(
+        "action",
+        default="status",
+        nargs="?",
+        choices=["intel", "status", "history", "entropy", "quarantine", "probe", "appeal", "blacklist"],
+        help="Domain action",
+    )
+    p_dom.add_argument("domain", nargs="?", help="Domain FQDN")
+    p_dom.add_argument("--window", help="Historical window")
+    p_dom.add_argument("--probation", action="store_true", help="Include probation status")
 
     # benchmark
     subparsers.add_parser("benchmark", help="Run epistemic benchmark evaluation")

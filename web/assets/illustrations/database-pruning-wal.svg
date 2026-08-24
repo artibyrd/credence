@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+    <marker id="arrow-sky" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+  </defs>
+
+  <rect width="880" height="380" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">STORAGE ENGINE CONCURRENCY</text>
+  <text x="32" y="56" fill="#f8fafc" font-size="16" font-family="system-ui, sans-serif" font-weight="bold">SQLITE WRITE-AHEAD LOGGING (WAL) &amp; PRUNING LIFECYCLE</text>
+
+  <!-- Left: Inbound Writers -->
+  <rect x="32" y="80" width="240" height="260" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="32" y="80" width="240" height="28" rx="10" fill="rgba(56, 189, 248, 0.15)" />
+  <text x="48" y="99" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold">✍️ INBOUND WRITERS</text>
+  <text x="48" y="130" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">High-Concurrency Sifting</text>
+  <text x="48" y="152" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Sifter discovery jobs</text>
+  <text x="48" y="172" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Peer gossip attestations</text>
+  <text x="48" y="192" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• DOM snapshot hashing</text>
+  <rect x="44" y="220" width="216" height="96" rx="6" fill="#1e293b" />
+  <text x="56" y="244" fill="#38bdf8" font-size="10.5" font-family="monospace">Appends to WAL</text>
+  <text x="56" y="264" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Zero lock contention on active database file</text>
+
+  <!-- Middle: WAL Log Buffer -->
+  <rect x="320" y="80" width="240" height="260" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="320" y="80" width="240" height="28" rx="10" fill="rgba(34, 197, 94, 0.15)" />
+  <text x="336" y="99" fill="#22c55e" font-size="11" font-family="monospace" font-weight="bold">⚡ WAL LOG (`credence.db-wal`)</text>
+  <text x="336" y="130" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Atomic Page Buffer</text>
+  <text x="336" y="152" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Sub-millisecond append</text>
+  <text x="336" y="172" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Passive checkpointing</text>
+  <text x="336" y="192" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Weekly TRUNCATE flush</text>
+  <rect x="332" y="220" width="216" height="96" rx="6" fill="#1e293b" />
+  <text x="344" y="244" fill="#22c55e" font-size="10.5" font-family="monospace">PRAGMA journal_mode=WAL;</text>
+  <text x="344" y="264" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">PRAGMA synchronous=NORMAL;</text>
+
+  <!-- Right: Concurrent Readers -->
+  <rect x="608" y="80" width="240" height="260" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="608" y="80" width="240" height="28" rx="10" fill="rgba(56, 189, 248, 0.15)" />
+  <text x="624" y="99" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold">📖 CONCURRENT READERS</text>
+  <text x="624" y="130" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Zero-Blocking Read Access</text>
+  <text x="624" y="152" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• FastMCP 2.0 tool calls</text>
+  <text x="624" y="172" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Zero-build Web UI badges</text>
+  <text x="624" y="192" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Textual TUI workstation</text>
+  <rect x="620" y="220" width="216" height="96" rx="6" fill="#1e293b" />
+  <text x="632" y="244" fill="#38bdf8" font-size="10.5" font-family="monospace">Main DB: `credence.db`</text>
+  <text x="632" y="264" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Sub-0.1ms read latency</text>
+
+  <!-- Flow Arrows -->
+  <line x1="272" y1="200" x2="316" y2="200" stroke="#38bdf8" stroke-width="2.0" marker-end="url(#arrow-sky)" />
+  <line x1="560" y1="200" x2="604" y2="200" stroke="#22c55e" stroke-width="2.0" marker-end="url(#arrow-emerald)" />
+</svg>

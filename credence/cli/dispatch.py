@@ -166,6 +166,10 @@ def dispatch_command(args: argparse.Namespace) -> None:
         cli_init_org(name=args.name, domain=args.domain, cloud=args.cloud, output_dir=args.output)
     elif args.command == "stats":
         cli_stats(mesh=args.mesh)
+    elif args.command == "domain":
+        from credence.cli.helpers import cli_domain
+
+        asyncio.run(cli_domain(action=args.action, domain=args.domain))
     elif args.command == "benchmark":
         asyncio.run(cli_benchmark())
     elif args.command == "mesh":
