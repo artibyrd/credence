@@ -149,7 +149,9 @@ def test_local_production_deploy_safety_gate() -> None:
         justfile_content += "\n" + cloud_just_path.read_text(encoding="utf-8")
 
     assert "cloud-deploy-prod" in justfile_content
-    assert "confirm('⚠️ Are you sure you want to execute a LOCAL PRODUCTION deployment to Cloud Run?')" in justfile_content
+    assert (
+        "confirm('⚠️ Are you sure you want to execute a LOCAL PRODUCTION deployment to Cloud Run?')" in justfile_content
+    )
     assert "alias deploy-prod := cloud-deploy-prod" in justfile_content
     assert "Commit-Before-Deploy invariant" in justfile_content
 

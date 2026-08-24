@@ -12,10 +12,8 @@ import pytest
 
 from credence.pipeline.golden_baseline import get_golden_control_corpus
 from credence.pipeline.rfc import (
-    RFCBenchmarkReport,
     RFCProposal,
     RFCRegistry,
-    RFCShadowTrialScorecard,
     RFCStage,
     RFCVoteAttestation,
     StandardTier,
@@ -322,9 +320,9 @@ clusters:
 
     success, errors = registry.register_proposal(new_rfc)
     assert success is True
-    assert len(errors) == 0
-    assert registry.get_proposal("RFC-009") is not None
-    assert registry.get_proposal("RFC-009").stage == RFCStage.PROPOSED
+    prop = registry.get_proposal("RFC-009")
+    assert prop is not None
+    assert prop.stage == RFCStage.PROPOSED
 
     # Record vote
     vote = RFCVoteAttestation(

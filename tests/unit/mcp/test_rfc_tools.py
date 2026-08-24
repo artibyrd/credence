@@ -10,6 +10,7 @@ Tests:
 """
 
 import json
+
 import pytest
 
 from credence.server.mcp.server import create_mcp_server

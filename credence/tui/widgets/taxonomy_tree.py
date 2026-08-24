@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from textual.widgets import Tree
 
-from credence.taxonomy_loader import registry
-
 
 def populate_taxonomy_tree(tree: Tree) -> None:
     """Build nested 3-tier standards and catalog tree nodes with RFC status badges."""
@@ -14,7 +12,7 @@ def populate_taxonomy_tree(tree: Tree) -> None:
     root.label = "⚖️ Epistemic Standards & Taxonomies"
     root.expand()
 
-    from credence.pipeline.rfc import rfc_registry, StandardTier
+    from credence.pipeline.rfc import StandardTier, rfc_registry
 
     # 1. Tier 0: Universal General
     tier0_node = root.add("🏛️ Tier 0: Universal General Standards", expand=True)
@@ -33,9 +31,7 @@ def populate_taxonomy_tree(tree: Tree) -> None:
         )
 
         stage_badge = f"[{proposal.stage.value}]"
-        prop_node = target_tier_node.add(
-            f"📜 {proposal.rfc_id}: {proposal.title} {stage_badge}", expand=False
-        )
+        prop_node = target_tier_node.add(f"📜 {proposal.rfc_id}: {proposal.title} {stage_badge}", expand=False)
 
         from credence.pipeline.rfc import validate_catalog_yaml
 
@@ -57,4 +53,3 @@ def populate_subjects_tree(tree: Tree) -> None:
     root.add_leaf("• science.medicine")
     root.add_leaf("• financial.equities")
     root.add_leaf("• technology.software")
-

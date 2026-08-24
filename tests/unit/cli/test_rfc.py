@@ -10,10 +10,10 @@ Tests:
 """
 
 from pathlib import Path
+
 import pytest
 
 from credence.cli.commands.rfc import (
-    run_rfc_benchmark_command,
     run_rfc_hash_command,
     run_rfc_list_command,
     run_rfc_show_command,
@@ -49,7 +49,8 @@ def test_cli_rfc_show_command() -> None:
 def test_cli_rfc_validate_and_hash_commands(tmp_path: Path) -> None:
     """Verify run_rfc_validate_command and run_rfc_hash_command on valid and invalid files."""
     valid_file = tmp_path / "valid_catalog.yaml"
-    valid_file.write_text("""
+    valid_file.write_text(
+        """
 catalog_id: "sec_disclosures"
 domain: "FINANCIAL_DISCLOSURES"
 name: "SEC Disclosures"
@@ -68,7 +69,9 @@ clusters:
           - "Signal 1 here"
           - "Signal 2 here"
         evidence_guidelines: "Must quote verbatim."
-""", encoding="utf-8")
+""",
+        encoding="utf-8",
+    )
 
     code_val = run_rfc_validate_command(str(valid_file))
     assert code_val == 0

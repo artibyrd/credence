@@ -114,9 +114,10 @@ async def test_credence_tui_app_lifecycle() -> None:
 def test_tui_taxonomy_tree_population() -> None:
     """Verify populate_taxonomy_tree generates 3-tier nodes and RFC status badges."""
     from textual.widgets import Tree
+
     from credence.tui.widgets.taxonomy_tree import populate_taxonomy_tree
 
-    tree = Tree("Root")
+    tree: Tree[None] = Tree("Root")
     populate_taxonomy_tree(tree)
     assert tree.root.label is not None
     assert "Epistemic Standards" in str(tree.root.label)

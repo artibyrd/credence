@@ -21,13 +21,11 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from credence.identity import canonical_json_bytes, compute_payload_hash, load_or_create_node_identity
+from credence.identity import canonical_json_bytes, load_or_create_node_identity
 from credence.pipeline.rfc import (
-    RFCProposal,
     RFCStage,
     RFCVoteAttestation,
     StandardTier,
-    compute_byzantine_quorum,
     rfc_registry,
     run_synthetic_benchmark,
     validate_catalog_yaml,
@@ -36,9 +34,7 @@ from credence.pipeline.rfc import (
 console = Console()
 
 
-def run_rfc_list_command(
-    tier: Optional[str] = None, stage: Optional[str] = None, *args: Any, **kwargs: Any
-) -> int:
+def run_rfc_list_command(tier: Optional[str] = None, stage: Optional[str] = None, *args: Any, **kwargs: Any) -> int:
     """List RFC standard proposals with optional tier and stage filtering."""
     tier_map = {
         "general": StandardTier.UNIVERSAL_GENERAL,
@@ -166,7 +162,9 @@ def run_rfc_validate_command(yaml_path: str, *args: Any, **kwargs: Any) -> int:
         return 1
 
     total_rules = sum(len(c.rules) for c in catalog.clusters)
-    console.print(f"[bold green]✓ Validation Passed ({total_rules} rules across {len(catalog.clusters)} clusters)[/bold green]")
+    console.print(
+        f"[bold green]✓ Validation Passed ({total_rules} rules across {len(catalog.clusters)} clusters)[/bold green]"
+    )
     console.print(f"  [dim]Domain:[/dim] {catalog.domain} | [dim]Version:[/dim] v{catalog.version}")
     console.print(f"  [dim]Catalog SHA-256:[/dim] [cyan]{catalog.catalog_hash}[/cyan]")
     return 0

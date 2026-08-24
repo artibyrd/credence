@@ -7,21 +7,17 @@ Evaluates decentralized RFC standards lifecycle against a 13-node Watts-Strogatz
 4. Temporal Trajectory DAG Immutability: Re-auditing under newly ratified catalogs appends a new snapshot leaf without mutating or invalidating historical receipts.
 """
 
-from datetime import datetime, timezone
 import pytest
-
-from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
 
 from credence.identity import canonical_json_bytes
 from credence.pipeline.rfc import (
     RFCProposal,
     RFCRegistry,
-    RFCStage,
     RFCVoteAttestation,
     StandardTier,
     compute_byzantine_quorum,
-    compute_domain_weighted_quorum,
     run_synthetic_benchmark,
     validate_catalog_yaml,
 )
@@ -31,7 +27,9 @@ from credence.taxonomy_loader import registry as taxonomy_registry
 class SimulatedMeshNode:
     """Represents a simulated P2P mesh node with cryptographic identity and token headroom."""
 
-    def __init__(self, node_id: str, is_byzantine: bool = False, headroom_pct: float = 100.0, domain_authority: float = 0.85):
+    def __init__(
+        self, node_id: str, is_byzantine: bool = False, headroom_pct: float = 100.0, domain_authority: float = 0.85
+    ):
         self.node_id = node_id
         self.is_byzantine = is_byzantine
         self.headroom_pct = headroom_pct
@@ -185,9 +183,7 @@ clusters:
     registry.register_proposal(flawed_proposal)
 
     # Fixtures simulating poor precision / high false positive rate
-    fixtures = [
-        {"id": "fix_bad", "expected_violations": [], "detected_violations": ["CARTEL-1.1"]}
-    ]
+    fixtures = [{"id": "fix_bad", "expected_violations": [], "detected_violations": ["CARTEL-1.1"]}]
 
     # 9 Honest Nodes + 4 Byzantine Cartel Nodes (N=13, f=4)
     nodes = [SimulatedMeshNode(f"honest_{i}", is_byzantine=False) for i in range(1, 10)]
@@ -260,8 +256,6 @@ clusters:
 @pytest.mark.integration
 def test_temporal_trajectory_dag_immutability() -> None:
     """Scenario 4: Upgrading from v1.0.0 to v2.0.0 preserves historical receipt hashes under original CAS."""
-    registry = RFCRegistry()
-
     # Proposal v1
     prop_v1 = RFCProposal(
         rfc_id="RFC-080",

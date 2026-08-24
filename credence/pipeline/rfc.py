@@ -12,19 +12,17 @@ Provides:
 
 from __future__ import annotations
 
-import hashlib
-import json
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
-from credence.identity import canonical_json_bytes, compute_payload_hash
+from credence.identity import compute_payload_hash
 from credence.pipeline.golden_baseline import get_golden_control_corpus
-from credence.taxonomy_loader import TaxonomyCatalog, TaxonomyRule
+from credence.taxonomy_loader import TaxonomyCatalog
 
 
 class StandardTier(str, Enum):
@@ -32,20 +30,20 @@ class StandardTier(str, Enum):
 
     UNIVERSAL_GENERAL = "UNIVERSAL_GENERAL"  # Tier 0: SPJ Ethics, Fallacies, Deceptive Patterns
     DOMAIN_SPECIALIST = "DOMAIN_SPECIALIST"  # Tier 1: Financial, Clinical, Medical, Scientific
-    SOVEREIGN_NICHE = "SOVEREIGN_NICHE"      # Tier 2: Municipal, Corporate, White-Label Orgs
+    SOVEREIGN_NICHE = "SOVEREIGN_NICHE"  # Tier 2: Municipal, Corporate, White-Label Orgs
 
 
 class RFCStage(str, Enum):
     """Lifecycle stages in the Autonomous Standards Ratification Pipeline."""
 
-    DRAFT = "DRAFT"                  # Authoring & local linting
-    PROPOSED = "PROPOSED"            # AST schema validated & gossiped to mesh
-    CANDIDATE = "CANDIDATE"          # Passed Synthetic Benchmark Gauntlet (F1 >= 0.87, FPR = 0%)
-    SHADOW_TRIAL = "SHADOW_TRIAL"    # Live canary evaluation across mesh nodes (500 audits)
-    VOTING = "VOTING"                # Deterministic node attestation envelopes gossiped
-    RATIFIED = "RATIFIED"            # Pinned to CAS, active in registry at vMAJOR.MINOR.PATCH
-    DEPRECATED = "DEPRECATED"        # Deprecation highway with superseded_by pointer
-    RETIRED = "RETIRED"              # Permanently archived but historically verifiable
+    DRAFT = "DRAFT"  # Authoring & local linting
+    PROPOSED = "PROPOSED"  # AST schema validated & gossiped to mesh
+    CANDIDATE = "CANDIDATE"  # Passed Synthetic Benchmark Gauntlet (F1 >= 0.87, FPR = 0%)
+    SHADOW_TRIAL = "SHADOW_TRIAL"  # Live canary evaluation across mesh nodes (500 audits)
+    VOTING = "VOTING"  # Deterministic node attestation envelopes gossiped
+    RATIFIED = "RATIFIED"  # Pinned to CAS, active in registry at vMAJOR.MINOR.PATCH
+    DEPRECATED = "DEPRECATED"  # Deprecation highway with superseded_by pointer
+    RETIRED = "RETIRED"  # Permanently archived but historically verifiable
 
 
 class RFCProposal(BaseModel):
@@ -236,7 +234,7 @@ def run_synthetic_benchmark(
     for fixture in fixtures:
         expected = set(fixture.get("expected_violations", []))
         simulated_matches = set(fixture.get("detected_violations", []))
-        
+
         # Intersection with rules in this catalog
         expected_in_catalog = expected.intersection(rule_ids)
         detected_in_catalog = simulated_matches.intersection(rule_ids)
@@ -260,7 +258,6 @@ def run_synthetic_benchmark(
         if golden_detections:
             golden_fps += len(golden_detections)
 
-    total_controls = len(golden_corpus) + max(1, tn)
     golden_fpr = (golden_fps / len(golden_corpus)) if golden_corpus else 0.0
 
     precision = (tp / (tp + fp)) if (tp + fp) > 0 else (1.0 if fn == 0 else 0.0)
@@ -268,13 +265,7 @@ def run_synthetic_benchmark(
     f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
 
     # Hard acceptance gates
-    passed = (
-        f1 >= 0.87
-        and precision >= 0.90
-        and recall >= 0.85
-        and golden_fpr == 0.00
-        and grounding_quotient >= 1.00
-    )
+    passed = f1 >= 0.87 and precision >= 0.90 and recall >= 0.85 and golden_fpr == 0.00 and grounding_quotient >= 1.00
 
     return RFCBenchmarkReport(
         rfc_id=catalog.catalog_id,
@@ -484,6 +475,7 @@ clusters:
             return None
 
         from credence.taxonomy_loader import registry
+
         registry.catalogs[catalog.catalog_id] = catalog
         for cluster in catalog.clusters:
             for rule in cluster.rules:
