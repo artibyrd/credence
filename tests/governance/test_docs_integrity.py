@@ -437,19 +437,26 @@ def test_zero_legacy_mermaid_diagrams_invariant(docs_root: Path) -> None:
 def test_zero_ascii_box_art_invariant(docs_root: Path) -> None:
     """Invariant 34: Verify zero retro ASCII/UTF-8 box art remains anywhere in documentation or blog posts.
 
-    All technical illustrations must use high-fidelity, resolution-independent vector SVG assets.
+    All technical illustrations must use high-fidelity, resolution-independent vector SVG assets, Markdown tables, or structured lists.
     """
     md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
     for md_file in md_files:
         text = md_file.read_text(encoding="utf-8")
-        boxes = re.findall(r"```(?:text|)\n([\s\S]*?)```", text)
-        for idx, block in enumerate(boxes):
-            assert not any(c in block for c in "┌╔"), (
-                f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII/UTF-8 box art. "
-                f"All diagrams must use native vector SVG illustrations in assets/illustrations/."
+        boxes = re.findall(r"```([a-zA-Z0-9_-]*)\n([\s\S]*?)```", text)
+        for idx, (lang, block) in enumerate(boxes):
+            lang_clean = lang.strip().lower()
+            if lang_clean in ["json", "yaml", "yml", "python", "py", "bash", "sh", "javascript", "js", "html"]:
+                continue
+            assert not any(c in block for c in "┌╔╭╮╰╯"), (
+                f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII/UTF-8 box corners. "
+                f"All diagrams must use native vector SVG illustrations in assets/illustrations/ or Markdown tables."
             )
-            assert not re.search(r"\+[-=]{4,}\+", block), (
+            assert not re.search(r"\+[-=]{3,}\+", block), (
                 f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII box boundaries (+---+). "
+                f"All diagrams must use native vector SVG illustrations in assets/illustrations/ or Markdown tables."
+            )
+            assert not re.search(r"[-=]{2,}>|--►|--▶|──►|──▶|◄--|◀--", block), (
+                f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found ASCII flowchart arrows. "
                 f"All diagrams must use native vector SVG illustrations in assets/illustrations/ or Markdown tables."
             )
 
