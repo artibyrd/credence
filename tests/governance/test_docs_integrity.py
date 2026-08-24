@@ -1737,17 +1737,22 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
             f"{css_path} must scope 100vh overflow:hidden to :has(.workstation-container)"
         )
 
-    # 2. Verify _worker.js preserves docs subpaths
+    # 2. Verify _worker.js preserves docs subpaths and enforces domain redirect gates
     worker_path = credence_root / "web" / "_worker.js"
     assert worker_path.exists()
     worker_text = worker_path.read_text(encoding="utf-8")
     assert "isDocsOrBlogDomain" in worker_text, "_worker.js must explicitly check isDocsOrBlogDomain"
+    assert "docs.credence.run" in worker_text, "_worker.js must define docs.credence.run domain routing"
+    assert "blog.credence.run" in worker_text, "_worker.js must define blog.credence.run domain routing"
 
-    # 3. Verify app.js rejects HTML payloads for markdown
+    # 3. Verify app.js rejects HTML payloads for markdown and enforces cross-domain routing
     app_js_path = docs_root / "app.js"
     assert app_js_path.exists()
     app_js_text = app_js_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
+    assert "getDomainContext" in app_js_text, "app.js must export getDomainContext"
+    assert "getDocsBaseUrl" in app_js_text, "app.js must export getDocsBaseUrl"
+    assert "getBlogBaseUrl" in app_js_text, "app.js must export getBlogBaseUrl"
 
 
 @pytest.mark.governance

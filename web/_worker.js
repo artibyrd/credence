@@ -17,6 +17,30 @@ export default {
       const targetBackend = isDev ? devBackend : prodBackend;
       const targetBackendHost = new URL(targetBackend).hostname;
 
+      // 1.5 Canonical domain redirect gates
+      if (!isDev && host === 'credence.run') {
+        if (url.pathname === '/docs' || url.pathname.startsWith('/docs/')) {
+          const sub = url.pathname === '/docs' || url.pathname === '/docs/' ? '/' : url.pathname.substring(5);
+          return Response.redirect(`https://docs.credence.run${sub}${url.search}`, 301);
+        }
+        if (url.pathname === '/blog' || url.pathname.startsWith('/blog/')) {
+          const sub = url.pathname === '/blog' || url.pathname === '/blog/' ? '/' : url.pathname.substring(5);
+          return Response.redirect(`https://blog.credence.run${sub}${url.search}`, 301);
+        }
+      }
+
+      if ((host === 'docs.credence.run' || host === 'dev.docs.credence.run') && (url.pathname === '/blog' || url.pathname.startsWith('/blog/'))) {
+        const targetBlogHost = isDev ? 'dev.blog.credence.run' : 'blog.credence.run';
+        const sub = url.pathname === '/blog' || url.pathname === '/blog/' ? '/' : url.pathname.substring(5);
+        return Response.redirect(`https://${targetBlogHost}${sub}${url.search}`, 302);
+      }
+
+      if ((host === 'blog.credence.run' || host === 'dev.blog.credence.run') && (url.pathname === '/docs' || url.pathname.startsWith('/docs/'))) {
+        const targetDocsHost = isDev ? 'dev.docs.credence.run' : 'docs.credence.run';
+        const sub = url.pathname === '/docs' || url.pathname === '/docs/' ? '/' : url.pathname.substring(5);
+        return Response.redirect(`https://${targetDocsHost}${sub}${url.search}`, 302);
+      }
+
       // 2. Dynamic Zero-Cache Docs & Blog Proxy (docs.credence.run, blog.credence.run, or /docs & /blog on dev)
       const isDocsOrBlogDomain =
         host === 'docs.credence.run' ||
