@@ -1,15 +1,22 @@
 # Justfile for Credence Epistemic Ecosystem
-# Canonical Parameterized Architecture & Modular 500 LOC Subfiles
+# Canonical Modular Architecture (<300 LOC per category) & Modern Just 1.58.0 Engine
 # Invariant: 500 LOC Ceiling Law & Shift-Left Intelligent Guidance Highway
 
 set shell := ["bash", "-c"]
+set dotenv-load := true
 
-# Modular Category Imports (Strictly < 300 LOC each)
+# Core Ecosystem Modules (For all developers & forks)
 import "just/preflight.just"
 import "just/quality.just"
 import "just/engine.just"
-import "just/deploy.just"
+import "just/vcs.just"
+
+# Hosted Operations & Infrastructure Modules (Artibyrd maintainer infrastructure & releases)
+import "just/cloud.just"
 import "just/release.just"
 
+# Display available recipes and organized categories
+[default]
+[group('help')]
 default:
     @just --list

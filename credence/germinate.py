@@ -354,6 +354,7 @@ async def germinate_node(
     profile_override: Any = None,
     verbose: bool = True,
     relay: Optional[Any] = None,
+    output_dir: Optional[Path] = None,
 ) -> GerminationSummary:
     """Execute complete autonomous germination lifecycle for a Credence node (Genesis or Incremental)."""
     t_start = time.perf_counter()
@@ -390,7 +391,7 @@ async def germinate_node(
         if verbose:
             logger.info("⚡ Step 4/5: Miracle-Gro burst evaluated %d novel articles", novel_audited)
 
-    await export_catalog_to_disk(session)
+    await export_catalog_to_disk(session, output_dir=output_dir)
     if verbose:
         logger.info("📦 Step 5/5: Exported static web catalogs (reports.json and genesis_attestations.json)")
 

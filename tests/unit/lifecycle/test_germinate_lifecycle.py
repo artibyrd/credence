@@ -44,6 +44,7 @@ async def test_full_genesis_germination_on_blank_db(temp_node_dir: Path, monkeyp
             burst_items=0,
             sync_mesh=True,
             verbose=False,
+            output_dir=temp_node_dir / "web" / "credence.report",
         )
 
         assert summary.status == "germinated"
@@ -96,6 +97,7 @@ async def test_incremental_germination_on_restored_db(temp_node_dir: Path, monke
             burst_items=0,
             sync_mesh=True,
             verbose=False,
+            output_dir=temp_node_dir / "web" / "credence.report",
         )
 
         assert summary.status == "incremental_ready"

@@ -289,10 +289,11 @@ async def test_starlette_rest_endpoints(db_session: Any) -> None:
         assert "items" in stream_data
 
         # 5. Germinate endpoint
-        res_germ = await client.post("/api/germinate", json={"burst": 0, "sync_mesh": False})
-        assert res_germ.status_code == 200
-        germ_data = res_germ.json()
-        assert germ_data["status"] in ("germinated", "incremental_ready")
+        with patch("credence.germinate.export_catalog_to_disk", new_callable=AsyncMock):
+            res_germ = await client.post("/api/germinate", json={"burst": 0, "sync_mesh": False})
+            assert res_germ.status_code == 200
+            germ_data = res_germ.json()
+            assert germ_data["status"] in ("germinated", "incremental_ready")
 
         # 6. Roots tree and candidates endpoints
         res_tree = await client.get("/api/roots/tree")

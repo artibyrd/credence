@@ -19,7 +19,7 @@ from credence.models import Audit, FeedSubscription
 
 
 @pytest.mark.asyncio
-async def test_germinate_node_fresh_db(db_session: AsyncSession) -> None:
+async def test_germinate_node_fresh_db(db_session: AsyncSession, tmp_path: Any) -> None:
     """Verify end-to-end node germination on a fresh database with mock evaluator."""
     # Mock feed parser to return empty entries to avoid real network calls
     mock_feed = ParsedFeed(title="Mock Stream", is_modified=True, entries=[])
@@ -30,6 +30,7 @@ async def test_germinate_node_fresh_db(db_session: AsyncSession) -> None:
             burst_items=2,
             sync_mesh=True,
             verbose=False,
+            output_dir=tmp_path / "web" / "credence.report",
         )
 
         assert summary.status == "germinated"
@@ -51,19 +52,31 @@ async def test_germinate_node_fresh_db(db_session: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_germinate_idempotency(db_session: AsyncSession) -> None:
+async def test_germinate_idempotency(db_session: AsyncSession, tmp_path: Any) -> None:
     """Verify running germination multiple times is idempotent and does not duplicate records."""
     mock_feed = ParsedFeed(title="Mock Stream", is_modified=True, entries=[])
 
     with patch("credence.feeds.worker.fetch_and_parse_feed", new_callable=AsyncMock, return_value=mock_feed):
         # First germination pass
-        await germinate_node(session=db_session, burst_items=0, sync_mesh=True, verbose=False)
+        await germinate_node(
+            session=db_session,
+            burst_items=0,
+            sync_mesh=True,
+            verbose=False,
+            output_dir=tmp_path / "web" / "credence.report",
+        )
 
         stmt_audits = select(func.count(col(Audit.id)))
         count1 = (await db_session.exec(stmt_audits)).first() or 0
 
         # Second germination pass
-        summary2 = await germinate_node(session=db_session, burst_items=0, sync_mesh=True, verbose=False)
+        summary2 = await germinate_node(
+            session=db_session,
+            burst_items=0,
+            sync_mesh=True,
+            verbose=False,
+            output_dir=tmp_path / "web" / "credence.report",
+        )
 
         count2 = (await db_session.exec(stmt_audits)).first() or 0
 
@@ -72,9 +85,15 @@ async def test_germinate_idempotency(db_session: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_germinate_no_mesh_offline(db_session: AsyncSession) -> None:
+async def test_germinate_no_mesh_offline(db_session: AsyncSession, tmp_path: Any) -> None:
     """Verify 100% offline air-gapped germination when sync_mesh is False."""
-    summary = await germinate_node(session=db_session, burst_items=0, sync_mesh=False, verbose=False)
+    summary = await germinate_node(
+        session=db_session,
+        burst_items=0,
+        sync_mesh=False,
+        verbose=False,
+        output_dir=tmp_path / "web" / "credence.report",
+    )
 
     assert summary.peer_attestations_adopted == 0
     assert summary.tokens_saved_mesh == 0
