@@ -137,21 +137,21 @@ jobs:
         run: |
           npm install -g wrangler
           echo "=== Ensuring dev.docs and dev.blog DNS records exist on zone credence.run ==="
-          Z_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=credence.run" \
+          Z_RESP=$(curl -s --retry 3 --retry-delay 2 -X GET "https://api.cloudflare.com/client/v4/zones?name=credence.run" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json")
+            -H "Content-Type: application/json" || echo "{}")
           Z_ID=$(echo "$Z_RESP" | jq -r '.result[0].id // empty')
           if [ -n "$Z_ID" ]; then
             for sub in dev.docs dev.blog; do
-              RECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${Z_ID}/dns_records?name=${sub}.credence.run" \
+              RECORD_ID=$(curl -s --retry 3 --retry-delay 2 -X GET "https://api.cloudflare.com/client/v4/zones/${Z_ID}/dns_records?name=${sub}.credence.run" \
                 -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
                 -H "Content-Type: application/json" | jq -r '.result[0].id // empty')
               if [ -z "$RECORD_ID" ]; then
                 echo "Creating proxied DNS record for ${sub}.credence.run..."
-                curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${Z_ID}/dns_records" \
+                curl -s --retry 3 --retry-delay 2 -X POST "https://api.cloudflare.com/client/v4/zones/${Z_ID}/dns_records" \
                   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
                   -H "Content-Type: application/json" \
-                  --data "{\"type\":\"CNAME\",\"name\":\"${sub}\",\"content\":\"credence.run\",\"proxied\":true,\"ttl\":1}"
+                  --data "{\"type\":\"CNAME\",\"name\":\"${sub}\",\"content\":\"credence.run\",\"proxied\":true,\"ttl\":1}" || true
               else
                 echo "DNS record ${sub}.credence.run already active (${RECORD_ID})."
               fi
@@ -160,19 +160,19 @@ jobs:
 
           echo "=== Unassigning any legacy dev routes from other workers ==="
           for domain in credence.run credence.report credence.nexus credence.foundation; do
-            Z_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
+            Z_RESP=$(curl -s --retry 3 --retry-delay 2 -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
               -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-              -H "Content-Type: application/json")
+              -H "Content-Type: application/json" || echo "{}")
             Z_ID=$(echo "$Z_RESP" | jq -r '.result[0].id // empty')
             if [ -n "$Z_ID" ]; then
-              ROUTES_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${Z_ID}/workers/routes" \
+              ROUTES_RESP=$(curl -s --retry 3 --retry-delay 2 -X GET "https://api.cloudflare.com/client/v4/zones/${Z_ID}/workers/routes" \
                 -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-                -H "Content-Type: application/json")
-              for route_id in $(echo "$ROUTES_RESP" | jq -r '.result[] | select((.pattern | startswith("dev.") or startswith("mcp.dev.")) and .script != "credence-dev") | .id // empty'); do
+                -H "Content-Type: application/json" || echo "{}")
+              for route_id in $(echo "$ROUTES_RESP" | jq -r '.result[]? | select((.pattern | startswith("dev.") or startswith("mcp.dev.")) and .script != "credence-dev") | .id // empty'); do
                 echo "Releasing conflicting dev route $route_id from zone ${domain}..."
-                curl -s -X DELETE "https://api.cloudflare.com/client/v4/zones/${Z_ID}/workers/routes/${route_id}" \
+                curl -s --retry 3 --retry-delay 2 -X DELETE "https://api.cloudflare.com/client/v4/zones/${Z_ID}/workers/routes/${route_id}" \
                   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-                  -H "Content-Type: application/json"
+                  -H "Content-Type: application/json" || true
               done
             fi
           done
@@ -183,12 +183,12 @@ jobs:
           (cd /tmp/credence-docs && rm -f _worker.js wrangler.toml && wrangler pages deploy . --project-name=credence-docs --branch=dev --commit-dirty=true)
           echo "=== Purging Cloudflare Edge Cache for Dev Preview Subdomains ==="
           for domain in credence.run credence.report credence.nexus credence.foundation; do
-            Z_RESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
+            Z_RESP=$(curl -s --retry 3 --retry-delay 2 -X GET "https://api.cloudflare.com/client/v4/zones?name=${domain}" \
               -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-              -H "Content-Type: application/json")
+              -H "Content-Type: application/json" || echo "{}")
             Z_ID=$(echo "$Z_RESP" | jq -r '.result[0].id // empty')
             if [ -n "$Z_ID" ]; then
-              curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${Z_ID}/purge_cache" \
+              curl -s --retry 3 --retry-delay 2 -X POST "https://api.cloudflare.com/client/v4/zones/${Z_ID}/purge_cache" \
                 -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
                 -H "Content-Type: application/json" \
                 --data "{\"hosts\":[\"dev.${domain}\",\"dev.admin.${domain}\",\"dev.seeds.${domain}\",\"dev.keys.${domain}\",\"dev.docs.${domain}\",\"dev.blog.${domain}\",\"mcp.dev.${domain}\"]}" || true

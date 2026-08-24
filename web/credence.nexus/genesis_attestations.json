@@ -1,9 +1,541 @@
 {
   "protocol": "credence-attestation-pack/1.0",
-  "exported_at": "2026-08-24T01:29:34.887116+00:00",
+  "exported_at": "2026-08-24T04:16:19.647480+00:00",
   "exporter_node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-  "total_attestations": 1117,
+  "total_attestations": 1129,
   "attestations": [
+    {
+      "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
+      "url": "text://inline",
+      "title": "Fallacy Test",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0xc8393e902b1e3f78",
+      "suspicion_score": 0.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 0.5,
+      "classification": "CLEAN",
+      "is_satire": false,
+      "audited_at": "2026-08-24T02:04:30.021895",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "1a6ef7f34477b502f044ca869e96ba047ec37e42558bdf42910b065de9c1b6255244daf3db30b0ee1f7a9037d4f08d35eb47342e81e0c290e659d7cabcf22e0f",
+      "violations": []
+    },
+    {
+      "content_sha256": "sha256:5c43ae7f6b1fbf373e1e512796d0b8ff0eb65ca85436ccc59dbad58ed3064d52",
+      "url": "text://inline",
+      "title": "Test Fallacy Snippet",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cf9b217633d0b70",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.5,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-24T02:04:29.495733",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "4b5c41bc30e7ebe7f956c6e0fd146b7cc9e818f418a78432660b9cba51d33e365c23f9aa2639e2246532f3a4ee101a158c13fad2c546e33cec22fe966363cb05",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 70.6,
+      "suspicion_density": 140.0,
+      "confidence_score": 0.94,
+      "classification": "DECEPTIVE",
+      "is_satire": false,
+      "audited_at": "2026-08-24T02:04:27.921665",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "8db8a47fc95711071bb5aca2b17e15703f0491fd95cf11b90841f503be2e5d92be964ae60d714a2219000f926d39b91c69f2c8cbc59be4bb8a04654485155c05",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "SPJ-1.5",
+          "rule_uri": "journalistic-ethics:seek-truth-and-report/SPJ-1.5@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SPJ",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "100% on our side, or you are an enemy of the people! Those ignorant cowards hate progress.",
+          "reasoning": "The text delivers aggressive partisan commentary, ad hominem attacks, and emotional opinion without any clear editorial labeling or demarcation separating opinion/advocacy from objective reporting.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:be-accountable-and-transparent/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SPJ",
+          "severity": 2,
+          "confidence": 0.85,
+          "quote_or_element": "Author / Byline: Direct MCP Input\n- Publisher: N/A",
+          "reasoning": "The content lacks a legitimate journalist byline, publisher identity, or editorial masthead for organizational transparency and accountability.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "100% on our side, or you are an enemy of the people!",
+          "reasoning": "The statement presents a classic false dichotomy/false dilemma by forcing an extreme binary choice (total agreement vs. being an enemy) while ignoring any nuanced, moderate, or neutral positions.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "Those ignorant cowards hate progress.",
+          "reasoning": "The speaker resorts to abusive ad hominem name-calling ('ignorant cowards') and imputing malicious motives ('hate progress') instead of addressing substantive counterarguments or policies.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-4.2",
+          "rule_uri": "logical-fallacy:emotional-and-manipulative-appeals/FALLACY-4.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.9,
+          "quote_or_element": "you are an enemy of the people! Those ignorant cowards hate progress.",
+          "reasoning": "The excerpt employs hyper-charged, inflammatory rhetoric labeling opponents as 'enemies of the people' and 'cowards' to stoke moral outrage and hostility rather than providing reasoned discourse.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.5,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-24T02:04:23.952066",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "633bd60cbf6eee5001fc9f875d26adfd19b6793c2bdb137b58ea5accc58269aec8e4980c04d7277ca62db1f0ba2ce047f831f5cd6a2dc472e26a9e3848efb209",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
+      "url": "text://inline",
+      "title": "Fallacy Test",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0xc8393e902b1e3f78",
+      "suspicion_score": 0.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 0.5,
+      "classification": "CLEAN",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:32:59.720169",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "e210863e3a3673e6ffe0956b3cdafb4053b95d3d5c41fefa91ef6967d3d685453af00ab9261acb4b5bd5ca59dae6d5a5b34955285122a016d180149d2a763201",
+      "violations": []
+    },
+    {
+      "content_sha256": "sha256:5c43ae7f6b1fbf373e1e512796d0b8ff0eb65ca85436ccc59dbad58ed3064d52",
+      "url": "text://inline",
+      "title": "Test Fallacy Snippet",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cf9b217633d0b70",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.5,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:32:59.169861",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "050896817726abb7323a2ef748390099e25e80246bb9e529a57df49513c48275b4c091a497d132cec3bff8364261f6111af51347b6f82db98923b6949ace5c04",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 63.4,
+      "suspicion_density": 100.0,
+      "confidence_score": 0.96,
+      "classification": "SUSPICIOUS",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:32:57.587680",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "c82ea6ea6b62de67511172aecbd503e74378831af4ae43aede0b82365576fcc283acd44b6a7ad12c613252c2eecb42f3426f443df9e2d541655a2ee8d0037f06",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "SPJ-1.5",
+          "rule_uri": "journalistic-ethics:seek-truth-and-report/SPJ-1.5@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SPJ",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "100% on our side, or you are an enemy of the people! Those ignorant cowards hate progress.",
+          "reasoning": "The text presents extreme editorial commentary and polarizing rhetoric without any clear 'Opinion', 'Commentary', or analytical demarcation.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.98,
+          "quote_or_element": "100% on our side, or you are an enemy of the people!",
+          "reasoning": "The statement presents an extreme binary either/or choice, framing anyone who does not offer 100% agreement as an 'enemy of the people' while ignoring nuanced, moderate, or neutral positions.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "Those ignorant cowards hate progress.",
+          "reasoning": "The text resorts to direct abusive name-calling ('ignorant cowards') and imputing negative motives ('hate progress') instead of engaging with or refuting substantive arguments.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.5,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:32:54.184685",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "a9b6be818c521f8c1576a4030bc9a6f6d771dacbc111b25b8a80041d72baead7cf7d055e334f04ef57503245f7550de7502f29028cb99cb9cab7349fa6da000d",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
+      "url": "text://inline",
+      "title": "Fallacy Test",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0xc8393e902b1e3f78",
+      "suspicion_score": 0.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 0.5,
+      "classification": "CLEAN",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:30:28.887251",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "843734feadcc1199f2b7eea365e210057e9e779470e8b8fc946afd189a073a087de4f685c8f08367680bbee9da3cd18eedd1c97e0abbf5e36e38e542a9f48e03",
+      "violations": []
+    },
+    {
+      "content_sha256": "sha256:5c43ae7f6b1fbf373e1e512796d0b8ff0eb65ca85436ccc59dbad58ed3064d52",
+      "url": "text://inline",
+      "title": "Test Fallacy Snippet",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cf9b217633d0b70",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.5,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:30:28.361601",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "00f0bcd34837de1fb1665cc8a0e0d55b0bf17f5b7922f09b7210e86bcc17b2fcbfa7805e88bb02f7fd2c56e26f23e4151c97ef9fced7c8ca0151ba1d39be8c0c",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 62.3,
+      "suspicion_density": 100.0,
+      "confidence_score": 0.93,
+      "classification": "SUSPICIOUS",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:30:26.686614",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "8b2193f1255a86994da9ff1f0cc87caebf93ff84cd1feb1fad8e5bd5b2915b7e094f5406fbe46320cd6a6c84406556754a1312c32bdbb08f42c32bf142780800",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "SPJ-1.5",
+          "rule_uri": "journalistic-ethics:seek-truth-and-report/SPJ-1.5@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SPJ",
+          "severity": 3,
+          "confidence": 0.85,
+          "quote_or_element": "100% on our side, or you are an enemy of the people! Those ignorant cowards hate progress.",
+          "reasoning": "The text presents extreme editorial opinion and aggressive prescriptive stance ('enemy of the people', 'ignorant cowards') without any clear labeling or demarcation designating it as opinion, commentary, or editorial analysis.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.98,
+          "quote_or_element": "100% on our side, or you are an enemy of the people!",
+          "reasoning": "The statement presents a strict binary choice (being either 100% on our side or an enemy of the people), artificially excluding moderate, neutral, or nuanced positions.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "FALLACY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "Those ignorant cowards hate progress.",
+          "reasoning": "The statement resorts to abusive name-calling ('ignorant cowards') and impugns motives instead of offering a substantive argument against opponents' viewpoints.",
+          "line_or_selector": null
+        }
+      ]
+    },
+    {
+      "content_sha256": "sha256:6283cba2638881393588ae721a1e0fb2458318d55104f6a90f5e0fa6ecc7c91a",
+      "url": "text://inline",
+      "title": "Pasted Text Analysis",
+      "byline": "Direct MCP Input",
+      "site_name": null,
+      "simhash_64": "0x6cfbb637631d0b7c",
+      "suspicion_score": 21.1,
+      "suspicion_density": 40.0,
+      "confidence_score": 0.5,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "audited_at": "2026-08-24T01:30:23.549771",
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "524c446b4664f704b61168d30590b198a2c15b6cde796277ccf6555c9a3876de2716e63776e2738ac172ff744f495ef0b7ee31e105ce1d12cde70a7d4c106f0e",
+      "violations": [
+        {
+          "rule_id": "FALLACY-1.1",
+          "rule_uri": "logical-fallacy:relevance-and-personal-attacks/FALLACY-1.1@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "RELEVANCE_AND_PERSONAL_ATTACKS",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "ignorant cowards",
+          "reasoning": "Ad Hominem attack dismissing critics through personal insults rather than logical rebuttal.",
+          "line_or_selector": null
+        },
+        {
+          "rule_id": "FALLACY-2.2",
+          "rule_uri": "logical-fallacy:presumption-and-circularity/FALLACY-2.2@v1.0.0",
+          "domain": "LOGICAL_FALLACY",
+          "cluster_id": "PRESUMPTION_AND_CIRCULARITY",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "you are either 100% on our side, or you are an enemy of the people",
+          "reasoning": "False Dilemma framing complex policy as an absolute binary choice.",
+          "line_or_selector": null
+        }
+      ]
+    },
     {
       "content_sha256": "sha256:1c92d0a9a4ddb1d1a6a44e19f7f824f8a977cf77b60da0c6dc6eabd570b0258a",
       "url": "text://inline",
@@ -39322,5 +39854,5 @@
       ]
     }
   ],
-  "bundle_signature": "65b77fb7991008af58307f941d42ae5a8f4a33afd3cd8caea511fff481ffc7885b713f7ae1e734fa6ec680c1d1c5ad3e824b073334a382aebecc60f1b8937c09"
+  "bundle_signature": "e565fd3658e62bd2600a47e0698029ed995e51ea72e42b8b42f33cd1a36a1255fb713bf43e832a173c3d281034f996affad83f4cd2734fc7b9cb72d5cf31c602"
 }

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 360" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="860" height="360" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+
+  <!-- Top Header -->
+  <text x="28" y="28" fill="#38bdf8" font-size="10.5" font-family="monospace" font-weight="bold" letter-spacing="0.1em">DEAD INTERNET DEFENSE ARCHITECTURE</text>
+  <text x="28" y="50" fill="#f8fafc" font-size="14.5" font-family="sans-serif" font-weight="bold">MULTI-TIERED BOT RESISTANCE &amp; AGENTIC CITIZENSHIP</text>
+
+  <!-- Column 1: Synthetic Slop Swarm -->
+  <rect x="28" y="68" width="250" height="266" rx="10" fill="rgba(15, 23, 42, 0.4)" stroke="#ef4444" stroke-width="1.1" stroke-dasharray="4 4" />
+  <text x="40" y="88" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold">SYNTHETIC SLOP SWARM</text>
+  <rect x="38" y="96" width="230" height="226" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.3" filter="url(#card-shadow)" />
+  <rect x="38" y="96" width="230" height="3" rx="1.5" fill="#ef4444" />
+  <text x="50" y="119" fill="#f8fafc" font-size="14" font-family="sans-serif">🧟‍♂️</text>
+  <text x="72" y="119" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600">Predatory Crawlers</text>
+  <text x="50" y="142" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Unbounded scrape loops</text>
+  <text x="50" y="162" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Brittle DOM parsing</text>
+  <text x="50" y="182" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• High CPU &amp; bandwidth drain</text>
+  <text x="50" y="210" fill="#f8fafc" font-size="14" font-family="sans-serif">🌀</text>
+  <text x="72" y="210" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600">Recursive Degeneration</text>
+  <text x="50" y="233" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Hallucinated content farms</text>
+  <text x="50" y="253" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Self-referential model collapse</text>
+  <text x="50" y="273" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Zero source provenance</text>
+
+  <!-- Column 2: Credence Epistemic Immune Layer -->
+  <rect x="305" y="68" width="250" height="266" rx="10" fill="rgba(15, 23, 42, 0.4)" stroke="#38bdf8" stroke-width="1.1" />
+  <text x="317" y="88" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">CREDENCE IMMUNE LAYER</text>
+  <rect x="315" y="96" width="230" height="226" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.3" filter="url(#card-shadow)" />
+  <rect x="315" y="96" width="230" height="3" rx="1.5" fill="#38bdf8" />
+  <text x="327" y="119" fill="#f8fafc" font-size="14" font-family="sans-serif">🛡️</text>
+  <text x="349" y="119" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600">FastMCP Structured APIs</text>
+  <text x="327" y="142" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Typed JSON-RPC endpoints</text>
+  <text x="327" y="162" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Subagent tool discovery</text>
+  <text x="327" y="182" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Zero DOM scraping overhead</text>
+  <text x="327" y="210" fill="#f8fafc" font-size="14" font-family="sans-serif">🔒</text>
+  <text x="349" y="210" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600">Custody &amp; Rate Defense</text>
+  <text x="327" y="233" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• RFC 8785 Canonical JSON</text>
+  <text x="327" y="253" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Ed25519 signature envelopes</text>
+  <text x="327" y="273" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• 30% Headroom circuit breaker</text>
+
+  <!-- Column 3: Sovereign Epistemic Preservation -->
+  <rect x="582" y="68" width="250" height="266" rx="10" fill="rgba(15, 23, 42, 0.4)" stroke="#22c55e" stroke-width="1.1" />
+  <text x="594" y="88" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold">SOVEREIGN ATTESTATION</text>
+  <rect x="592" y="96" width="230" height="226" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.3" filter="url(#card-shadow)" />
+  <rect x="592" y="96" width="230" height="3" rx="1.5" fill="#22c55e" />
+  <text x="604" y="119" fill="#f8fafc" font-size="14" font-family="sans-serif">🎯</text>
+  <text x="626" y="119" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600">Verbatim Grounding</text>
+  <text x="604" y="142" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Character-for-character (G=1.0)</text>
+  <text x="604" y="162" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Zero ellipsis masking</text>
+  <text x="604" y="182" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• 50% Hallucination score slash</text>
+  <text x="604" y="210" fill="#f8fafc" font-size="14" font-family="sans-serif">👁️</text>
+  <text x="626" y="210" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600">Human Mk1 Review Gate</text>
+  <text x="604" y="233" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Sovereign human verification</text>
+  <text x="604" y="253" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Zero speculative automation</text>
+  <text x="604" y="273" fill="#94a3b8" font-size="10.5" font-family="sans-serif">• Galileo minority protections</text>
+
+  <!-- Connectors -->
+  <line x1="278" y1="200" x2="305" y2="200" stroke="#38bdf8" stroke-width="1.6" marker-end="url(#arrow-cyan)" />
+  <line x1="555" y1="200" x2="582" y2="200" stroke="#22c55e" stroke-width="1.6" marker-end="url(#arrow-emerald)" />
+</svg>

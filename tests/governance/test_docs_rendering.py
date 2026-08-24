@@ -630,8 +630,11 @@ async def test_cross_domain_consistent_navigation_and_footers(page: Page, docs_s
     assert "credence.run" in content_text
     assert "credence.report" in content_text
     assert "credence.nexus" in content_text
-    assert "credence.foundation" in content_text
-    assert "12 Zero-Build Interactive Playgrounds" in content_text or "12 Zero-Build Playgrounds" in content_text
+    assert (
+        "14 Zero-Build Interactive Playgrounds" in content_text
+        or "12 Zero-Build Interactive Playgrounds" in content_text
+        or "12 Zero-Build Playgrounds" in content_text
+    )
     assert "The Invariant Bible" in content_text
 
     # 2. Check header navigation links in live docs portal

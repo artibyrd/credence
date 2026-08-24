@@ -448,6 +448,10 @@ def test_zero_ascii_box_art_invariant(docs_root: Path) -> None:
                 f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII/UTF-8 box art. "
                 f"All diagrams must use native vector SVG illustrations in assets/illustrations/."
             )
+            assert not re.search(r"\+[-=]{4,}\+", block), (
+                f"Invariant 34 Violation in {md_file.name} (block #{idx + 1}): Found legacy ASCII box boundaries (+---+). "
+                f"All diagrams must use native vector SVG illustrations in assets/illustrations/ or Markdown tables."
+            )
 
 
 @pytest.mark.governance
