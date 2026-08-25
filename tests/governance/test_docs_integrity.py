@@ -2367,3 +2367,59 @@ def test_all_articles_and_docs_have_leading_h1_title_headers(docs_root: Path) ->
     assert not missing_h1, f"Found {len(missing_h1)} headless or improperly headed markdown files:\n" + "\n".join(
         f"  - {item}" for item in missing_h1
     )
+
+
+def test_svg_illustrations_visual_integrity_and_text_budget():
+    """Validates that all SVG illustrations are visual-first architectural schematics.
+
+    Enforces:
+    1. Zero bullet point characters (•, *, -, 1., etc.) in SVG text nodes.
+    2. Text line length limit (<= 38 chars) to prevent paragraph cramming into nodes.
+    3. Strict text budget (<= 450 total text characters per SVG).
+    4. Meaningful visual geometry (contains flow paths, directional arrows, or topology nodes).
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    illustrations_dir = repo_root / "credence-docs" / "assets" / "illustrations"
+    assert illustrations_dir.is_dir(), f"Illustrations directory not found at {illustrations_dir}"
+
+    svg_files = list(illustrations_dir.glob("*.svg"))
+    assert len(svg_files) >= 30, f"Expected >= 30 SVG illustrations, found {len(svg_files)}"
+
+    violations = []
+    for svg_file in svg_files:
+        content = svg_file.read_text(encoding="utf-8")
+
+        # 1. Check for bullet points
+        text_elements = re.findall(r"<text\b[^>]*>(.*?)</text>", content, re.DOTALL)
+        cleaned_texts = [re.sub(r"<[^>]+>", "", t).strip() for t in text_elements if t.strip()]
+
+        bullets = [t for t in cleaned_texts if t.startswith(("•", "* ", "- ", "1. ", "2. ", "3. ", "4. ", "5. "))]
+        if bullets:
+            violations.append(f"{svg_file.name}: Contains {len(bullets)} bullet points ({bullets[:2]})")
+
+        # 2. Check for long prose lines in nodes (max 38 chars)
+        long_lines = [t for t in cleaned_texts if len(t) > 38 and not t.isupper()]
+        if len(long_lines) > 2:
+            violations.append(f"{svg_file.name}: Contains {len(long_lines)} long prose lines ({long_lines[:2]})")
+
+        # 3. Check total text character budget (max 450 chars)
+        total_chars = sum(len(t) for t in cleaned_texts)
+        if total_chars > 450:
+            violations.append(f"{svg_file.name}: Exceeds text character budget ({total_chars} > 450 chars)")
+
+        # 4. Check for visual schematic elements (lines, paths, markers, circles)
+        has_visual_connectors = (
+            "marker-end" in content
+            or "<path" in content
+            or "<circle" in content
+            or "<polygon" in content
+            or "<line" in content
+        )
+        if not has_visual_connectors:
+            violations.append(
+                f"{svg_file.name}: Missing visual schematic geometry (no flow paths, connectors, or nodes)"
+            )
+
+    assert not violations, f"Found {len(violations)} SVG illustration visual integrity violations:\n" + "\n".join(
+        f"  - {v}" for v in violations
+    )

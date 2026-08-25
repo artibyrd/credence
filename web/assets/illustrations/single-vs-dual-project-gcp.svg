@@ -1,42 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" width="100%" height="auto" style="background: transparent;">
   <defs>
     <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
     </linearGradient>
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#16a34a" />
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f43f5e" />
+      <stop offset="100%" stop-color="#e11d48" />
+    </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
     </filter>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
   </defs>
-
-  <rect width="880" height="380" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-
-  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">CLOUD INFRASTRUCTURE TOPOLOGY</text>
-  <text x="32" y="56" fill="#f8fafc" font-size="16" font-family="system-ui, sans-serif" font-weight="bold">SINGLE-PROJECT PREFIXING VS DUAL-PROJECT HARD IAM ISOLATION</text>
-
-  <!-- Left: Single-Project Architecture -->
-  <rect x="32" y="80" width="395" height="260" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="32" y="80" width="395" height="30" rx="10" fill="rgba(56, 189, 248, 0.15)" />
-  <text x="48" y="100" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold">SINGLE GCP PROJECT (NAME-PREFIXED)</text>
-  <text x="48" y="134" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Simpler Homelab &amp; Small Org Setup</text>
-  <text x="48" y="156" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Dev: `credence-server-dev`, `gemini-api-key-dev`</text>
-  <text x="48" y="176" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Prod: `credence-server-prod`, `gemini-api-key-prod`</text>
-  <text x="48" y="196" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Single billing account &amp; single terraform state</text>
-  <rect x="48" y="220" width="363" height="100" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.0" />
-  <text x="60" y="244" fill="#38bdf8" font-size="10.5" font-family="monospace">Deployment: terraform/envs/unified</text>
-  <text x="60" y="264" fill="#94a3b8" font-size="10.5" font-family="monospace">IAM Scope: Shared project boundary</text>
-  <text x="60" y="284" fill="#86efac" font-size="10" font-family="system-ui, sans-serif">Ideal for individual operators &amp; self-hosters</text>
-
-  <!-- Right: Dual-Project Architecture -->
-  <rect x="453" y="80" width="395" height="260" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="453" y="80" width="395" height="30" rx="10" fill="rgba(34, 197, 94, 0.15)" />
-  <text x="469" y="100" fill="#22c55e" font-size="11" font-family="monospace" font-weight="bold">DUAL GCP PROJECT (HARD IAM ISOLATION)</text>
-  <text x="469" y="134" fill="#f8fafc" font-size="12" font-family="system-ui, sans-serif" font-weight="600">Enterprise &amp; Sovereign Federation</text>
-  <text x="469" y="156" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Dev Project: `credence-dev-495173`</text>
-  <text x="469" y="176" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Prod Project: `credence-prod-505902`</text>
-  <text x="469" y="196" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">• Zero IAM bleed; distinct Workload Identity pools</text>
-  <rect x="469" y="220" width="363" height="100" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.0" />
-  <text x="481" y="244" fill="#22c55e" font-size="10.5" font-family="monospace">Deployment: Keyless GitHub Actions WIF</text>
-  <text x="481" y="264" fill="#94a3b8" font-size="10.5" font-family="monospace">Security: Strict blast radius containment</text>
-  <text x="481" y="284" fill="#86efac" font-size="10" font-family="system-ui, sans-serif">Recommended for production sovereign orgs</text>
+  <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">INFRA PLANE</text>
+  <text x="32" y="56" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="bold">LEAST-PRIVILEGE GCP PROJECT TOPOLOGY</text>
+  <rect x="40" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="40" y="90" width="170" height="4" rx="2" fill="url(#rose-glow)" />
+  <circle cx="68" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#ef4444" stroke-width="1.0" />
+  <text x="68" y="127" font-size="13" text-anchor="middle">🛡️</text>
+  <text x="90" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">SSRF Defense</text>
+  <text x="56" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Private IP Block</text>
+  <rect x="56" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
+  <text x="125" y="190" fill="#ef4444" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">169.254/16</text>
+  <line x1="214" y1="150" x2="239" y2="150" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
+  <rect x="243" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="243" y="90" width="170" height="4" rx="2" fill="url(#cyan-glow)" />
+  <circle cx="271" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#38bdf8" stroke-width="1.0" />
+  <text x="271" y="127" font-size="13" text-anchor="middle">🔑</text>
+  <text x="293" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Keyless WIF</text>
+  <text x="259" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">OIDC Identity</text>
+  <rect x="259" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
+  <text x="328" y="190" fill="#38bdf8" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Zero Keys</text>
+  <line x1="417" y1="150" x2="442" y2="150" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
+  <rect x="446" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="446" y="90" width="170" height="4" rx="2" fill="url(#emerald-glow)" />
+  <circle cx="474" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#22c55e" stroke-width="1.0" />
+  <text x="474" y="127" font-size="13" text-anchor="middle">📜</text>
+  <text x="496" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">RFC 8785</text>
+  <text x="462" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Canonical JSON</text>
+  <rect x="462" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
+  <text x="531" y="190" fill="#22c55e" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Deterministic</text>
+  <line x1="620" y1="150" x2="645" y2="150" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
+  <rect x="649" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="649" y="90" width="170" height="4" rx="2" fill="url(#amber-glow)" />
+  <circle cx="677" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#f59e0b" stroke-width="1.0" />
+  <text x="677" y="127" font-size="13" text-anchor="middle">🔏</text>
+  <text x="699" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Ed25519 Sign</text>
+  <text x="665" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Peer Attestation</text>
+  <rect x="665" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
+  <text x="734" y="190" fill="#f59e0b" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Custody Gate</text>
 </svg>
