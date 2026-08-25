@@ -1353,7 +1353,15 @@ def test_dashboard_info_modals_and_docs_linkage_parity(docs_root: Path) -> None:
     # 3. Verify all doc URLs in INFO_TOPICS resolve to real markdown files on disk
     urls = re.findall(r'url:\s*["\']([^"\']+)["\']', content)
     for u in urls:
-        if "docs.credence.run#" in u:
+        if "docs.credence.run/" in u:
+            slug = u.split("docs.credence.run/")[1].split("#")[0]
+            target_md = docs_root / f"{slug}.md"
+            target_md_direct = docs_root / "docs" / f"{slug.replace('docs/', '')}.md"
+            target_blog = docs_root / "blog" / f"{slug.replace('blog/', '')}.md"
+            assert target_md.exists() or target_md_direct.exists() or target_blog.exists(), (
+                f"URL '{u}' references missing documentation slug '{slug}'"
+            )
+        elif "docs.credence.run#" in u:
             slug = u.split("docs.credence.run#")[1].split("#")[0]
             target_md = docs_root / f"{slug}.md"
             target_md_direct = docs_root / "docs" / f"{slug.replace('docs/', '')}.md"
@@ -1361,6 +1369,10 @@ def test_dashboard_info_modals_and_docs_linkage_parity(docs_root: Path) -> None:
             assert target_md.exists() or target_md_direct.exists() or target_blog.exists(), (
                 f"URL '{u}' references missing documentation slug '{slug}'"
             )
+        elif "blog.credence.run/" in u:
+            slug = u.split("blog.credence.run/")[1].split("#")[0]
+            target_blog = docs_root / "blog" / f"{slug.replace('blog/', '')}.md"
+            assert target_blog.exists(), f"Blog URL '{u}' references missing blog essay '{slug}'"
         elif "blog.credence.run#" in u:
             slug = u.split("blog.credence.run#")[1].split("#")[0]
             target_blog = docs_root / "blog" / f"{slug.replace('blog/', '')}.md"
@@ -1714,13 +1726,28 @@ def test_info_modals_integrity_and_sync(docs_root: Path) -> None:
     # 2. Check that all URLs in INFO_TOPICS resolve to real docs
     urls = re.findall(r"url:\s*\"([^\"]+)\"", block)
     for u in urls:
-        if u.startswith("https://docs.credence.run#"):
+        if u.startswith("https://docs.credence.run/"):
+            path_part = u.split("https://docs.credence.run/")[1].split("#")[0]
+            target_md = docs_root / (path_part + ".md")
+            target_md_docs = docs_root / "docs" / (path_part + ".md")
+            target_html = docs_root / (path_part + ".html")
+            assert (
+                target_md.exists()
+                or target_md_docs.exists()
+                or target_html.exists()
+                or (docs_root / path_part).exists()
+            ), f"Broken link in INFO_TOPICS: {u} (expected {target_md})"
+        elif u.startswith("https://docs.credence.run#"):
             path_part = u.split("#")[1].split("#")[0]
             target_md = docs_root / (path_part + ".md")
             target_html = docs_root / (path_part + ".html")
             assert target_md.exists() or target_html.exists() or (docs_root / path_part).exists(), (
                 f"Broken link in INFO_TOPICS: {u} (expected {target_md})"
             )
+        elif u.startswith("https://blog.credence.run/"):
+            slug = u.split("https://blog.credence.run/")[1].split("#")[0]
+            target_blog = docs_root / "blog" / (slug + ".md")
+            assert target_blog.exists(), f"Broken blog link in INFO_TOPICS: {u} (expected {target_blog})"
         elif u.startswith("https://blog.credence.run#"):
             slug = u.split("#")[1]
             target_blog = docs_root / "blog" / (slug + ".md")
@@ -1752,14 +1779,19 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
     assert "docs.credence.run" in worker_text, "_worker.js must define docs.credence.run domain routing"
     assert "blog.credence.run" in worker_text, "_worker.js must define blog.credence.run domain routing"
 
-    # 3. Verify app.js rejects HTML payloads for markdown and enforces cross-domain routing
+    # 3. Verify app.js rejects HTML payloads for markdown and exports clean routing functions
     app_js_path = docs_root / "app.js"
     assert app_js_path.exists()
     app_js_text = app_js_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
     assert "getDomainContext" in app_js_text, "app.js must export getDomainContext"
-    assert "getDocsBaseUrl" in app_js_text, "app.js must export getDocsBaseUrl"
-    assert "getBlogBaseUrl" in app_js_text, "app.js must export getBlogBaseUrl"
+    assert "resolveDocument" in app_js_text, "app.js must export resolveDocument"
+    assert "getCanonicalDocUrl" in app_js_text, "app.js must export getCanonicalDocUrl"
+
+    # 4. Verify _redirects exists for Cloudflare Pages SPA clean slug routing
+    redirects_path = docs_root / "_redirects"
+    assert redirects_path.exists(), "credence-docs/_redirects must exist for Cloudflare Pages SPA routing"
+    assert "/* /index.html 200" in redirects_path.read_text(encoding="utf-8")
 
 
 @pytest.mark.governance

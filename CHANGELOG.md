@@ -11,6 +11,17 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.16.7] - 2026-08-25
+
+### Fixed
+- **Zero-Hash Clean URL Routing & Canonical Slugs (`credence-docs/app.js` & `_worker.js`)**:
+  - Eliminated legacy hash-based routing (`#blog/...` and `#docs/...`) in favor of pure, clean URL path slugs across all documentation and blog essays (e.g. `https://blog.credence.run/the-pizza-hut-problem` and `https://docs.credence.run/protocols/scoring`).
+  - Added `resolveDocument()`, `getCanonicalDocUrl()`, and `getCleanRelativePath()` to decouple path resolution from fragment identifiers, reserving `#hash` strictly for in-page section DOM anchors.
+  - Implemented zero-reload internal client transitions via HTML5 `history.pushState` and `popstate` event listening.
+  - Added Cloudflare Pages SPA rules (`_redirects` with `/* /index.html 200` and `404.html`) and edge proxy fallback in `web/_worker.js`.
+  - Converted all 30 workstation modal knowledge topic URLs and static landing links to clean path canonical URLs.
+  - Added dynamic `<base>` tag injection in `index.html` to support nested clean paths and dev preview isolation without broken asset resolution.
+
 ## [2.14.1] - 2026-08-23
 
 ### Fixed

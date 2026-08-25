@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.16.6";
+export const CREDENCE_VERSION = "v2.16.7";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -493,8 +493,8 @@ const INFO_TOPICS = {
     math_proof: null,
     invariants: ["inv-verbatim-grounding", "inv-fastmcp-datetime-serialization"],
     links: [
-      { label: "📘 CLI Scripting & Search Guide", url: "https://docs.credence.run#docs/integrations/cli-scripting-guide", desc: "Automate batch evaluations and headless search queries" },
-      { label: "🧪 Interactive Playground", url: "https://docs.credence.run#docs/playground", desc: "Simulate adversarial payloads and cloaking in-browser" }
+      { label: "📘 CLI Scripting & Search Guide", url: "https://docs.credence.run/integrations/cli-scripting-guide", desc: "Automate batch evaluations and headless search queries" },
+      { label: "🧪 Interactive Playground", url: "https://docs.credence.run/playground", desc: "Simulate adversarial payloads and cloaking in-browser" }
     ]
   },
 
@@ -510,7 +510,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "📘 Architectural Blueprint: Sovereign Data Gravity & CAS Portability",
       desc: "How Credence ensures sovereign node data custody and zero-effort re-evaluation.",
-      url: "https://docs.credence.run#docs/blueprints/sovereign-data-gravity-and-cas-portability"
+      url: "https://docs.credence.run/blueprints/sovereign-data-gravity-and-cas-portability"
     },
     tier2_mechanics: [
       "<b>Atomic SQLite Snapshots</b>: Uses the SQLite Backup API with WAL truncation to ensure zero-lock snapshots.",
@@ -521,8 +521,8 @@ const INFO_TOPICS = {
     math_proof: "Archive Integrity: SHA256(Gzip(SQLite)) == Manifest.sha256_hash verified under Ed25519(CanonicalJSON(Manifest)).",
     invariants: ["inv-canonical-json-ed25519", "inv-4way-parity-symmetric-web"],
     links: [
-      { label: "📘 Sovereign Data Gravity Blueprint", url: "https://docs.credence.run#docs/blueprints/sovereign-data-gravity-and-cas-portability", desc: "CAS portability and SQLite-to-PostgreSQL storage architecture" },
-      { label: "📘 Cloud Run Deployment & Ops", url: "https://docs.credence.run#docs/deployment-cloudrun", desc: "Automated container lifecycle and cloud backup hooks" }
+      { label: "📘 Sovereign Data Gravity Blueprint", url: "https://docs.credence.run/blueprints/sovereign-data-gravity-and-cas-portability", desc: "CAS portability and SQLite-to-PostgreSQL storage architecture" },
+      { label: "📘 Cloud Run Deployment & Ops", url: "https://docs.credence.run/deployment-cloudrun", desc: "Automated container lifecycle and cloud backup hooks" }
     ]
   },
 
@@ -538,7 +538,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "📘 Curiosity Loop Architecture & Dual-Soil Ingestion",
       desc: "How autonomous agents maintain high-velocity truth detection within token ceilings.",
-      url: "https://docs.credence.run#docs/blueprints/sovereign-data-gravity-and-cas-portability"
+      url: "https://docs.credence.run/blueprints/sovereign-data-gravity-and-cas-portability"
     },
     tier2_mechanics: [
       "<b>Dual-Soil Balancing</b>: Partitions ingestion into 60% trusted sources and 40% adversarial/probationary probes.",
@@ -549,7 +549,7 @@ const INFO_TOPICS = {
     math_proof: "Curiosity Equilibrium: Harvest(t) = 0.60 * S_clean + 0.40 * S_adversarial constrained by Headroom(t) >= 0.30.",
     invariants: ["inv-multi-model-sovereignty", "inv-production-telemetry-boundary"],
     links: [
-      { label: "📘 Feed Ingestion & Boredom Guide", url: "https://docs.credence.run#docs/tutorials/09-zero-trust-feed-sifter-digest", desc: "Autonomous ingestion daemons and background tasks" }
+      { label: "📘 Feed Ingestion & Boredom Guide", url: "https://docs.credence.run/tutorials/09-zero-trust-feed-sifter-digest", desc: "Autonomous ingestion daemons and background tasks" }
     ]
   },
 
@@ -576,9 +576,9 @@ const INFO_TOPICS = {
     math_proof: "Cross-Entropy: H(P, Q) = -Σ P(x) log Q(x) evaluated across Free, Balanced, and Ultra inference profiles.",
     invariants: ["inv-canonical-json-ed25519", "inv-playwright-rendering-tests"],
     links: [
-      { label: "📘 Golden 12 Benchmark Blueprint", url: "https://docs.credence.run#docs/tutorials/10-reusable-live-e2e-and-mesh-gauntlet", desc: "Precision, recall, and cross-entropy evaluation gauntlet" },
-      { label: "✍️ The Blue Checkmark is Dead", url: "https://blog.credence.run#the-blue-checkmark-is-dead", desc: "Why cryptographic receipts replace centralized platform trust badges" },
-      { label: "✍️ The Pareto Frontier of Truth", url: "https://blog.credence.run#the-pareto-frontier-of-truth", desc: "Balancing false positives with high-severity evasion detection" }
+      { label: "📘 Golden 12 Benchmark Blueprint", url: "https://docs.credence.run/tutorials/10-reusable-live-e2e-and-mesh-gauntlet", desc: "Precision, recall, and cross-entropy evaluation gauntlet" },
+      { label: "✍️ The Blue Checkmark is Dead", url: "https://blog.credence.run/the-blue-checkmark-is-dead", desc: "Why cryptographic receipts replace centralized platform trust badges" },
+      { label: "✍️ The Pareto Frontier of Truth", url: "https://blog.credence.run/the-pareto-frontier-of-truth", desc: "Balancing false positives with high-severity evasion detection" }
     ]
   },
 
@@ -596,7 +596,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Scoring the Lens, Not the Window",
       desc: "How structured cognitive depth prevents auditor fatigue and information overload.",
-      url: "https://blog.credence.run#scoring-the-lens-not-the-window"
+      url: "https://blog.credence.run/scoring-the-lens-not-the-window"
     },
     tier2_mechanics: [
       "<b>Lens 1 (Glance)</b>: Circular score dial (0–100), trust badge (Tier A–D), and a 1-sentence verdict with zero math.",
@@ -607,8 +607,8 @@ const INFO_TOPICS = {
     math_proof: "Information Pyramid Invariant: Depth(L1) ⊂ Evidence(L2) ⊂ CryptographicProof(L3). Strict zero-redundancy across layers.",
     invariants: ["inv-information-pyramid-lensing", "inv-verbatim-grounding"],
     links: [
-      { label: "📘 Epistemic Lensing Technical Blueprint", url: "https://docs.credence.run#docs/blueprints/information-pyramid-and-epistemic-lensing", desc: "Full architectural specification of the 3-tier cognitive hierarchy" },
-      { label: "🧪 Interactive Lensing Simulator", url: "https://docs.credence.run#docs/playground", desc: "Test real-time switching across Surface, Focus, and Spectrum lenses" }
+      { label: "📘 Epistemic Lensing Technical Blueprint", url: "https://docs.credence.run/blueprints/information-pyramid-and-epistemic-lensing", desc: "Full architectural specification of the 3-tier cognitive hierarchy" },
+      { label: "🧪 Interactive Lensing Simulator", url: "https://docs.credence.run/playground", desc: "Test real-time switching across Surface, Focus, and Spectrum lenses" }
     ]
   },
 
@@ -638,8 +638,8 @@ const INFO_TOPICS = {
     math_proof: "S = min(100, Σ (w_i · severity_i · domain_multiplier)). Satire: S = 0.0 unless SPJ-1.6 cloaking override triggered.",
     invariants: ["inv-topic-entropy-defense", "inv-poes-law-satire"],
     links: [
-      { label: "📘 Scoring & Thresholds Blueprint", url: "https://docs.credence.run#docs/walkthroughs/01-auditing-webpages-and-text", desc: "Mathematical formulations, severity weights, and threshold boundaries" },
-      { label: "✍️ The Pareto Frontier of Truth", url: "https://blog.credence.run#the-pareto-frontier-of-truth", desc: "Balancing false positive rates with high-severity evasion detection" }
+      { label: "📘 Scoring & Thresholds Blueprint", url: "https://docs.credence.run/walkthroughs/01-auditing-webpages-and-text", desc: "Mathematical formulations, severity weights, and threshold boundaries" },
+      { label: "✍️ The Pareto Frontier of Truth", url: "https://blog.credence.run/the-pareto-frontier-of-truth", desc: "Balancing false positive rates with high-severity evasion detection" }
     ]
   },
 
@@ -655,7 +655,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Confessions of a Bored AI",
       desc: "How strict character-for-character grounding eliminates synthetic hallucinations.",
-      url: "https://blog.credence.run#confessions-of-a-bored-ai"
+      url: "https://blog.credence.run/confessions-of-a-bored-ai"
     },
     tier2_mechanics: [
       "<b>Character-for-Character Exactness</b>: Quotes must match the source web page text exactly after basic whitespace collapse.",
@@ -666,7 +666,7 @@ const INFO_TOPICS = {
     math_proof: "Grounding Exactness: G = |Quote_cited ∩ DOM_source| / |Quote_cited| = 1.000. Rejects any G < 1.00.",
     invariants: ["inv-verbatim-grounding", "inv-canonical-json-ed25519"],
     links: [
-      { label: "📘 Living Invariant Canon", url: "https://docs.credence.run#docs/invariants", desc: "Mathematical proofs and non-negotiable guardrails" }
+      { label: "📘 Living Invariant Canon", url: "https://docs.credence.run/invariants", desc: "Mathematical proofs and non-negotiable guardrails" }
     ]
   },
 
@@ -693,8 +693,8 @@ const INFO_TOPICS = {
     math_proof: "Hamming Distance: d_H(SimHash(t_0), SimHash(t_1)) = Σ (b_0 ⊕ b_1). Drift flagged when d_H > 3 bits without correction.",
     invariants: ["inv-bittorrent-worksharing", "inv-version-governance"],
     links: [
-      { label: "📘 Temporal Content Evolution Lab", url: "https://docs.credence.run#docs/lab-content-evolution", desc: "Inspect live multi-snapshot diff trajectories and stealth edit flags" },
-      { label: "📘 SimHash Mirror Detection Mathematics", url: "https://docs.credence.run#docs/lab-content-evolution", desc: "Mathematical proof of 64-bit Hamming distance thresholds" }
+      { label: "📘 Temporal Content Evolution Lab", url: "https://docs.credence.run/lab-content-evolution", desc: "Inspect live multi-snapshot diff trajectories and stealth edit flags" },
+      { label: "📘 SimHash Mirror Detection Mathematics", url: "https://docs.credence.run/lab-content-evolution", desc: "Mathematical proof of 64-bit Hamming distance thresholds" }
     ]
   },
 
@@ -710,7 +710,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "📘 Frontend Zero-Build Architecture",
       desc: "How Credence runs client-side cryptographic verification with zero npm packages.",
-      url: "https://docs.credence.run#docs/feature-parity"
+      url: "https://docs.credence.run/feature-parity"
     },
     tier2_mechanics: [
       "<b>Native Browser Crypto</b>: Uses standard <code>window.crypto.subtle.verify</code> with pure Ed25519 keys.",
@@ -721,7 +721,7 @@ const INFO_TOPICS = {
     math_proof: "PureEdDSA Verification: Verify(K_pub, M_rfc8785, Sig_Ed25519) ∈ {0, 1}. Executed in-memory in <0.3ms.",
     invariants: ["inv-canonical-json-ed25519", "inv-zero-build-standards"],
     links: [
-      { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Dual-crypto conformance and key rotation ceremonies" }
+      { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run/blueprints/security-architecture-and-threat-model", desc: "Dual-crypto conformance and key rotation ceremonies" }
     ]
   },
 
@@ -737,7 +737,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: The Domain Epistemic Index",
       desc: "Why long-term publisher track records matter more than single-article audits.",
-      url: "https://blog.credence.run#the-domain-epistemic-index"
+      url: "https://blog.credence.run/the-domain-epistemic-index"
     },
     tier2_mechanics: [
       "<b>Bayesian Smoothing</b>: Combines clean audits and violation flags so new publishers aren't unfairly penalized.",
@@ -748,7 +748,7 @@ const INFO_TOPICS = {
     math_proof: "DCI Score: DCI = 100 · (α + 1) / (α + β + 2). Longitudinal Stability: σ_30d = √(αβ / ((α+β)^2 · (α+β+1))).",
     invariants: ["inv-cloudflare-assets", "inv-version-governance"],
     links: [
-      { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run#docs/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics and domain normalization" }
+      { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics and domain normalization" }
     ]
   },
 
@@ -764,7 +764,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: BitTorrent Economics of Fact-Checking",
       desc: "How decentralized peer incentives create unbiased publisher rankings without corporate gatekeepers.",
-      url: "https://blog.credence.run#bittorrent-economics-of-fact-checking"
+      url: "https://blog.credence.run/bittorrent-economics-of-fact-checking"
     },
     tier2_mechanics: [
       "<b>Interactive Column Sorting</b>: Click any table header to sort publishers ascending or descending.",
@@ -775,8 +775,8 @@ const INFO_TOPICS = {
     math_proof: "Rank Order: Sort by DCI_score DESC, AvgSuspicion ASC. Laplace Smoothing: α_prior = 1.0, β_prior = 1.0.",
     invariants: ["inv-cloudflare-assets", "inv-progressive-disclosure"],
     links: [
-      { label: "📘 Terminology & Ontology Lexicon", url: "https://docs.credence.run#docs/blueprints/terminology-and-ontology-lexicon", desc: "Comprehensive definition of trust bands and scoring scales" },
-      { label: "📘 Robust Consensus Proofs", url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition", desc: "Mathematical theorems on Byzantine consensus resilience" }
+      { label: "📘 Terminology & Ontology Lexicon", url: "https://docs.credence.run/blueprints/terminology-and-ontology-lexicon", desc: "Comprehensive definition of trust bands and scoring scales" },
+      { label: "📘 Robust Consensus Proofs", url: "https://docs.credence.run/tutorials/08-sybil-cartel-demolition", desc: "Mathematical theorems on Byzantine consensus resilience" }
     ]
   },
 
@@ -792,7 +792,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: The Boredom Engine and Expanding Roots",
       desc: "How automated curiosity helps discover emerging news publishers before they go viral.",
-      url: "https://blog.credence.run#the-boredom-engine-and-expanding-roots"
+      url: "https://blog.credence.run/the-boredom-engine-and-expanding-roots"
     },
     tier2_mechanics: [
       "<b>Curiosity Loop</b>: Triggers candidate exploration when news cycles enter repetitive echo chambers.",
@@ -803,7 +803,7 @@ const INFO_TOPICS = {
     math_proof: "Boredom Score: B(t) = 1.0 - CosineSimilarity(Embedding_latest, Centroid_window). Explores when B(t) > 0.65.",
     invariants: ["inv-ssrf-defense", "inv-4k-thinking-budget"],
     links: [
-      { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run#docs/cookbooks/morning-feed-sifter", desc: "Setup automated headless RSS monitoring pipelines" }
+      { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run/cookbooks/morning-feed-sifter", desc: "Setup automated headless RSS monitoring pipelines" }
     ]
   },
 
@@ -823,7 +823,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "📘 Taxonomy Engineering Cookbook",
       desc: "How rule catalogs are written, calibrated, and cryptographically pinned.",
-      url: "https://docs.credence.run#docs/cookbooks/taxonomy-engineering"
+      url: "https://docs.credence.run/cookbooks/taxonomy-engineering"
     },
     tier2_mechanics: [
       "<b>Cryptographic Hash Pinning</b>: Each JSON rule catalog is locked with a SHA-256 hash so no one can silently change the rules.",
@@ -834,7 +834,7 @@ const INFO_TOPICS = {
     math_proof: "Integrity Hash: SHA256(RFC8785(Catalog_JSON)) pinned in root seed manifest.",
     invariants: ["inv-verbatim-grounding", "inv-poes-law-satire", "inv-fixed-taxonomies"],
     links: [
-      { label: "✍️ Poe's Law and the Satire Cloak", url: "https://blog.credence.run#poes-law-and-the-satire-cloak", desc: "Safeguarding humor while neutralizing malicious deceptive cloaking" }
+      { label: "✍️ Poe's Law and the Satire Cloak", url: "https://blog.credence.run/poes-law-and-the-satire-cloak", desc: "Safeguarding humor while neutralizing malicious deceptive cloaking" }
     ]
   },
 
@@ -850,7 +850,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: The Buzzfeed News Doctrine",
       desc: "How digital newsrooms balance breaking speed with investigative sourcing rigor.",
-      url: "https://blog.credence.run#the-buzzfeed-news-doctrine"
+      url: "https://blog.credence.run/the-buzzfeed-news-doctrine"
     },
     tier2_mechanics: [
       "<b>Core Rule Codes</b>: SPJ-1.1 (Unsourced Claims), SPJ-1.2 (Headline/Body Gap), SPJ-1.3 (Anonymous Attacks), SPJ-1.6 (Satire Cloaking), SPJ-4.1 (Stealth Edits).",
@@ -861,7 +861,7 @@ const INFO_TOPICS = {
     math_proof: "Weighted Impact: W_spj = 1.20 · Σ (Sev_i · GroundedMatch_i).",
     invariants: ["inv-verbatim-grounding", "inv-bittorrent-worksharing"],
     links: [
-      { label: "📘 Taxonomy Engineering Cookbook", url: "https://docs.credence.run#docs/cookbooks/taxonomy-engineering", desc: "Calibrating SPJ rule triggers and evidence thresholds" }
+      { label: "📘 Taxonomy Engineering Cookbook", url: "https://docs.credence.run/cookbooks/taxonomy-engineering", desc: "Calibrating SPJ rule triggers and evidence thresholds" }
     ]
   },
 
@@ -877,7 +877,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Conflict of Pun-terest",
       desc: "How to distinguish playful wit and harmless satire from dishonest rhetorical deception.",
-      url: "https://blog.credence.run#conflict-of-pun-terest"
+      url: "https://blog.credence.run/conflict-of-pun-terest"
     },
     tier2_mechanics: [
       "<b>15 Standard Fallacies</b>: IEP-1.1 (Ad Hominem), IEP-1.2 (Straw Man), IEP-1.3 (False Dilemma), IEP-2.1 (False Authority), IEP-3.1 (False Cause).",
@@ -888,7 +888,7 @@ const INFO_TOPICS = {
     math_proof: "Fallacy Impact: W_iep = 1.00 · Σ (Sev_i · GroundedMatch_i).",
     invariants: ["inv-verbatim-grounding", "inv-topic-entropy-defense"],
     links: [
-      { label: "📘 Mathematical Robustness Proofs", url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition", desc: "Mathematical dampening of rhetorical fallacies" }
+      { label: "📘 Mathematical Robustness Proofs", url: "https://docs.credence.run/tutorials/08-sybil-cartel-demolition", desc: "Mathematical dampening of rhetorical fallacies" }
     ]
   },
 
@@ -904,7 +904,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Case Study: Astroturfing Entropy & Dark Patterns",
       desc: "How coordinated deceptive funnels trick consumers across affiliate syndication networks.",
-      url: "https://blog.credence.run#case-study-astroturfing-entropy"
+      url: "https://blog.credence.run/case-study-astroturfing-entropy"
     },
     tier2_mechanics: [
       "<b>8 Core Dark Patterns</b>: DEC-1.1 (Drip Pricing), DEC-1.2 (Confirmshaming), DEC-3.1 (Fake System Warnings), DEC-2.1 (Forced Continuity).",
@@ -915,7 +915,7 @@ const INFO_TOPICS = {
     math_proof: "Deceptive Impact: W_dec = 1.50 · Σ (Sev_i · GroundedMatch_i).",
     invariants: ["inv-web-component-zero-clone", "inv-zero-build-math"],
     links: [
-      { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Detecting clickjacking and deceptive interfaces" }
+      { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run/blueprints/security-architecture-and-threat-model", desc: "Detecting clickjacking and deceptive interfaces" }
     ]
   },
 
@@ -931,7 +931,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Blast Radius Containment",
       desc: "Why cryptographic seals protect historical audit receipts even if a single server goes down.",
-      url: "https://blog.credence.run#blast-radius-containment-in-decentralized-networks"
+      url: "https://blog.credence.run/blast-radius-containment-in-decentralized-networks"
     },
     tier2_mechanics: [
       "<b>Ed25519 High-Speed Signatures</b>: Tamper-proof Edwards-curve digital signatures with zero known backdoors.",
@@ -942,7 +942,7 @@ const INFO_TOPICS = {
     math_proof: "Signature Scheme: PureEdDSA on Curve25519 with SHA-512 (RFC 8032). Key pinned at root.pub.",
     invariants: ["inv-canonical-json-ed25519", "inv-xml-safety"],
     links: [
-      { label: "📘 Security Threat Model & Key Custody", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Cryptographic threat vectors, blast radius containment, and key rotation" }
+      { label: "📘 Security Threat Model & Key Custody", url: "https://docs.credence.run/blueprints/security-architecture-and-threat-model", desc: "Cryptographic threat vectors, blast radius containment, and key rotation" }
     ]
   },
 
@@ -958,7 +958,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: The Beauty of Hermetic Environments",
       desc: "How deterministic byte serialization guarantees bit-for-bit parity across all platforms.",
-      url: "https://blog.credence.run#the-beauty-of-hermetic-environments"
+      url: "https://blog.credence.run/the-beauty-of-hermetic-environments"
     },
     tier2_mechanics: [
       "<b>Alphabetical Key Ordering</b>: Object keys are strictly sorted by Unicode value.",
@@ -969,7 +969,7 @@ const INFO_TOPICS = {
     math_proof: "RFC 8785 Rule: CanonicalBytes(Obj_A) == CanonicalBytes(Obj_B) ⟺ Obj_A ≡ Obj_B.",
     invariants: ["inv-canonical-json-ed25519", "inv-4way-feature-parity"],
     links: [
-      { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run#docs/blueprints/security-architecture-and-threat-model", desc: "Canonical JSON specifications and cross-runtime test gauntlets" }
+      { label: "📘 Security Architecture & Threat Model", url: "https://docs.credence.run/blueprints/security-architecture-and-threat-model", desc: "Canonical JSON specifications and cross-runtime test gauntlets" }
     ]
   },
 
@@ -985,7 +985,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Scaling System Invariants Without Prompt Bloat",
       desc: "How shift-left automated tests enforce rules without overwhelming AI memory.",
-      url: "https://blog.credence.run#scaling-system-invariants-without-prompt-bloat"
+      url: "https://blog.credence.run/scaling-system-invariants-without-prompt-bloat"
     },
     tier2_mechanics: [
       "<b>The Invariant Bible</b>: The living canon of universal non-negotiable architectural laws governing every file and turn.",
@@ -996,8 +996,8 @@ const INFO_TOPICS = {
     math_proof: "Byzantine Quorum for RFC Ratification: Consensus ≥ 66.7% (2f+1 honest votes).",
     invariants: ["inv-mk1-eyeball", "inv-order-of-operations", "inv-version-governance"],
     links: [
-      { label: "📘 Invariant Scalability & Knowledge Governance", url: "https://docs.credence.run#docs/blueprints/invariant-scalability-and-knowledge-governance", desc: "3-tier scalable invariant architecture and context economy" },
-      { label: "📘 The Living Invariant Canon", url: "https://docs.credence.run#docs/invariants", desc: "Complete mathematical proofs and non-negotiable guardrails" }
+      { label: "📘 Invariant Scalability & Knowledge Governance", url: "https://docs.credence.run/blueprints/invariant-scalability-and-knowledge-governance", desc: "3-tier scalable invariant architecture and context economy" },
+      { label: "📘 The Living Invariant Canon", url: "https://docs.credence.run/invariants", desc: "Complete mathematical proofs and non-negotiable guardrails" }
     ]
   },
 
@@ -1014,7 +1014,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Testing 13-Node Swarms on a Raspberry Pi",
       desc: "How we tested a cluster of 13 independent nodes running locally with zero memory leaks.",
-      url: "https://blog.credence.run#testing-13-node-swarms-on-a-raspberry-pi"
+      url: "https://blog.credence.run/testing-13-node-swarms-on-a-raspberry-pi"
     },
     tier2_mechanics: [
       "<b>Byzantine Fault Tolerance</b>: Formula: f = ⌊(N-1)/3⌋. Scales smoothly from a single laptop (f=0) to huge networks.",
@@ -1025,8 +1025,8 @@ const INFO_TOPICS = {
     math_proof: "HRW Rendezvous Function: Node_assigned(URL) = argmax_i ( HMAC-SHA256(Node_i.pubkey, URL) ).",
     invariants: ["inv-byzantine-cartel-resistance", "inv-edge-canonicalization"],
     links: [
-      { label: "📘 Mesh Architecture Technical Blueprint", url: "https://docs.credence.run#docs/walkthroughs/03-p2p-mesh-consensus", desc: "P2P protocol specification, HRW rendezvous routing, and gossip sync" },
-      { label: "🧪 Interactive Mesh Playground", url: "https://docs.credence.run#docs/playground", desc: "Simulate Byzantine partition attacks and cartel isolation in-browser" }
+      { label: "📘 Mesh Architecture Technical Blueprint", url: "https://docs.credence.run/walkthroughs/03-p2p-mesh-consensus", desc: "P2P protocol specification, HRW rendezvous routing, and gossip sync" },
+      { label: "🧪 Interactive Mesh Playground", url: "https://docs.credence.run/playground", desc: "Simulate Byzantine partition attacks and cartel isolation in-browser" }
     ]
   },
 
@@ -1042,7 +1042,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "📘 Robust Consensus Proofs Mathematics",
       desc: "Full mathematical proof of Byzantine cartel resistance and fault tolerance.",
-      url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition"
+      url: "https://docs.credence.run/tutorials/08-sybil-cartel-demolition"
     },
     tier2_mechanics: [
       "<b>The 2f+1 Quorum Rule</b>: Requires agreement from at least 2f+1 honest nodes out of 3f+1 total nodes.",
@@ -1053,7 +1053,7 @@ const INFO_TOPICS = {
     math_proof: "Quorum Condition: |V_ratified| ≥ 2f + 1 where f = ⌊(N-1)/3⌋. Total nodes N ≥ 3f + 1.",
     invariants: ["inv-byzantine-cartel-resistance", "inv-galileo-rule"],
     links: [
-      { label: "✍️ Blast Radius Containment", url: "https://blog.credence.run#blast-radius-containment-in-decentralized-networks", desc: "Decentralized containment of compromised nodes" }
+      { label: "✍️ Blast Radius Containment", url: "https://blog.credence.run/blast-radius-containment-in-decentralized-networks", desc: "Decentralized containment of compromised nodes" }
     ]
   },
 
@@ -1069,7 +1069,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Real-Time Mesh Observability",
       desc: "How ultra-lightweight gossip protocols broadcast verifications without slowing down networks.",
-      url: "https://blog.credence.run#real-time-mesh-observability"
+      url: "https://blog.credence.run/real-time-mesh-observability"
     },
     tier2_mechanics: [
       "<b>Epidemic Dissemination</b>: Information spreads across the entire world in O(log N) quick rounds.",
@@ -1080,7 +1080,7 @@ const INFO_TOPICS = {
     math_proof: "Gossip Latency: T_sync = O(log N) rounds with fanout k=3 peers per cycle.",
     invariants: ["inv-canonical-json-ed25519", "inv-byzantine-cartel-resistance"],
     links: [
-      { label: "📘 Mesh Architecture Technical Blueprint", url: "https://docs.credence.run#docs/walkthroughs/03-p2p-mesh-consensus", desc: "WebSocket transport, gossip payloads, and reconnection backoff" }
+      { label: "📘 Mesh Architecture Technical Blueprint", url: "https://docs.credence.run/walkthroughs/03-p2p-mesh-consensus", desc: "WebSocket transport, gossip payloads, and reconnection backoff" }
     ]
   },
 
@@ -1096,7 +1096,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Gamifying Truth Without the Casino",
       desc: "How decentralized peer quality scores reward factual accuracy without crypto speculation.",
-      url: "https://blog.credence.run#gamifying-truth-without-the-casino"
+      url: "https://blog.credence.run/gamifying-truth-without-the-casino"
     },
     tier2_mechanics: [
       "<b>5 Score Components</b>: Uptime (30%), Consensus Alignment (25%), Exact Grounding (20%), Subject Reputation (15%), Peer Review (10%).",
@@ -1107,8 +1107,8 @@ const INFO_TOPICS = {
     math_proof: "Q_i = 0.30·U_i + 0.25·C_i + 0.20·G_i + 0.15·R_i + 0.10·P_i where Q_i ∈ [0, 1]. Slashing penalty: Q_i = 0.50·Q_i on hallucination.",
     invariants: ["inv-5factor-node-quality", "inv-empirical-expertise", "inv-verbatim-grounding"],
     links: [
-      { label: "📘 Terminology & Ontology Lexicon", url: "https://docs.credence.run#docs/blueprints/terminology-and-ontology-lexicon", desc: "Quality formulations and epoch reward schedules" },
-      { label: "📘 Robust Consensus Proofs", url: "https://docs.credence.run#docs/tutorials/08-sybil-cartel-demolition", desc: "Mathematical proofs of cartel resistance and quality convergence" }
+      { label: "📘 Terminology & Ontology Lexicon", url: "https://docs.credence.run/blueprints/terminology-and-ontology-lexicon", desc: "Quality formulations and epoch reward schedules" },
+      { label: "📘 Robust Consensus Proofs", url: "https://docs.credence.run/tutorials/08-sybil-cartel-demolition", desc: "Mathematical proofs of cartel resistance and quality convergence" }
     ]
   },
 
@@ -1124,7 +1124,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Taming the 10-Second Cold Start",
       desc: "How we reduced Cloud Run server startup time from 10 seconds down to 850ms.",
-      url: "https://blog.credence.run#taming-the-10-second-cold-start-scale-to-zero"
+      url: "https://blog.credence.run/taming-the-10-second-cold-start-scale-to-zero"
     },
     tier2_mechanics: [
       "<b>Sub-Second Cold Starts</b>: Google Cloud Run Gen 2 container optimization with Startup CPU Boost and precompiled bytecode.",
@@ -1135,8 +1135,8 @@ const INFO_TOPICS = {
     math_proof: "Cold Start Target: T_germinate < 850ms. Memory Footprint Target: RSS < 180MB at idle.",
     invariants: ["inv-hermetic-testing", "inv-dense-workstation-viewport"],
     links: [
-      { label: "📘 Cloud Run Scale-to-Zero Blueprint", url: "https://docs.credence.run#docs/blueprints/cloudrun-scale-to-zero-cold-start-optimization", desc: "Sub-40s deployment, WIF keyless auth, and scale-to-zero tuning" },
-      { label: "✍️ From 860MB to 2MB: Sub-40s CI/CD Pipeline", url: "https://blog.credence.run#from-860mb-to-2mb-sub-40s-cicd-pipeline", desc: "Ultra-compact build artifacts and container optimization" }
+      { label: "📘 Cloud Run Scale-to-Zero Blueprint", url: "https://docs.credence.run/blueprints/cloudrun-scale-to-zero-cold-start-optimization", desc: "Sub-40s deployment, WIF keyless auth, and scale-to-zero tuning" },
+      { label: "✍️ From 860MB to 2MB: Sub-40s CI/CD Pipeline", url: "https://blog.credence.run/from-860mb-to-2mb-sub-40s-cicd-pipeline", desc: "Ultra-compact build artifacts and container optimization" }
     ]
   },
 
@@ -1152,7 +1152,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Interface Telemetry Loopback",
       desc: "Designing resilient, zero-dependency telemetry for decentralized edge nodes.",
-      url: "https://blog.credence.run#interface-telemetry-loopback"
+      url: "https://blog.credence.run/interface-telemetry-loopback"
     },
     tier2_mechanics: [
       "<b>Ultra-Lightweight Polling</b>: Standard HTTP GET /health and /api/telemetry returning <500 bytes.",
@@ -1163,7 +1163,7 @@ const INFO_TOPICS = {
     math_proof: "Telemetry Envelope: { status: 'HEALTHY', role: 'LOCAL_PRIMARY_ROOT', mode: 'STANDALONE', grounding_quotient: 1.00 }.",
     invariants: ["inv-xml-safety", "inv-dense-workstation-viewport"],
     links: [
-      { label: "📘 Node & Mesh Telemetry Blueprint", url: "https://docs.credence.run#docs/blueprints/node-and-mesh-telemetry-dashboard", desc: "Diagnostic schema and real-time dashboard instrumentation" }
+      { label: "📘 Node & Mesh Telemetry Blueprint", url: "https://docs.credence.run/blueprints/node-and-mesh-telemetry-dashboard", desc: "Diagnostic schema and real-time dashboard instrumentation" }
     ]
   },
 
@@ -1179,7 +1179,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Red-Teaming the Truth Badge",
       desc: "Simulating attacks: How vector badges resist spoofing, clickjacking, and cache poisoning.",
-      url: "https://blog.credence.run#red-teaming-the-truth-badge"
+      url: "https://blog.credence.run/red-teaming-the-truth-badge"
     },
     tier2_mechanics: [
       "<b>Anti-Tamper SVG Badges</b>: Embeddable Web Components showing real-time trust scores with zero user tracking.",
@@ -1190,7 +1190,7 @@ const INFO_TOPICS = {
     math_proof: "SVG Signature: Anti-tamper digest embedded directly in SVG DOM comment metadata: <!-- credence-sig: 0x... -->.",
     invariants: ["inv-web-component-zero-clone", "inv-verbatim-grounding"],
     links: [
-      { label: "📘 Embeddable Badges & Anti-Tamper Blueprint", url: "https://docs.credence.run#docs/blueprints/embeddable-attestation-badges-and-anti-tamper", desc: "Embeddable HTML5 custom elements and CSP-compliant badges" }
+      { label: "📘 Embeddable Badges & Anti-Tamper Blueprint", url: "https://docs.credence.run/blueprints/embeddable-attestation-badges-and-anti-tamper", desc: "Embeddable HTML5 custom elements and CSP-compliant badges" }
     ]
   },
 
@@ -1206,7 +1206,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Miracle-Gro for Truth Nodes",
       desc: "How decentralized peer discovery seeds cold networks in seconds.",
-      url: "https://blog.credence.run#miracle-gro-for-truth-nodes"
+      url: "https://blog.credence.run/miracle-gro-for-truth-nodes"
     },
     tier2_mechanics: [
       "<b>Signed Seed Lists</b>: Seed lists are cryptographically signed by root authority keys.",
@@ -1217,7 +1217,7 @@ const INFO_TOPICS = {
     math_proof: "Seed Verification: Verify(Root_pub, Manifest_bytes, Manifest_sig) == true before accepting peer endpoints.",
     invariants: ["inv-canonical-json-ed25519", "inv-byzantine-cartel-resistance"],
     links: [
-      { label: "📘 DNS-SRV Discovery Blueprint", url: "https://docs.credence.run#docs/tutorials/05-mesh-quickstart", desc: "Automating zero-coordinator mesh discovery" }
+      { label: "📘 DNS-SRV Discovery Blueprint", url: "https://docs.credence.run/tutorials/05-mesh-quickstart", desc: "Automating zero-coordinator mesh discovery" }
     ]
   },
 
@@ -1233,7 +1233,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: FinOps as Epistemology",
       desc: "Why strict token budgeting and cost controls are essential defenses against spam attacks.",
-      url: "https://blog.credence.run#finops-as-epistemology"
+      url: "https://blog.credence.run/finops-as-epistemology"
     },
     tier2_mechanics: [
       "<b>30% Safety Reserve</b>: Halts low-priority background queues when daily token quota drops below 30% (<code>QUOTA_PRESERVED</code>).",
@@ -1244,8 +1244,8 @@ const INFO_TOPICS = {
     math_proof: "Circuit Breaker Condition: If Headroom(Tokens_daily) < 0.30, BackgroundQueue.halt() -> return QUOTA_PRESERVED.",
     invariants: ["inv-multi-model-sovereignty", "inv-4k-thinking-budget"],
     links: [
-      { label: "📘 Operator Security & Workstation Tutorial", url: "https://docs.credence.run#docs/tutorials/14-operator-security-and-admin-workstation", desc: "Managing cost governors, circuit breakers, and administrative tokens" },
-      { label: "✍️ The Economics of Epistemic Headroom", url: "https://blog.credence.run#the-economics-of-epistemic-headroom", desc: "Mathematical models for token preservation under adversarial burst traffic" }
+      { label: "📘 Operator Security & Workstation Tutorial", url: "https://docs.credence.run/tutorials/14-operator-security-and-admin-workstation", desc: "Managing cost governors, circuit breakers, and administrative tokens" },
+      { label: "✍️ The Economics of Epistemic Headroom", url: "https://blog.credence.run/the-economics-of-epistemic-headroom", desc: "Mathematical models for token preservation under adversarial burst traffic" }
     ]
   },
 
@@ -1261,7 +1261,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: Miracle-Gro for Truth Nodes",
       desc: "Accelerating cold-start cache performance across decentralized node clusters.",
-      url: "https://blog.credence.run#miracle-gro-for-truth-nodes"
+      url: "https://blog.credence.run/miracle-gro-for-truth-nodes"
     },
     tier2_mechanics: [
       "<b>Cold-Start Seeding</b>: Pre-populates clean wire services so searches get instant 0ms cache hits.",
@@ -1272,7 +1272,7 @@ const INFO_TOPICS = {
     math_proof: "Germination Batch Size: N_burst ∈ [1, 25]. Cache Hit Latency: T_hit < 2ms.",
     invariants: ["inv-4k-thinking-budget", "inv-multi-model-sovereignty"],
     links: [
-      { label: "📘 Developer Quickstart Guide", url: "https://docs.credence.run#docs/quickstart", desc: "Seeding local environments with one-command bootstrap" }
+      { label: "📘 Developer Quickstart Guide", url: "https://docs.credence.run/quickstart", desc: "Seeding local environments with one-command bootstrap" }
     ]
   },
 
@@ -1288,7 +1288,7 @@ const INFO_TOPICS = {
     tier1_article: {
       title: "✍️ Sovereign Essay: The Boredom Engine and Expanding Roots",
       desc: "Designing curiosity algorithms that explore outside news echo chambers.",
-      url: "https://blog.credence.run#the-boredom-engine-and-expanding-roots"
+      url: "https://blog.credence.run/the-boredom-engine-and-expanding-roots"
     },
     tier2_mechanics: [
       "<b>Sifter Daemon</b>: Polls registered RSS/Atom feeds every 15 minutes for new stories.",
@@ -1299,7 +1299,7 @@ const INFO_TOPICS = {
     math_proof: "Polling Cadence: T_sifter = 900s, T_roots = 3600s, T_boredom = 1800s.",
     invariants: ["inv-ssrf-defense", "inv-boredom-root-expansion"],
     links: [
-      { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run#docs/cookbooks/morning-feed-sifter", desc: "Configuring systemd daemons and headless scrapers" }
+      { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run/cookbooks/morning-feed-sifter", desc: "Configuring systemd daemons and headless scrapers" }
     ]
   }
 };
@@ -1473,7 +1473,7 @@ export function openInfoModal(topicKey) {
       tier1_plain_english: `Detailed epistemic documentation and invariant rules for "${rawTitle}" are available in the central documentation network.`,
       tier1_article: {
         title: `Search "${rawTitle}" in Credence Docs`,
-        url: `https://docs.credence.run#?query=${encodeURIComponent(topicKey || "")}`,
+        url: `https://docs.credence.run/?query=${encodeURIComponent(topicKey || "")}`,
         desc: "Open live instant documentation search across all blueprints, guides, and invariants.",
       },
       tier2_mechanics: [
@@ -1483,8 +1483,8 @@ export function openInfoModal(topicKey) {
       cli: `credence audit --topic ${topicKey || "metric"}`,
       invariants: ["inv-verbatim-grounding", "inv-4way-feature-parity"],
       links: [
-        { label: "📘 Master Topic Index", url: "https://docs.credence.run#docs/topic-index" },
-        { label: "🏛️ The Invariant Bible", url: "https://docs.credence.run#docs/invariants" },
+        { label: "📘 Master Topic Index", url: "https://docs.credence.run/topic-index" },
+        { label: "🏛️ The Invariant Bible", url: "https://docs.credence.run/invariants" },
       ],
     };
   }
@@ -1550,7 +1550,7 @@ export function openInfoModal(topicKey) {
             ? "background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3);"
             : "background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);"));
       return `
-        <a href="https://docs.credence.run#docs/invariants#${inv.slug}" target="_blank" rel="noopener" class="invariant-link-badge" style="display:inline-flex; align-items:center; gap:6px;">
+        <a href="https://docs.credence.run/invariants#${inv.slug}" target="_blank" rel="noopener" class="invariant-link-badge" style="display:inline-flex; align-items:center; gap:6px;">
           <span style="font-size:0.72rem; font-weight:800; padding:1px 5px; border-radius:3px; ${badgeStyle}">${inv.class}</span>
           <span>${inv.title}</span> ↗
         </a>
