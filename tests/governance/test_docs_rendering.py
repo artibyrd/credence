@@ -25,6 +25,13 @@ class QuietDocsHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DOCS_DIR), **kwargs)
 
+    def do_GET(self):
+        path = self.translate_path(self.path)
+        last_seg = self.path.split("?")[0].split("#")[0].split("/")[-1]
+        if not Path(path).exists() and not self.path.startswith("/assets/") and "." not in last_seg:
+            self.path = "/index.html"
+        return super().do_GET()
+
     def log_message(self, format, *args):
         pass
 
@@ -403,10 +410,11 @@ async def test_invariant_deep_linking_and_scrolling(page: Page, docs_server: str
     await inv_link.click()
     await page.wait_for_timeout(1800)
 
-    # Verify URL hash changed to invariant 27
+    # Verify URL pathname is /invariants and hash is #invariant-27
     current_hash = await page.evaluate("() => window.location.hash")
-    assert "invariants" in current_hash
+    current_path = await page.evaluate("() => window.location.pathname")
     assert "invariant-27" in current_hash
+    assert "invariants" in current_path or "invariants" in current_hash
 
     # Verify target invariant element exists and is in viewport
     target_card = await page.query_selector("#invariant-27")
@@ -673,3 +681,22 @@ async def test_cross_domain_consistent_navigation_and_footers(page: Page, docs_s
             f"Missing .credence-footer in {f.name}"
         )
         assert "footer-grid" in text, f"Missing .footer-grid in {f.name}"
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_clean_slug_routing_and_canonical_urls(page: Page, docs_server: str) -> None:
+    """Verify that visiting clean path slugs directly (e.g. /the-pizza-hut-problem) renders the target article without hash fallback."""
+    # 1. Clean blog slug
+    await page.goto(f"{docs_server}/the-pizza-hut-problem", wait_until="networkidle")
+    await page.wait_for_selector("#doc-content", timeout=5000)
+    content = await page.inner_text("#doc-content")
+    assert "Pizza Hut" in content, f"Expected Pizza Hut article, got: {content[:200]}"
+
+    # 2. Clean docs path
+    await page.goto(f"{docs_server}/protocols/scoring", wait_until="networkidle")
+    await page.wait_for_selector("#doc-content", timeout=5000)
+    content_scoring = await page.inner_text("#doc-content")
+    assert "Scoring" in content_scoring or "Protocol" in content_scoring, (
+        f"Expected scoring protocol, got: {content_scoring[:200]}"
+    )

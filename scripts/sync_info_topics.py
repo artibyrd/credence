@@ -65,9 +65,15 @@ def sync_topics() -> int:
         if link_m:
             lbl, url = link_m.group(1), link_m.group(2)
             lbl_clean = re.sub(r"^[📘🧪✍️📰🔬🚀\s]+", "", lbl)
-            if "docs.credence.run#" in url:
+            if "docs.credence.run/" in url:
+                doc_path = url.split("docs.credence.run/")[-1]
+                author_link = f"[{lbl_clean}]({doc_path}.md)"
+            elif "docs.credence.run#" in url:
                 doc_path = url.split("#")[-1]
                 author_link = f"[{lbl_clean}]({doc_path}.md)"
+            elif "blog.credence.run/" in url:
+                blog_slug = url.split("blog.credence.run/")[-1]
+                author_link = f"[{lbl_clean}](../blog/{blog_slug}.md)"
             elif "blog.credence.run#" in url:
                 blog_slug = url.split("#")[-1]
                 author_link = f"[{lbl_clean}](../blog/{blog_slug}.md)"

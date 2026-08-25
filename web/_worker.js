@@ -73,11 +73,23 @@ export default {
         const reqHeaders = new Headers(request.headers);
         reqHeaders.set('Host', targetPagesDomain);
         
-        const res = await fetch(pagesUrl, {
+        let res = await fetch(pagesUrl, {
           method: request.method,
           headers: reqHeaders,
           body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
         });
+
+        // SPA Clean Slug Fallback: If direct path returns 404, serve index.html for client-side routing
+        if (res.status === 404 && !subPath.includes('.')) {
+          const indexPagesUrl = new URL('/index.html' + url.search, `https://${targetPagesDomain}`);
+          const indexRes = await fetch(indexPagesUrl, {
+            method: request.method,
+            headers: reqHeaders,
+          });
+          if (indexRes.status < 400) {
+            res = indexRes;
+          }
+        }
 
         const resHeaders = new Headers(res.headers);
         const isStaticMedia =
@@ -99,7 +111,7 @@ export default {
           headers: resHeaders,
         });
 
-        if (resContentType.includes('text/html') || subPath === '/' || subPath.endsWith('.html')) {
+        if (resContentType.includes('text/html') || subPath === '/' || subPath.endsWith('.html') || !subPath.includes('.')) {
           const originUrl = url.origin;
           return new HTMLRewriter()
             .on('meta[property="og:image"]', {
