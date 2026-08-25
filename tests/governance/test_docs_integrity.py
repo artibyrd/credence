@@ -1644,17 +1644,21 @@ def test_invariant_variable_anatomy_and_scratch_script_previews():
         assert "<th>Weight</th>" in card_snippet
         assert "<th>Epistemic Role</th>" in card_snippet
 
-    # 3. Scratch script invariant in all AGENTS.md mandates preview links before run_command
+    # 3. Scratch script invariant in all AGENTS.md mandates preview links before run_command, provenance, and archival
     for af in agents_files:
         if af.exists():
             text = af.read_text(encoding="utf-8")
             assert "inv-clean-scratch-scripts" in text, f"{af.name} missing inv-clean-scratch-scripts"
-            assert "scratch/<name>.py" in text or "brain scratch" in text, (
-                f"{af.name} must mandate standalone brain scratch scripts"
+            assert "scratch/<name>.py" in text or "workspace `/scratch/" in text, (
+                f"{af.name} must mandate standalone workspace scratch scripts"
             )
             assert "clickable" in text.lower() or "preview" in text.lower(), (
                 f"{af.name} must mandate clickable preview links before run_command"
             )
+            assert "created" in text.lower() or "session" in text.lower(), (
+                f"{af.name} must mandate session provenance headers"
+            )
+            assert "archive" in text.lower(), f"{af.name} must mandate /scratch/archive/ lifecycle"
 
 
 def test_ecosystem_naming_conventions_and_guardrails():
