@@ -2225,3 +2225,49 @@ def test_roadmap_pure_forward_looking_and_horizon_integrity(docs_root: Path) -> 
     assert "last_verified" in frontmatter
     assert "invariants" in frontmatter
     assert "inv-mk1-eyeball" in frontmatter["invariants"]
+
+
+@pytest.mark.governance
+def test_all_articles_and_docs_have_leading_h1_title_headers(docs_root: Path) -> None:
+    """Verify that every markdown file in docs/ and blog/ begins with an # <Title> heading."""
+    missing_h1 = []
+
+    for md_path in sorted(list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))):
+        text = md_path.read_text(encoding="utf-8")
+        if not text.startswith("---"):
+            missing_h1.append(f"{md_path.relative_to(docs_root)}: Missing frontmatter block")
+            continue
+
+        parts = text.split("---", 2)
+        if len(parts) < 3:
+            missing_h1.append(f"{md_path.relative_to(docs_root)}: Malformed frontmatter block")
+            continue
+
+        fm_raw = parts[1]
+        body = parts[2]
+
+        title = None
+        try:
+            data = yaml.safe_load(fm_raw)
+            if isinstance(data, dict):
+                title = data.get("title")
+        except Exception:
+            m = re.search(r'^title:\s*["\']?(.*?)["\']?\s*$', fm_raw, re.MULTILINE)
+            if m:
+                title = m.group(1)
+
+        if not title:
+            missing_h1.append(f"{md_path.relative_to(docs_root)}: Missing 'title' in frontmatter")
+            continue
+
+        first_heading = re.search(r"^\s*(#+)\s+([^\n]+)", body, re.MULTILINE)
+        if not first_heading:
+            missing_h1.append(f"{md_path.relative_to(docs_root)}: No markdown headings found in body")
+        elif first_heading.group(1) != "#":
+            missing_h1.append(
+                f"{md_path.relative_to(docs_root)}: First heading is {first_heading.group(1)} ('{first_heading.group(2)[:40]}'), expected top-level '# <Title>'"
+            )
+
+    assert not missing_h1, f"Found {len(missing_h1)} headless or improperly headed markdown files:\n" + "\n".join(
+        f"  - {item}" for item in missing_h1
+    )

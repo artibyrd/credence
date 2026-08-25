@@ -11,6 +11,17 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.16.8] - 2026-08-25
+
+### Added
+- **Anti-Headless Leading H1 Integrity Gate (Gate 9)**: Added automated shift-left test `test_all_articles_and_docs_have_leading_h1_title_headers` in `tests/governance/test_docs_integrity.py` asserting that all 194 markdown documents begin with an `# <Title>` header matching their frontmatter.
+- **Defensive Client-Side Title Synthesis (`credence-docs/app.js`)**: Updated `parseMarkdown()` in `app.js` to automatically synthesize `<h1>${frontmatter.title}</h1>` if a document body omits a top-level H1 header.
+- **Anti-Headless Article Law (`inv-article-h1-header`)**: Codified invariant across `AGENTS.md` and `architecture-governance/SKILL.md`.
+
+### Fixed
+- Added leading `# <Title>` headers across 24 previously headless articles and documentation guides (including `blog/the-pizza-hut-problem.md`).
+- Clarified Functional Bugfix vs Declarative Learning Patch lifecycle gates in `knowledge-governance/SKILL.md`.
+
 ## [2.16.7] - 2026-08-25
 
 ### Fixed

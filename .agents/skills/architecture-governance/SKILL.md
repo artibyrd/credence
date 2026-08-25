@@ -53,6 +53,17 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
 - **Zero Truncation**: Disallow truncated lines or broken box borders (`<300M|`).
 - **Enforcement**: Gate 8 in `tests/governance/test_docs_integrity.py` statically enforces this invariant across all 194 markdown files.
 
+### 7. Zero-Hash Clean URL Routing & Canonical Slugs Law (`inv-clean-slug-routing`)
+- **Path vs. Hash Separation**: Document paths and essay slugs must strictly reside in `window.location.pathname` (e.g. `https://blog.credence.run/the-pizza-hut-problem` and `https://docs.credence.run/protocols/scoring`). Hash fragments (`#<id>`) are reserved exclusively for in-page DOM element IDs and section headings.
+- **Zero Backwards-Compatibility Overhead**: Prohibit legacy `#blog/...` or `#docs/...` hash routing handlers. Keep canonical URLs clean, robust, and free of legacy cruft.
+- **HTML5 History API Navigation**: Internal link navigation must use `history.pushState(null, '', nextUrl)` with active `popstate` event listeners for instant, zero-reload transitions.
+- **Cloudflare Pages SPA Architecture**: All zero-build documentation and blog sites deployed to Cloudflare Pages must include `_redirects` (`/* /index.html 200`) and a dynamic `<base>` tag initializer in `<head>` to ensure relative assets and ES module imports resolve properly across multi-level clean paths.
+
+### 8. Anti-Headless Article Law & Leading H1 Invariant (`inv-article-h1-header`)
+- **Mandatory Leading H1**: Every documentation file and editorial article must include a top-level `# <Title>` heading immediately following the frontmatter block.
+- **Title Concordance**: The leading `# <Title>` heading text must match the frontmatter `title:` attribute.
+- **Defensive SPA Rendering**: The client-side markdown parser (`parseMarkdown` in `app.js`) must defensively prepend `<h1>${frontmatter.title}</h1>` if a document body omits a leading H1 header, preventing any article from rendering "headless".
+
 ---
 
 ## 2. Shift-Left Intelligent Guidance & Workflow Chaining
