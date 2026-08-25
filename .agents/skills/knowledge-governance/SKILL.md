@@ -169,8 +169,8 @@ Before presenting `walkthrough.md` for human Mk1 Eyeball review, the agent must 
 
 ### 3.1 Target Version & Scope Alignment Invariant
 Before beginning execution on any task or implementation plan, the agent and operator must explicitly establish the **Target Release Version**:
-1. **Feature Milestone (`vX.Y.0`)**: Used when picking up new capabilities, major protocol expansions, or new endpoints. Requires milestone branch (`release/vX.Y.0`), PR triad staging, Dev deployment probing, and Code Owner review.
-2. **Targeted Patch Release (`vX.Y.Z`)**: Used for documentation enhancements, shift-left test gates, bugfixes, and continuous learning updates. Executed directly on `main` following local QA (`just check`).
+1. **Functional Milestones & Bugfixes (`feat/...` / `fix/...`)**: Used for all new capabilities, UI changes, web router fixes, and runtime code modifications. Mandates feature/fix branch, PR triad staging (`just pr-create`), automated Dev deployment (`deploy-dev.yml` & Cloudflare Pages preview), live Dev link verification (`https://dev.credence.run/...`), and human Mk1 Eyeball review prior to merge.
+2. **Declarative Learning Patches (`vX.Y.Z`)**: Reserved exclusively for declarative skill synthesis, knowledge taxonomy updates (`/learn`), invariant documentation, and shift-left test assertions. Executed directly on `main` following local QA gate verification (`just check`).
 
 *Why This Matters*: Explicitly identifying the target version during implementation planning forces immediate alignment on the boundaries of work, eliminating ambiguity between exploratory prototyping, maintenance patches, and full milestone feature releases.
 

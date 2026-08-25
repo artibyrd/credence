@@ -11,11 +11,11 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **`inv-verbatim-grounding` — Epistemic Verbatim Grounding ($G=1.00$) & Anti-Truncation UI**: Citations match source DOM text character-for-character with zero ellipsis masking on rules or forensic evidence. Hallucinations incur an autonomous 50% score slash.
 - **`inv-canonical-json-ed25519` — RFC 8785 Canonical JSON & Ed25519 Custody**: Envelopes use RFC 8785 canonical bytes with UTC timestamps; payload alterations invalidate Ed25519 verification.
 - **`inv-untrusted-ingestion` — Untrusted Ingestion Boundary & Network Defense**: Block cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback, and private IPs unless `allow_local=True`. Reject `<!DOCTYPE` / `<!ENTITY>`. Wrap LLM inputs in `<untrusted_source_text>`.
-- **`inv-clean-scratch-scripts` — Clean Brain Scratch Script Approvals & Context Recovery**: Ad-hoc scripts requiring user approval (`BypassSandbox: true`) must be written to standalone files in session artifact brain scratch (`<appDataDir>/brain/<conversation-id>/scratch/<name>.py`). Zero inline blobs. Preserves session history and enables single-approval iteration.
+- **`inv-clean-scratch-scripts` — Clean Brain Scratch Script Approvals & Context Recovery**: Ad-hoc scripts and multi-repo commands requiring user approval (`BypassSandbox: true`) must never use inline blobs or shell loops (`for r in ...`). Write standalone scripts to session brain scratch (`<appDataDir>/brain/<conversation-id>/scratch/<name>.py`) or invoke pre-approved `just` recipes. Preserves session history and Mk1 approval legibility.
 
 ### Class β (Beta): Execution Topology, Lifecycle & Release Architecture (P1 Process Boundaries)
 - **`inv-incremental-commits-staging` — Incremental Commits & Staging Topology**: Feature branches (`feat/...`) deploy to Dev (`credence-dev-495173`); `main` merges require Code Owner review (`.github/CODEOWNERS`) and deploy to Prod (`credence-prod-505902`) and Edge.
-- **`inv-4phase-release-learning` — 4-Phase Release & Lean Learning Lifecycle**: 1. Local QA $\rightarrow$ 2. Open PR Triad & Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge, Tag (`vX.Y.0`), Prod Deploy $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Lean Patch (`vX.Y.1`).
+- **`inv-4phase-release-learning` — 4-Phase Release & Lean Learning Lifecycle**: 1. Local QA $\rightarrow$ 2. Open PR Triad & Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge, Tag (`vX.Y.0`), Prod Deploy $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Autonomous Lean Patch Release (`vX.Y.1`). Must execute patch deploy immediately after learning approval.
 - **`inv-cart-before-horse` — The Cart-Before-the-Horse Order-of-Operations Invariant**: Prerequisite models and scrubbers must precede downstream APIs, UIs, and tests. Verify tests before drafting case studies.
 - **`inv-commit-before-deploy` — Commit-Before-Deploy & Push-and-Delegate CI/CD Gate**: Clean tree before tags. Never push without Mk1 sign-off. Post-push, verify GitHub Actions (`gh run watch`) instead of local deploys.
 - **`inv-3plane-governance` — 3-Plane Deployment Governance**: 3 decoupled planes: **Edge Plane** (`web/`, `credence-docs`), **Compute Plane** (`credence-server`), and **Infra Plane** (Terraform).
@@ -32,6 +32,8 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **`inv-web-component-isolation` — Web Component Isolation & Zero-Clone Invariant**: Web components must never invoke `cloneNode(true)` on host trees containing custom element instances.
 - **`inv-topic-entropy-astroturfing` — Topic Entropy Astroturfing Defense ($H < 0.30$) & Poe's Law Safeguards**: Combine top-token concentration with Shannon entropy. Neutralize satire ($0.00$), invoke `SPJ-1.6` overrides on factual allegations.
 - **`inv-fastmcp-serialization` — FastMCP Text Evaluation & Serialization Parity**: Standalone text audits persist `Snapshot`, `Audit`, and `Violation` entities to SQLite and serialize `datetime` to ISO-8601 strings.
+- **`inv-clean-slug-routing` — Zero-Hash Clean URL Routing & Canonical Slugs**: Slugs reside in pathname with zero `#blog/...` legacy hash cruft; `#hash` is reserved strictly for in-page DOM anchors. SPAs require `_redirects` (`/* /index.html 200`) and dynamic `<base>` tags.
+- **`inv-article-h1-header` — Anti-Headless Article Invariant**: All articles require leading `# <Title>` matching frontmatter; client parser defensively synthesizes `<h1>` if missing.
 
 ---
 
@@ -47,11 +49,13 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 
 ---
 
-## 3. Tier 2: Shift-Left Automated Integrity Test Gates (`tests/test_docs_integrity.py`)
-- **Markdown Frontmatter & Syntax**: Validates YAML frontmatters, code fences, and zero unrendered directives.
-- **Zero-npm & Parity**: Enforces zero npm dependencies and 7-manifest version parity across repositories.
-- **Sitemap & Deep Links**: Validates route registrations, anchor links, and WCAG high-contrast diagrams.
-- **Hermetic Unit Tests & Governance Contracts**: Validates hermetic unit markers and agent governance declarations.
+## 3. Tier 2: Shift-Left Automated Integrity Test Gates (`tests/governance/test_docs_integrity.py`)
+- **Attestation & Manifest Parity (Gate 1)**: Asserts all markdown frontmatters match `pyproject.toml` version and verifies all Ed25519 signatures in `attestations.json` over canonical RFC 8785 JSON bytes.
+- **Playground DOM Mounts (Gate 2)**: Asserts all 14 interactive playground routes have active DOM mount handlers in `app.js`.
+- **CLI Commands & Flags Validity (Gate 3)**: Statically parses documented CLI commands and asserts valid `argparse` registration.
+- **Justfile Recipes Parity (Gate 4)**: Statically verifies all documented `just` commands against recipe declarations.
+- **Dynamic Living Canon Prohibition (Gate 5)**: Enforces dynamic invariant naming ("The Invariant Bible") with zero hardcoded numbers.
+- **Anti-Headless Leading H1 Integrity (Gate 9)**: Asserts all markdown documents begin with an `# <Title>` header matching frontmatter.
 
 ---
 
