@@ -771,7 +771,13 @@ def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None
 
         for label, target in links:
             target = target.strip()
-            if not target or target.startswith("javascript:") or target.startswith("mailto:"):
+            if (
+                not target
+                or target.startswith("javascript:")
+                or target.startswith("mailto:")
+                or target.startswith("file://")
+                or target.startswith("conversation://")
+            ):
                 continue
 
             # 1. External URL syntax validation (hermetic, zero-network)
@@ -1560,6 +1566,96 @@ def test_invariants_registry_and_slug_integrity():
     assert not missing_in_registry, f"Invariants in docs missing from INVARIANTS_REGISTRY: {missing_in_registry}"
     assert not missing_in_docs, f"Slugs in INVARIANTS_REGISTRY missing from invariants.md: {missing_in_docs}"
 
+    # Verify all invariant cards declare explicit data-scope (universal or domain)
+    for card_match in re.finditer(
+        r'<div class="invariant-card" id="([^"]+)"[^>]*data-scope="([^"]+)"', invariants_content
+    ):
+        cid, scope = card_match.group(1), card_match.group(2)
+        assert scope in {"universal", "domain"}, f"Invariant card '{cid}' has invalid data-scope: '{scope}'"
+
+    # Verify all invariant cards declare an expandable agent translation HUD (<details class="agent-translation">)
+    raw_specs = re.findall(
+        r'<details class="agent-translation">.*?<span class="agent-slug-pill">(?:`([^`]+)`|<code>([^<]+)</code>)</span>',
+        invariants_content,
+        re.DOTALL,
+    )
+    agent_specs = {s[0] or s[1] for s in raw_specs}
+    missing_specs = card_ids - agent_specs
+    assert not missing_specs, f"Invariant cards missing expandable agent specification: {missing_specs}"
+
+    # Verify AGENTS.md invariant slugs are a valid subset of canonical invariants
+    ecosystem_root = repo_root
+    agents_md = ecosystem_root / "AGENTS.md"
+    if agents_md.exists():
+        agents_slugs = set(re.findall(r"`(inv-[a-z0-9-]+)`", agents_md.read_text(encoding="utf-8")))
+        unknown_in_agents = agents_slugs - card_ids
+        assert not unknown_in_agents, f"AGENTS.md references unknown invariant slugs: {unknown_in_agents}"
+
+
+def test_invariant_variable_anatomy_and_scratch_script_previews():
+    """Verify 1:1 scope parity between workstation registry and docs, variable anatomy table structure,
+
+    and scratch script preview link requirements in AGENTS.md.
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    invariants_file = repo_root / "credence-docs" / "docs" / "invariants.md"
+    workstation_file = repo_root / "credence" / "web" / "assets" / "credence-workstation.js"
+    agents_files = [
+        repo_root / "AGENTS.md",
+        repo_root / "credence" / "AGENTS.md",
+        repo_root / "credence-docs" / "AGENTS.md",
+        repo_root / "credence-agent" / "AGENTS.md",
+    ]
+
+    invariants_content = invariants_file.read_text(encoding="utf-8")
+    workstation_content = workstation_file.read_text(encoding="utf-8")
+
+    # 1. 1:1 Scope parity between invariants.md and credence-workstation.js
+    docs_scopes = dict(
+        re.findall(r'<div class="invariant-card" id="([^"]+)"[^>]*data-scope="([^"]+)"', invariants_content)
+    )
+    registry_scopes = dict(re.findall(r'"(inv-[a-z0-9-]+)":\s*\{[^}]*scope:\s*"([^"]+)"', workstation_content))
+
+    assert len(docs_scopes) == len(registry_scopes), (
+        f"Docs count ({len(docs_scopes)}) != Registry count ({len(registry_scopes)})"
+    )
+    for slug, scope in docs_scopes.items():
+        assert slug in registry_scopes, f"Slug '{slug}' missing from workstation registry"
+        assert registry_scopes[slug] == scope, (
+            f"Scope mismatch for '{slug}': docs has '{scope}' but workstation registry has '{registry_scopes[slug]}'"
+        )
+
+    # 2. Mathematical invariants declare variable anatomy tables with required headers
+    math_slugs = ["inv-5factor-node-quality", "inv-topic-entropy-defense", "inv-empirical-expertise"]
+    for slug in math_slugs:
+        assert f'id="{slug}"' in invariants_content
+        # Find card block
+        card_start = invariants_content.find(f'id="{slug}"')
+        card_end = invariants_content.find('class="invariant-card"', card_start + 1)
+        if card_end == -1:
+            card_end = len(invariants_content)
+        card_snippet = invariants_content[card_start:card_end]
+
+        assert "variable-anatomy-table" in card_snippet, (
+            f"Mathematical invariant '{slug}' missing variable-anatomy-table"
+        )
+        assert "<th>Symbol</th>" in card_snippet
+        assert "<th>Component Factor</th>" in card_snippet
+        assert "<th>Weight</th>" in card_snippet
+        assert "<th>Epistemic Role</th>" in card_snippet
+
+    # 3. Scratch script invariant in all AGENTS.md mandates preview links before run_command
+    for af in agents_files:
+        if af.exists():
+            text = af.read_text(encoding="utf-8")
+            assert "inv-clean-scratch-scripts" in text, f"{af.name} missing inv-clean-scratch-scripts"
+            assert "scratch/<name>.py" in text or "brain scratch" in text, (
+                f"{af.name} must mandate standalone brain scratch scripts"
+            )
+            assert "clickable" in text.lower() or "preview" in text.lower(), (
+                f"{af.name} must mandate clickable preview links before run_command"
+            )
+
 
 def test_ecosystem_naming_conventions_and_guardrails():
     """Validates that all invariant slugs, subagent templates, branch patterns,
@@ -2270,4 +2366,60 @@ def test_all_articles_and_docs_have_leading_h1_title_headers(docs_root: Path) ->
 
     assert not missing_h1, f"Found {len(missing_h1)} headless or improperly headed markdown files:\n" + "\n".join(
         f"  - {item}" for item in missing_h1
+    )
+
+
+def test_svg_illustrations_visual_integrity_and_text_budget():
+    """Validates that all SVG illustrations are visual-first architectural schematics.
+
+    Enforces:
+    1. Zero bullet point characters (•, *, -, 1., etc.) in SVG text nodes.
+    2. Text line length limit (<= 38 chars) to prevent paragraph cramming into nodes.
+    3. Strict text budget (<= 450 total text characters per SVG).
+    4. Meaningful visual geometry (contains flow paths, directional arrows, or topology nodes).
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    illustrations_dir = repo_root / "credence-docs" / "assets" / "illustrations"
+    assert illustrations_dir.is_dir(), f"Illustrations directory not found at {illustrations_dir}"
+
+    svg_files = list(illustrations_dir.glob("*.svg"))
+    assert len(svg_files) >= 30, f"Expected >= 30 SVG illustrations, found {len(svg_files)}"
+
+    violations = []
+    for svg_file in svg_files:
+        content = svg_file.read_text(encoding="utf-8")
+
+        # 1. Check for bullet points
+        text_elements = re.findall(r"<text\b[^>]*>(.*?)</text>", content, re.DOTALL)
+        cleaned_texts = [re.sub(r"<[^>]+>", "", t).strip() for t in text_elements if t.strip()]
+
+        bullets = [t for t in cleaned_texts if t.startswith(("•", "* ", "- ", "1. ", "2. ", "3. ", "4. ", "5. "))]
+        if bullets:
+            violations.append(f"{svg_file.name}: Contains {len(bullets)} bullet points ({bullets[:2]})")
+
+        # 2. Check for long prose lines in nodes (max 38 chars)
+        long_lines = [t for t in cleaned_texts if len(t) > 38 and not t.isupper()]
+        if len(long_lines) > 2:
+            violations.append(f"{svg_file.name}: Contains {len(long_lines)} long prose lines ({long_lines[:2]})")
+
+        # 3. Check total text character budget (max 450 chars)
+        total_chars = sum(len(t) for t in cleaned_texts)
+        if total_chars > 450:
+            violations.append(f"{svg_file.name}: Exceeds text character budget ({total_chars} > 450 chars)")
+
+        # 4. Check for visual schematic elements (lines, paths, markers, circles)
+        has_visual_connectors = (
+            "marker-end" in content
+            or "<path" in content
+            or "<circle" in content
+            or "<polygon" in content
+            or "<line" in content
+        )
+        if not has_visual_connectors:
+            violations.append(
+                f"{svg_file.name}: Missing visual schematic geometry (no flow paths, connectors, or nodes)"
+            )
+
+    assert not violations, f"Found {len(violations)} SVG illustration visual integrity violations:\n" + "\n".join(
+        f"  - {v}" for v in violations
     )

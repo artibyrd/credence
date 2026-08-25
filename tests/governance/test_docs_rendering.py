@@ -32,6 +32,10 @@ class QuietDocsHandler(http.server.SimpleHTTPRequestHandler):
             self.path = "/index.html"
         return super().do_GET()
 
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+        super().end_headers()
+
     def log_message(self, format, *args):
         pass
 
@@ -700,3 +704,68 @@ async def test_clean_slug_routing_and_canonical_urls(page: Page, docs_server: st
     assert "Scoring" in content_scoring or "Protocol" in content_scoring, (
         f"Expected scoring protocol, got: {content_scoring[:200]}"
     )
+
+
+@pytest.mark.e2e
+@pytest.mark.asyncio
+async def test_invariants_page_dual_view_and_scope_filtering(page: Page, docs_server: str) -> None:
+    """Verify Living Canon dual-view layout, interactive scope filtering, and agent spec expansion."""
+    await page.goto(f"{docs_server}/#docs/invariants", wait_until="networkidle")
+    await page.wait_for_selector("#doc-content .invariant-card", timeout=5000)
+
+    # 1. Verify Scope Filter Bar & Export Button are present
+    filter_bar = await page.query_selector(".invariant-scope-filter-bar")
+    assert filter_bar is not None, "Expected .invariant-scope-filter-bar on invariants page"
+
+    export_btn = await page.query_selector("#btn-export-agentic-pack")
+    assert export_btn is not None, "Expected #btn-export-agentic-pack button"
+
+    # 2. Total Invariant Cards
+    total_cards = await page.query_selector_all(".invariant-card")
+    assert len(total_cards) >= 45, f"Expected >= 45 cards, found {len(total_cards)}"
+
+    # 3. Test Universal Filter Pill
+    await page.click(".scope-btn[data-scope-filter='universal']")
+    await page.wait_for_timeout(300)
+
+    visible_universal = await page.eval_on_selector_all(
+        ".invariant-card[data-scope='universal']", "cards => cards.filter(c => c.style.display !== 'none').length"
+    )
+    visible_domain = await page.eval_on_selector_all(
+        ".invariant-card[data-scope='domain']", "cards => cards.filter(c => c.style.display !== 'none').length"
+    )
+    assert visible_universal >= 20, f"Expected >= 20 universal cards visible, got {visible_universal}"
+    assert visible_domain == 0, f"Expected 0 domain cards visible under universal filter, got {visible_domain}"
+
+    # 4. Test Domain Filter Pill
+    await page.click(".scope-btn[data-scope-filter='domain']")
+    await page.wait_for_timeout(300)
+
+    visible_universal_after = await page.eval_on_selector_all(
+        ".invariant-card[data-scope='universal']", "cards => cards.filter(c => c.style.display !== 'none').length"
+    )
+    visible_domain_after = await page.eval_on_selector_all(
+        ".invariant-card[data-scope='domain']", "cards => cards.filter(c => c.style.display !== 'none').length"
+    )
+    assert visible_domain_after >= 20, f"Expected >= 20 domain cards visible, got {visible_domain_after}"
+    assert visible_universal_after == 0, (
+        f"Expected 0 universal cards visible under domain filter, got {visible_universal_after}"
+    )
+
+    # 5. Test Reset to All
+    await page.click(".scope-btn[data-scope-filter='all']")
+    await page.wait_for_timeout(300)
+
+    visible_all = await page.eval_on_selector_all(
+        ".invariant-card", "cards => cards.filter(c => c.style.display !== 'none').length"
+    )
+    assert visible_all == len(total_cards), f"Expected all {len(total_cards)} cards visible, got {visible_all}"
+
+    # 6. Test Expanding Agent Deontic Specification HUD
+    first_agent_summary = await page.query_selector(".invariant-card .agent-summary")
+    assert first_agent_summary is not None, "Expected .agent-summary trigger in first card"
+    await first_agent_summary.click()
+    await page.wait_for_timeout(200)
+
+    is_open = await page.eval_on_selector(".invariant-card .agent-translation", "el => el.hasAttribute('open')")
+    assert is_open is True, "Expected .agent-translation details accordion to open upon clicking summary"

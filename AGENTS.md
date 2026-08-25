@@ -7,33 +7,36 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 ## 1. Tier 0: Universal Core Invariants (Prioritized Cognitive Hierarchy)
 
 ### Class α (Alpha): Sovereign Safety, Custody & Human Authority (P0 Non-Negotiables)
-- **`inv-mk1-eyeball` — Human Review Gate ("Mk1 Eyeball") with Staged PRs & Live Dev Links**: Tags, PR merges, and prod deploys require human Mk1 sign-off. Zero speculative UI additions. Pre-sync version manifests; verify open PRs and live Dev links (`deploy-dev.yml`) before review.
-- **`inv-verbatim-grounding` — Epistemic Verbatim Grounding ($G=1.00$) & Anti-Truncation UI**: Citations match source DOM text character-for-character with zero ellipsis masking on rules or forensic evidence. Hallucinations incur an autonomous 50% score slash.
-- **`inv-canonical-json-ed25519` — RFC 8785 Canonical JSON & Ed25519 Custody**: Envelopes use RFC 8785 canonical bytes with UTC timestamps; payload alterations invalidate Ed25519 verification.
-- **`inv-untrusted-ingestion` — Untrusted Ingestion Boundary & Network Defense**: Block cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback, and private IPs unless `allow_local=True`. Reject `<!DOCTYPE` / `<!ENTITY>`. Wrap LLM inputs in `<untrusted_source_text>`.
-- **`inv-clean-scratch-scripts` — Clean Brain Scratch Script Approvals & Context Recovery**: Ad-hoc scripts and multi-repo commands requiring user approval (`BypassSandbox: true`) must never use inline blobs or shell loops (`for r in ...`). Write standalone scripts to session brain scratch (`<appDataDir>/brain/<conversation-id>/scratch/<name>.py`) or invoke pre-approved `just` recipes. Preserves session history and Mk1 approval legibility.
+- **`inv-mk1-eyeball` — 🌐 Human Review Gate ("Mk1 Eyeball") with Staged PRs & Live Dev Links**: Tags, PR merges, and prod deploys require human Mk1 sign-off. Zero speculative UI additions. Pre-sync version manifests; verify open PRs and live Dev links (`deploy-dev.yml`) before review.
+- **`inv-clean-scratch-scripts` — 🌐 Clean Brain Scratch Script Approvals & Previews**: Ad-hoc scripts and multi-repo commands requiring user approval (`BypassSandbox: true`) must never use inline blobs (`python -c`, `bash -c`) or shell loops (`for r in ...`). Write standalone scripts to session brain scratch (`<appDataDir>/brain/<conversation-id>/scratch/<name>.py`). Output a clickable file link in chat before `run_command` so the human operator can preview the script.
+- **`inv-untrusted-ingestion` — 🌐 Untrusted Ingestion Boundary & Network Defense**: Block cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback, and private IPs unless `allow_local=True`. Reject `<!DOCTYPE` / `<!ENTITY>`. Wrap LLM inputs in `<untrusted_source_text>`.
+- **`inv-verbatim-anti-truncation` — 🌐 Universal Epistemic Verbatim Anti-Truncation UI**: Citations, forensic logs, and system rules must match source character-for-character with zero ellipsis (`...`) masking.
+- **`inv-verbatim-grounding` — 🔬 Whitespace-Insensitive Grounding ($G=1.00$)**: Extracted quotes match source DOM character-for-character ($G=1.00$); hallucinations incur an autonomous 50% score slash.
+- **`inv-canonical-json-ed25519` — 🔬 RFC 8785 Canonical JSON & Ed25519 Custody**: Envelopes use RFC 8785 canonical bytes with UTC timestamps; payload alterations invalidate Ed25519 verification.
 
 ### Class β (Beta): Execution Topology, Lifecycle & Release Architecture (P1 Process Boundaries)
-- **`inv-incremental-commits-staging` — Incremental Commits & Staging Topology**: Feature branches (`feat/...`) deploy to Dev (`credence-dev-495173`); `main` merges require Code Owner review (`.github/CODEOWNERS`) and deploy to Prod (`credence-prod-505902`) and Edge.
-- **`inv-4phase-release-learning` — 4-Phase Release & Lean Learning Lifecycle**: 1. Local QA $\rightarrow$ 2. Open PR Triad & Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge, Tag (`vX.Y.0`), Prod Deploy $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Autonomous Lean Patch Release (`vX.Y.1`). Must execute patch deploy immediately after learning approval.
-- **`inv-cart-before-horse` — The Cart-Before-the-Horse Order-of-Operations Invariant**: Prerequisite models and scrubbers must precede downstream APIs, UIs, and tests. Verify tests before drafting case studies.
-- **`inv-commit-before-deploy` — Commit-Before-Deploy & Push-and-Delegate CI/CD Gate**: Clean tree before tags. Never push without Mk1 sign-off. Post-push, verify GitHub Actions (`gh run watch`) instead of local deploys.
-- **`inv-3plane-governance` — 3-Plane Deployment Governance**: 3 decoupled planes: **Edge Plane** (`web/`, `credence-docs`), **Compute Plane** (`credence-server`), and **Infra Plane** (Terraform).
-- **`inv-dual-env-least-privilege-cicd` — Dual-Environment Least-Privilege CI/CD & Dev Preview Isolation**: Keyless WIF with least-privilege roles. Cloudflare Pages dev deploys use `--branch=dev` (never `main`); dev proxies route to preview endpoints with zero escape to prod.
-- **`inv-hermetic-unit-tests` — Hermetic Unit Test Isolation & Zero-Browser CI**: Unit tests (`@pytest.mark.unit`) execute in-memory in <35s with zero browser runtimes or daemons.
+- **`inv-cart-before-horse` — 🌐 The Cart-Before-the-Horse Order-of-Operations Invariant**: Prerequisite models and scrubbers must precede downstream APIs, UIs, and tests. Verify tests before drafting case studies.
+- **`inv-4phase-release-learning` — 🌐 4-Phase Release & Lean Learning Lifecycle**: 1. Local QA $\rightarrow$ 2. Open PR Triad & Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge, Tag (`vX.Y.0`), Prod Deploy $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Autonomous Lean Patch Release (`vX.Y.1`). Must execute patch deploy immediately after learning approval.
+- **`inv-commit-before-deploy` — 🌐 Commit-Before-Deploy & Push-and-Delegate CI/CD Gate**: Clean tree before tags. Never push without Mk1 sign-off. Post-push, verify GitHub Actions (`gh run watch`) instead of local deploys.
+- **`inv-incremental-commits-staging` — 🌐 Incremental Commits & Staging Topology**: Feature branches (`feat/...`) deploy to Dev (`credence-dev-495173`); `main` merges require Code Owner review (`.github/CODEOWNERS`) and deploy to Prod (`credence-prod-505902`) and Edge.
+- **`inv-hermetic-unit-tests` — 🌐 Hermetic Unit Test Isolation & Zero-Browser CI**: Unit tests (`@pytest.mark.unit`) execute in-memory in <35s with zero browser runtimes or daemons.
+- **`inv-3plane-governance` — 🌐 3-Plane Deployment Governance**: 3 decoupled planes: **Edge Plane** (`web/`, `credence-docs`), **Compute Plane** (`credence-server`), and **Infra Plane** (Terraform).
+- **`inv-dual-env-least-privilege-cicd` — 🌐 Dual-Environment Least-Privilege CI/CD**: Keyless WIF with least-privilege roles. Cloudflare Pages dev deploys use `--branch=dev` (never `main`); dev proxies route to preview endpoints with zero escape to prod.
+- **`inv-5factor-node-quality` — 🔬 5-Factor Node Quality ($Q_i$)**: Node reputation evaluates 5 composite factors: $Q_i = 0.25 U_i + 0.30 C_i + 0.25 G_i + 0.10 T_i + 0.10 K_i$. Bootstrap seeds (`peers.json`) require root Ed25519 verification.
 
 ### Class γ (Gamma): Interface Symmetry, Epistemic Parity & Governance (P2 Ergonomics & Presentation)
-- **`inv-4way-parity-symmetric-web` — Universal 4-Way Feature Parity & Symmetric Web Invariant**: Feature parity across **CLI**, **FastMCP 2.0**, **TUI**, and **Zero-Build Web UI** (`web/`). Vanilla HTML5/ES modules, **zero npm dependencies**, 5 invariant nav links.
-- **`inv-epistemic-lensing` — The Epistemic Lensing & Information Pyramid Invariant**: 3-tier hierarchy: Surface Lens (Glance — score gauge), Focus Lens (Explore — claims), and Deep Spectrum Lens (Forensic — signatures, DOM hash).
-- **`inv-documentation-expansion` — Session-Driven Documentation Expansion & Anti-Proliferation Rule**: Deepen canonical docs and blueprints over creating shallow standalone files.
-- **`inv-living-canon` — Dynamic Invariant Canon ("The Invariant Bible")**: Reference system invariants as **The Invariant Bible** or **Living Canon of System Invariants** without hardcoded numbers.
-- **`inv-multi-model-sovereignty` — Multi-Model Sovereignty & Token Budget**: Decoupled LLM adapters (Gemini 3.7 default 4k thinking, Claude 3.7, GPT-4o, DeepSeek R1, Ollama) with offline circuit breakers (`QUOTA_PRESERVED`) at 30% headroom.
-- **`inv-production-telemetry-boundary` — Production Telemetry vs. Simulation Boundary**: Operator dashboards report genuine node reality ($N \ge 1$, $f = \lfloor (N-1)/3 \rfloor$, `STANDALONE` when alone) with zero mock data; simulators belong exclusively in docs playground.
-- **`inv-web-component-isolation` — Web Component Isolation & Zero-Clone Invariant**: Web components must never invoke `cloneNode(true)` on host trees containing custom element instances.
-- **`inv-topic-entropy-astroturfing` — Topic Entropy Astroturfing Defense ($H < 0.30$) & Poe's Law Safeguards**: Combine top-token concentration with Shannon entropy. Neutralize satire ($0.00$), invoke `SPJ-1.6` overrides on factual allegations.
-- **`inv-fastmcp-serialization` — FastMCP Text Evaluation & Serialization Parity**: Standalone text audits persist `Snapshot`, `Audit`, and `Violation` entities to SQLite and serialize `datetime` to ISO-8601 strings.
-- **`inv-clean-slug-routing` — Zero-Hash Clean URL Routing & Canonical Slugs**: Slugs reside in pathname with zero `#blog/...` legacy hash cruft; `#hash` is reserved strictly for in-page DOM anchors. SPAs require `_redirects` (`/* /index.html 200`) and dynamic `<base>` tags.
-- **`inv-article-h1-header` — Anti-Headless Article Invariant**: All articles require leading `# <Title>` matching frontmatter; client parser defensively synthesizes `<h1>` if missing.
+- **`inv-multi-interface-parity` — 🌐 Universal Multi-Interface Feature Parity**: Feature parity across **CLI**, **FastMCP 2.0**, **TUI**, and **Zero-Build Web UI** (`web/`). Vanilla HTML5/ES modules, **zero npm dependencies**, 5 invariant nav links.
+- **`inv-zero-build-standards` — 🌐 Universal Zero-Build Standards (Zero-npm Invariant)**: All public web surfaces use vanilla HTML5, CSS Custom Properties, and native ES Modules with zero npm dependencies and zero build toolchains.
+- **`inv-epistemic-lensing` — 🌐 The Epistemic Lensing & Information Pyramid Invariant**: 3-tier hierarchy: Surface Lens (Glance — score gauge), Focus Lens (Explore — claims), and Deep Spectrum Lens (Forensic — signatures, DOM hash).
+- **`inv-documentation-expansion` — 🌐 Session-Driven Documentation Expansion & Anti-Proliferation Rule**: Deepen canonical docs and blueprints over creating shallow standalone files.
+- **`inv-living-canon` — 🌐 Dynamic Invariant Canon ("The Invariant Bible")**: Reference system invariants as **The Invariant Bible** or **Living Canon of System Invariants** without hardcoded numbers.
+- **`inv-multi-model-sovereignty` — 🌐 Multi-Model Sovereignty & Token Budget**: Decoupled LLM adapters (Gemini 3.7 default 4k thinking, Claude 3.7, GPT-4o, DeepSeek R1, Ollama) with offline circuit breakers (`QUOTA_PRESERVED`) at 30% headroom.
+- **`inv-production-telemetry-boundary` — 🌐 Production Telemetry vs. Simulation Boundary**: Operator dashboards report genuine node reality ($N \ge 1$, $f = \lfloor (N-1)/3 \rfloor$) with zero mock data; simulators belong exclusively in docs playground.
+- **`inv-web-component-isolation` — 🌐 Web Component Isolation & Zero-Clone Invariant**: Web components must never invoke `cloneNode(true)` on host trees containing custom element instances.
+- **`inv-topic-entropy-defense` — 🔬 Topic Entropy Astroturfing Defense ($H < 0.30$)**: Combine top-token concentration with Shannon entropy ($H_{\text{penalized}} = H \times (1 - C_{\text{top3}})$). Neutralize satire ($0.00$), invoke `SPJ-1.6` overrides on factual allegations.
+- **`inv-fastmcp-datetime-serialization` — 🌐 FastMCP Datetime Serialization**: Standalone text audits persist entities to SQLite and serialize `datetime` to ISO-8601 strings in `.to_dict()`.
+- **`inv-clean-slug-routing` — 🌐 Zero-Hash Clean URL Routing & Canonical Slugs**: Slugs reside in pathname with zero `#blog/...` legacy hash cruft; `#hash` is reserved strictly for in-page DOM anchors.
+- **`inv-article-h1-header` — 🌐 Anti-Headless Article Invariant**: All articles require leading `# <Title>` matching frontmatter; client parser defensively synthesizes `<h1>` if missing.
 
 ---
 
@@ -56,6 +59,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **Justfile Recipes Parity (Gate 4)**: Statically verifies all documented `just` commands against recipe declarations.
 - **Dynamic Living Canon Prohibition (Gate 5)**: Enforces dynamic invariant naming ("The Invariant Bible") with zero hardcoded numbers.
 - **Anti-Headless Leading H1 Integrity (Gate 9)**: Asserts all markdown documents begin with an `# <Title>` header matching frontmatter.
+- **Invariant Scope & Variable Parity (Gate 10)**: Asserts 100% slug matching, scope classification, and formula variable anatomy across docs, workstation registry, and code.
 
 ---
 
