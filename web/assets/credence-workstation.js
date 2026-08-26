@@ -1778,7 +1778,15 @@ export function initWorkstation(config = {}) {
       else p.style.display = 'none';
     });
 
-    if (window.location.hash !== `#${tabId}`) {
+    const currentHash = (window.location.hash || '').replace(/^#/, '');
+    const isDeepLinkForTab = (
+      (tabId === 'browse' && (currentHash.startsWith('analytics/') || currentHash.startsWith('dossier/') || currentHash.startsWith('publisher/') || currentHash.startsWith('browse/'))) ||
+      (tabId === 'search' && (currentHash.startsWith('report/') || currentHash.startsWith('inspect/') || currentHash.startsWith('search'))) ||
+      (tabId === 'merit' && (currentHash.startsWith('merit') || currentHash.startsWith('badges'))) ||
+      (tabId === 'governance' && (currentHash.startsWith('governance') || currentHash.startsWith('invariants')))
+    );
+
+    if (!isDeepLinkForTab && window.location.hash !== `#${tabId}`) {
       history.replaceState(null, '', `#${tabId}`);
     }
 
@@ -1794,7 +1802,22 @@ export function initWorkstation(config = {}) {
 
   // Handle hash changes or default tab
   const initialHash = window.location.hash.replace(/^#/, '');
-  const initialTab = initialHash || defaultTab;
+  let initialTab = defaultTab;
+  if (initialHash) {
+    if (initialHash.startsWith('analytics/') || initialHash.startsWith('dossier/') || initialHash.startsWith('publisher/') || initialHash.startsWith('browse')) {
+      initialTab = 'browse';
+    } else if (initialHash.startsWith('report/') || initialHash.startsWith('inspect/') || initialHash.startsWith('audit/') || initialHash.startsWith('search')) {
+      initialTab = 'search';
+    } else if (initialHash.startsWith('merit') || initialHash.startsWith('badges')) {
+      initialTab = 'merit';
+    } else if (initialHash.startsWith('nodes') || initialHash.startsWith('mesh') || initialHash.startsWith('peers')) {
+      initialTab = 'nodes';
+    } else if (initialHash.startsWith('governance') || initialHash.startsWith('taxonomies') || initialHash.startsWith('custody') || initialHash.startsWith('invariants')) {
+      initialTab = 'governance';
+    } else {
+      initialTab = initialHash.split('/')[0] || defaultTab;
+    }
+  }
   if (initialTab) {
     switchTab(initialTab);
   }

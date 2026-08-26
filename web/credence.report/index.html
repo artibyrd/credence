@@ -336,7 +336,7 @@
             <div class="deck-card" style="padding:1.25rem; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
               
               <!-- Browse Header with Subview Switcher -->
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:0.85rem;">
+              <div id="browse-header-banner" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:0.85rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
                     <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.3); font-size:0.72rem;">FORENSIC DIRECTORY &amp; SOURCES</span>
@@ -403,85 +403,83 @@
                 </div>
 
                 <!-- Detailed Publisher Dossier View (Shown when a specific publisher is opened) -->
-                <div id="publisher-detail-container" style="display:none;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-                    <button type="button" class="btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem;" onclick="closePublisherDetail()">
-                      &larr; Back to All Publishers
-                    </button>
-                    <div style="display:flex; gap:0.4rem;">
-                      <button type="button" class="btn-secondary" style="font-size:0.78rem; padding:0.3rem 0.65rem;" onclick="switchBrowseSubview('articles')">
-                        📑 View Curated Articles
+                <div id="publisher-detail-container" style="display:none; flex-direction:column; gap:0.75rem;">
+                  <!-- Executive Header & Navigation Bar -->
+                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.65rem 0.85rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem;">
+                    <!-- Left: Navigation & Publisher Identity -->
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                      <button type="button" class="btn-secondary" style="font-size:0.78rem; padding:0.25rem 0.6rem;" onclick="closePublisherDetail()">
+                        &larr; Back to Publishers
                       </button>
-                      <button type="button" class="btn-primary" style="font-size:0.78rem; padding:0.3rem 0.65rem;" id="btn-dossier-search-filter" onclick="filterSearchByDomain(window.currentDomain || 'reuters.com')">
-                        🔍 Filter in Search &amp; Audit ↗
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Dossier Header & Trust Dial -->
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
-                    <div>
-                      <div style="display:flex; align-items:center; gap:0.65rem;">
-                        <span class="badge" id="dossier-tier-badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80; border:1px solid rgba(74, 222, 128, 0.3); border-radius:9999px; padding:0.2rem 0.65rem; font-size:0.75rem; font-weight:bold;">TIER A (PRISTINE WIRE)</span>
-                        <button id="dossier-pin-btn" class="btn-secondary" style="font-size:0.72rem; padding:0.15rem 0.55rem;" onclick="window.togglePinDossierDomain()" title="Pin this publisher">📌 Pin</button>
+                      <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                        <h2 id="dossier-domain-title" style="font-size:1.15rem; color:#fff; margin:0; font-family:var(--font-mono); font-weight:700;">inmaricopa.com</h2>
+                        <span class="badge" id="dossier-tier-badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid #f59e0b; border-radius:9999px; padding:0.12rem 0.5rem; font-size:0.7rem; font-weight:bold;">TIER C (WATCHLIST CASE STUDY)</span>
+                        <button id="dossier-pin-btn" class="btn-secondary" style="font-size:0.7rem; padding:0.12rem 0.45rem;" onclick="window.togglePinDossierDomain()" title="Pin this publisher">📌 Pin</button>
                         <button class="info-btn" onclick="window.CredenceWS.openInfoModal('dossier')" title="Info: Source Dossier">ℹ</button>
                       </div>
-                      <h2 id="dossier-domain-title" style="font-size:1.4rem; color:#fff; margin:0.4rem 0 0.2rem;">reuters.com</h2>
-                      <div id="dossier-domain-desc" style="color:var(--text-muted); font-size:0.85rem;">International Wire Service &bull; Syndicated Global Bureau Reporting</div>
-                    </div>
-                    <div style="text-align:right;">
-                      <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">DCI Score</div>
-                      <div id="dossier-dci-score" style="font-size:1.85rem; font-weight:800; font-family:var(--font-mono); color:var(--accent-green); line-height:1;">99.8</div>
-                    </div>
-                  </div>
-
-                  <!-- Vitals Grid -->
-                  <div class="dossier-grid" style="margin-top:1rem;">
-                    <div class="dossier-stat-card">
-                      <span style="font-size:0.75rem; color:var(--text-dim);">Curated Audited Articles</span>
-                      <div id="dossier-stat-audits" style="font-weight:700; color:#fff; font-size:1.05rem; margin-top:0.2rem;">3 Audits</div>
-                      <div style="font-size:0.72rem; color:var(--accent-green); margin-top:2px;">100% G=1.00 Grounding</div>
-                    </div>
-                    <div class="dossier-stat-card">
-                      <span style="font-size:0.75rem; color:var(--text-dim);">Syndication Health</span>
-                      <div id="dossier-stat-syndication" style="font-weight:700; color:#fff; font-size:1.05rem; margin-top:0.2rem;">● Active RSS Wire</div>
-                      <div style="font-size:0.72rem; color:var(--text-dim); margin-top:2px;">Polling cadence: 15 min</div>
-                    </div>
-                    <div class="dossier-stat-card">
-                      <span style="font-size:0.75rem; color:var(--text-dim);">Historical Violations</span>
-                      <div id="dossier-stat-violations" style="font-weight:700; color:#fff; font-size:1.05rem; margin-top:0.2rem;">0 Violations</div>
-                      <div style="font-size:0.72rem; color:var(--accent-green); margin-top:2px;">Zero Camouflage Detected</div>
-                    </div>
-                  </div>
-
-                  <!-- Longitudinal Credibility Trajectory -->
-                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.85rem 1rem; margin:0.85rem 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                      <h4 style="color:#fff; font-size:0.88rem; margin:0;">Longitudinal Credibility Trajectory (Macro History)</h4>
-                      <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);" id="dossier-trajectory-stat">30d Stability: 100.0% &bull; Bayesian α=412, β=1</span>
-                    </div>
-                    <p style="color:var(--text-muted); font-size:0.82rem; line-height:1.5; margin:0;" id="dossier-trajectory-summary">
-                      Longitudinal publisher credibility evaluated across continuous multi-year ingestion. Consistent empirical attribution and strict adherence to wire service journalistic standards.
-                    </p>
-                  </div>
-
-                  <!-- Audited Articles Table for this Source -->
-                  <div style="margin-top:1.25rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem; flex-wrap:wrap; gap:0.5rem;">
-                      <div>
-                        <h3 style="font-size:0.95rem; color:#fff; margin:0;">Audited Articles from this Source</h3>
-                        <span style="font-size:0.75rem; color:var(--text-dim);" id="dossier-article-count-label">Showing all verified audits</span>
+                      <div id="dossier-domain-desc" style="color:var(--text-dim); font-size:0.78rem; max-width:480px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        Conflict of Pun-terest Case Study • Governance COI &amp; Native Advertorial Forensics
                       </div>
                     </div>
-                    <div class="ws-table-container" style="max-height:520px; overflow-y:auto;">
-                      <table class="dossier-articles-table" id="dossier-articles-table">
+
+                    <!-- Right: DCI Score Dial & Actions -->
+                    <div style="display:flex; align-items:center; gap:0.85rem;">
+                      <div style="display:flex; align-items:center; gap:0.45rem; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:4px; padding:0.2rem 0.6rem;">
+                        <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">DCI Score:</span>
+                        <span id="dossier-dci-score" style="font-size:1.15rem; font-weight:800; font-family:var(--font-mono); color:#f59e0b; line-height:1;">48.5</span>
+                      </div>
+                      <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="switchBrowseSubview('articles')">
+                        📑 Articles Hub
+                      </button>
+                      <button type="button" class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" id="btn-dossier-search-filter" onclick="filterSearchByDomain(window.currentDomain || 'inmaricopa.com')">
+                        🔍 Filter in Search ↗
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Publisher Vitals & Trajectory Strip (Compact 4-Column Grid) -->
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.5rem;">
+                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Curated Audits</span>
+                      <div id="dossier-stat-audits" style="font-weight:700; color:#fff; font-size:0.9rem;">5 Curated Audits</div>
+                      <div style="font-size:0.65rem; color:var(--accent-green);">100% G=1.00 Grounding</div>
+                    </div>
+                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Syndication Feed</span>
+                      <div id="dossier-stat-syndication" style="font-weight:700; color:#fff; font-size:0.9rem;">● Active RSS (15m)</div>
+                      <div style="font-size:0.65rem; color:var(--text-dim);">Continuous Feed Daemon</div>
+                    </div>
+                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Violation History</span>
+                      <div id="dossier-stat-violations" style="font-weight:700; color:#fff; font-size:0.9rem;">6 Epistemic Violations</div>
+                      <div style="font-size:0.65rem; color:var(--accent-rose);">COI &amp; Advertorial Flags</div>
+                    </div>
+                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Macro Trajectory</span>
+                      <div id="dossier-trajectory-stat" style="font-weight:700; color:var(--text-muted); font-size:0.82rem; font-family:var(--font-mono);">30d Stability: 48.5%</div>
+                      <div id="dossier-trajectory-summary" style="font-size:0.65rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Bayesian α=18, β=22 • Watchlist Monitoring</div>
+                    </div>
+                  </div>
+
+                  <!-- Full-Stage Audited Articles Table -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; gap:0.6rem; flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                      <div style="display:flex; align-items:center; gap:0.6rem;">
+                        <h3 style="font-size:0.95rem; color:#fff; margin:0; font-weight:700;">Audited Articles from this Source</h3>
+                        <span style="font-size:0.72rem; color:var(--accent-cyan); background:rgba(56,189,248,0.1); padding:0.15rem 0.5rem; border-radius:4px; font-family:var(--font-mono); font-weight:600;" id="dossier-article-count-label">Showing all 5 verified audits</span>
+                      </div>
+                      <span style="font-size:0.72rem; color:var(--text-dim);">Click <b>Inspect</b> for 3-tier lensing or <b>Viewer</b> for standalone analysis</span>
+                    </div>
+
+                    <div class="ws-table-container" style="overflow-x:auto;">
+                      <table class="dossier-articles-table" id="dossier-articles-table" style="width:100%; border-collapse:collapse;">
                         <thead>
-                          <tr>
-                            <th>Article Headline / Claim</th>
-                            <th>Audited Date</th>
-                            <th>Suspicion Score</th>
-                            <th>Verdict</th>
-                            <th>Action</th>
+                          <tr style="border-bottom:1px solid var(--border); text-align:left; font-size:0.75rem; color:var(--text-dim); text-transform:uppercase;">
+                            <th style="padding:0.5rem 0.6rem;">Article Headline / Published Claim</th>
+                            <th style="padding:0.5rem 0.6rem; width:95px;">Audited Date</th>
+                            <th style="padding:0.5rem 0.6rem; width:110px;">Suspicion Score</th>
+                            <th style="padding:0.5rem 0.6rem; width:170px;">Epistemic Classification</th>
+                            <th style="padding:0.5rem 0.6rem; width:220px; text-align:right;">Forensic Actions</th>
                           </tr>
                         </thead>
                         <tbody id="dossier-articles-body">
@@ -1932,6 +1930,12 @@
       window.currentAudit = data;
       window.currentDomain = data.domain || 'reuters.com';
 
+      if (data && data.sha) {
+        history.replaceState(null, '', '#report/' + data.sha);
+      } else {
+        history.replaceState(null, '', '#report/' + encodeURIComponent(targetUrl));
+      }
+
       // Update Ribbon HUD dynamically
       window.updateWorkstationRibbon(data.domain, data.score);
 
@@ -2071,105 +2075,8 @@
 
     window.renderDossierDom = function(domain) {
       if (!domain) return;
-      window.currentDomain = domain;
-
-      // Dynamically query SAMPLE_DATABASE for all real articles matching this domain
-      const matchingArticles = Object.entries(SAMPLE_DATABASE)
-        .filter(([url, a]) => a.domain === domain || url.includes(domain))
-        .map(([url, a]) => ({
-          title: a.title,
-          url: url,
-          date: "2026-08-20",
-          score: a.score,
-          badge: a.badge.split(' • ')[0],
-          badgeColor: a.badgeColor,
-          violations: a.violations || []
-        }));
-
-      const auditCount = matchingArticles.length;
-      const totalViolations = matchingArticles.reduce((sum, a) => sum + a.violations.length, 0);
-
-      // Fetch publisher profile
-      let pub = PUBLISHER_DATABASE[domain];
-      if (!pub) {
-        pub = {
-          domain: domain,
-          title: `Publisher Profile: ${domain}`,
-          desc: `Aggregated epistemic track record for ${domain}`,
-          tierBadge: domain.includes('alert') || domain.includes('scam') ? 'TIER D (DECEPTIVE)' : 'TIER B (MONITORED SOURCE)',
-          tierColor: domain.includes('alert') ? '#f43f5e' : '#38bdf8',
-          tierBg: domain.includes('alert') ? 'rgba(244, 63, 94, 0.15)' : 'rgba(56, 189, 248, 0.15)',
-          dciScore: domain.includes('alert') ? '12.4' : '84.2',
-          syndication: '● Active Ingestion Stream',
-          trajectoryStat: '30d Stability: 94.2%',
-          trajectorySummary: `Continuous monitoring across all published articles on ${domain}.`
-        };
-      }
-
-      // Update select dropdown
-      const sel = document.getElementById('dossier-switch-select');
-      if (sel && sel.value !== domain && PUBLISHER_DATABASE[domain]) {
-        sel.value = domain;
-      }
-
-      // Update Dossier DOM
-      const titleEl = document.getElementById('dossier-domain-title');
-      const descEl = document.getElementById('dossier-domain-desc');
-      const badgeEl = document.getElementById('dossier-tier-badge');
-      const scoreEl = document.getElementById('dossier-dci-score');
-
-      if (titleEl) titleEl.textContent = pub.domain;
-      if (descEl) descEl.textContent = pub.desc;
-      if (badgeEl) {
-        badgeEl.textContent = pub.tierBadge;
-        badgeEl.style.color = pub.tierColor;
-        badgeEl.style.background = pub.tierBg;
-        badgeEl.style.borderColor = pub.tierColor;
-      }
-      if (scoreEl) {
-        scoreEl.textContent = pub.dciScore;
-        scoreEl.style.color = pub.tierColor;
-      }
-
-      // 100% Truthful Dynamic Invariant Metrics
-      document.getElementById('dossier-stat-audits').textContent = `${auditCount} Curated Audit${auditCount === 1 ? '' : 's'}`;
-      document.getElementById('dossier-stat-syndication').textContent = pub.syndication;
-      document.getElementById('dossier-stat-violations').textContent = totalViolations === 0 ? '0 Factual Violations' : `${totalViolations} Violation${totalViolations === 1 ? '' : 's'} Detected`;
-      document.getElementById('dossier-trajectory-stat').textContent = pub.trajectoryStat;
-      document.getElementById('dossier-trajectory-summary').textContent = pub.trajectorySummary;
-
-      const labelEl = document.getElementById('dossier-article-count-label');
-      if (labelEl) {
-        labelEl.textContent = `Showing all ${auditCount} verified audit${auditCount === 1 ? '' : 's'}`;
-      }
-      if (typeof window.updateDossierPinBtn === 'function') {
-        window.updateDossierPinBtn();
-      }
-
-      // Populate Audited Articles Catalog with authentic matching items
-      const bodyEl = document.getElementById('dossier-articles-body');
-      if (bodyEl) {
-        if (matchingArticles.length === 0) {
-          bodyEl.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-dim); padding:1rem;">No individual articles indexed for this publisher yet.</td></tr>`;
-        } else {
-          bodyEl.innerHTML = matchingArticles.map(a => `
-            <tr>
-              <td>
-                <strong style="color:#fff;">${a.title}</strong>
-                <div style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono);">${a.url}</div>
-              </td>
-              <td style="font-size:0.8rem; color:var(--text-dim);">${a.date}</td>
-              <td style="font-family:var(--font-mono); font-weight:700; color:${a.badgeColor};">${a.score} / 100</td>
-              <td><span class="badge" style="background:rgba(255,255,255,0.05); color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-size:0.72rem;">${a.badge}</span></td>
-              <td>
-                <div style="display:flex; gap:0.35rem; align-items:center;">
-                  <button class="btn-secondary" style="font-size:0.72rem; padding:0.25rem 0.55rem; ${isItemPinned('article', a.url) ? 'background:rgba(56,189,248,0.2); color:#7dd3fc; border-color:#38bdf8;' : ''}" onclick="window.togglePinItem('article', '${a.title.replace(/'/g, "\'")}', '${a.url}')" title="${isItemPinned('article', a.url) ? 'Unpin article' : 'Pin article'}">${isItemPinned('article', a.url) ? '📍 Pinned' : '📌 Pin'}</button>
-                  <button class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="evaluateSource('${a.url}')">🔬 Inspect</button>
-                </div>
-              </td>
-            </tr>
-          `).join('');
-        }
+      if (typeof window.viewSourceDossier === 'function') {
+        window.viewSourceDossier(domain);
       }
     };
 
@@ -2201,12 +2108,19 @@
       const btnSources = document.getElementById('subview-btn-sources');
       const viewArticles = document.getElementById('browse-subview-articles');
       const viewSources = document.getElementById('browse-subview-sources');
+      const banner = document.getElementById('browse-header-banner');
 
       if (subview === 'articles') {
         btnArticles?.classList.add('active');
         btnSources?.classList.remove('active');
         if (viewArticles) viewArticles.style.display = 'block';
         if (viewSources) viewSources.style.display = 'none';
+        if (banner) banner.style.display = 'flex';
+        const catBox = document.getElementById('publishers-catalog-container');
+        const detBox = document.getElementById('publisher-detail-container');
+        if (catBox) catBox.style.display = 'block';
+        if (detBox) detBox.style.display = 'none';
+        history.replaceState(null, '', '#browse');
       } else {
         btnSources?.classList.add('active');
         btnArticles?.classList.remove('active');
@@ -2274,22 +2188,35 @@
     function closePublisherDetail() {
       const catBox = document.getElementById('publishers-catalog-container');
       const detBox = document.getElementById('publisher-detail-container');
+      const banner = document.getElementById('browse-header-banner');
       if (catBox) catBox.style.display = 'block';
       if (detBox) detBox.style.display = 'none';
+      if (banner) banner.style.display = 'flex';
+      history.replaceState(null, '', '#browse/publishers');
     }
     window.closePublisherDetail = closePublisherDetail;
 
     window.viewSourceDossier = function(domain) {
-      window.CredenceWS.switchTab('browse');
-      switchBrowseSubview('sources');
+      if (!domain) return;
+      if (window.CredenceWS && window.CredenceWS.switchTab) {
+        window.CredenceWS.switchTab('browse');
+      }
+      if (typeof switchBrowseSubview === 'function') {
+        switchBrowseSubview('sources');
+      }
 
+      const banner = document.getElementById('browse-header-banner');
       const catBox = document.getElementById('publishers-catalog-container');
       const detBox = document.getElementById('publisher-detail-container');
+      if (banner) banner.style.display = 'none';
       if (catBox) catBox.style.display = 'none';
-      if (detBox) detBox.style.display = 'block';
+      if (detBox) detBox.style.display = 'flex';
 
       window.currentDomain = domain;
-      const pub = ALL_PUBLISHERS.find(p => p.domain === domain) || {
+      history.replaceState(null, '', '#analytics/' + domain);
+
+      // Fetch publisher profile from PUBLISHER_DATABASE or ALL_PUBLISHERS
+      const rawPub = PUBLISHER_DATABASE[domain] || ALL_PUBLISHERS.find(p => p.domain === domain) || {
         domain: domain,
         title: `${domain} Publisher`,
         desc: "Web Publisher • Continuous Epistemic Surveillance",
@@ -2298,12 +2225,43 @@
         tierBg: "rgba(56, 189, 248, 0.15)",
         dciScore: "75.0",
         avgSuspicion: "25.0",
-        auditsCount: 1,
         syndication: "● Active Ingestion",
         violationsCount: "0 Violations",
         trajectoryStat: "30d Stability: 95.0%",
         trajectorySummary: "Publisher evaluated across live network ingestions."
       };
+
+      // Collect all authentic matching articles from SAMPLE_DATABASE and rawPub.articles
+      const sampleMatches = Object.entries(SAMPLE_DATABASE).filter(([u, a]) => a.domain === domain || u.includes(domain));
+      let matchingArticles = sampleMatches.map(([u, a]) => ({
+        url: u,
+        title: a.title,
+        score: a.score,
+        badge: a.badge ? a.badge.split(' • ')[0] : 'AUDITED',
+        badgeBg: a.badgeBg || "rgba(255,255,255,0.05)",
+        badgeColor: a.badgeColor || "#38bdf8",
+        date: "2026-08-20",
+        content_sha256: a.content_sha256 || a.sha || ""
+      }));
+
+      if (rawPub.articles && rawPub.articles.length > 0) {
+        rawPub.articles.forEach(pa => {
+          if (!matchingArticles.some(m => m.url === pa.url)) {
+            matchingArticles.push({
+              url: pa.url,
+              title: pa.title,
+              score: pa.score,
+              badge: pa.badge || "AUDITED",
+              badgeBg: "rgba(255,255,255,0.05)",
+              badgeColor: pa.badgeColor || "#38bdf8",
+              date: pa.date || "2026-08-20",
+              content_sha256: pa.sha || ""
+            });
+          }
+        });
+      }
+
+      const totalAuditsCount = matchingArticles.length > 0 ? matchingArticles.length : (rawPub.totalAudits || 1);
 
       const titleEl = document.getElementById('dossier-domain-title');
       const descEl = document.getElementById('dossier-domain-desc');
@@ -2314,44 +2272,46 @@
       const statViol = document.getElementById('dossier-stat-violations');
       const trajStat = document.getElementById('dossier-trajectory-stat');
       const trajSummary = document.getElementById('dossier-trajectory-summary');
+      const countLabel = document.getElementById('dossier-article-count-label');
 
-      if (titleEl) titleEl.textContent = pub.domain;
-      if (descEl) descEl.textContent = `${pub.title} • ${pub.desc}`;
+      if (titleEl) titleEl.textContent = rawPub.domain;
+      if (descEl) descEl.textContent = `${rawPub.title} • ${rawPub.desc}`;
       if (tierBadge) {
-        tierBadge.textContent = pub.tierBadge;
-        tierBadge.style.color = pub.tierColor;
-        tierBadge.style.background = pub.tierBg;
-        tierBadge.style.borderColor = pub.tierColor;
+        tierBadge.textContent = rawPub.tierBadge;
+        tierBadge.style.color = rawPub.tierColor;
+        tierBadge.style.background = rawPub.tierBg;
+        tierBadge.style.borderColor = rawPub.tierColor;
       }
       if (dciScore) {
-        dciScore.textContent = pub.dciScore;
-        dciScore.style.color = pub.tierColor;
+        dciScore.textContent = rawPub.dciScore;
+        dciScore.style.color = rawPub.tierColor;
       }
-      if (statAudits) statAudits.textContent = `${pub.auditsCount} Curated Audit${pub.auditsCount > 1 ? 's' : ''}`;
-      if (statSyn) statSyn.textContent = pub.syndication;
-      if (statViol) statViol.textContent = pub.violationsCount;
-      if (trajStat) trajStat.textContent = pub.trajectoryStat;
-      if (trajSummary) trajSummary.textContent = pub.trajectorySummary;
+      if (statAudits) statAudits.textContent = `${totalAuditsCount} Curated Audit${totalAuditsCount === 1 ? '' : 's'}`;
+      if (statSyn) statSyn.textContent = rawPub.syndication || "● Active Ingestion";
+      if (statViol) statViol.textContent = rawPub.violationsCount || `${matchingArticles.filter(a => parseFloat(a.score) > 20).length} Epistemic Violations`;
+      if (trajStat) trajStat.textContent = rawPub.trajectoryStat || "30d Stability: 100%";
+      if (trajSummary) trajSummary.textContent = rawPub.trajectorySummary || "Continuous monitoring across all published articles.";
+      if (countLabel) countLabel.textContent = `Showing all ${totalAuditsCount} verified audit${totalAuditsCount === 1 ? '' : 's'}`;
 
-      // Populate matching articles from SAMPLE_DATABASE
-      const matchingArticles = Object.entries(SAMPLE_DATABASE).filter(([u, a]) => a.domain === domain);
       const tableBody = document.getElementById('dossier-articles-body');
       if (tableBody) {
         if (matchingArticles.length > 0) {
-          tableBody.innerHTML = matchingArticles.map(([u, a]) => `
-            <tr>
-              <td>
-                <b style="color:#fff; font-size:0.85rem;">${a.title}</b><br/>
-                <span style="font-size:0.75rem; color:var(--text-dim); font-family:var(--font-mono);">${u}</span>
+          tableBody.innerHTML = matchingArticles.map(a => `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+              <td style="padding:0.45rem 0.55rem;">
+                <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
+                <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
               </td>
-              <td style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap;">2026-08-20</td>
-              <td style="font-family:var(--font-mono); font-weight:700; color:${a.badgeColor};">${a.score}</td>
-              <td><span class="badge" style="font-size:0.7rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor};">${a.badge}</span></td>
-              <td>
-                <div style="display:flex; gap:0.35rem; align-items:center;">
-                  <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || u)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem; text-decoration:none;" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
-                  <a href="history.html?url=${encodeURIComponent(u)}" target="_blank" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
-                  <button class="btn-primary" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="evaluateSource('${u}')">Inspect ↗</button>
+              <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
+              <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
+              <td style="padding:0.45rem 0.55rem;">
+                <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
+              </td>
+              <td style="padding:0.45rem 0.55rem; text-align:right;">
+                <div style="display:inline-flex; gap:0.3rem; align-items:center;">
+                  <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-secondary" style="font-size:0.7rem; padding:0.18rem 0.45rem; text-decoration:none;" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                  <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-secondary" style="font-size:0.7rem; padding:0.18rem 0.45rem; text-decoration:none;" title="View Temporal History & Diff">📜 History ↗</a>
+                  <button class="btn-primary" style="font-size:0.72rem; padding:0.18rem 0.55rem;" onclick="evaluateSource('${a.url}')">🔬 Inspect</button>
                 </div>
               </td>
             </tr>
@@ -2359,7 +2319,7 @@
         } else {
           tableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="text-align:center; padding:1.25rem; color:var(--text-dim);">
+              <td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
                 No curated articles found for ${domain}. You can inspect any article from this domain in <a href="javascript:void(0)" onclick="filterSearchByDomain('${domain}')" style="color:var(--accent-cyan);">Search & Audit</a>.
               </td>
             </tr>
@@ -2839,7 +2799,6 @@
       }
     });
     renderPinnedSources();
-    window.renderDossierDom('reuters.com');
     window.renderSifterStream();
 
     // Universal Client-Side Hash & Parameter Router
