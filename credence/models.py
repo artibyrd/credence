@@ -231,6 +231,14 @@ class FeedSubscription(SQLModel, table=True):
     last_polled_at: Optional[datetime] = Field(default=None, description="UTC timestamp of last poll")
     is_active: bool = Field(default=True, index=True, description="Whether feed polling is active")
     is_satire: bool = Field(default=False, description="True if feed is a dedicated satire publication")
+    is_sentinel: bool = Field(
+        default=False,
+        index=True,
+        description="True if feed is in Sentinel Mode for high-frequency prioritized scanning",
+    )
+    sentinel_interval_seconds: int = Field(
+        default=300, ge=60, description="High-frequency polling interval in seconds when in Sentinel Mode"
+    )
     created_at: datetime = Field(default_factory=utc_now, index=True, description="Subscription creation timestamp")
 
 
@@ -273,6 +281,7 @@ class DomainReputation(SQLModel, table=True):
         index=True,
         description="Reputation status: TRUSTED, NEUTRAL, SUSPICIOUS, QUARANTINED_PROBATION, PROBATIONARY_RECOVERY",
     )
+    is_sentinel: bool = Field(default=False, index=True, description="True if domain is marked as a sentinel source")
     polling_backoff_factor: float = Field(
         default=1.0, description="Multiplier for syndicated feed polling interval (1.0x to 64.0x)"
     )

@@ -53,6 +53,8 @@ from credence.server.api.domains import (
 from credence.server.api.feeds import (
     api_boredom_cycle,
     api_boredom_status,
+    api_feeds_sentinel_toggle,
+    api_feeds_sentinels,
     api_feeds_stream,
     api_roots_candidates,
     api_roots_expand,
@@ -158,6 +160,8 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/domain/quarantine", endpoint=api_domain_quarantine, methods=["GET", "OPTIONS"]),
         Route("/api/domain/appeal/{domain:path}", endpoint=api_domain_appeal, methods=["POST", "OPTIONS"]),
         Route("/api/feeds/stream", endpoint=api_feeds_stream, methods=["GET", "OPTIONS"]),
+        Route("/api/feeds/sentinels", endpoint=api_feeds_sentinels, methods=["GET", "OPTIONS"]),
+        Route("/api/feeds/sentinel", endpoint=api_feeds_sentinel_toggle, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/leaderboard", endpoint=api_leaderboard, methods=["GET", "OPTIONS"]),
         Route("/api/merit", endpoint=api_get_merit, methods=["GET", "OPTIONS"]),
         Route("/api/merit/verify", endpoint=api_verify_merit, methods=["POST", "OPTIONS"]),

@@ -128,7 +128,20 @@ def dispatch_command(args: argparse.Namespace) -> None:
     elif args.command == "rankings":
         asyncio.run(run_rankings_command(category=args.category))
     elif args.command in ("feeds", "feed"):
-        asyncio.run(run_feeds_list_command())
+        if args.action == "sentinel":
+            from credence.cli.commands.feeds import run_feeds_sentinel_command
+
+            act = args.subaction or "list"
+            tgt = args.target if args.target else None
+            asyncio.run(
+                run_feeds_sentinel_command(
+                    action=act,
+                    target=tgt,
+                    interval=getattr(args, "interval", 300),
+                )
+            )
+        else:
+            asyncio.run(run_feeds_list_command())
     elif args.command == "seeds":
         asyncio.run(cli_seeds(action=args.action, output_path=args.output))
     elif args.command == "audit-docs":

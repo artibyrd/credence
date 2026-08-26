@@ -90,6 +90,31 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
             await conn.exec_driver_sql("PRAGMA synchronous=NORMAL;")
             await conn.exec_driver_sql("PRAGMA busy_timeout=5000;")
 
+            # Ensure sentinel columns exist on feedsubscription table
+            try:
+                res_sub = await conn.exec_driver_sql("PRAGMA table_info(feedsubscription);")
+                cols_sub = [row[1] for row in res_sub.fetchall()]
+                if cols_sub:
+                    if "is_sentinel" not in cols_sub:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE feedsubscription ADD COLUMN is_sentinel BOOLEAN DEFAULT 0;"
+                        )
+                    if "sentinel_interval_seconds" not in cols_sub:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE feedsubscription ADD COLUMN sentinel_interval_seconds INTEGER DEFAULT 300;"
+                        )
+            except Exception:
+                pass
+
+            # Ensure sentinel columns exist on domainreputation table
+            try:
+                res_rep = await conn.exec_driver_sql("PRAGMA table_info(domainreputation);")
+                cols_rep = [row[1] for row in res_rep.fetchall()]
+                if cols_rep and "is_sentinel" not in cols_rep:
+                    await conn.exec_driver_sql("ALTER TABLE domainreputation ADD COLUMN is_sentinel BOOLEAN DEFAULT 0;")
+            except Exception:
+                pass
+
 
 async def init_db(engine: AsyncEngine | None = None) -> None:
     """Initialize database schemas, apply performance pragmas, and run v1->v2 migrations.

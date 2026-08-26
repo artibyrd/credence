@@ -10,6 +10,12 @@ from credence.feeds.parser import (
     fetch_and_parse_feed,
     parse_feed_content,
 )
+from credence.feeds.sentinel import (
+    compute_sentinel_poll_due,
+    list_sentinel_sources,
+    partition_ingestion_burst,
+    set_feed_sentinel_mode,
+)
 from credence.feeds.worker import (
     FeedSyncSummary,
     sync_all_feeds,
@@ -26,4 +32,8 @@ __all__ = [
     "FeedSyncSummary",
     "sync_single_feed",
     "sync_all_feeds",
+    "compute_sentinel_poll_due",
+    "list_sentinel_sources",
+    "partition_ingestion_burst",
+    "set_feed_sentinel_mode",
 ]

@@ -150,7 +150,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     # feeds (alias: feed)
     p_feed = subparsers.add_parser("feeds", aliases=["feed"], help="Manage RSS/Atom feed subscriptions")
-    p_feed.add_argument("action", default="list", nargs="?", choices=["list", "discover", "inspect", "status"])
+    p_feed.add_argument(
+        "action", default="list", nargs="?", choices=["list", "discover", "inspect", "status", "sentinel"]
+    )
+    p_feed.add_argument(
+        "subaction",
+        nargs="?",
+        default="list",
+        help="Sentinel action (list, enable, disable, set-interval) or target parameter",
+    )
+    p_feed.add_argument("target", nargs="?", default="", help="Target feed URL, domain, or candidate URL")
+    p_feed.add_argument("--interval", type=int, default=300, help="Sentinel polling interval in seconds")
 
     # seeds
     p_seeds = subparsers.add_parser("seeds", help="Manage and export bootstrap seed nodes")

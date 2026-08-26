@@ -219,11 +219,11 @@ async def sync_all_feeds(
     evaluate_novel: bool = True,
     profile_override: Any = None,
 ) -> FeedSyncSummary:
-    """Synchronize all active feed subscriptions ordered by priority tier."""
+    """Synchronize all active feed subscriptions ordered by sentinel priority and priority tier."""
     stmt = (
         select(FeedSubscription)
         .where(FeedSubscription.is_active == True)  # noqa: E712
-        .order_by(col(FeedSubscription.priority_tier).asc())
+        .order_by(col(FeedSubscription.is_sentinel).desc(), col(FeedSubscription.priority_tier).asc())
     )
     subscriptions = (await session.exec(stmt)).all()
 
@@ -328,11 +328,14 @@ async def bootstrap_preset_feeds(
                 stmt = select(FeedSubscription).where(FeedSubscription.feed_url == url)
                 existing = (await session.exec(stmt)).first()
                 if not existing:
+                    is_sentinel = "inmaricopa.com" in url
                     sub = FeedSubscription(
                         feed_url=url,
                         title=title,
                         priority_tier=priority,
                         is_active=True,
+                        is_sentinel=is_sentinel,
+                        sentinel_interval_seconds=300 if is_sentinel else 300,
                     )
                     session.add(sub)
                     await session.commit()

@@ -1,10 +1,11 @@
-"""Unit tests for the Credence Textual TUI Application."""
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable
 from textual.widgets.data_table import RowKey
 
+from credence.feeds.worker import FeedSyncSummary
 from credence.tui.app import CredenceApp
 from credence.tui.screens.info_modal import InfoModalScreen
 
@@ -98,9 +99,29 @@ async def test_credence_tui_app_lifecycle() -> None:
         app.on_data_table_row_selected(DataTable.RowSelected(lb_table, 1, RowKey("1")))
         await pilot.pause()
 
+        # Test selecting a feeds row and checking Sentinel Inspector panel
+        app.action_switch_to_feeds()
+        await pilot.pause()
+        feeds_table = app.query_one("#feeds_table", DataTable)
+        if hasattr(app, "_live_feeds") and len(app._live_feeds) > 0:
+            feeds_table.cursor_coordinate = Coordinate(0, 0)
+            app.on_data_table_row_selected(DataTable.RowSelected(feeds_table, 0, RowKey("0")))
+            await pilot.pause()
+            assert app.query_one("#feed_sentinel_panel") is not None
+
+            # Test toggling sentinel mode via action
+            await app.action_toggle_selected_sentinel()
+            await pilot.pause()
+
         # Test refresh data action
         await app.action_refresh_data()
         await pilot.pause()
+
+        # Test trigger sifter pass action
+        with patch("credence.feeds.sifter.run_sifting_cycle", new_callable=AsyncMock) as mock_sift:
+            mock_sift.return_value = FeedSyncSummary()
+            await app.action_trigger_sifter_pass()
+            await pilot.pause()
 
         # Test opening in-terminal topic & invariant modal (? / i)
         app.action_open_info_modal()

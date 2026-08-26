@@ -24,6 +24,7 @@ from credence.db import get_async_session
 from credence.feeds.dedup import check_mesh_effort_avoidance
 from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain, update_domain_reputation
 from credence.feeds.roots import RootExpansionSummary, expand_roots
+from credence.feeds.sentinel import partition_ingestion_burst
 from credence.mesh.relay import MeshGossipRelay
 from credence.models import FeedItem, FeedSubscription, utc_now
 from credence.pipeline.governor import get_token_headroom_status
@@ -174,13 +175,18 @@ async def run_boredom_cycle(
         select(FeedItem, FeedSubscription)
         .join(FeedSubscription, col(FeedItem.feed_id) == col(FeedSubscription.id), isouter=True)
         .where(FeedItem.processing_status == "pending")
-        .order_by(col(FeedSubscription.priority_tier).asc(), col(FeedItem.discovered_at).asc())
+        .order_by(
+            col(FeedSubscription.is_sentinel).desc(),
+            col(FeedSubscription.priority_tier).asc(),
+            col(FeedItem.discovered_at).asc(),
+        )
         .limit(audit_burst * 3)
     )
     pending_pairs = (await session.exec(stmt_pending)).all()
     summary.pending_items_scanned = len(pending_pairs)
 
-    # Partition items into clean vs quarantined/adversarial
+    # Partition items into sentinel, clean organic, vs quarantined/adversarial
+    sentinel_candidates = []
     clean_candidates = []
     quarantined_candidates = []
 
@@ -189,6 +195,8 @@ async def run_boredom_cycle(
         rep = await get_or_create_domain_reputation(session, dom)
         if rep.status in ("QUARANTINED_PROBATION", "PROBATIONARY_RECOVERY", "SUSPICIOUS"):
             quarantined_candidates.append((item, sub, rep))
+        elif sub and sub.is_sentinel:
+            sentinel_candidates.append((item, sub, rep))
         else:
             clean_candidates.append((item, sub, rep))
 
@@ -196,8 +204,9 @@ async def run_boredom_cycle(
     adv_budget = audit_burst - clean_budget
 
     selected_pairs = []
-    # Add clean candidates up to clean_budget
-    selected_pairs.extend(clean_candidates[:clean_budget])
+    # Add partitioned clean + sentinel candidates ensuring organic soil floor
+    clean_picks = partition_ingestion_burst(sentinel_candidates, clean_candidates, clean_budget)
+    selected_pairs.extend(clean_picks)
 
     # Lazarus Sampling Probe: Sample from quarantined feeds if headroom is abundant (>= 50%)
     if summary.headroom_daily_pct >= 50.0 and quarantined_candidates:
@@ -205,8 +214,9 @@ async def run_boredom_cycle(
         selected_pairs.extend(lazarus_picks)
         summary.quarantined_items_probed = len(lazarus_picks)
     elif adv_budget > 0:
-        # Fallback to remaining clean candidates if no quarantined items or headroom < 50%
-        selected_pairs.extend(clean_candidates[clean_budget : clean_budget + adv_budget])
+        # Fallback to remaining candidates if no quarantined items or headroom < 50%
+        remaining_pool = [p for p in (sentinel_candidates + clean_candidates) if p not in selected_pairs]
+        selected_pairs.extend(remaining_pool[:adv_budget])
 
     # HRW Rendezvous Hashing to eliminate Swarm Stampedes across mesh
     if mesh_relay and getattr(mesh_relay, "identity", None):
