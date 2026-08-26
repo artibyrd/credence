@@ -334,7 +334,10 @@ async def fetch_and_parse_feed(
     from credence.ingestion.security import create_safe_async_client, validate_safe_url
 
     clean_url = validate_safe_url(feed_url)
-    headers = {"User-Agent": "Credence-Epistemic-Feed-Ingester/2.0"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 (Credence/2.0)",
+        "Accept": "application/rss+xml, application/xml, application/atom+xml, text/xml;q=0.9, text/html;q=0.8, */*;q=0.7",
+    }
     if etag:
         headers["If-None-Match"] = etag
     if last_modified:
