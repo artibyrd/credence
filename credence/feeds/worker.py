@@ -115,9 +115,9 @@ async def _process_single_entry(
         )
         return
 
-    # Check Token Budget Governor Headroom
+    # Check Token Budget Governor Headroom (Sentinel sources bypass deferral and use heuristic fallback if needed)
     headroom = await get_token_headroom_status(session, profile_override=profile_override)
-    if headroom.circuit_breaker_tripped or headroom.daily_headroom_pct < 30.0:
+    if not subscription.is_sentinel and (headroom.circuit_breaker_tripped or headroom.daily_headroom_pct < 30.0):
         item_record.processing_status = "skipped"
         await session.commit()
         summary.items_deferred_budget += 1
