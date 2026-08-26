@@ -1,30 +1,27 @@
 #!/usr/bin/env python3
-"""Credence Visual Architecture & Illustration Audit Execution Script.
+"""Credence Visual Architecture & Bespoke SVG Illustration Engine.
 
-Actions:
-1. Refactor markdown files across docs/ and blog/:
-   - Retain illustrations ONLY in core architectural docs and deep-dive case studies.
-   - Remove decorative top-of-page and redundant image tags from reference/index docs.
-   - Position retained diagrams directly in the technical section they illustrate.
-   - Assign precise, descriptive alt text (e.g. "Figure 1.1: Circular conflict feedback loop...")
-2. Build genuine technical schematics (Process flow, network topology, state machines, entity models).
-3. Clean up orphaned SVGs and synchronize active assets between credence-docs and credence/web.
+Generates 42 domain-accurate, visual-first technical schematics across docs/ and blog/.
+Strictly satisfies:
+- Zero bullet points (•, *, -, 1., 2., etc.).
+- Max line length <= 38 characters per label.
+- Strict text character budget <= 450 characters per diagram.
+- High contrast typography: #ffffff titles, #cbd5e1 descriptions, obsidian #090d16 background.
+- Zero overlapping elements and zero connector/text collisions.
+- Clear, human-readable explanations (zero cryptic metric strings or internal formulas).
 """
 
+from __future__ import annotations
+
 import html
-import re
 from pathlib import Path
 from typing import List, Optional
 
-# ==============================================================================
-# 1. CORE ARCHITECTURAL SCHEMATIC BUILDERS (NO TEXT IN BOXES)
-# ==============================================================================
-
 
 class SchematicCanvas:
-    """Dark-mode SVG canvas for genuine technical diagrams."""
+    """Dark-mode SVG canvas for precision technical diagrams."""
 
-    def __init__(self, width: int = 860, height: int = 360, title: str = "", category: str = "CREDENCE ARCHITECTURE"):
+    def __init__(self, width: int = 860, height: int = 280, title: str = "", category: str = "CREDENCE ARCHITECTURE"):
         self.width = width
         self.height = height
         self.title = title
@@ -38,19 +35,17 @@ class SchematicCanvas:
         w: float,
         h: float,
         rx: float = 8,
-        fill: str = "#0f172a",
-        stroke: str = "rgba(56, 189, 248, 0.3)",
+        fill: str = "#111827",
+        stroke: str = "rgba(56, 189, 248, 0.4)",
         stroke_width: float = 1.2,
         filter_id: Optional[str] = None,
         dashed: bool = False,
-        opacity: float = 1.0,
     ) -> None:
         filt = f' filter="url(#{filter_id})"' if filter_id else ""
         dash = ' stroke-dasharray="4 4"' if dashed else ""
-        op = f' opacity="{opacity}"' if opacity < 1.0 else ""
         self.elements.append(
             f'<rect x="{round(x, 1)}" y="{round(y, 1)}" width="{round(w, 1)}" height="{round(h, 1)}" rx="{rx}" '
-            f'fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"{dash}{filt}{op} />'
+            f'fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"{dash}{filt} />'
         )
 
     def circle(
@@ -60,7 +55,7 @@ class SchematicCanvas:
         r: float,
         fill: str = "#1e293b",
         stroke: str = "#38bdf8",
-        stroke_width: float = 1.5,
+        stroke_width: float = 1.4,
     ) -> None:
         self.elements.append(
             f'<circle cx="{round(cx, 1)}" cy="{round(cy, 1)}" r="{round(r, 1)}" fill="{fill}" '
@@ -73,7 +68,7 @@ class SchematicCanvas:
         y: float,
         content: str,
         font_size: float = 12,
-        fill: str = "#f8fafc",
+        fill: str = "#ffffff",
         font_family: str = "sans-serif",
         font_weight: str = "normal",
         anchor: str = "start",
@@ -93,7 +88,7 @@ class SchematicCanvas:
         x2: float,
         y2: float,
         stroke: str = "#38bdf8",
-        stroke_width: float = 1.6,
+        stroke_width: float = 1.5,
         dashed: bool = False,
         marker_end: Optional[str] = "url(#arrow-cyan)",
     ) -> None:
@@ -108,7 +103,7 @@ class SchematicCanvas:
         self,
         d: str,
         stroke: str = "#38bdf8",
-        stroke_width: float = 1.6,
+        stroke_width: float = 1.5,
         fill: str = "none",
         dashed: bool = False,
         marker_end: Optional[str] = "url(#arrow-cyan)",
@@ -129,25 +124,41 @@ class SchematicCanvas:
         subtitle: str = "",
         icon: str = "",
         accent: str = "#38bdf8",
-        fill: str = "#0f172a",
+        fill: str = "#111827",
+        pill: str = "",
     ) -> None:
-        """Render a distinct architectural component node."""
-        self.rect(x, y, w, h, rx=8, fill=fill, stroke=accent, stroke_width=1.3, filter_id="card-shadow")
+        """Render a clean card with high-contrast typography and collision-free layout."""
+        self.rect(x, y, w, h, rx=8, fill=fill, stroke=accent, stroke_width=1.2, filter_id="card-shadow")
         self.rect(x, y, w, 3, rx=1.5, fill=accent, stroke="none")
 
-        header_x = x + 14
+        header_x = x + 12
         if icon:
-            self.text(header_x, y + 23, icon, font_size=15, anchor="start")
-            header_x += 24
+            self.text(header_x, y + 21, icon, font_size=13, anchor="start")
+            header_x += 20
 
-        self.text(header_x, y + 23, title, font_size=13, fill="#f8fafc", font_weight="600")
+        self.text(header_x, y + 21, title, font_size=11.5, fill="#ffffff", font_weight="bold")
 
         if subtitle:
             sub_lines = subtitle.split("\n")
-            line_y = y + 43
+            line_y = y + 38
             for s_line in sub_lines:
-                self.text(x + 14, line_y, s_line, font_size=11, fill="#94a3b8", font_family="sans-serif")
-                line_y += 18
+                clean_line = s_line.replace("• ", "").replace("* ", "")
+                self.text(x + 12, line_y, clean_line, font_size=10, fill="#cbd5e1")
+                line_y += 14
+
+        if pill:
+            pill_y = y + h - 20
+            self.rect(x + 10, pill_y, w - 20, 15, rx=3, fill="#1e293b", stroke=accent, stroke_width=0.8)
+            self.text(
+                x + w / 2,
+                pill_y + 11,
+                pill,
+                font_size=8.5,
+                fill="#ffffff",
+                font_family="monospace",
+                font_weight="bold",
+                anchor="middle",
+            )
 
     def container(
         self,
@@ -157,14 +168,14 @@ class SchematicCanvas:
         h: float,
         title: str = "",
         color: str = "#38bdf8",
-        bg: str = "rgba(15, 23, 42, 0.4)",
+        bg: str = "rgba(17, 24, 39, 0.6)",
         dashed: bool = False,
     ) -> None:
-        """Render an architectural boundary/plane container."""
-        self.rect(x, y, w, h, rx=10, fill=bg, stroke=color, stroke_width=1.1, dashed=dashed)
+        """Render an architectural boundary container with clear margins."""
+        self.rect(x, y, w, h, rx=10, fill=bg, stroke=color, stroke_width=1.2, dashed=dashed)
         if title:
             self.text(
-                x + 16, y + 20, title.upper(), font_size=10, fill=color, font_family="monospace", font_weight="bold"
+                x + 14, y + 17, title.upper(), font_size=9, fill=color, font_family="monospace", font_weight="bold"
             )
 
     def arrow(
@@ -177,11 +188,7 @@ class SchematicCanvas:
         dashed: bool = False,
         marker: str = "url(#arrow-cyan)",
     ) -> None:
-        dx = x2 - x1
-        dy = y2 - y1
-        if (dx * dx + dy * dy) ** 0.5 < 8:
-            return
-        self.line(x1, y1, x2, y2, stroke=color, stroke_width=1.6, dashed=dashed, marker_end=marker)
+        self.line(x1, y1, x2, y2, stroke=color, stroke_width=1.5, dashed=dashed, marker_end=marker)
 
     def render(self) -> str:
         return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.width} {self.height}" width="100%" height="auto" style="background: transparent;">
@@ -196,9 +203,6 @@ class SchematicCanvas:
     <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
     </marker>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
-    </marker>
     <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
     </marker>
@@ -212,949 +216,1633 @@ class SchematicCanvas:
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
     </marker>
   </defs>
-
-  <!-- Background Base -->
   <rect width="{self.width}" height="{self.height}" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-
-  <!-- Top Header -->
-  <text x="28" y="28" fill="#38bdf8" font-size="10.5" font-family="monospace" font-weight="bold" letter-spacing="0.1em">{html.escape(self.category.upper())}</text>
-  <text x="28" y="50" fill="#f8fafc" font-size="14.5" font-family="sans-serif" font-weight="bold">{html.escape(self.title.upper())}</text>
-
-  <!-- Elements -->
+  <text x="32" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">{html.escape(self.category.upper())}</text>
+  <text x="32" y="49" fill="#ffffff" font-size="14" font-family="sans-serif" font-weight="bold">{html.escape(self.title.upper())}</text>
   {"".join(self.elements)}
 </svg>
 """
 
 
 # ==============================================================================
-# BESPOKE DIAGRAM IMPLEMENTATIONS
+# 42 BESPOKE DOMAIN-ACCURATE SCHEMATIC BUILDERS (HUMAN-READABLE & COLLISION-FREE)
 # ==============================================================================
 
 
 def diagram_conflict_of_punterest() -> str:
     """Maricopa Municipal vs Newsroom Closed Loop Conflict Model."""
-    c = SchematicCanvas(
-        860, 360, "MUNICIPAL PUBLISHER-POLITICIAN CONFLICT vs CREDENCE AUDIT", "CIVIC CONFLICT OF INTEREST AUDIT"
-    )
-
-    # Top Half: The Corrupt Circular Feedback Loop
-    c.container(28, 68, 804, 134, "Local Newsroom Monopoly vs Governance Collision", "#ef4444", dashed=True)
-    c.node(
-        48, 96, 210, 86, "Elected Councilmember", "• Holds City Council Seat\n• Directs newsroom policy", "🏛️", "#ef4444"
-    )
-    c.node(
-        324,
-        96,
-        210,
-        86,
-        "Municipal Council Dais",
-        "• Votes on rezoning & contracts\n• Police & public budgets",
-        "🗳️",
-        "#f59e0b",
-    )
-    c.node(
-        600,
-        96,
-        210,
-        86,
-        "Digital News Outlet",
-        "• inmaricopa.com publisher\n• Unlabelled advertorials",
-        "📰",
-        "#ef4444",
-    )
-
-    # Circular Directed Connectors
-    c.arrow(258, 126, 324, 126, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(534, 126, 600, 126, "#ef4444", marker="url(#arrow-rose)")
-    # Loopback curve from Newsroom back to Elected Councilmember
+    c = SchematicCanvas(860, 300, "POLITICIAN-PUBLISHER CONFLICT vs AUDIT", "CIVIC CONFLICT FORENSICS")
+    # Upper Row: Municipal Conflict Loop
+    c.container(30, 68, 800, 102, "Municipal Conflict Loop", "#ef4444", dashed=True)
+    c.node(46, 92, 210, 66, "Councilmember", "Holds Council Seat\nDirects news policy", "🏛️", "#ef4444")
+    c.node(325, 92, 210, 66, "Municipal Dais", "Votes on land deals\nApproves contracts", "🗳️", "#f59e0b")
+    c.node(604, 92, 210, 66, "News Outlet", "inmaricopa.com\nUnlabeled advertorials", "📰", "#ef4444")
+    c.arrow(256, 125, 325, 125, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(535, 125, 604, 125, "#ef4444", marker="url(#arrow-rose)")
+    # Return loop routes at y=164 below nodes with zero text collision
     c.path(
-        "M 705 182 L 705 194 L 153 194 L 153 182",
+        "M 709 158 L 709 164 L 151 164 L 151 158",
         stroke="#ef4444",
-        stroke_width=1.5,
+        stroke_width=1.3,
         dashed=True,
         marker_end="url(#arrow-rose)",
     )
 
-    # Bottom Half: Credence Epistemic Audit Interception Layer
-    c.container(28, 216, 804, 118, "Credence Cryptographic Attestation Layer (G=1.00)", "#22c55e")
+    # Lower Row: Credence Attestation Layer
+    c.container(30, 180, 800, 102, "Credence Forensic Audit", "#22c55e")
+    c.node(46, 204, 210, 66, "DOM Ingestion", "Pulls published article\nIsolates raw text", "📥", "#38bdf8")
     c.node(
-        48,
-        240,
-        224,
-        76,
-        "Target Ingestion",
-        "• Harvester pulls published DOM\n• Untrusted source container",
+        325, 204, 210, 66, "Quote Verification", "Matches council records\nUnmasks hidden promotion", "🔬", "#22c55e"
+    )
+    c.node(604, 204, 210, 66, "Signed Audit Seal", "Flags conflict of interest\nSeals verified proof", "🔐", "#a855f7")
+    c.arrow(256, 237, 325, 237, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(535, 237, 604, 237, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_astroturfing_entropy() -> str:
+    """Shannon Topic Entropy Collapse vs Organic Civic Discourse."""
+    c = SchematicCanvas(860, 280, "TOPIC ENTROPY COLLAPSE & BOT DEFENSE", "INFORMATION ENTROPY FORENSICS")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Organic Discourse",
+        "Diverse vocabulary used\nNatural sentence variation\nBroad distribution of ideas",
+        "🌱",
+        "#22c55e",
+        pill="Healthy Variance",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Astroturfed Swarm",
+        "Top keywords overused\nIdentical talking points\nCoordinated narrative burst",
+        "🤖",
+        "#ef4444",
+        pill="Coordinated Pattern",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Defense Gate",
+        "Detects repeated phrasing\nPenalizes artificial spikes\nQuarantines bot campaigns",
+        "🛡️",
+        "#38bdf8",
+        pill="Automated Quarantine",
+    )
+    c.arrow(270, 164, 312, 164, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(547, 164, 590, 164, "#38bdf8", marker="url(#arrow-cyan)")
+    return c.render()
+
+
+def diagram_bicameral_finops() -> str:
+    """Bicameral LLM Inference Triage Architecture."""
+    c = SchematicCanvas(860, 280, "BICAMERAL LLM INFERENCE TRIAGE", "INFERENCE COST ARCHITECTURE")
+    c.node(
+        35,
+        84,
+        220,
+        160,
+        "Inbound Traffic",
+        "Incoming article streams\nNetwork security scrubbed\nAll unverified claims",
         "📥",
         "#38bdf8",
+        pill="Raw Ingestion",
     )
     c.node(
-        318,
+        305,
+        84,
         240,
-        224,
-        76,
-        "Verbatim Primary Grounding",
-        "• Cross-checks council transcripts\n• Unmasks advertorial camouflage",
-        "🔬",
+        74,
+        "Fast Triage Tier",
+        "Sub-second evaluation\nResolves 85% of claims",
+        "⚡",
         "#22c55e",
+        pill="Low Cost Model",
     )
     c.node(
-        586,
+        305,
+        170,
         240,
-        224,
-        76,
-        "Sovereign Attestation",
-        "• SPJ-1.6 investigative credit\n• Ed25519 sealed receipt",
-        "🔐",
+        74,
+        "Deep Arbiter Tier",
+        "Extended thinking mode\nResolves complex disputes",
+        "🧠",
         "#a855f7",
-    )
-
-    c.arrow(272, 278, 318, 278, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(542, 278, 586, 278, "#a855f7", marker="url(#arrow-purple)")
-    return c.render()
-
-
-def diagram_three_plane_architecture() -> str:
-    """3-Plane Decoupled Governance Topology."""
-    c = SchematicCanvas(860, 360, "3-PLANE DECOUPLED GOVERNANCE ARCHITECTURE", "SYSTEM TOPOLOGY")
-    col_w = 244
-    gap = 26
-    x1 = 28
-    x2 = x1 + col_w + gap
-    x3 = x2 + col_w + gap
-
-    c.container(x1, 68, col_w, 266, "Edge Plane (Cloudflare)", "#38bdf8")
-    c.node(
-        x1 + 12,
-        96,
-        col_w - 24,
-        72,
-        "Zero-Build Web UI",
-        "• Vanilla HTML5 / ES modules\n• Zero npm dependencies",
-        "🌐",
-        "#38bdf8",
+        pill="Advanced Reasoner",
     )
     c.node(
-        x1 + 12,
-        180,
-        col_w - 24,
-        72,
-        "Interactive Docs Site",
-        "• Fast client-side search\n• Responsive SVG rendering",
-        "📘",
-        "#60a5fa",
-    )
-    c.node(x1 + 12, 254, col_w - 24, 66, "Edge Router (_worker.js)", "• Tiered edge caching", "⚡", "#38bdf8")
-
-    c.container(x2, 68, col_w, 266, "Compute Plane (Cloud Run)", "#22c55e")
-    c.node(
-        x2 + 12,
-        96,
-        col_w - 24,
-        72,
-        "FastMCP 2.0 Engine",
-        "• Stdio & SSE dual transport\n• JSON-RPC tools & resources",
-        "⚙️",
-        "#22c55e",
-    )
-    c.node(
-        x2 + 12,
-        180,
-        col_w - 24,
-        72,
-        "Starlette Server Core",
-        "• Ingestion scrubber & SSRF\n• Prometheus live metrics",
-        "🚀",
-        "#38bdf8",
-    )
-    c.node(x2 + 12, 254, col_w - 24, 66, "SQLite + Vector Store", "• WAL persistence layer", "💾", "#a855f7")
-
-    c.container(x3, 68, col_w, 266, "Infra Plane (Multi-Cloud)", "#a855f7")
-    c.node(
-        x3 + 12, 96, col_w - 24, 72, "Terraform HCL", "• GCP Cloud Run + WIF\n• Cloudflare DNS & Pages", "🏛️", "#a855f7"
-    )
-    c.node(
-        x3 + 12,
-        180,
-        col_w - 24,
-        72,
-        "GitHub Actions CI/CD",
-        "• Keyless WIF deployment\n• Automated dev staging",
-        "🔄",
-        "#60a5fa",
-    )
-    c.node(x3 + 12, 254, col_w - 24, 66, "Genesis Key Custody", "• Ed25519 root authority", "🔐", "#22c55e")
-
-    c.arrow(x1 + col_w, 132, x2, 132, "#38bdf8")
-    c.arrow(x2 + col_w, 132, x3, 132, "#22c55e", marker="url(#arrow-emerald)")
-    return c.render()
-
-
-def diagram_mesh_topology() -> str:
-    """13-Node Watts-Strogatz Mesh & Sybil Cartel Defense."""
-    c = SchematicCanvas(860, 360, "13-NODE WATTS-STROGATZ MESH & SYBIL CARTEL DEFENSE", "DECENTRALIZED CONSENSUS")
-    w = 384
-
-    c.container(28, 68, w, 266, "High-Merit Peer Ring (M_i >= 0.70)", "#22c55e")
-    c.node(42, 96, 164, 66, "Node 0 (Genesis)", "M=0.98 | Root Seed\nSovereign Authority", "🛡️", "#22c55e")
-    c.node(234, 96, 164, 66, "Node 1 (Relay)", "M=0.92 | Active\nFeed Rendezvous", "⚡", "#38bdf8")
-    c.node(42, 174, 164, 66, "Node 2 (Auditor)", "M=0.88 | Active\nHeuristic Verifier", "🔬", "#60a5fa")
-    c.node(234, 174, 164, 66, "Node 3 (Sifter)", "M=0.85 | Active\nBoredom Sifter", "🔍", "#38bdf8")
-    c.node(138, 252, 164, 66, "Node 4 (Digest)", "M=0.82 | Active\nBriefing Generator", "📰", "#a855f7")
-
-    # Internal Mesh Connectors
-    c.line(206, 129, 234, 129, "#22c55e", 1.4, marker_end=None)
-    c.line(206, 207, 234, 207, "#22c55e", 1.4, marker_end=None)
-    c.line(124, 162, 124, 174, "#22c55e", 1.4, marker_end=None)
-    c.line(316, 162, 316, 174, "#22c55e", 1.4, marker_end=None)
-
-    c.container(448, 68, w, 266, "Byzantine Sybil Cartel Quarantine", "#ef4444", dashed=True)
-    c.node(462, 96, 164, 66, "Cartel Node 9", "Suspicion: 88.4%\nQuarantined", "🛑", "#ef4444")
-    c.node(654, 96, 164, 66, "Cartel Node 10", "Suspicion: 92.1%\nScore Slashed", "🛑", "#ef4444")
-    c.node(
-        462,
-        174,
-        356,
-        144,
-        "Autonomous Sybil Defense",
-        "• HRW hashing routes feeds deterministically.\n• Nodes with Suspicion > 70% isolated.\n• Consensus medians protected from collusion.\n• Byzantine fault tolerance: f = floor((N-1)/3).",
-        "⚖️",
+        595,
+        84,
+        230,
+        160,
+        "Budget Guardrail",
+        "Preserves token capacity\nPrevents runaway API costs\nMaintains 30% headroom",
+        "📊",
         "#f59e0b",
+        pill="83% Cost Reduction",
     )
-
-    c.arrow(412, 129, 448, 129, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(255, 121, 305, 121, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(255, 207, 305, 207, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(545, 164, 595, 164, "#f59e0b", marker="url(#arrow-amber)")
     return c.render()
 
 
-def diagram_scale_to_zero_storage() -> str:
-    """Scale-to-Zero Cloud Run Storage Hydration State Machine."""
-    c = SchematicCanvas(860, 360, "SCALE-TO-ZERO COLD-BOOT STORAGE HYDRATION CYCLE", "COMPUTE LIFECYCLE")
-
-    s_w = 175
-    gap = 32
-    y = 96
-    h = 105
-
-    steps = [
-        (
-            28,
-            "1. Scale to Zero",
-            "• Idle containers sleep\n• N=0 compute nodes\n• $0 idle cost incurred",
-            "🧊",
-            "#38bdf8",
-        ),
-        (
-            28 + s_w + gap,
-            "2. Request Wakeup",
-            "• Inbound HTTP / MCP\n• Cold boot trigger\n• Instance spin-up",
-            "⚡",
-            "#60a5fa",
-        ),
-        (
-            28 + 2 * (s_w + gap),
-            "3. GCS Hydration",
-            "• Dual-pointer restore\n• WAL replay (<1.2s)\n• SQLite in-memory",
-            "💾",
-            "#22c55e",
-        ),
-        (
-            28 + 3 * (s_w + gap),
-            "4. Live Serving",
-            "• P50 latency < 0.5ms\n• FastMCP SSE active\n• Snapshot sync",
-            "🚀",
-            "#a855f7",
-        ),
-    ]
-
-    for idx, (sx, title, desc, icon, col) in enumerate(steps):
-        c.node(sx, y, s_w, h, title, desc, icon, col)
-        if idx < 3:
-            c.arrow(sx + s_w, y + h / 2, sx + s_w + gap, y + h / 2, col)
-
+def diagram_finops_epistemology() -> str:
+    """FinOps as Epistemic Discipline and Quota Circuit Breakers."""
+    c = SchematicCanvas(860, 280, "FINOPS AS EPISTEMIC DISCIPLINE", "TOKEN BUDGET GOVERNANCE")
     c.node(
-        28,
-        225,
-        804,
-        105,
-        "Dual-Pointer GCS Storage Invariant",
-        "• Dual-pointer metadata prevents race conditions during cold-start container initialization.\n• Point-in-time WAL recovery guarantees zero data loss across ephemeral instance lifecycles.\n• In-memory cache warming delivers instant sub-millisecond response for repeat domain queries.",
+        30,
+        88,
+        180,
+        150,
+        "Usage Monitor",
+        "Tracks token consumption\nMonitors hourly velocity\nPrevents sudden outages",
+        "📊",
+        "#38bdf8",
+        pill="Velocity Tracker",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Safety Headroom",
+        "30% capacity reserved\nPrevents rate limit halts\nPrioritizes citations",
         "🛡️",
         "#22c55e",
+        pill="Headroom Safe",
     )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Circuit Breaker",
+        "Graceful degradation\nSwitches to offline check\nMaintains local service",
+        "⚡",
+        "#f59e0b",
+        pill="Offline Fallback",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Signed Result",
+        "Deterministic output\nComplete audit evidence\nCanonical receipt stored",
+        "🔐",
+        "#a855f7",
+        pill="Verified Audit",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_boredom_engine() -> str:
+    """Autonomous Boredom Engine & Excitation Soil Harvesting."""
+    c = SchematicCanvas(860, 280, "AUTONOMOUS PROACTIVE SENSING", "BACKGROUND INVESTIGATION")
+    c.node(30, 88, 180, 150, "Idle State", "No user queries\nCuriosity ramps up", "⏳", "#38bdf8", pill="Idle State")
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Trigger Fired",
+        "Curiosity limit met\nLaunches research task",
+        "📈",
+        "#f59e0b",
+        pill="Trigger Fired",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Primary Sifting",
+        "Scans meeting minutes\nAnalyzes preprints",
+        "🌾",
+        "#22c55e",
+        pill="Active Search",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Evidence Stored",
+        "Signs verified findings\nStores audit evidence",
+        "🔐",
+        "#a855f7",
+        pill="Sealed Finding",
+    )
+    c.arrow(210, 163, 230, 163, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_bittorrent_fact_checking() -> str:
+    """BitTorrent P2P Fact-Checking Work Sharing & Rendezvous Hashing."""
+    c = SchematicCanvas(860, 280, "P2P WORK SHARING & TASK ASSIGNMENT", "DISTRIBUTED VERIFICATION")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Task Assignment",
+        "Deterministic feed hashing\nFair workload allocation\nZero central bottlenecks",
+        "🌐",
+        "#38bdf8",
+        pill="Distributed Hash",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Work Partition",
+        "Node A audits civic feeds\nNode B audits preprints\nNode C audits newsrooms",
+        "🐝",
+        "#22c55e",
+        pill="Balanced Load",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Gossip Sharing",
+        "Signed audit receipts\nShared among all peers\nZero redundant effort",
+        "📡",
+        "#a855f7",
+        pill="Verified Gossip",
+    )
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_bittorrent_economics() -> str:
+    """Decentralized Swarm Economics vs Centralized Silos."""
+    c = SchematicCanvas(860, 280, "P2P SWARM ECONOMICS vs CENTRALIZED SILO", "INFRASTRUCTURE COST COMPARISON")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Centralized Silo",
+        "High cloud server bills\nDuplicate scraping cycles\nSingle point of failure\nOpaque fact check verdicts",
+        "🏢",
+        "#ef4444",
+        pill="High Operating Cost",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Credence P2P Mesh",
+        "Shared audit attestations\nDeduplicated compute work\nByzantine fault tolerant\n98% lower overall costs",
+        "🐝",
+        "#22c55e",
+        pill="98% Lower Cost",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_satire_decision_tree() -> str:
-    """Satire Cloak vs SPJ-1.6 Decision Tree."""
-    c = SchematicCanvas(860, 360, "SATIRE CLOAK vs SPJ-1.6 INVESTIGATIVE OVERRIDE", "DEFENSIVE REASONING")
-    w = 384
-
-    c.container(28, 68, w, 266, "Poe's Law Satire Safeguard", "#38bdf8")
+    """Poe's Law Satire Safeguard vs SPJ-1.6 Mandatory Factual Override."""
+    c = SchematicCanvas(860, 280, "SATIRE vs DEFAMATION OVERRIDE", "CONTENT CLASSIFICATION")
     c.node(
-        42,
-        96,
-        w - 28,
-        96,
-        "Parody & Irony Surface",
-        "• Satirical cues, farce, or comedic exaggeration\n• Score safely neutralized (0.00)\n• Zero false-positive misinformation penalties",
-        "🎭",
+        35,
+        95,
+        205,
+        140,
+        "Incoming Content",
+        "Checks satirical cues\nIdentifies parody style",
+        "📄",
         "#38bdf8",
+        pill="Input Ingest",
     )
     c.node(
-        42,
-        204,
-        w - 28,
-        114,
-        "Cognitive Guardrail",
-        "• Protects legitimate comedy and satire from AI bias\n• Avoids pedantic literalist over-enforcement\n• Grounding exactness preserved character-for-character",
-        "🛡️",
-        "#60a5fa",
-    )
-
-    c.container(448, 68, w, 266, "SPJ-1.6 Factual Allegation Override", "#ef4444")
-    c.node(
-        462,
-        96,
-        w - 28,
-        96,
-        "Factual Defamation / Claims",
-        "• Specific named entities & financial allegations\n• Real-world reputational or legal harm\n• SPJ-1.6 mandatory override active",
+        280,
+        95,
+        230,
+        140,
+        "Factual Allegation?",
+        "Names real individuals\nAlleges specific crimes",
         "⚖️",
-        "#ef4444",
+        "#f59e0b",
+        pill="Audit Trigger",
     )
     c.node(
-        462,
-        204,
-        w - 28,
-        114,
-        "Shannon Topic Entropy Defense",
-        "• Detects low-entropy astroturfing campaigns (H < 0.30)\n• Forensic audit applied when satire cloaks real attacks\n• Cryptographic Ed25519 tamper-evident attestation",
-        "🔬",
-        "#f59e0b",
+        550,
+        75,
+        275,
+        78,
+        "Protected Parody",
+        "Pure satirical content\nExempt from penalty",
+        "🎭",
+        "#22c55e",
+        pill="True Satire",
     )
+    c.node(
+        550,
+        165,
+        275,
+        78,
+        "Mandatory Audit",
+        "Disinformation masked\nExact quote check enforced",
+        "🚨",
+        "#ef4444",
+        pill="Audit Enforced",
+    )
+    c.arrow(240, 165, 280, 165, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(510, 130, 550, 114, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(510, 200, 550, 204, "#ef4444", marker="url(#arrow-rose)")
+    return c.render()
 
-    c.arrow(412, 144, 448, 144, "#ef4444", marker="url(#arrow-rose)")
+
+def diagram_500_loc_ceiling() -> str:
+    """The 500 LOC Ceiling Law & Modular Subpackage Decoupling."""
+    c = SchematicCanvas(860, 280, "THE 500 LOC CEILING LAW", "CODE ARCHITECTURE")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Monolithic Anti-Pattern",
+        "1,200+ line sprawling files\nTangled internal imports\nHigh risk when refactoring\nUnclear team ownership",
+        "📦",
+        "#ef4444",
+        pill="Fragile Architecture",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Modular Subpackages",
+        "Strict under 500 lines limit\nClean interface contracts\nFast in-memory unit tests\nSingle clear responsibility",
+        "🧩",
+        "#22c55e",
+        pill="Maintainable Units",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_500_loc_ceiling_governance() -> str:
+    """Single Responsibility Code Decision Boundaries."""
+    c = SchematicCanvas(860, 280, "MODULAR RESPONSIBILITY BOUNDARIES", "SUBPACKAGE DECOUPLING")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Ingestion Plane",
+        "Network security guards\nHTML article scrubbers\nClean context extractor",
+        "🧹",
+        "#38bdf8",
+        pill="Small Focused Modules",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Scoring Pipeline",
+        "Deterministic calculations\nHeuristic rule engine\nConfidence computations",
+        "🔢",
+        "#22c55e",
+        pill="Mathematical Core",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Storage Layer",
+        "Local SQLite database\nAudit log persistence\nAutomated pruning daemon",
+        "💾",
+        "#a855f7",
+        pill="Isolated Persistence",
+    )
+    c.arrow(270, 164, 312, 164, "#38bdf8")
+    c.arrow(547, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_three_plane_architecture() -> str:
+    """3-Plane Decoupled Deployment Governance Architecture."""
+    c = SchematicCanvas(860, 280, "3-PLANE DECOUPLED GOVERNANCE ARCHITECTURE", "SYSTEM ARCHITECTURE")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Edge Plane",
+        "Cloudflare edge workers\nZero-build vanilla web UI\nInstant global delivery",
+        "🌐",
+        "#38bdf8",
+        pill="Edge Delivery",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Compute Plane",
+        "Cloud Run compute server\nFastMCP 2.0 interface\nScale-to-zero efficiency",
+        "⚡",
+        "#22c55e",
+        pill="Compute Server",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Infra Plane",
+        "Declarative Terraform HCL\nKeyless cloud IAM roles\nZero stored static keys",
+        "🏛️",
+        "#a855f7",
+        pill="Infrastructure",
+    )
+    c.arrow(270, 164, 312, 164, "#38bdf8")
+    c.arrow(547, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_architecture_master() -> str:
+    """Comprehensive Credence Architecture Overview."""
+    return diagram_three_plane_architecture()
+
+
+def diagram_deployment_cloudrun() -> str:
+    """Serverless Cloud Run Compute & Keyless WIF Deployment."""
+    c = SchematicCanvas(860, 280, "CLOUD RUN & KEYLESS DEPLOYMENT", "DEPLOYMENT PIPELINE")
+    c.node(
+        30,
+        88,
+        180,
+        150,
+        "GitHub Actions",
+        "Triggered on branch push\nRuns hermetic test suite\nZero long-lived secrets",
+        "🔄",
+        "#38bdf8",
+        pill="CI Automation",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Keyless IAM",
+        "Workload Identity Pool\nShort-lived tokens issued\nLeast-privilege access",
+        "🔐",
+        "#a855f7",
+        pill="Secure Token",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Minimal Image",
+        "Hardened container build\nChecksum locked image\nFast boot optimization",
+        "📦",
+        "#60a5fa",
+        pill="Hardened Image",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Live Service",
+        "Scale-to-zero auto scale\nFast warm container boot\nZero-downtime releases",
+        "⚡",
+        "#22c55e",
+        pill="Production Ready",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(610, 163, 630, 163, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_cicd_pipeline() -> str:
+    """Multi-Stage Container Optimization and Sub-40s Pipeline."""
+    c = SchematicCanvas(860, 280, "MULTI-STAGE BUILD & RAPID CI/CD", "CONTAINER OPTIMIZATION")
+    c.node(
+        30,
+        88,
+        180,
+        150,
+        "Builder Stage",
+        "Full environment compile\nInstalls project tooling\nPre-warms cache",
+        "📦",
+        "#ef4444",
+        pill="Build Workspace",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Runtime Prune",
+        "Strips build dependencies\nRetains pure binaries\nEliminates shell tools",
+        "🧹",
+        "#38bdf8",
+        pill="Clean Image",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Hermetic QA",
+        "In-memory test gate\n52 integrity assertions\nZero browser overhead",
+        "🧪",
+        "#22c55e",
+        pill="Fast Tests (<35s)",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Live Staging",
+        "Fast cold boot under 1.2s\nMinimal attack surface\nInstant deploy rollout",
+        "🚀",
+        "#a855f7",
+        pill="Minimal Surface",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_knowledge_demotion_highway() -> str:
-    """The Knowledge Demotion Highway & Invariant Canon."""
-    c = SchematicCanvas(860, 360, "THE LIVING INVARIANT CANON & DEMOTION HIGHWAY", "KNOWLEDGE GOVERNANCE")
-    col_w = 244
-    gap = 26
-    x1 = 28
-    x2 = x1 + col_w + gap
-    x3 = x2 + col_w + gap
-
-    c.container(x1, 68, col_w, 266, "Tier 0: Universal Canon", "#ef4444")
+    """4-Tier Knowledge Taxonomy & Invariant Demotion Highway."""
+    c = SchematicCanvas(860, 280, "4-TIER KNOWLEDGE TAXONOMY", "KNOWLEDGE GOVERNANCE")
     c.node(
-        x1 + 12,
-        96,
-        col_w - 24,
-        76,
-        "P0 Sovereign Safety",
-        "• Always-on LLM prompt\n• <800 tokens hard budget\n• Zero speculative code",
-        "🧠",
-        "#ef4444",
-    )
-    c.node(
-        x1 + 12,
-        184,
-        col_w - 24,
-        134,
-        "Cognitive Canon",
-        "• Class α: Sovereign Safety\n• Class β: Lifecycle Topology\n• Class γ: Interface Symmetry\n• Strict Mk1 Human Gate",
-        "⚖️",
-        "#f59e0b",
-    )
-
-    c.container(x2, 68, col_w, 266, "Tier 1: Progressive Skills", "#38bdf8")
-    c.node(
-        x2 + 12,
-        96,
-        col_w - 24,
-        76,
-        "Subsystem Skills",
-        "• Loaded on demand\n• .agents/skills/*\n• Context economy",
-        "☁️",
-        "#38bdf8",
-    )
-    c.node(
-        x2 + 12,
-        184,
-        col_w - 24,
-        134,
-        "Specialized Domains",
-        "• cloudrun-ops\n• mesh-cluster\n• white-label-ops\n• architecture-governance\n• epistemic-benchmark",
+        30,
+        88,
+        180,
+        150,
+        "Universal Rules",
+        "Safety non-negotiables\nHuman review gate\nSmall prompt budget",
         "🏛️",
-        "#60a5fa",
+        "#ef4444",
+        pill="Core Invariants",
     )
-
-    c.container(x3, 68, col_w, 266, "Tier 2: Shift-Left Tests", "#22c55e")
     c.node(
-        x3 + 12,
-        96,
-        col_w - 24,
-        76,
-        "Automated QA Gates",
-        "• Local pre-commit QA\n• <0.3s execution time\n• Immediate feedback",
-        "⚡",
+        230,
+        88,
+        180,
+        150,
+        "Specialized Skills",
+        "Progressive workflows\nLoaded only on demand\nSubsystem playbooks",
+        "🧠",
+        "#38bdf8",
+        pill="Skill Modules",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Automated Gates",
+        "Pre-commit test rules\nStatic code assertions\nContinuous validation",
+        "🧪",
         "#22c55e",
+        pill="Test Assertions",
     )
     c.node(
-        x3 + 12,
-        184,
-        col_w - 24,
-        134,
-        "Mechanical Invariants",
-        "• Zero-npm invariant\n• 7-Manifest parity sync\n• 500 LOC ceiling check\n• Sitemap route coverage\n• Tiered edge caching",
+        630,
+        88,
+        180,
+        150,
+        "Architecture Docs",
+        "Comprehensive guides\nTechnical blueprints\nHistorical context",
+        "📘",
+        "#a855f7",
+        pill="Documentation",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_invariants_canon() -> str:
+    """Living Canon of System Invariants & Dynamic Reference."""
+    c = SchematicCanvas(860, 280, "LIVING CANON OF SYSTEM INVARIANTS", "COGNITIVE HIERARCHY")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Sovereign Safety",
+        "Human review sign-off\nUntrusted ingestion boundary\nExact quote verification",
         "🛡️",
-        "#22c55e",
+        "#ef4444",
+        pill="Core Non-Negotiable",
     )
-
-    c.arrow(x1 + col_w, 134, x2, 134, "#38bdf8")
-    c.arrow(x2 + col_w, 134, x3, 134, "#22c55e", marker="url(#arrow-emerald)")
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Execution Lifecycle",
+        "4-phase release process\n500 line code file ceiling\nHermetic unit test suites",
+        "⚙️",
+        "#f59e0b",
+        pill="Process Boundaries",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Interface Parity",
+        "Full symmetry across CLI,\nWeb, TUI, and FastMCP\nZero-build web standards",
+        "📐",
+        "#22c55e",
+        pill="Interface Standards",
+    )
+    c.arrow(270, 164, 312, 164, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(547, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_agentic_engineering_lifecycle() -> str:
     """Antigravity 5-Stage Agentic Engineering Lifecycle."""
-    c = SchematicCanvas(860, 360, "ANTIGRAVITY 5-STAGE AGENTIC ENGINEERING LIFECYCLE", "PAIR-PROGRAMMING PARADIGM")
-
-    s_w = 175
-    gap = 32
-    y = 96
-    h = 105
-
-    steps = [
-        (28, "1. Survey", "• Read-only exploration\n• Context investigation\n• Zero modifying edits", "🔍", "#38bdf8"),
-        (
-            28 + s_w + gap,
-            "2. Plan",
-            "• Implementation plan\n• Invariant mapping\n• User approval gate",
-            "📝",
-            "#60a5fa",
-        ),
-        (
-            28 + 2 * (s_w + gap),
-            "3. Execute",
-            "• Hermetic sandbox\n• Multi-plane updates\n• Atomic refactoring",
-            "⚙️",
-            "#a855f7",
-        ),
-        (
-            28 + 3 * (s_w + gap),
-            "4. QA & Staging",
-            "• just check gauntlet\n• 100% test pass rate\n• Dev Cloud Run deploy",
-            "🚀",
-            "#22c55e",
-        ),
-    ]
-
-    for idx, (sx, title, desc, icon, col) in enumerate(steps):
-        c.node(sx, y, s_w, h, title, desc, icon, col)
-        if idx < 3:
-            c.arrow(sx + s_w, y + h / 2, sx + s_w + gap, y + h / 2, col)
-
+    c = SchematicCanvas(860, 280, "ANTIGRAVITY 5-STAGE AGENTIC LIFECYCLE", "PAIR PROGRAMMING LIFECYCLE")
     c.node(
-        28,
-        225,
-        804,
-        105,
-        "Human Sovereign Authority (Mk1 Eyeball Invariant)",
-        "• Production releases, tag promotions, and PR merges require human review character-for-character.\n• Sandboxed agent execution protects user filesystem and host security.\n• Continuous learning loop (/learn) crystallizes runtime friction into permanent repository invariants.",
-        "👁️",
-        "#22c55e",
+        25, 88, 145, 150, "Research", "Read codebase\nZero code edits\nMap contracts", "🔍", "#38bdf8", pill="Read-Only"
     )
+    c.node(
+        190, 88, 145, 150, "Plan", "Design plan\nDefine tests\nReview tradeoffs", "📋", "#60a5fa", pill="Design Phase"
+    )
+    c.node(
+        355,
+        88,
+        150,
+        150,
+        "Human Review",
+        "Human sign-off\nReview choices\nApproval gate",
+        "👁️",
+        "#ef4444",
+        pill="Human Approval",
+    )
+    c.node(
+        525,
+        88,
+        145,
+        150,
+        "Execute",
+        "Apply changes\nHermetic tests\nAtomic commits",
+        "⚡",
+        "#22c55e",
+        pill="Targeted Edits",
+    )
+    c.node(
+        690,
+        88,
+        145,
+        150,
+        "Learn",
+        "Summarize work\nExtract rules\nUpdate skills",
+        "🧠",
+        "#a855f7",
+        pill="Continuous Lean",
+    )
+    c.arrow(170, 163, 190, 163, "#38bdf8")
+    c.arrow(335, 163, 355, 163, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(505, 163, 525, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(670, 163, 690, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
-def diagram_bicameral_finops() -> str:
-    """Dual-Tier Bicameral FinOps Architecture."""
-    c = SchematicCanvas(860, 360, "DUAL-TIER BICAMERAL INFERENCE ARCHITECTURE", "COMPUTE FINOPS")
-    w = 384
-
-    c.container(28, 68, w, 266, "Tier 1: Fast Heuristic Triage (Free)", "#38bdf8")
+def diagram_mesh_topology() -> str:
+    """13-Node Watts-Strogatz Peer Mesh & Sybil Cartel Defense."""
+    c = SchematicCanvas(860, 280, "13-NODE MESH & SYBIL CARTEL DEFENSE", "CONSENSUS MESH TOPOLOGY")
     c.node(
-        42,
-        96,
-        w - 28,
-        96,
-        "Local Heuristic Sifter",
-        "• Fast pattern matching (<15ms latency)\n• Filters 83% of routine, uncontested content\n• $0 API token expense incurred",
+        35,
+        80,
+        360,
+        170,
+        "Honest Peer Cluster",
+        "Small-world mesh topology\nHigh local connectivity\nDeterministic feed mapping\nConsensus truth protection",
+        "🛡️",
+        "#22c55e",
+        pill="Honest Quorum",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Byzantine Sybil Cartel",
+        "Coordinated spam detected\nRepetitive content flagged\nTrust score slashed\nAutonomous peer quarantine",
+        "🛑",
+        "#ef4444",
+        pill="Isolated Rogue Nodes",
+    )
+    c.arrow(395, 165, 465, 165, "#ef4444", marker="url(#arrow-rose)")
+    return c.render()
+
+
+def diagram_watts_strogatz_dynamics() -> str:
+    """Watts-Strogatz Small-World Clustering & Routing Dynamics."""
+    return diagram_mesh_topology()
+
+
+def diagram_raspberry_pi_mesh() -> str:
+    """13-Node Swarm Simulation on Resource-Constrained Hardware."""
+    c = SchematicCanvas(860, 280, "13-NODE SWARM ON RASPBERRY PI", "HARDWARE CONSTRAINED BENCHMARK")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Hardware Host",
+        "Single Raspberry Pi device\n4 ARM CPU cores\nLow memory consumption",
+        "🍓",
+        "#ef4444",
+        pill="Host Hardware",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "In-Memory Swarm",
+        "13 lightweight database nodes\nShared gossip distribution\nSub-second consensus speed",
+        "🐝",
+        "#22c55e",
+        pill="Low Memory Footprint",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Resilience Testing",
+        "Simulated packet loss\nInjected faulty statements\nZero deadlock behavior",
         "⚡",
         "#38bdf8",
+        pill="100% Robustness Pass",
     )
-    c.node(
-        42,
-        204,
-        w - 28,
-        114,
-        "Safety & Ingestion Filters",
-        "• SSRF and private IP blocking\n• Domain reputation index lookup\n• Poe's law satire detection",
-        "🛡️",
-        "#60a5fa",
-    )
-
-    c.container(448, 68, w, 266, "Tier 2: Deep LLM Verification (Ultra)", "#22c55e")
-    c.node(
-        462,
-        96,
-        w - 28,
-        96,
-        "Targeted Epistemic Reasoning",
-        "• Invoked strictly for complex, contested claims\n• 4k thinking budget on core facts\n• Full verbatim grounding checks (G=1.00)",
-        "🧠",
-        "#22c55e",
-    )
-    c.node(
-        462,
-        204,
-        w - 28,
-        114,
-        "83% Compute Cost Slashing",
-        "• Preserves rate limit quotas under burst loads\n• Offline circuit breaker headroom buffer\n• Cryptographic Ed25519 attestation seal",
-        "🪙",
-        "#a855f7",
-    )
-
-    c.arrow(412, 144, 448, 144, "#22c55e", marker="url(#arrow-emerald)")
-    return c.render()
-
-
-def diagram_astroturfing_entropy() -> str:
-    """Astroturfing Swarms vs Organic Civic Discourse Entropy."""
-    c = SchematicCanvas(860, 360, "SHANNON TOPIC ENTROPY & ASTROTURFING DEFENSE", "DISCOURSE FORENSICS")
-    w = 384
-
-    c.container(28, 68, w, 266, "Coordinated Bot Campaign (H < 0.30)", "#ef4444", dashed=True)
-    c.node(
-        42,
-        96,
-        w - 28,
-        96,
-        "Low Shannon Entropy Swarm",
-        "• Highly concentrated top-token distribution\n• Repetitive keyword talking points\n• Synchronized multi-account publication spikes",
-        "🤖",
-        "#ef4444",
-    )
-    c.node(
-        42,
-        204,
-        w - 28,
-        114,
-        "Astroturfing Penalty",
-        "• Masquerades as organic grassroots sentiment\n• Automated 50% score slash applied\n• Identified entities flagged in forensic audit",
-        "🛑",
-        "#f59e0b",
-    )
-
-    c.container(448, 68, w, 266, "Organic Civic Discourse (H > 0.70)", "#22c55e")
-    c.node(
-        462,
-        96,
-        w - 28,
-        96,
-        "High Lexical Diversity",
-        "• Rich vocabulary variance and natural phrasing\n• Diverse independent perspectives and timing\n• Authentic citizen engagement indicators",
-        "👥",
-        "#22c55e",
-    )
-    c.node(
-        462,
-        204,
-        w - 28,
-        114,
-        "Galileo Minority Override",
-        "• Protects lone factual whistleblowers\n• Prevents majority consensus suppression\n• Verified through primary source citations",
-        "⚖️",
-        "#38bdf8",
-    )
-
-    c.arrow(412, 144, 448, 144, "#22c55e", marker="url(#arrow-emerald)")
-    return c.render()
-
-
-def diagram_bittorrent_fact_checking() -> str:
-    """BitTorrent P2P Fact-Checking Work Sharing."""
-    c = SchematicCanvas(860, 360, "BITTORRENT P2P FACT-CHECKING WORK-SHARING PROTOCOL", "DECENTRALIZED SWARM")
-
-    s_w = 175
-    gap = 32
-    y = 96
-    h = 105
-
-    steps = [
-        (28, "1. Ingest URL", "• Extract target URL\n• Scrubber strips scripts\n• SHA-256 DOM hash", "📥", "#38bdf8"),
-        (
-            28 + s_w + gap,
-            "2. HRW Hashing",
-            "• Rendezvous hashing\n• Deterministic node map\n• Prevents dogpiling",
-            "⚙️",
-            "#60a5fa",
-        ),
-        (
-            28 + 2 * (s_w + gap),
-            "3. Peer Audit",
-            "• Highest-merit peer runs\n• Verbatim claim audit\n• Ed25519 sealed receipt",
-            "🔬",
-            "#22c55e",
-        ),
-        (
-            28 + 3 * (s_w + gap),
-            "4. Gossip Sync",
-            "• P2P gossip distribution\n• Deduplicated cache\n• 92.3% compute savings",
-            "🌐",
-            "#a855f7",
-        ),
-    ]
-
-    for idx, (sx, title, desc, icon, col) in enumerate(steps):
-        c.node(sx, y, s_w, h, title, desc, icon, col)
-        if idx < 3:
-            c.arrow(sx + s_w, y + h / 2, sx + s_w + gap, y + h / 2, col)
-
-    c.node(
-        28,
-        225,
-        804,
-        105,
-        "Decentralized Swarm Work-Sharing Invariant",
-        "• Rendezvous hashing distributes domain verification workloads across nodes without central coordination.\n• Gossip protocols propagate verified cryptographic audit receipts across the network in <500ms.\n• Nodes reuse peer evaluation receipts, eliminating repetitive redundant inference across the swarm.",
-        "🛡️",
-        "#22c55e",
-    )
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#38bdf8")
     return c.render()
 
 
 def diagram_untrusted_ingestion() -> str:
     """Untrusted Ingestion Boundary & SSRF Defense Pipeline."""
-    c = SchematicCanvas(860, 360, "UNTRUSTED INGESTION BOUNDARY & SSRF DEFENSE", "INGESTION PIPELINE")
-
-    s_w = 175
-    gap = 32
-    y = 96
-    h = 105
-
-    steps = [
-        (
-            28,
-            "1. Input Boundary",
-            "• Raw URL / text ingest\n• Untrusted source wrap\n• Rate limit checkpoint",
-            "📥",
-            "#38bdf8",
-        ),
-        (
-            28 + s_w + gap,
-            "2. Network Filter",
-            "• Block 169.254 metadata\n• Reject loopback / private\n• Strip XML entities",
-            "🛡️",
-            "#60a5fa",
-        ),
-        (
-            28 + 2 * (s_w + gap),
-            "3. DOM Scrubber",
-            "• Strip scripts & styling\n• Clean DOM text tree\n• Verbatim citation lock",
-            "🧹",
-            "#22c55e",
-        ),
-        (
-            28 + 3 * (s_w + gap),
-            "4. Signed Attestation",
-            "• RFC 8785 Canonical JSON\n• Ed25519 cryptographic seal\n• Tamper-evident receipt",
-            "🔐",
-            "#a855f7",
-        ),
-    ]
-
-    for idx, (sx, title, desc, icon, col) in enumerate(steps):
-        c.node(sx, y, s_w, h, title, desc, icon, col)
-        if idx < 3:
-            c.arrow(sx + s_w, y + h / 2, sx + s_w + gap, y + h / 2, col)
-
+    c = SchematicCanvas(860, 280, "UNTRUSTED INGESTION BOUNDARY", "INGESTION DEFENSE PIPELINE")
     c.node(
-        28,
-        225,
-        804,
-        105,
-        "Security Invariant: Socket-Layer SSRF Defense & Epistemic Grounding (G=1.00)",
-        "• Cloud metadata and private subnet ranges are blocked at the socket layer before connection establishment.\n• Untrusted source text is strictly isolated in XML container tags to prevent prompt injection attacks.\n• Verbatim citations match source text character-for-character, eliminating hallucinated assertions.",
-        "🛡️",
-        "#22c55e",
-    )
-    return c.render()
-
-
-def diagram_500_loc_ceiling() -> str:
-    """500 LOC Ceiling Law & Modular Subpackage Decoupling."""
-    c = SchematicCanvas(860, 360, "THE 500 LOC CEILING LAW & MODULAR DECOUPLING", "ARCHITECTURAL GOVERNANCE")
-    w = 384
-
-    c.container(28, 68, w, 266, "Anti-Bloat 500 LOC Rule", "#ef4444")
-    c.node(
-        42,
-        96,
-        w - 28,
-        96,
-        "Single-Responsibility Focus",
-        "• Strict 500 LOC ceiling on Python files\n• Strict 500 LOC ceiling on Justfiles\n• Automated pre-commit lint gate",
-        "📏",
+        30,
+        88,
+        180,
+        150,
+        "Untrusted Source",
+        "Public URLs & raw HTML\nUnknown web publishers",
+        "🌐",
         "#ef4444",
+        pill="Untrusted Input",
     )
     c.node(
-        42,
-        204,
-        w - 28,
-        114,
-        "Cognitive Economy",
-        "• Prevents unmaintainable god classes\n• Files fit comfortably in agent context\n• Zero hidden state accumulation",
-        "🧠",
-        "#f59e0b",
-    )
-
-    c.container(448, 68, w, 266, "Modular Subpackage Decoupling", "#22c55e")
-    c.node(
-        462,
-        96,
-        w - 28,
-        96,
-        "Decoupled Subpackages",
-        "• Domain-isolated directory modules\n• Strict public API facades\n• Explicit cross-module boundaries",
-        "📦",
-        "#22c55e",
-    )
-    c.node(
-        462,
-        204,
-        w - 28,
-        114,
-        "Shift-Left Enforcement",
-        "• Validated in test_architecture_governance\n• Immediate failure on size breach\n• Continuous refactoring discipline",
+        230,
+        88,
+        180,
+        150,
+        "Network Guard",
+        "Blocks metadata endpoints\nFilters private IP ranges",
         "🛡️",
         "#38bdf8",
+        pill="Network Filter",
     )
-
-    c.arrow(412, 144, 448, 144, "#22c55e", marker="url(#arrow-emerald)")
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "DOM Cleaner",
+        "Strips script tags\nSanitizes HTML structure",
+        "🧹",
+        "#22c55e",
+        pill="Sanitized DOM",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Safe Payload",
+        "Enclosed in safety tags\nReady for evaluation",
+        "📦",
+        "#a855f7",
+        pill="Safe Context",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
-def diagram_boredom_engine() -> str:
-    """Autonomous Boredom Engine & Citation Harvesting."""
-    c = SchematicCanvas(860, 360, "AUTONOMOUS BOREDOM ENGINE & CITATION HARVESTING", "AUTONOMOUS AGENT")
-    col_w = 244
-    gap = 26
-    x1 = 28
-    x2 = x1 + col_w + gap
-    x3 = x2 + col_w + gap
-
-    c.container(x1, 68, col_w, 266, "1. Idle Detection", "#38bdf8")
+def diagram_security_threat_model() -> str:
+    """Comprehensive Security Architecture & Threat Model."""
+    c = SchematicCanvas(860, 280, "SECURITY DEFENSE MATRIX", "SECURITY ARCHITECTURE")
     c.node(
-        x1 + 12,
-        96,
-        col_w - 24,
-        110,
-        "Boredom Accumulator",
-        "• Tracks idle server seconds\n• Boredom metric rises steadily\n• Triggers when τ_bored > 100",
-        "🦥",
-        "#38bdf8",
-    )
-    c.node(
-        x1 + 12,
-        218,
-        col_w - 24,
-        100,
-        "Background Daemon",
-        "• Cron schedule trigger\n• Zero CPU drain during peak",
-        "⏱️",
-        "#60a5fa",
-    )
-
-    c.container(x2, 68, col_w, 266, "2. Autonomous Sifting", "#22c55e")
-    c.node(
-        x2 + 12,
-        96,
-        col_w - 24,
-        110,
-        "Excitement Engine",
-        "• Probes RSS and atom feeds\n• Discovers new civic publications\n• Evaluates semantic density",
-        "🔍",
-        "#22c55e",
-    )
-    c.node(
-        x2 + 12,
-        218,
-        col_w - 24,
-        100,
-        "Domain Sifter",
-        "• Cross-references root index\n• Detects decaying claims",
+        30,
+        88,
+        180,
+        150,
+        "Network Layer",
+        "Blocks internal IPs\nPrevents server exploits",
         "🌐",
         "#38bdf8",
-    )
-
-    c.container(x3, 68, col_w, 266, "3. Attestation Garden", "#a855f7")
-    c.node(
-        x3 + 12,
-        96,
-        col_w - 24,
-        110,
-        "Citation Harvesting",
-        "• Auto-harvests primary quotes\n• Re-verifies decaying claims\n• Enriches local vector store",
-        "🌱",
-        "#a855f7",
+        pill="Boundary Guard",
     )
     c.node(
-        x3 + 12,
-        218,
-        col_w - 24,
-        100,
-        "Signed Envelopes",
-        "• Stores Ed25519 receipts\n• Updates mesh gossip peers",
-        "🔐",
+        230,
+        88,
+        180,
+        150,
+        "Prompt Shield",
+        "Encloses untrusted text\nNeutralizes attacks",
+        "🛡️",
+        "#60a5fa",
+        pill="Injection Guard",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Quote Matching",
+        "Exact character match\nEliminates fakes",
+        "🔬",
         "#22c55e",
+        pill="Primary Source",
     )
-
-    c.arrow(x1 + col_w, 151, x2, 151, "#38bdf8")
-    c.arrow(x2 + col_w, 151, x3, 151, "#22c55e", marker="url(#arrow-emerald)")
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Crypto Seal",
+        "Canonical JSON format\nSigned with Ed25519",
+        "🔐",
+        "#a855f7",
+        pill="Signed Proof",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
-def diagram_pareto_4k_thinking() -> str:
-    """Multi-Model Pareto Frontier: 4k Thinking Sweet Spot."""
-    c = SchematicCanvas(860, 360, "MULTI-MODEL PARETO OPTIMIZATION: 4K THINKING SWEET SPOT", "MODEL GOVERNANCE")
-    w = 384
-
-    c.container(28, 68, w, 266, "Gemini 3.7 Flash (4,096 Thinking Tokens)", "#22c55e")
+def diagram_fastmcp_protocol() -> str:
+    """FastMCP 2.0 Dual Transport Protocol & Tool Architecture."""
+    c = SchematicCanvas(860, 280, "FASTMCP PROTOCOL & AGENT TOOLS", "PROTOCOL SPECIFICATION")
     c.node(
-        42,
-        96,
-        w - 28,
-        96,
-        "Balanced Pareto Peak",
-        "• 4,096 thinking tokens default budget\n• Resolves satire & Poe's law nuances\n• 90%+ cost reduction vs flagship models",
+        35,
+        84,
+        225,
+        160,
+        "AI Assistants",
+        "Claude Desktop & Cursor\nAutonomous coding agents\nStandard input/output flow",
+        "🤖",
+        "#38bdf8",
+        pill="Client Runtime",
+    )
+    c.node(
+        312,
+        84,
+        240,
+        160,
+        "FastMCP Server",
+        "Structured JSON tool calls\nLive resource subscriptions\nStandardized prompt templates",
         "⚡",
         "#22c55e",
+        pill="Tool Protocol",
     )
     c.node(
-        42,
-        204,
-        w - 28,
-        114,
-        "Offline Circuit Breaker",
-        "• 30% quota headroom buffer\n• Graceful offline fallback without crashing\n• Hermetic execution on local benchmark",
-        "🛡️",
-        "#38bdf8",
-    )
-
-    c.container(448, 68, w, 266, "Heavyweight Models (Claude / GPT-4o / R1)", "#ef4444")
-    c.node(
-        462,
-        96,
-        w - 28,
-        96,
-        "Flagship Inference Overhead",
-        "• 30x higher operational token expense\n• Diminishing returns on structured audits\n• Latency spikes on high-throughput feeds",
-        "💰",
-        "#ef4444",
-    )
-    c.node(
-        462,
-        204,
-        w - 28,
-        114,
-        "Budget Governance",
-        "• Restricted to complex multi-source claims\n• Controlled by cost optimizer governor\n• Strict token caps on background tasks",
-        "⚖️",
-        "#f59e0b",
-    )
-
-    c.arrow(412, 144, 448, 144, "#22c55e", marker="url(#arrow-emerald)")
-    return c.render()
-
-
-def diagram_generic_schematic(title: str, category: str = "CREDENCE ARCHITECTURE") -> str:
-    """Clean 3-column architectural schematic for retaining documents."""
-    c = SchematicCanvas(860, 360, title, category)
-    col_w = 244
-    gap = 26
-    x1 = 28
-    x2 = x1 + col_w + gap
-    x3 = x2 + col_w + gap
-
-    c.container(x1, 68, col_w, 266, "1. Ingestion & Security", "#38bdf8")
-    c.node(
-        x1 + 12,
-        96,
-        col_w - 24,
-        100,
-        "Network Boundary",
-        "• Target URLs & text payloads\n• SSRF & metadata IP filter\n• XML entity injection block",
-        "📥",
-        "#38bdf8",
-    )
-    c.node(
-        x1 + 12,
-        208,
-        col_w - 24,
-        110,
-        "DOM Extractor",
-        "• Strips scripts & styling\n• Sanitizes HTML elements\n• Isolates untrusted text",
-        "🧹",
-        "#60a5fa",
-    )
-
-    c.container(x2, 68, col_w, 266, "2. Epistemic Evaluation", "#22c55e")
-    c.node(
-        x2 + 12,
-        96,
-        col_w - 24,
-        100,
-        "Multi-Model Consensus",
-        "• Heuristic claim verification\n• Verbatim citations (G=1.00)\n• Circuit breaker headroom",
-        "🧠",
-        "#22c55e",
-    )
-    c.node(
-        x2 + 12,
-        208,
-        col_w - 24,
-        110,
-        "Entropy Defense",
-        "• Shannon entropy astroturf def\n• Expertise-weighted medians\n• Galileo minority rule override",
-        "⚖️",
-        "#f59e0b",
-    )
-
-    c.container(x3, 68, col_w, 266, "3. Attestation & Custody", "#a855f7")
-    c.node(
-        x3 + 12,
-        96,
-        col_w - 24,
-        100,
-        "RFC 8785 Canonical JSON",
-        "• Deterministic serialization\n• UTF-8 sorted key envelope\n• Tamper-evident byte stream",
-        "📜",
-        "#a855f7",
-    )
-    c.node(
-        x3 + 12,
-        208,
-        col_w - 24,
-        110,
-        "Ed25519 Signature",
-        "• Genesis root authority sign\n• SQLite + vector persistence\n• Zero-trust verification",
+        590,
+        84,
+        235,
+        160,
+        "Verification Core",
+        "Deterministic claim scoring\nSigned audit attestations\nDirect local database sync",
         "🔐",
-        "#22c55e",
+        "#a855f7",
+        pill="Verified Engine",
     )
+    c.arrow(260, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(552, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
 
-    c.arrow(x1 + col_w, 146, x2, 146, "#38bdf8")
-    c.arrow(x2 + col_w, 146, x3, 146, "#22c55e", marker="url(#arrow-emerald)")
+
+def diagram_agent_readable_web() -> str:
+    """Agent-Readable Web: FastMCP vs Brittle DOM Scraping."""
+    c = SchematicCanvas(860, 280, "AGENT READABLE WEB vs FRAGILE SCRAPING", "DATA INGESTION EVOLUTION")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Legacy Web Scraping",
+        "Fragile HTML selectors\nBot blocks and captchas\nFrequent layout breakages\nWasted token bandwidth",
+        "🕸️",
+        "#ef4444",
+        pill="Fragile & Error Prone",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "FastMCP Machine Web",
+        "Typed structured resources\nClean claim assertions\nZero HTML tag overhead\nInstant source grounding",
+        "⚡",
+        "#22c55e",
+        pill="Reliable Agent Protocol",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_epistemic_brake() -> str:
+    """The Epistemic Brake: Intercepting Agentic Hallucination."""
+    c = SchematicCanvas(860, 280, "EPISTEMIC BRAKE INTERCEPTOR", "HALLUCINATION DEFENSE")
+    c.node(
+        35,
+        84,
+        225,
+        160,
+        "AI Drafts Claim",
+        "Model generates statements\nPotential factual errors\nAsserts unverified events",
+        "🤖",
+        "#f59e0b",
+        pill="Unverified Draft",
+    )
+    c.node(
+        312,
+        84,
+        240,
+        160,
+        "Epistemic Brake",
+        "Tool intercepts assertion\nDemands exact primary quote\nVerifies real-world source",
+        "🛑",
+        "#ef4444",
+        pill="Citation Check",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Verified Output",
+        "Only backed claims accepted\nSigned proof attached\nZero fabricated facts",
+        "✅",
+        "#22c55e",
+        pill="Fact Checked",
+    )
+    c.arrow(260, 164, 312, 164, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(552, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_four_way_parity() -> str:
+    """Universal 4-Way Symmetric Feature Parity."""
+    c = SchematicCanvas(860, 280, "UNIVERSAL 4-WAY INTERFACE PARITY", "SYMMETRIC INTERFACES")
+    c.node(35, 80, 180, 75, "Terminal CLI", "Command line automation\nFull script support", "💻", "#38bdf8")
+    c.node(35, 168, 180, 75, "FastMCP Server", "Native AI assistant tools\nDirect agent workflows", "⚡", "#22c55e")
+    c.node(
+        250,
+        95,
+        360,
+        140,
+        "Core Epistemic Engine",
+        "Deterministic audit calculations\nCanonical JSON cryptographic signing\nLocal database persistence\nUnified verification logic",
+        "⚙️",
+        "#f59e0b",
+        pill="Single Unified Engine",
+    )
+    c.node(645, 80, 180, 75, "Terminal TUI", "Interactive text console\nDashboard navigation", "🖥️", "#60a5fa")
+    c.node(645, 168, 180, 75, "Zero-Build Web", "Vanilla web client\nInstant responsive UI", "🌐", "#a855f7")
+    c.arrow(215, 117, 250, 145, "#38bdf8")
+    c.arrow(215, 205, 250, 185, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 145, 645, 117, "#60a5fa")
+    c.arrow(610, 185, 645, 205, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_node_germination() -> str:
+    """5-Second Zero-Touch Node Germination Sequence."""
+    c = SchematicCanvas(860, 280, "ZERO-TOUCH NODE GERMINATION SEQUENCE", "NODE GENESIS")
+    c.node(
+        30,
+        88,
+        180,
+        150,
+        "Key Genesis",
+        "Generates cryptographic keys\nMints sovereign identity\nAnchors root node seed",
+        "🔑",
+        "#38bdf8",
+        pill="Identity Initialized",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Database Setup",
+        "Creates local database\nLoads verification rules\nPre-warms audit cache",
+        "💾",
+        "#60a5fa",
+        pill="Schema Primed",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Peer Sync",
+        "Connects to trusted peers\nVerifies peer signatures\nSynchronizes gossip state",
+        "🤝",
+        "#22c55e",
+        pill="Mesh Connected",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Active Sentry",
+        "Receives real-world feeds\nPerforms quote checks\nShares verified audits",
+        "🚀",
+        "#a855f7",
+        pill="Fully Live",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_cold_start_optimization() -> str:
+    """Cloud Run Scale-to-Zero Cold Start Optimization."""
+    c = SchematicCanvas(860, 280, "SCALE-TO-ZERO CONTAINER OPTIMIZATION", "CONTAINER LIFECYCLE")
+    c.node(
+        30,
+        88,
+        180,
+        150,
+        "Idle Sleep",
+        "Zero running instances\nZero cost while idle",
+        "🧊",
+        "#38bdf8",
+        pill="Zero Cost",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Incoming Traffic",
+        "New audit request arrives\nCloud Run triggers start",
+        "⚡",
+        "#f59e0b",
+        pill="Cold Wakeup",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Fast Hydration",
+        "State restored in memory\nReady in under 1.2s",
+        "💾",
+        "#22c55e",
+        pill="Fast Boot",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Active Serving",
+        "Processes audit request\nLow latency execution",
+        "🚀",
+        "#a855f7",
+        pill="Live Serving",
+    )
+    c.arrow(210, 163, 230, 163, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_scale_to_zero_storage() -> str:
+    """Scale-to-Zero Storage Hydration & GCS Dual-Pointer Checkpoints."""
+    return diagram_cold_start_optimization()
+
+
+def diagram_database_wal() -> str:
+    """SQLite Write-Ahead Logging & 90-Day Retention Vacuum."""
+    c = SchematicCanvas(860, 280, "SQLITE CONCURRENCY & PRUNING", "STORAGE ENGINE")
+    c.node(
+        30,
+        88,
+        180,
+        150,
+        "Writers & Readers",
+        "Concurrent reader queries\nNon-blocking fast writes",
+        "👥",
+        "#38bdf8",
+        pill="Concurrency",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Write-Ahead Log",
+        "Append-only disk log\nAtomic transactions",
+        "📝",
+        "#60a5fa",
+        pill="Append Log",
+    )
+    c.node(
+        430, 88, 180, 150, "Checkpointing", "Periodic log flush\nSyncs main database", "💾", "#22c55e", pill="Safe Sync"
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Storage Pruning",
+        "Automated cleanup task\nRemoves expired records",
+        "🧹",
+        "#a855f7",
+        pill="Clean Storage",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_disaster_recovery() -> str:
+    """Multi-Region Replication & Automated Anycast Failover."""
+    c = SchematicCanvas(860, 280, "MULTI-REGION REPLICATION & FAILOVER", "DISASTER RECOVERY")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Primary Region",
+        "Active compute server\nServing live audit requests\nPrimary local database",
+        "🏛️",
+        "#22c55e",
+        pill="Active Serving",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Continuous Sync",
+        "Encrypted snapshot backups\nImmutable audit ledger\nContinuous health checks",
+        "🔄",
+        "#38bdf8",
+        pill="Continuous Backup",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Standby Region",
+        "Warm backup server ready\nInstant DNS failover route\nZero data loss guarantee",
+        "🛡️",
+        "#a855f7",
+        pill="Warm Standby",
+    )
+    c.arrow(270, 164, 312, 164, "#38bdf8")
+    c.arrow(547, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_gcp_project_isolation() -> str:
+    """Single-Project Prefixing vs Dual-Project Hard IAM Boundaries."""
+    c = SchematicCanvas(860, 280, "SINGLE vs DUAL CLOUD PROJECT BOUNDARIES", "IAM ISOLATION COMPARISON")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Shared Project Anti-Pattern",
+        "Shared credentials and keys\nResource naming collisions\nAccidental production leaks\nSingle breach compromises all",
+        "⚠️",
+        "#ef4444",
+        pill="High Security Risk",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Isolated Project Architecture",
+        "Dedicated dev and prod projects\nSeparate identity pools\nZero cross-project access\nStrict role isolation",
+        "🛡️",
+        "#22c55e",
+        pill="Hard IAM Boundaries",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_wireguard_mesh() -> str:
+    """Encrypted Tailscale WireGuard Point-to-Point Overlay."""
+    c = SchematicCanvas(860, 280, "ENCRYPTED POINT-TO-POINT OVERLAY MESH", "SECURE MESH NETWORK")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Operator Device",
+        "Admin dev workstation\nCryptographic node key\nDirect database inspector",
+        "💻",
+        "#38bdf8",
+        pill="Admin Node",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "WireGuard Tunnel",
+        "Point-to-point encryption\nAutomatic NAT traversal\nZero open public ports",
+        "🔒",
+        "#22c55e",
+        pill="Encrypted Tunnel",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Cluster Nodes",
+        "Raspberry Pi test devices\nCloud Run servers\nSecure private syncing",
+        "☁️",
+        "#a855f7",
+        pill="Private Subnet",
+    )
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_synthetic_slop_collapse() -> str:
+    """Model Collapse Degradation vs Verbatim Grounding."""
+    c = SchematicCanvas(860, 280, "SYNTHETIC MODEL COLLAPSE vs GROUNDING", "EPISTEMIC SIGNAL RECOVERY")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Recursive Synthetic Slop",
+        "Model trained on model output\nInformation richness lost\nCompounding errors over time\nDegraded output quality",
+        "📉",
+        "#ef4444",
+        pill="Model Degeneration",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Primary Grounding",
+        "Anchored to source documents\nExact character quotation\nHallucinations penalized\nPreserves ground truth",
+        "🔬",
+        "#22c55e",
+        pill="Anchored to Reality",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_dead_internet_immune_system() -> str:
+    """The Dead Internet Immune System: Multi-Tier Bot Defense."""
+    c = SchematicCanvas(860, 280, "THE DEAD INTERNET IMMUNE SYSTEM", "BOT DEFENSE MATRIX")
+    c.node(
+        30,
+        88,
+        180,
+        150,
+        "Spam Filter",
+        "Detects synthetic text\nFlags collapsed diversity\nQuarantines bot campaigns",
+        "🤖",
+        "#ef4444",
+        pill="Bot Detection",
+    )
+    c.node(
+        230,
+        88,
+        180,
+        150,
+        "Clean Ingestion",
+        "Structured machine protocol\nTyped JSON data feeds\nBypasses brittle scraping",
+        "⚡",
+        "#38bdf8",
+        pill="Typed Protocol",
+    )
+    c.node(
+        430,
+        88,
+        180,
+        150,
+        "Quote Matching",
+        "Exact character offsets\nVerifies source citations\nRejects ungrounded claims",
+        "🔬",
+        "#22c55e",
+        pill="Quote Verified",
+    )
+    c.node(
+        630,
+        88,
+        180,
+        150,
+        "Signed Proof",
+        "Canonical JSON format\nCryptographic signature\nImmutable truth audit",
+        "🔐",
+        "#a855f7",
+        pill="Immutable Seal",
+    )
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_traffic_shaping_merit() -> str:
+    """5-Factor Peer Quality Traffic Shaping Topology."""
+    c = SchematicCanvas(860, 280, "PEER QUALITY & TRAFFIC TIERS", "PEER REPUTATION")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Trust Scoring",
+        "Evaluates node uptime\nMeasures citation accuracy\nScores peer reliability",
+        "📊",
+        "#38bdf8",
+        pill="Reputation Score",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Priority Tiers",
+        "Tier 1: High priority tasks\nTier 2: Standard sharing\nTier 3: Probation status",
+        "🏅",
+        "#22c55e",
+        pill="Task Allocation",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Rogue Isolation",
+        "Low-scoring nodes isolated\nRelay rights revoked\nProtects network consensus",
+        "🛑",
+        "#ef4444",
+        pill="Rogue Quarantine",
+    )
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#ef4444", marker="url(#arrow-rose)")
+    return c.render()
+
+
+def diagram_anti_tamper_badge() -> str:
+    """WebCrypto Anti-Tamper Badge DOM Mutation Integrity."""
+    c = SchematicCanvas(860, 280, "CLIENT-SIDE ANTI-TAMPER BADGE", "CLIENT SECURITY")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Published Article",
+        "Article published to web\nAttestation badge mounted\nInitial text hash sealed",
+        "📄",
+        "#22c55e",
+        pill="Verified Badge (Green)",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Tamper Watcher",
+        "Browser verifies text hash\nMonitors stealth post edits\nDetects bait and switch",
+        "🔬",
+        "#f59e0b",
+        pill="Integrity Monitoring",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Tamper Warning",
+        "Hash mismatch detected\nBadge switches to red alert\nWarns readers immediately",
+        "🚨",
+        "#ef4444",
+        pill="Tampered (Red Alert)",
+    )
+    c.arrow(270, 164, 312, 164, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(547, 164, 590, 164, "#ef4444", marker="url(#arrow-rose)")
+    return c.render()
+
+
+def diagram_subagent_parenthood() -> str:
+    """Subagent Parenthood & Branched Workspace Task Delegation."""
+    c = SchematicCanvas(860, 280, "SUBAGENT TASK DELEGATION TOPOLOGY", "AGENT ORCHESTRATION")
+    c.node(
+        35,
+        95,
+        205,
+        140,
+        "Parent Agent",
+        "Coordinates overall task\nBreaks down components\nSynthesizes findings",
+        "🧠",
+        "#38bdf8",
+        pill="Coordinator",
+    )
+    c.node(
+        310,
+        75,
+        240,
+        78,
+        "Research Subagent",
+        "Explores codebase & docs\nOperates in read-only mode",
+        "🔍",
+        "#60a5fa",
+        pill="Read-Only Branch",
+    )
+    c.node(
+        310,
+        165,
+        240,
+        78,
+        "Execution Subagent",
+        "Applies targeted code edits\nRuns automated test gates",
+        "⚡",
+        "#22c55e",
+        pill="Targeted Edit Branch",
+    )
+    c.node(
+        600,
+        95,
+        225,
+        140,
+        "Consolidated Result",
+        "Proactive agent notifications\nContext economy preserved\nClean atomic git commit",
+        "🎯",
+        "#a855f7",
+        pill="Merged Output",
+    )
+    c.arrow(240, 130, 310, 114, "#60a5fa")
+    c.arrow(240, 200, 310, 204, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(550, 114, 600, 130, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(550, 204, 600, 200, "#a855f7", marker="url(#arrow-purple)")
+    return c.render()
+
+
+def diagram_token_headroom() -> str:
+    """Token Headroom Budgeting & Circuit Breaker Margin."""
+    c = SchematicCanvas(860, 280, "TOKEN HEADROOM BUDGETING & PRESERVATION", "TOKEN GOVERNANCE")
+    c.node(
+        35,
+        84,
+        235,
+        160,
+        "Active Instructions",
+        "Core task instructions\nCompact context memory\nClean, efficient prompts",
+        "💬",
+        "#38bdf8",
+        pill="Working Memory",
+    )
+    c.node(
+        312,
+        84,
+        235,
+        160,
+        "Thinking Space",
+        "Extended reasoning zone\nComplex deductive logic\nDeep analysis headroom",
+        "🧠",
+        "#a855f7",
+        pill="Reasoning Budget",
+    )
+    c.node(
+        590,
+        84,
+        235,
+        160,
+        "Safety Margin",
+        "30% buffer preserved\nPrevents sudden cutoffs\nProtects active session",
+        "🛑",
+        "#f59e0b",
+        pill="Circuit Breaker",
+    )
+    c.arrow(270, 164, 312, 164, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(547, 164, 590, 164, "#f59e0b", marker="url(#arrow-amber)")
+    return c.render()
+
+
+def diagram_anti_diploma() -> str:
+    """The Anti-Diploma Invariant: Primary Evidence over Authority."""
+    c = SchematicCanvas(860, 280, "EVIDENCE OVER AUTHORITY", "EPISTEMIC STANDARDS")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Authority Credential Bias",
+        "Institutional checkmarks\nFormal job titles and status\nUnverified press statements\nAppeal to authority fallacy",
+        "🎓",
+        "#ef4444",
+        pill="Disqualified Metric",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Verifiable Evidence",
+        "Exact source quotation\nPublic records audit trail\nCryptographic signed proof\nInspectable ground truth",
+        "🔬",
+        "#22c55e",
+        pill="Objective Evidence",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
+    return c.render()
+
+
+def diagram_crawler_commons() -> str:
+    """The Tragedy of the Crawler Commons & Polite P2P Sharing."""
+    c = SchematicCanvas(860, 280, "COOPERATIVE CRAWLING vs SCRAPER FLOODS", "COOPERATIVE INGESTION")
+    c.node(
+        35,
+        80,
+        360,
+        170,
+        "Uncoordinated Crawlers",
+        "Dozens of redundant scrapers\nHammering local publishers\nServer slowdowns and bans\nTragedy of the commons",
+        "💥",
+        "#ef4444",
+        pill="Overloaded Servers",
+    )
+    c.node(
+        465,
+        80,
+        360,
+        170,
+        "Cooperative P2P Sharing",
+        "Single polite crawl\nShared verified attestations\nAdaptive rate limits\nProtects independent web",
+        "🤝",
+        "#22c55e",
+        pill="Shared Ingestion",
+    )
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 # ==============================================================================
-# 2. MASTER CATALOG OF ACTIVE ARCHITECTURAL ILLUSTRATIONS
+# MASTER CATALOG OF ALL 42 ACTIVE ARCHITECTURAL ILLUSTRATIONS
 # ==============================================================================
 
-# Mapping of active diagram filenames to (builder_function, descriptive_alt_text)
 ACTIVE_DIAGRAMS = {
     # Case Studies & Deep-Dive Essays
     "conflict-of-pun-terest.svg": (
@@ -1169,25 +1857,21 @@ ACTIVE_DIAGRAMS = {
         diagram_bicameral_finops,
         "Figure 1.1: Dual-tier bicameral inference architecture slashing LLM fact-checking costs by 83%",
     ),
-    "bittorrent-for-truth.svg": (
-        diagram_bittorrent_fact_checking,
-        "Figure 1.1: BitTorrent P2P fact-checking work-sharing protocol and rendezvous feed hashing",
-    ),
-    "bittorrent-economics-of-fact-checking.svg": (
-        diagram_bittorrent_fact_checking,
-        "Figure 1.1: Decentralized compute swarm economics and deduplicated gossip audit propagation",
+    "finops-as-epistemology.svg": (
+        diagram_finops_epistemology,
+        "Figure 1.1: Bicameral inference triage and offline rate-limit circuit breaker architecture",
     ),
     "confessions-of-a-bored-ai.svg": (
         diagram_boredom_engine,
         "Figure 1.1: Autonomous boredom engine accumulation, excitation thresholds, and citation soil harvesting",
     ),
-    "from-860mb-to-2mb-sub-40s-cicd-pipeline.svg": (
-        diagram_three_plane_architecture,
-        "Figure 1.1: Multi-stage container build optimization and keyless WIF CI/CD staging pipeline",
+    "bittorrent-for-truth.svg": (
+        diagram_bittorrent_fact_checking,
+        "Figure 1.1: BitTorrent P2P fact-checking work-sharing protocol and rendezvous feed hashing",
     ),
-    "pining-for-the-fjords.svg": (
-        diagram_scale_to_zero_storage,
-        "Figure 1.1: Scale-to-zero cold-boot storage hydration cycle and dual-pointer GCS snapshot sync",
+    "bittorrent-economics-of-fact-checking.svg": (
+        diagram_bittorrent_economics,
+        "Figure 1.1: Decentralized compute swarm economics and deduplicated gossip audit propagation",
     ),
     "poes-law-and-the-satire-cloak.svg": (
         diagram_satire_decision_tree,
@@ -1198,80 +1882,138 @@ ACTIVE_DIAGRAMS = {
         "Figure 1.1: The 500 LOC Ceiling Law and modular subpackage decoupling architecture",
     ),
     "the-500-loc-ceiling.svg": (
-        diagram_500_loc_ceiling,
+        diagram_500_loc_ceiling_governance,
         "Figure 1.1: Architectural governance boundaries enforcing single-responsibility code modules",
     ),
     "the-three-plane-architecture.svg": (
         diagram_three_plane_architecture,
         "Figure 1.1: 3-Plane decoupled deployment governance across Edge, Compute, and Infrastructure planes",
     ),
+    "architecture.svg": (
+        diagram_architecture_master,
+        "Figure 1.1: Comprehensive Credence 3-plane ecosystem architecture and service topologies",
+    ),
+    "deployment-cloudrun.svg": (
+        diagram_deployment_cloudrun,
+        "Figure 1.1: Google Cloud Run serverless compute plane deployment with keyless WIF authentication",
+    ),
+    "from-860mb-to-2mb-sub-40s-cicd-pipeline.svg": (
+        diagram_cicd_pipeline,
+        "Figure 1.1: Multi-stage container build optimization and keyless WIF CI/CD staging pipeline",
+    ),
     "the-demotion-highway.svg": (
         diagram_knowledge_demotion_highway,
         "Figure 1.1: 3-Tier knowledge demotion highway and living invariant prompt budget governance",
     ),
-    "architecting-sovereign-ai-with-google-antigravity.svg": (
-        diagram_agentic_engineering_lifecycle,
-        "Figure 1.1: Antigravity 5-stage agentic engineering lifecycle and human Mk1 review gate",
-    ),
-    "finops-as-epistemology.svg": (
-        diagram_bicameral_finops,
-        "Figure 1.1: Bicameral inference triage and offline rate-limit circuit breaker architecture",
-    ),
-    # Core Architectural Documentation Guides
-    "architecture.svg": (
-        diagram_three_plane_architecture,
-        "Figure 1.1: Comprehensive Credence 3-plane ecosystem architecture and service topologies",
-    ),
     "invariants.svg": (
-        diagram_knowledge_demotion_highway,
+        diagram_invariants_canon,
         "Figure 1.1: Universal living invariant canon and cognitive hierarchy architecture",
-    ),
-    "mesh-network.svg": (
-        diagram_mesh_topology,
-        "Figure 1.1: 13-node Watts-Strogatz peer mesh topology and Byzantine Sybil cartel defense",
-    ),
-    "security.svg": (
-        diagram_untrusted_ingestion,
-        "Figure 1.1: Untrusted ingestion boundary, SSRF network defense, and Ed25519 cryptographic seal",
-    ),
-    "fastmcp.svg": (
-        lambda: diagram_generic_schematic("FASTMCP 2.0 PROTOCOL & DUAL TRANSPORT ARCHITECTURE", "MCP INTEROPERABILITY"),
-        "Figure 1.1: FastMCP 2.0 dual transport protocol, tools, resources, and prompt endpoints",
-    ),
-    "feature-parity.svg": (
-        lambda: diagram_generic_schematic("UNIVERSAL 4-WAY FEATURE PARITY INTERFACE HUB", "INTERFACE SYMMETRY"),
-        "Figure 1.1: Universal 4-way feature parity across CLI, FastMCP, TUI, and Zero-Build Web UI",
-    ),
-    "deployment-cloudrun.svg": (
-        diagram_three_plane_architecture,
-        "Figure 1.1: Google Cloud Run serverless compute plane deployment with keyless WIF authentication",
-    ),
-    "node-germination-lifecycle.svg": (
-        diagram_untrusted_ingestion,
-        "Figure 1.1: Zero-touch node germination lifecycle, seed initialization, and attestation persistence",
-    ),
-    "cloudrun-scale-to-zero-cold-start-optimization.svg": (
-        diagram_scale_to_zero_storage,
-        "Figure 1.1: Cloud Run scale-to-zero cold-start container optimization and sub-1.2s snapshot restore",
-    ),
-    "security-architecture-and-threat-model.svg": (
-        diagram_untrusted_ingestion,
-        "Figure 1.1: Comprehensive security architecture, threat model, and untrusted boundary defenses",
     ),
     "invariant-scalability-and-knowledge-governance.svg": (
         diagram_knowledge_demotion_highway,
         "Figure 1.1: Invariant scalability matrix, knowledge taxonomy, and AGENTS.md context economy",
     ),
-    "watts-strogatz-dynamics.svg": (
+    "architecting-sovereign-ai-with-google-antigravity.svg": (
+        diagram_agentic_engineering_lifecycle,
+        "Figure 1.1: Antigravity 5-stage agentic engineering lifecycle and human Mk1 review gate",
+    ),
+    "mesh-network.svg": (
         diagram_mesh_topology,
+        "Figure 1.1: 13-node Watts-Strogatz peer mesh topology and Byzantine Sybil cartel defense",
+    ),
+    "watts-strogatz-dynamics.svg": (
+        diagram_watts_strogatz_dynamics,
         "Figure 1.1: Watts-Strogatz small-world mesh clustering, rendezvous feed routing, and Sybil resistance",
     ),
+    "testing-13-node-swarms-on-a-raspberry-pi.svg": (
+        diagram_raspberry_pi_mesh,
+        "Figure 1.1: Hardware resource governor adaptive swarm topology and memory throttling",
+    ),
+    "security.svg": (
+        diagram_untrusted_ingestion,
+        "Figure 1.1: Untrusted ingestion boundary, SSRF network defense, and Ed25519 cryptographic seal",
+    ),
+    "security-architecture-and-threat-model.svg": (
+        diagram_security_threat_model,
+        "Figure 1.1: Comprehensive security architecture, threat model, and untrusted boundary defenses",
+    ),
+    "fastmcp.svg": (
+        diagram_fastmcp_protocol,
+        "Figure 1.1: FastMCP 2.0 dual transport protocol, tools, resources, and prompt endpoints",
+    ),
+    "the-agent-readable-web-and-fastmcp.svg": (
+        diagram_agent_readable_web,
+        "Figure 1.1: FastMCP 2.0 typed JSON-RPC stream vs brittle legacy headless DOM scraping",
+    ),
+    "giving-claude-and-cursor-an-epistemic-brake.svg": (
+        diagram_epistemic_brake,
+        "Figure 1.1: The Hallucination Pipeline vs FastMCP 2.0 Epistemic Brake architecture and prompt injection defense",
+    ),
+    "feature-parity.svg": (
+        diagram_four_way_parity,
+        "Figure 1.1: Universal 4-way feature parity across CLI, FastMCP, TUI, and Zero-Build Web UI",
+    ),
+    "node-germination-lifecycle.svg": (
+        diagram_node_germination,
+        "Figure 1.1: Zero-touch node germination lifecycle, seed initialization, and attestation persistence",
+    ),
+    "cloudrun-scale-to-zero-cold-start-optimization.svg": (
+        diagram_cold_start_optimization,
+        "Figure 1.1: Cloud Run scale-to-zero cold-start container optimization and sub-1.2s snapshot restore",
+    ),
+    "pining-for-the-fjords.svg": (
+        diagram_scale_to_zero_storage,
+        "Figure 1.1: Scale-to-zero cold-boot storage hydration cycle and dual-pointer GCS snapshot sync",
+    ),
+    "database-pruning-wal.svg": (
+        diagram_database_wal,
+        "Figure 1.1: SQLite Write-Ahead Logging concurrency architecture and 90-day pruning lifecycle",
+    ),
+    "disaster-recovery-and-cross-region-failover.svg": (
+        diagram_disaster_recovery,
+        "Figure 1.1: Active-Active multi-region replication and automated DNS failover architecture",
+    ),
+    "single-vs-dual-project-gcp.svg": (
+        diagram_gcp_project_isolation,
+        "Figure 1.1: Single GCP project name-prefixing vs dual GCP project hard IAM boundary isolation",
+    ),
+    "tailscale-wireguard-mesh.svg": (
+        diagram_wireguard_mesh,
+        "Figure 1.1: Tailscale WireGuard encrypted point-to-point mesh network topology",
+    ),
+    "escaping-the-synthetic-slop-singularity.svg": (
+        diagram_synthetic_slop_collapse,
+        "Figure 1.1: Model collapse probability distribution degradation vs character-offset verbatim grounding",
+    ),
+    "the-dead-internet-immune-system.svg": (
+        diagram_dead_internet_immune_system,
+        "Figure 1.1: Multi-tiered bot resistance, FastMCP structured ingestion, and cryptographic verbatim grounding",
+    ),
+    "gamifying-truth-without-the-casino.svg": (
+        diagram_traffic_shaping_merit,
+        "Figure 1.1: 4-tier peer quality traffic shaping classes and bandwidth allocation",
+    ),
+    "red-teaming-the-truth-badge.svg": (
+        diagram_anti_tamper_badge,
+        "Figure 1.1: Red-teaming the truth badge and detecting bait-and-switch DOM mutations with WebCrypto",
+    ),
+    "subagent-parenthood.svg": (
+        diagram_subagent_parenthood,
+        "Figure 1.1: Subagent parenthood architecture and isolated workspace task delegation",
+    ),
+    "the-4000-token-trance.svg": (
+        diagram_token_headroom,
+        "Figure 1.1: Token headroom budgeting zones and QUOTA_PRESERVED circuit breaker ceiling",
+    ),
+    "the-anti-diploma-invariant.svg": (
+        diagram_anti_diploma,
+        "Figure 1.1: The Anti-Diploma Invariant: Authority credentials vs character-exact verbatim grounding",
+    ),
+    "the-tragedy-of-the-crawler-commons.svg": (
+        diagram_crawler_commons,
+        "Figure 1.1: The tragedy of the crawler commons and polite P2P mesh work-sharing protocols",
+    ),
 }
-
-
-# ==============================================================================
-# 3. REFACTOR MARKDOWN FILES & SYNCHRONIZE ASSETS
-# ==============================================================================
 
 
 def execute_audit(ecosystem_root: Path):
@@ -1279,52 +2021,9 @@ def execute_audit(ecosystem_root: Path):
     docs_illustrations_dir = docs_root / "assets" / "illustrations"
     web_illustrations_dir = ecosystem_root / "credence" / "web" / "assets" / "illustrations"
 
-    all_mds = sorted(list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md")))
-
-    pruned_tags_count = 0
-    updated_tags_count = 0
-
-    print("=== Step 1: Auditing & Refactoring Markdown Image Tags ===")
-    for md in all_mds:
-        text = md.read_text(encoding="utf-8")
-        orig_text = text
-
-        def replace_img(match):
-            nonlocal pruned_tags_count, updated_tags_count
-            src = match.group(2)
-            filename = Path(src).name
-
-            if filename in ACTIVE_DIAGRAMS:
-                _, descriptive_alt = ACTIVE_DIAGRAMS[filename]
-                updated_tags_count += 1
-                return f"![{descriptive_alt}]({src})"
-            else:
-                pruned_tags_count += 1
-                return ""  # Prune non-architectural / redundant image tag
-
-        # Replace image tags
-        new_text = re.sub(r"!\[([^\]]*)\]\((assets/illustrations/[^)]+\.svg)\)\n*", replace_img, text)
-
-        # Clean up any duplicate blank lines left by pruned tags
-        new_text = re.sub(r"\n{3,}", "\n\n", new_text)
-
-        if new_text != orig_text:
-            md.write_text(new_text, encoding="utf-8")
-
-    print(
-        f"✅ Markdown Audit Complete: {updated_tags_count} high-value diagrams captioned, {pruned_tags_count} decorative tags pruned."
-    )
-
-    print("\n=== Step 2: Generating Active Architectural Schematics ===")
-    # Ensure output directories exist
+    print("=== Step 1: Generating 42 Active Architectural Schematics ===")
     docs_illustrations_dir.mkdir(parents=True, exist_ok=True)
     web_illustrations_dir.mkdir(parents=True, exist_ok=True)
-
-    # Clean out old SVG files from illustrations directories
-    for p in docs_illustrations_dir.glob("*.svg"):
-        p.unlink()
-    for p in web_illustrations_dir.glob("*.svg"):
-        p.unlink()
 
     generated_count = 0
     for filename, (builder, _) in ACTIVE_DIAGRAMS.items():
@@ -1334,11 +2033,6 @@ def execute_audit(ecosystem_root: Path):
         generated_count += 1
 
     print(f"✅ Active Schematics Generated: {generated_count} precision SVGs created with 100% SHA-256 parity.")
-
-    # Also update generate_illustrations.py target
-    generator_target = ecosystem_root / "credence" / "scripts" / "generate_illustrations.py"
-    generator_target.write_text(Path(__file__).read_text(encoding="utf-8"), encoding="utf-8")
-    print("✅ generator script synchronized.")
 
 
 if __name__ == "__main__":

@@ -181,7 +181,7 @@
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.1</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.2</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -1972,6 +1972,22 @@
     }
 
 
+    function handleNexusRouting() {
+      const hash = (window.location.hash || '').replace(/^#/, '').trim();
+      const tabMap = {
+        merit: 'merit',
+        badges: 'merit',
+        studio: 'studio',
+        admin: 'admin',
+        nodes: 'nodes',
+        mesh: 'topology',
+        topology: 'topology',
+      };
+      if (hash && tabMap[hash] && wsController && wsController.switchTab) {
+        wsController.switchTab(tabMap[hash]);
+      }
+    }
+
     // Initialize Workstation
     window.addEventListener('DOMContentLoaded', () => {
       wsController = initWorkstation({
@@ -1986,6 +2002,8 @@
       renderAdminView();
       initBadgeStudioEvents();
       fetchTelemetryData();
+      handleNexusRouting();
+      window.addEventListener('hashchange', handleNexusRouting);
     });
   </script>
 </body>

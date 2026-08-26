@@ -1,28 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 290" width="100%" height="auto" style="background: transparent;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" width="100%" height="auto" style="background: transparent;">
   <defs>
     <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
-    </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#0284c7" />
-    </linearGradient>
-    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#a855f7" />
-      <stop offset="100%" stop-color="#7c3aed" />
-    </linearGradient>
-    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#22c55e" />
-      <stop offset="100%" stop-color="#16a34a" />
-    </linearGradient>
-    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
-    </linearGradient>
-    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="100%" stop-color="#e11d48" />
     </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
@@ -39,46 +19,12 @@
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
     </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
   </defs>
-  <rect width="860" height="290" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">KNOWLEDGE GOVERNANCE</text>
-  <text x="32" y="56" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="bold">THE DEMOTION HIGHWAY &amp; CONTEXT PRUNING</text>
-  <rect x="35" y="80" width="240" height="180" rx="10" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="35" y="80" width="240" height="4" rx="2" fill="url(#rose-glow)" />
-  <text x="51" y="104" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold">TIER 0: UNIVERSAL</text>
-  <text x="51" y="124" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="bold">🧠 Sovereign Safety</text>
-  <rect x="49" y="136" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="59" y="152" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Always-On Context</text>
-  <rect x="49" y="164" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="59" y="180" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Class α Guardrails</text>
-  <rect x="49" y="192" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="59" y="208" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Human Mk1 Gate</text>
-  <rect x="49" y="228" width="212" height="22" rx="4" fill="rgba(15, 23, 42, 0.8)" stroke="#ef4444" stroke-width="0.8" />
-  <text x="155" y="243" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;800 Token Budget</text>
-  <line x1="278" y1="170" x2="297" y2="170" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
-  <rect x="300" y="80" width="240" height="180" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="300" y="80" width="240" height="4" rx="2" fill="url(#cyan-glow)" />
-  <text x="316" y="104" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">TIER 1: ON-DEMAND</text>
-  <text x="316" y="124" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="bold">☁️ Progressive Skills</text>
-  <rect x="314" y="136" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="324" y="152" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">.agents/skills/*</text>
-  <rect x="314" y="164" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="324" y="180" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Subsystem Decoupling</text>
-  <rect x="314" y="192" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="324" y="208" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Modular Knowledge</text>
-  <rect x="314" y="228" width="212" height="22" rx="4" fill="rgba(15, 23, 42, 0.8)" stroke="#38bdf8" stroke-width="0.8" />
-  <text x="420" y="243" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Lazy Ingestion</text>
-  <line x1="543" y1="170" x2="562" y2="170" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
-  <rect x="565" y="80" width="240" height="180" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="565" y="80" width="240" height="4" rx="2" fill="url(#emerald-glow)" />
-  <text x="581" y="104" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold">TIER 2: SHIFT-LEFT</text>
-  <text x="581" y="124" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="bold">⚡ Integrity Gates</text>
-  <rect x="579" y="136" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="589" y="152" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">In-Memory Tests</text>
-  <rect x="579" y="164" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="589" y="180" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Zero-npm Parity</text>
-  <rect x="579" y="192" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="589" y="208" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Attestation Sync</text>
-  <rect x="579" y="228" width="212" height="22" rx="4" fill="rgba(15, 23, 42, 0.8)" stroke="#22c55e" stroke-width="0.8" />
-  <text x="685" y="243" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;0.3s QA Checks</text>
+  <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+  <text x="32" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">KNOWLEDGE GOVERNANCE</text>
+  <text x="32" y="49" fill="#ffffff" font-size="14" font-family="sans-serif" font-weight="bold">4-TIER KNOWLEDGE TAXONOMY</text>
+  <rect x="30" y="88" width="180" height="150" rx="8" fill="#111827" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="30" y="88" width="180" height="3" rx="1.5" fill="#ef4444" stroke="none" stroke-width="1.2" /><text x="42" y="109" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">🏛️</text><text x="62" y="109" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Universal Rules</text><text x="42" y="126" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Safety non-negotiables</text><text x="42" y="140" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Human review gate</text><text x="42" y="154" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Small prompt budget</text><rect x="40" y="218" width="160" height="15" rx="3" fill="#1e293b" stroke="#ef4444" stroke-width="0.8" /><text x="120.0" y="229" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Core Invariants</text><rect x="230" y="88" width="180" height="150" rx="8" fill="#111827" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="230" y="88" width="180" height="3" rx="1.5" fill="#38bdf8" stroke="none" stroke-width="1.2" /><text x="242" y="109" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">🧠</text><text x="262" y="109" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Specialized Skills</text><text x="242" y="126" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Progressive workflows</text><text x="242" y="140" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Loaded only on demand</text><text x="242" y="154" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Subsystem playbooks</text><rect x="240" y="218" width="160" height="15" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8" /><text x="320.0" y="229" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Skill Modules</text><rect x="430" y="88" width="180" height="150" rx="8" fill="#111827" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="430" y="88" width="180" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.2" /><text x="442" y="109" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">🧪</text><text x="462" y="109" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Automated Gates</text><text x="442" y="126" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Pre-commit test rules</text><text x="442" y="140" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Static code assertions</text><text x="442" y="154" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Continuous validation</text><rect x="440" y="218" width="160" height="15" rx="3" fill="#1e293b" stroke="#22c55e" stroke-width="0.8" /><text x="520.0" y="229" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Test Assertions</text><rect x="630" y="88" width="180" height="150" rx="8" fill="#111827" stroke="#a855f7" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="630" y="88" width="180" height="3" rx="1.5" fill="#a855f7" stroke="none" stroke-width="1.2" /><text x="642" y="109" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">📘</text><text x="662" y="109" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Architecture Docs</text><text x="642" y="126" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Comprehensive guides</text><text x="642" y="140" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Technical blueprints</text><text x="642" y="154" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Historical context</text><rect x="640" y="218" width="160" height="15" rx="3" fill="#1e293b" stroke="#a855f7" stroke-width="0.8" /><text x="720.0" y="229" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Documentation</text><line x1="210" y1="163" x2="230" y2="163" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><line x1="410" y1="163" x2="430" y2="163" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-emerald)" /><line x1="610" y1="163" x2="630" y2="163" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrow-purple)" />
 </svg>

@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.17.1";
+export const CREDENCE_VERSION = "v2.17.2";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -742,25 +742,26 @@ const INFO_TOPICS = {
     icon: "🏛️",
     tag: "REPUTATION PROFILE",
     tier1_plain_english: `
-      <b>In plain words:</b> Like a restaurant inspection grade for news websites.
+      <b>In plain words:</b> Like a restaurant inspection grade for news websites and publishers.
       <br><br>
-      Instead of judging a publisher by a single story, the dossier looks at their long-term track record over months—tracking how often they get facts right, how quickly they issue corrections, and whether they publish disguised advertorials.
+      Instead of judging a publisher by a single story, the dossier looks at their long-term track record over months—tracking how often they get facts right, how quickly they issue corrections, and whether they publish undisclosed advertorials.
     `,
     tier1_article: {
-      title: "✍️ Sovereign Essay: The Domain Epistemic Index",
-      desc: "Why long-term publisher track records matter more than single-article audits.",
-      url: "https://blog.credence.run/the-domain-epistemic-index"
+      title: "✍️ Empirical Case Study: Conflict of Pun-terest",
+      desc: "Investigating undisclosed councilmember co-ownership, native advertorial marketing, and police press release republishing in local journalism.",
+      url: "https://dev.credence.run/blog/conflict-of-pun-terest"
     },
     tier2_mechanics: [
-      "<b>Bayesian Smoothing</b>: Combines clean audits and violation flags so new publishers aren't unfairly penalized.",
-      "<b>Domain Credence Index (DCI)</b>: Tracks historical reliability, source transparency, and correction speed.",
-      "<b>1-Click All Audits Link</b>: Jump directly from any publisher dossier to all their curated articles in Search."
+      "<b>Longitudinal Track Record</b>: Aggregates verified audit scores across all stories published by this domain.",
+      "<b>Epistemic Integrity Classifications</b>: Detects conflicts of interest (COI), ungrounded claims, and sponsored content masquerading as reporting.",
+      "<b>Direct Article Access</b>: Inspect individual articles in the 3-tier lensing inspector or open standalone reports in the viewer."
     ],
-    cli: "credence dossier reuters.com",
-    math_proof: "DCI Score: DCI = 100 · (α + 1) / (α + β + 2). Longitudinal Stability: σ_30d = √(αβ / ((α+β)^2 · (α+β+1))).",
-    invariants: ["inv-cloudflare-assets", "inv-version-governance"],
+    cli: "credence dossier inmaricopa.com",
+    invariants: ["inv-production-telemetry-boundary", "inv-verbatim-anti-truncation"],
     links: [
-      { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics and domain normalization" }
+      { label: "📝 Conflict of Pun-terest Case Study", url: "https://dev.credence.run/blog/conflict-of-pun-terest", desc: "Longitudinal investigation of local publisher ownership conflicts and native advertorials" },
+      { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics, domain normalization, and DCI scoring" },
+      { label: "🏛️ The Living Invariant Canon", url: "https://docs.credence.run/invariants", desc: "Epistemic grounding, anti-truncation, and verbatim source invariants" }
     ]
   },
 
@@ -1760,8 +1761,9 @@ export function initWorkstation(config = {}) {
   checkAuthStatus();
   normalizeLocalLinks();
 
-  function switchTab(tabId) {
+  function switchTab(tabId, pushHistory = false, updateHash = true) {
     if (!tabId) return;
+
     const btns = document.querySelectorAll(tabButtonsSelector);
     const panels = document.querySelectorAll(tabPanelsSelector);
 
@@ -1774,12 +1776,26 @@ export function initWorkstation(config = {}) {
     panels.forEach(p => {
       const match = p.id === `tab-${tabId}` || p.getAttribute('data-tab') === tabId;
       p.classList.toggle('active', match);
-      if (match) p.style.display = 'block';
+      if (match) p.style.display = 'flex';
       else p.style.display = 'none';
     });
 
-    if (window.location.hash !== `#${tabId}`) {
-      history.replaceState(null, '', `#${tabId}`);
+    if (updateHash) {
+      const currentHash = (window.location.hash || '').replace(/^#/, '');
+      const isDeepLinkForTab = (
+        (tabId === 'browse' && (currentHash.startsWith('analytics/') || currentHash.startsWith('dossier/') || currentHash.startsWith('publisher/') || currentHash.startsWith('browse/'))) ||
+        (tabId === 'search' && (currentHash.startsWith('report/') || currentHash.startsWith('inspect/') || currentHash.startsWith('search'))) ||
+        (tabId === 'merit' && (currentHash.startsWith('merit') || currentHash.startsWith('badges'))) ||
+        (tabId === 'governance' && (currentHash.startsWith('governance') || currentHash.startsWith('invariants')))
+      );
+
+      if (!isDeepLinkForTab && window.location.hash !== `#${tabId}`) {
+        if (pushHistory) {
+          history.pushState({ tab: tabId }, '', `#${tabId}`);
+        } else {
+          history.replaceState({ tab: tabId }, '', `#${tabId}`);
+        }
+      }
     }
 
     normalizeLocalLinks();
@@ -1794,9 +1810,24 @@ export function initWorkstation(config = {}) {
 
   // Handle hash changes or default tab
   const initialHash = window.location.hash.replace(/^#/, '');
-  const initialTab = initialHash || defaultTab;
+  let initialTab = defaultTab;
+  if (initialHash) {
+    if (initialHash.startsWith('analytics/') || initialHash.startsWith('dossier/') || initialHash.startsWith('publisher/') || initialHash.startsWith('browse')) {
+      initialTab = 'browse';
+    } else if (initialHash.startsWith('report/') || initialHash.startsWith('inspect/') || initialHash.startsWith('audit/') || initialHash.startsWith('search')) {
+      initialTab = 'search';
+    } else if (initialHash.startsWith('merit') || initialHash.startsWith('badges')) {
+      initialTab = 'merit';
+    } else if (initialHash.startsWith('nodes') || initialHash.startsWith('mesh') || initialHash.startsWith('peers')) {
+      initialTab = 'nodes';
+    } else if (initialHash.startsWith('governance') || initialHash.startsWith('taxonomies') || initialHash.startsWith('custody') || initialHash.startsWith('invariants')) {
+      initialTab = 'governance';
+    } else {
+      initialTab = initialHash.split('/')[0] || defaultTab;
+    }
+  }
   if (initialTab) {
-    switchTab(initialTab);
+    switchTab(initialTab, false);
   }
 
   // Bind click handlers to tab buttons
@@ -1805,9 +1836,16 @@ export function initWorkstation(config = {}) {
       const targetTab = btn.getAttribute('data-tab') || btn.getAttribute('href')?.replace(/^#/, '');
       if (targetTab && !targetTab.startsWith('http') && !targetTab.startsWith('/') && !targetTab.includes('.')) {
         e.preventDefault();
-        switchTab(targetTab);
+        switchTab(targetTab, true);
       }
     });
+  });
+
+  // Reactive popstate handler for forward/back browser buttons
+  window.addEventListener('popstate', () => {
+    if (typeof window.handleLocationRouting === 'function') {
+      window.handleLocationRouting();
+    }
   });
 
   // Global Keyboard Navigation

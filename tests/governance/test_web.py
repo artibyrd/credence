@@ -435,3 +435,70 @@ def test_zero_mock_production_boundary(web_dir: Path) -> None:
                     f"Violation of inv-production-telemetry-boundary: Banned mock token '{token}' "
                     f"found in production web surface: {file_path.relative_to(web_dir.parent)}"
                 )
+
+
+@pytest.mark.governance
+def test_workstation_scroll_and_lensing_governance(web_dir: Path) -> None:
+    """Verify workstation vertical scrollability and human-readable surface lensing with rich cross-links."""
+    css_file = web_dir / "assets" / "credence-ui.css"
+    assert css_file.exists(), "web/assets/credence-ui.css must exist"
+    css_content = css_file.read_text(encoding="utf-8")
+
+    # Invariant: Active tab panel must natively permit vertical scrolling
+    assert ".tab-panel.active" in css_content
+    assert "overflow-y: auto" in css_content
+
+    report_index = web_dir / "credence.report" / "index.html"
+    assert report_index.exists(), "web/credence.report/index.html must exist"
+    report_content = report_index.read_text(encoding="utf-8")
+
+    # Invariant: Surface glance lens must have human-readable cards and rich cross-links
+    assert "insp-surface-verdict-badge" in report_content
+    assert "insp-surface-takeaways" in report_content
+    assert "insp-surface-publisher-title" in report_content
+    assert "insp-surface-dossier-btn" in report_content
+    assert "insp-surface-related-list" in report_content
+    assert "insp-surface-viewer-link" in report_content
+    assert "insp-surface-history-link" in report_content
+
+    # Invariant: Search landing prompt must feature case studies and quick publisher/issue shortcuts
+    assert "search-landing-prompt" in report_content
+    assert "applyQuickFilter" in report_content
+    assert "reuters.com" in report_content
+    assert "inmaricopa.com" in report_content
+
+
+@pytest.mark.governance
+def test_universal_scrollbar_styling_invariant(web_dir: Path) -> None:
+    """Verify universal custom scrollbar styling across all workstation surfaces and search/audit views."""
+    css_file = web_dir / "assets" / "credence-ui.css"
+    assert css_file.exists(), "web/assets/credence-ui.css must exist"
+    css_content = css_file.read_text(encoding="utf-8")
+
+    # 1. Standard CSS Scrollbars (Firefox / Standard)
+    assert "scrollbar-width: thin" in css_content, "Missing universal scrollbar-width: thin"
+    assert "scrollbar-color:" in css_content, "Missing universal scrollbar-color definition"
+    assert "rgba(56, 189, 248" in css_content, "Scrollbar must use cyan design system accent"
+
+    # 2. WebKit / Blink Pseudo-Elements
+    assert "*::-webkit-scrollbar" in css_content, "Universal *::-webkit-scrollbar rule missing"
+    assert "*::-webkit-scrollbar-track" in css_content, "Universal *::-webkit-scrollbar-track rule missing"
+    assert "*::-webkit-scrollbar-thumb" in css_content, "Universal *::-webkit-scrollbar-thumb rule missing"
+    assert "*::-webkit-scrollbar-thumb:hover" in css_content, "Universal *::-webkit-scrollbar-thumb:hover rule missing"
+
+    # 3. Explicit Workstation & Search Containers
+    required_selectors = [
+        "#tab-search",
+        "#search-results-list",
+        ".tab-panel",
+        ".tab-panel.active",
+        "#tab-browse",
+        "#tab-dci",
+        "#tab-sifter",
+        ".ws-scroll-pane",
+        ".ws-table-container",
+        "#sifter-stream-container",
+        ".log-terminal-body",
+    ]
+    for sel in required_selectors:
+        assert sel in css_content, f"Selector {sel} missing from scrollbar styling rules"

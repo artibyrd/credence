@@ -1,28 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 290" width="100%" height="auto" style="background: transparent;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" width="100%" height="auto" style="background: transparent;">
   <defs>
     <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
-    </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#0284c7" />
-    </linearGradient>
-    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#a855f7" />
-      <stop offset="100%" stop-color="#7c3aed" />
-    </linearGradient>
-    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#22c55e" />
-      <stop offset="100%" stop-color="#16a34a" />
-    </linearGradient>
-    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
-    </linearGradient>
-    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="100%" stop-color="#e11d48" />
     </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
@@ -39,46 +19,12 @@
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
     </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
   </defs>
-  <rect width="860" height="290" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">KNOWLEDGE GOVERNANCE</text>
-  <text x="32" y="56" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="bold">THE LIVING INVARIANT CANON &amp; DEMOTION HIGHWAY</text>
-  <rect x="35" y="80" width="240" height="180" rx="10" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="35" y="80" width="240" height="4" rx="2" fill="url(#rose-glow)" />
-  <text x="51" y="104" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold">TIER 0: UNIVERSAL</text>
-  <text x="51" y="124" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="bold">🧠 Sovereign Safety</text>
-  <rect x="49" y="136" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="59" y="152" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Always-On Context</text>
-  <rect x="49" y="164" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="59" y="180" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Class α Guardrails</text>
-  <rect x="49" y="192" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="59" y="208" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Human Mk1 Gate</text>
-  <rect x="49" y="228" width="212" height="22" rx="4" fill="rgba(15, 23, 42, 0.8)" stroke="#ef4444" stroke-width="0.8" />
-  <text x="155" y="243" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;800 Token Budget</text>
-  <line x1="278" y1="170" x2="297" y2="170" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
-  <rect x="300" y="80" width="240" height="180" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="300" y="80" width="240" height="4" rx="2" fill="url(#cyan-glow)" />
-  <text x="316" y="104" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">TIER 1: ON-DEMAND</text>
-  <text x="316" y="124" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="bold">☁️ Progressive Skills</text>
-  <rect x="314" y="136" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="324" y="152" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">.agents/skills/*</text>
-  <rect x="314" y="164" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="324" y="180" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Subsystem Decoupling</text>
-  <rect x="314" y="192" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="324" y="208" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Modular Knowledge</text>
-  <rect x="314" y="228" width="212" height="22" rx="4" fill="rgba(15, 23, 42, 0.8)" stroke="#38bdf8" stroke-width="0.8" />
-  <text x="420" y="243" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Lazy Ingestion</text>
-  <line x1="543" y1="170" x2="562" y2="170" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
-  <rect x="565" y="80" width="240" height="180" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="565" y="80" width="240" height="4" rx="2" fill="url(#emerald-glow)" />
-  <text x="581" y="104" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold">TIER 2: SHIFT-LEFT</text>
-  <text x="581" y="124" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="bold">⚡ Integrity Gates</text>
-  <rect x="579" y="136" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="589" y="152" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">In-Memory Tests</text>
-  <rect x="579" y="164" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="589" y="180" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Zero-npm Parity</text>
-  <rect x="579" y="192" width="212" height="24" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.15)" />
-  <text x="589" y="208" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Attestation Sync</text>
-  <rect x="579" y="228" width="212" height="22" rx="4" fill="rgba(15, 23, 42, 0.8)" stroke="#22c55e" stroke-width="0.8" />
-  <text x="685" y="243" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;0.3s QA Checks</text>
+  <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+  <text x="32" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">COGNITIVE HIERARCHY</text>
+  <text x="32" y="49" fill="#ffffff" font-size="14" font-family="sans-serif" font-weight="bold">LIVING CANON OF SYSTEM INVARIANTS</text>
+  <rect x="35" y="84" width="235" height="160" rx="8" fill="#111827" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="35" y="84" width="235" height="3" rx="1.5" fill="#ef4444" stroke="none" stroke-width="1.2" /><text x="47" y="105" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="67" y="105" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Sovereign Safety</text><text x="47" y="122" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Human review sign-off</text><text x="47" y="136" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Untrusted ingestion boundary</text><text x="47" y="150" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Exact quote verification</text><rect x="45" y="224" width="215" height="15" rx="3" fill="#1e293b" stroke="#ef4444" stroke-width="0.8" /><text x="152.5" y="235" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Core Non-Negotiable</text><rect x="312" y="84" width="235" height="160" rx="8" fill="#111827" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="312" y="84" width="235" height="3" rx="1.5" fill="#f59e0b" stroke="none" stroke-width="1.2" /><text x="324" y="105" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">⚙️</text><text x="344" y="105" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Execution Lifecycle</text><text x="324" y="122" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">4-phase release process</text><text x="324" y="136" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">500 line code file ceiling</text><text x="324" y="150" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Hermetic unit test suites</text><rect x="322" y="224" width="215" height="15" rx="3" fill="#1e293b" stroke="#f59e0b" stroke-width="0.8" /><text x="429.5" y="235" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Process Boundaries</text><rect x="590" y="84" width="235" height="160" rx="8" fill="#111827" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="590" y="84" width="235" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.2" /><text x="602" y="105" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="normal" text-anchor="start">📐</text><text x="622" y="105" fill="#ffffff" font-size="11.5" font-family="sans-serif" font-weight="bold" text-anchor="start">Interface Parity</text><text x="602" y="122" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Full symmetry across CLI,</text><text x="602" y="136" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Web, TUI, and FastMCP</text><text x="602" y="150" fill="#cbd5e1" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Zero-build web standards</text><rect x="600" y="224" width="215" height="15" rx="3" fill="#1e293b" stroke="#22c55e" stroke-width="0.8" /><text x="707.5" y="235" fill="#ffffff" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">Interface Standards</text><line x1="270" y1="164" x2="312" y2="164" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arrow-amber)" /><line x1="547" y1="164" x2="590" y2="164" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-emerald)" />
 </svg>
