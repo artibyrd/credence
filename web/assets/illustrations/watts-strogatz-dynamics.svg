@@ -1,28 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 300" width="100%" height="auto" style="background: transparent;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" width="100%" height="auto" style="background: transparent;">
   <defs>
     <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
-    </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#0284c7" />
-    </linearGradient>
-    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#a855f7" />
-      <stop offset="100%" stop-color="#7c3aed" />
-    </linearGradient>
-    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#22c55e" />
-      <stop offset="100%" stop-color="#16a34a" />
-    </linearGradient>
-    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
-    </linearGradient>
-    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="100%" stop-color="#e11d48" />
     </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
@@ -39,73 +19,12 @@
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
     </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
   </defs>
-  <rect width="860" height="300" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">NETWORK DYNAMICS</text>
-  <text x="32" y="56" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="bold">SMALL-WORLD GRAPH TOPOLOGY</text>
-  <circle cx="430" cy="165" r="105" fill="none" stroke="rgba(56, 189, 248, 0.15)" stroke-width="1.0" stroke-dasharray="4,4" />
-  <circle cx="430" cy="165" r="65" fill="none" stroke="rgba(168, 85, 247, 0.15)" stroke-width="1.0" />
-  <line x1="430" y1="165" x2="430" y2="80" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="430" y1="80" x2="469" y2="90" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="430" cy="80" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="430" y="84" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N1</text>
-  <line x1="430" y1="165" x2="469" y2="90" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="469" y1="90" x2="499" y2="117" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="469" cy="90" r="18" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="469" y="94" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N2</text>
-  <line x1="430" y1="165" x2="499" y2="117" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="499" y1="117" x2="514" y2="155" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="499" cy="117" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="499" y="121" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N3</text>
-  <line x1="430" y1="165" x2="514" y2="155" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="514" y1="155" x2="509" y2="195" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="514" cy="155" r="18" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="514" y="159" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N4</text>
-  <line x1="430" y1="165" x2="509" y2="195" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="509" y1="195" x2="486" y2="228" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="509" cy="195" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="509" y="199" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N5</text>
-  <line x1="430" y1="165" x2="486" y2="228" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="486" y1="228" x2="450" y2="247" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="486" cy="228" r="18" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="486" y="232" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N6</text>
-  <line x1="430" y1="165" x2="450" y2="247" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="450" y1="247" x2="410" y2="247" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="450" cy="247" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="450" y="251" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N7</text>
-  <line x1="430" y1="165" x2="410" y2="247" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="410" y1="247" x2="374" y2="228" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="410" cy="247" r="18" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="410" y="251" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N8</text>
-  <line x1="430" y1="165" x2="374" y2="228" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="374" y1="228" x2="351" y2="195" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="374" cy="228" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="374" y="232" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N9</text>
-  <line x1="430" y1="165" x2="351" y2="195" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="351" y1="195" x2="346" y2="155" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="351" cy="195" r="18" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="351" y="199" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N10</text>
-  <line x1="430" y1="165" x2="346" y2="155" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="346" y1="155" x2="361" y2="117" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="346" cy="155" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="346" y="159" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N11</text>
-  <line x1="430" y1="165" x2="361" y2="117" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="361" y1="117" x2="391" y2="90" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="361" cy="117" r="18" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="361" y="121" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N12</text>
-  <line x1="430" y1="165" x2="391" y2="90" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2" />
-  <line x1="391" y1="90" x2="430" y2="80" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" />
-  <circle cx="391" cy="90" r="18" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" filter="url(#card-shadow)" />
-  <text x="391" y="94" fill="#f8fafc" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">N13</text>
-  <circle cx="430" cy="165" r="32" fill="#0f172a" stroke="#a855f7" stroke-width="2.0" filter="url(#card-shadow)" />
-  <text x="430" y="161" fill="#a855f7" font-size="9.5" font-family="monospace" font-weight="bold" text-anchor="middle">CORE</text>
-  <text x="430" y="175" fill="#f8fafc" font-size="11" font-family="sans-serif" font-weight="600" text-anchor="middle">ROUTING</text>
-  <rect x="50" y="110" width="180" height="90" rx="8" fill="#0f172a" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1.0" />
-  <text x="64" y="132" fill="#38bdf8" font-size="11" font-family="sans-serif" font-weight="bold">Consensus Rule</text>
-  <text x="64" y="152" fill="#94a3b8" font-size="10" font-family="monospace">N >= 1 | f = floor((N-1)/3)</text>
-  <text x="64" y="172" fill="#22c55e" font-size="10" font-family="monospace">BFT Quorum: 2f + 1</text>
-  <rect x="630" y="110" width="180" height="90" rx="8" fill="#0f172a" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1.0" />
-  <text x="644" y="132" fill="#a855f7" font-size="11" font-family="sans-serif" font-weight="bold">Gossip Routing</text>
-  <text x="644" y="152" fill="#94a3b8" font-size="10" font-family="monospace">HRW Seed Hashing</text>
-  <text x="644" y="172" fill="#38bdf8" font-size="10" font-family="monospace">Fanout: k = 4</text>
+  <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+  <text x="32" y="30" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">CONSENSUS MESH</text>
+  <text x="32" y="52" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold">13-NODE WATTS-STROGATZ MESH &amp; SYBIL DEFENSE</text>
+  <rect x="36" y="80" width="360" height="170" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="36" y="80" width="360" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.2" /><text x="48" y="101" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="70" y="101" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">Honest Peer Cluster</text><text x="48" y="118" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Watts-Strogatz Ring Lattice</text><text x="48" y="133" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">High Clustering Metric</text><text x="48" y="148" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Deterministic Feed Hashing</text><text x="48" y="163" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Consensus Median Shield</text><rect x="48" y="228" width="336" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="216.0" y="240" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">Consensus Quorum N=13</text><rect x="464" y="80" width="360" height="170" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="464" y="80" width="360" height="3" rx="1.5" fill="#ef4444" stroke="none" stroke-width="1.2" /><text x="476" y="101" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">🛑</text><text x="498" y="101" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">Byzantine Sybil Cartel</text><text x="476" y="118" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Collusion Swarm Detected</text><text x="476" y="133" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Topic Entropy Collapsed</text><text x="476" y="148" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Suspicion Slashed &gt;70%</text><text x="476" y="163" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Autonomous Quarantine</text><rect x="476" y="228" width="336" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="644.0" y="240" fill="#ef4444" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">Isolated Cartel (3f+1)</text><line x1="396" y1="165" x2="464" y2="165" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-rose)" />
 </svg>

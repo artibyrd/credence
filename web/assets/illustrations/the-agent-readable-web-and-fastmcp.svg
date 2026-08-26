@@ -4,26 +4,6 @@
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
     </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#0284c7" />
-    </linearGradient>
-    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#a855f7" />
-      <stop offset="100%" stop-color="#7c3aed" />
-    </linearGradient>
-    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#22c55e" />
-      <stop offset="100%" stop-color="#16a34a" />
-    </linearGradient>
-    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
-    </linearGradient>
-    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="100%" stop-color="#e11d48" />
-    </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
     </filter>
@@ -39,43 +19,12 @@
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
     </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
   </defs>
   <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">AGENTIC STANDARDS</text>
-  <text x="32" y="56" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="bold">AGENT-READABLE WEB WITH FASTMCP</text>
-  <rect x="40" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="40" y="90" width="170" height="4" rx="2" fill="url(#cyan-glow)" />
-  <circle cx="68" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#38bdf8" stroke-width="1.0" />
-  <text x="68" y="127" font-size="13" text-anchor="middle">⚡</text>
-  <text x="90" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">FastMCP 2.0</text>
-  <text x="56" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">JSON-RPC Tooling</text>
-  <rect x="56" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="125" y="190" fill="#38bdf8" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">SSE Stream</text>
-  <line x1="214" y1="150" x2="239" y2="150" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
-  <rect x="243" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="243" y="90" width="170" height="4" rx="2" fill="url(#purple-glow)" />
-  <circle cx="271" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#a855f7" stroke-width="1.0" />
-  <text x="271" y="127" font-size="13" text-anchor="middle">💻</text>
-  <text x="293" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">CLI Engine</text>
-  <text x="259" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Argparse CLI</text>
-  <rect x="259" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="328" y="190" fill="#a855f7" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Rich Output</text>
-  <line x1="417" y1="150" x2="442" y2="150" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
-  <rect x="446" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="446" y="90" width="170" height="4" rx="2" fill="url(#emerald-glow)" />
-  <circle cx="474" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#22c55e" stroke-width="1.0" />
-  <text x="474" y="127" font-size="13" text-anchor="middle">📟</text>
-  <text x="496" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">TUI Terminal</text>
-  <text x="462" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Textual Interface</text>
-  <rect x="462" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="531" y="190" fill="#22c55e" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Async Event</text>
-  <line x1="620" y1="150" x2="645" y2="150" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
-  <rect x="649" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="649" y="90" width="170" height="4" rx="2" fill="url(#amber-glow)" />
-  <circle cx="677" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#f59e0b" stroke-width="1.0" />
-  <text x="677" y="127" font-size="13" text-anchor="middle">🌐</text>
-  <text x="699" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Zero-Build Web</text>
-  <text x="665" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Vanilla ES Module</text>
-  <rect x="665" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="734" y="190" fill="#f59e0b" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Zero-npm</text>
+  <text x="32" y="30" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">DATA INGESTION</text>
+  <text x="32" y="52" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold">AGENT-READABLE WEB: FASTMCP VS SCRAPING</text>
+  <rect x="36" y="80" width="360" height="170" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="36" y="80" width="360" height="3" rx="1.5" fill="#ef4444" stroke="none" stroke-width="1.2" /><text x="48" y="101" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">🕸️</text><text x="70" y="101" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">Legacy Web Scraping</text><text x="48" y="118" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Fragile HTML DOM Parsing</text><text x="48" y="133" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Bot Blocks &amp; CAPTCHAs</text><text x="48" y="148" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">CSS Selector Breakages</text><text x="48" y="163" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">High Token Scraping Waste</text><rect x="48" y="228" width="336" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="216.0" y="240" fill="#ef4444" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">Brittle &amp; High Failure</text><rect x="464" y="80" width="360" height="170" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="464" y="80" width="360" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.2" /><text x="476" y="101" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">⚡</text><text x="498" y="101" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">FastMCP Semantic Web</text><text x="476" y="118" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Typed JSON-RPC Resources</text><text x="476" y="133" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Structured Claim Payload</text><text x="476" y="148" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Zero HTML Tag Overhead</text><text x="476" y="163" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Instant Machine Grounding</text><rect x="476" y="228" width="336" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="644.0" y="240" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">Reliable Agent Web</text><line x1="396" y1="165" x2="464" y2="165" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-emerald)" />
 </svg>

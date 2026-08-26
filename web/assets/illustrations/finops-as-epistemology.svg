@@ -4,26 +4,6 @@
       <stop offset="0%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#050810" />
     </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#0284c7" />
-    </linearGradient>
-    <linearGradient id="purple-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#a855f7" />
-      <stop offset="100%" stop-color="#7c3aed" />
-    </linearGradient>
-    <linearGradient id="emerald-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#22c55e" />
-      <stop offset="100%" stop-color="#16a34a" />
-    </linearGradient>
-    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b" />
-      <stop offset="100%" stop-color="#d97706" />
-    </linearGradient>
-    <linearGradient id="rose-glow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="100%" stop-color="#e11d48" />
-    </linearGradient>
     <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
     </filter>
@@ -39,43 +19,12 @@
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
     </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
   </defs>
   <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-  <text x="32" y="32" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="bold" letter-spacing="0.1em">FINOPS EPISTEMOLOGY</text>
-  <text x="32" y="56" fill="#f8fafc" font-size="15" font-family="sans-serif" font-weight="bold">TOKEN ECONOMY &amp; BUDGET OPTIMIZATION</text>
-  <rect x="40" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="40" y="90" width="170" height="4" rx="2" fill="url(#cyan-glow)" />
-  <circle cx="68" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#38bdf8" stroke-width="1.0" />
-  <text x="68" y="127" font-size="13" text-anchor="middle">✂️</text>
-  <text x="90" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Prompt Pareto</text>
-  <text x="56" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Context Economy</text>
-  <rect x="56" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="125" y="190" fill="#38bdf8" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">4k Headroom</text>
-  <line x1="214" y1="150" x2="239" y2="150" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
-  <rect x="243" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="243" y="90" width="170" height="4" rx="2" fill="url(#purple-glow)" />
-  <circle cx="271" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#a855f7" stroke-width="1.0" />
-  <text x="271" y="127" font-size="13" text-anchor="middle">🎯</text>
-  <text x="293" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Tier Selection</text>
-  <text x="259" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">Cost Profile</text>
-  <rect x="259" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="328" y="190" fill="#a855f7" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">$0.34 Frontier</text>
-  <line x1="417" y1="150" x2="442" y2="150" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
-  <rect x="446" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="446" y="90" width="170" height="4" rx="2" fill="url(#emerald-glow)" />
-  <circle cx="474" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#22c55e" stroke-width="1.0" />
-  <text x="474" y="127" font-size="13" text-anchor="middle">⚡</text>
-  <text x="496" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Cache Hit</text>
-  <text x="462" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">SimHash Dedup</text>
-  <rect x="462" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="531" y="190" fill="#22c55e" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Zero Re-run</text>
-  <line x1="620" y1="150" x2="645" y2="150" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)" />
-  <rect x="649" y="90" width="170" height="120" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" />
-  <rect x="649" y="90" width="170" height="4" rx="2" fill="url(#amber-glow)" />
-  <circle cx="677" cy="122" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="#f59e0b" stroke-width="1.0" />
-  <text x="677" y="127" font-size="13" text-anchor="middle">💾</text>
-  <text x="699" y="126" fill="#f8fafc" font-size="13" font-family="sans-serif" font-weight="600">Audit persistance</text>
-  <text x="665" y="160" fill="#94a3b8" font-size="11" font-family="sans-serif">SQLite Archive</text>
-  <rect x="665" y="176" width="138" height="20" rx="4" fill="rgba(30, 41, 59, 0.6)" stroke="rgba(148, 163, 184, 0.2)" />
-  <text x="734" y="190" fill="#f59e0b" font-size="10.5" font-family="monospace" font-weight="bold" text-anchor="middle">Zero Waste</text>
+  <text x="32" y="30" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">TOKEN GOVERNANCE</text>
+  <text x="32" y="52" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold">FINOPS AS EPISTEMIC DISCIPLINE &amp; BREAKER</text>
+  <rect x="36" y="88" width="175" height="156" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="36" y="88" width="175" height="3" rx="1.5" fill="#38bdf8" stroke="none" stroke-width="1.2" /><text x="48" y="109" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">📊</text><text x="70" y="109" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">Budget Governor</text><text x="48" y="126" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Tracks Token Velocity</text><text x="48" y="141" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Hourly Allocation</text><text x="48" y="156" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Prevents Outages</text><rect x="48" y="222" width="151" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="123.5" y="234" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">Headroom Meter</text><rect x="243" y="88" width="175" height="156" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="243" y="88" width="175" height="3" rx="1.5" fill="#22c55e" stroke="none" stroke-width="1.2" /><text x="255" y="109" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">🛡️</text><text x="277" y="109" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">30% Safety Zone</text><text x="255" y="126" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Reserved Quota Zone</text><text x="255" y="141" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Prevents Rate Limits</text><text x="255" y="156" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Prioritizes Evidence</text><rect x="255" y="222" width="151" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="330.5" y="234" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">Headroom &gt;= 30%</text><rect x="450" y="88" width="175" height="156" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="450" y="88" width="175" height="3" rx="1.5" fill="#f59e0b" stroke="none" stroke-width="1.2" /><text x="462" y="109" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">⚡</text><text x="484" y="109" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">Circuit Tripped</text><text x="462" y="126" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Graceful Degradation</text><text x="462" y="141" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Offline Fallback</text><text x="462" y="156" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Local Verification</text><rect x="462" y="222" width="151" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="537.5" y="234" fill="#f59e0b" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">QUOTA_PRESERVED</text><rect x="657" y="88" width="175" height="156" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.2" filter="url(#card-shadow)" /><rect x="657" y="88" width="175" height="3" rx="1.5" fill="#a855f7" stroke="none" stroke-width="1.2" /><text x="669" y="109" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="normal" text-anchor="start">🔐</text><text x="691" y="109" fill="#f8fafc" font-size="12" font-family="sans-serif" font-weight="600" text-anchor="start">Signed Output</text><text x="669" y="126" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Deterministic Output</text><text x="669" y="141" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Zero Truncation</text><text x="669" y="156" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="normal" text-anchor="start">Canonical JSON</text><rect x="669" y="222" width="151" height="16" rx="4" fill="rgba(30, 41, 59, 0.7)" stroke="rgba(148, 163, 184, 0.2)" stroke-width="1.0" /><text x="744.5" y="234" fill="#a855f7" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">RFC 8785 Proof</text><line x1="211" y1="166" x2="243" y2="166" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)" /><line x1="418" y1="166" x2="450" y2="166" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-emerald)" /><line x1="625" y1="166" x2="657" y2="166" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrow-purple)" />
 </svg>
