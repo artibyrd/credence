@@ -337,29 +337,26 @@
           </div>
 
           <!-- ===================================================================
-               WORKSPACE 2: BROWSE DIRECTORY (FORENSIC AUDIT CATALOG & CASE STUDIES)
-               =================================================================== -->
-                    <!-- ===================================================================
-               WORKSPACE 2: BROWSE DIRECTORY & SOURCE DOSSIERS (UNIFIED)
+               WORKSPACE 2: BROWSE & SOURCES (CURATED AUDIT DIRECTORY & REPUTATIONS)
                =================================================================== -->
           <div id="tab-browse" class="tab-panel" style="height: 100%; overflow: hidden; display: flex; flex-direction: column;">
-            <div class="deck-card" style="padding:1.25rem; height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; flex: 1;">
+            <div class="deck-card" style="padding:1.15rem; height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; flex: 1;">
               
-              <!-- Browse Header with Subview Switcher -->
-              <div id="browse-header-banner" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:0.85rem;">
-                <div>
-                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
-                    <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.3); font-size:0.72rem;">FORENSIC DIRECTORY &amp; SOURCES</span>
+              <!-- Tightened Browse Header with Subview Switcher moved to the right on the same row -->
+              <div id="browse-header-banner" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:0.55rem; flex-shrink:0;">
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    <h2 style="font-size:1.15rem; color:#fff; margin:0; font-weight:700;">Directory &amp; Publisher Dossiers</h2>
+                    <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:var(--accent-cyan); border:1px solid rgba(56, 189, 248, 0.3); font-size:0.7rem;">FORENSIC DIRECTORY &amp; SOURCES</span>
                     <button class="info-btn" onclick="window.CredenceWS.openInfoModal('browse')" title="Info: Browse Directory &amp; Case Studies">ℹ</button>
                   </div>
-                  <h2 style="font-size:1.25rem; color:#fff; margin:0 0 0.25rem 0;">Directory &amp; Publisher Dossiers</h2>
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0; max-width:760px; line-height:1.4;">
+                  <p style="color:var(--text-muted); font-size:0.8rem; margin:0.12rem 0 0; line-height:1.3;">
                     Explore curated empirical reports or inspect comprehensive longitudinal publisher profiles across the open web.
                   </p>
                 </div>
 
-                <!-- Sub-view Mode Switcher: Articles vs Publishers -->
-                <div class="subview-switcher">
+                <!-- Sub-view Mode Switcher: Articles vs Publishers placed cleanly to the right -->
+                <div class="subview-switcher" style="display:flex; gap:0.35rem; align-items:center; flex-shrink:0;">
                   <button type="button" class="subview-btn active" id="subview-btn-articles" onclick="switchBrowseSubview('articles')">
                     📑 Curated Articles (16)
                   </button>
@@ -374,17 +371,17 @@
                    =============================================================== -->
               <div id="browse-subview-articles" style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
                 <!-- Quick Category Filter Chips -->
-                <div style="display:flex; gap:0.4rem; margin-bottom:0.75rem; flex-wrap:wrap; align-items:center;">
-                  <span style="font-size:0.75rem; color:var(--text-dim); font-weight:600;">Category:</span>
-                  <button class="btn-secondary active-chip" id="chip-cat-all" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('ALL')">All Audits (16)</button>
-                  <button class="btn-secondary" id="chip-cat-clean" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('CLEAN')">Clean Wire / Journals (4)</button>
-                  <button class="btn-secondary" id="chip-cat-violations" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('VIOLATIONS')">Flagged Violations (8)</button>
-                  <button class="btn-secondary" id="chip-cat-satire" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('SATIRE')">Satire Neutralized (2)</button>
-                  <button class="btn-secondary" id="chip-cat-local" style="font-size:0.75rem; padding:0.2rem 0.55rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (2)</button>
+                <div style="display:flex; gap:0.35rem; margin-bottom:0.6rem; flex-wrap:wrap; align-items:center; flex-shrink:0;">
+                  <span style="font-size:0.72rem; color:var(--text-dim); font-weight:600; margin-right:0.2rem;">Category:</span>
+                  <button class="btn-secondary active-chip" id="chip-cat-all" style="font-size:0.72rem; padding:0.18rem 0.5rem;" onclick="filterSelectionHub('ALL')">All Audits (16)</button>
+                  <button class="btn-secondary" id="chip-cat-clean" style="font-size:0.72rem; padding:0.18rem 0.5rem;" onclick="filterSelectionHub('CLEAN')">Clean Wire / Journals (4)</button>
+                  <button class="btn-secondary" id="chip-cat-violations" style="font-size:0.72rem; padding:0.18rem 0.5rem;" onclick="filterSelectionHub('VIOLATIONS')">Flagged Violations (8)</button>
+                  <button class="btn-secondary" id="chip-cat-satire" style="font-size:0.72rem; padding:0.18rem 0.5rem;" onclick="filterSelectionHub('SATIRE')">Satire Neutralized (2)</button>
+                  <button class="btn-secondary" id="chip-cat-local" style="font-size:0.72rem; padding:0.18rem 0.5rem;" onclick="filterSelectionHub('LOCAL')">Local Journalism (2)</button>
                 </div>
 
-                <!-- Selection Hub Cards Grid (Single Scrollpane with max-height:580px) -->
-                <div class="ws-scroll-pane" style="flex: 1; max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                <!-- Selection Hub Cards Grid (Full Available Vertical Height Scrollpane) -->
+                <div class="ws-scroll-pane" style="flex: 1; min-height: 0; overflow-y:auto; padding-right:0.35rem;">
                   <div id="selection-hub-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
                     <!-- Populated dynamically via renderSelectionHub() -->
                   </div>
@@ -397,15 +394,15 @@
               <div id="browse-subview-sources" style="flex: 1; min-height: 0; display: none; flex-direction: column; overflow: hidden;">
                 
                 <!-- Publisher Catalog Grid (Shown when browsing all publishers) -->
-                <div id="publishers-catalog-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
-                    <input type="text" id="publishers-filter-input" class="form-input" placeholder="Search publishers (e.g. reuters, onion, nature, maricopa)..." style="max-width:340px; font-size:0.85rem; padding:0.4rem 0.65rem;" oninput="filterPublishersCatalog(this.value)">
-                    <div style="font-size:0.78rem; color:var(--text-dim);">
+                <div id="publishers-catalog-container" style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem; flex-shrink:0;">
+                    <input type="text" id="publishers-filter-input" class="form-input" placeholder="Search publishers (e.g. reuters, onion, nature, maricopa)..." style="max-width:340px; font-size:0.82rem; padding:0.35rem 0.6rem;" oninput="filterPublishersCatalog(this.value)">
+                    <div style="font-size:0.75rem; color:var(--text-dim);">
                       Showing <b id="publishers-count-badge" style="color:#fff;">16 Verified Publishers</b>
                     </div>
                   </div>
 
-                  <div class="ws-scroll-pane" style="flex: 1; max-height:580px; overflow-y:auto; padding-right:0.35rem;">
+                  <div class="ws-scroll-pane" style="flex: 1; min-height: 0; overflow-y:auto; padding-right:0.35rem;">
                     <div id="publishers-catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
                       <!-- Populated dynamically via renderPublishersCatalog() -->
                     </div>
@@ -513,22 +510,25 @@
             </div>
           </div>
 
-          <div id="tab-dci" class="tab-panel">
-            <div class="deck-card">
-              <div class="deck-card-header">
+          <!-- ===================================================================
+               WORKSPACE 3: DCI HONOR ROLL (GLOBAL PUBLISHER LEADERBOARD)
+               =================================================================== -->
+          <div id="tab-dci" class="tab-panel" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="deck-card" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; flex: 1; margin-bottom: 0;">
+              <div class="deck-card-header" style="flex-shrink: 0; padding-bottom: 0.65rem; margin-bottom: 0.2rem;">
                 <div>
-                  <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Domain Credence Index (DCI) Honor Roll &amp; Watchlist</h3>
+                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0; font-weight:700;">Domain Credence Index (DCI) Honor Roll &amp; Watchlist</h3>
                     <button class="info-btn" onclick="window.CredenceWS.openInfoModal('dci')" title="Info: DCI">ℹ</button>
                   </div>
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">
+                  <p style="color:var(--text-muted); font-size:0.82rem; margin:0.2rem 0 0;">
                     Global publisher credibility rankings evaluated across thousands of cryptographically signed audits.
                   </p>
                 </div>
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:center; margin:0.85rem 0; flex-wrap:wrap; gap:0.5rem;">
-                <input type="text" id="dci-filter-input" class="form-input" placeholder="Filter domains (e.g. reuters, onion, nature)..." style="max-width:320px; font-size:0.85rem; padding:0.4rem 0.65rem;" oninput="filterDciTable(this.value)">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin:0.6rem 0; flex-wrap:wrap; gap:0.5rem; flex-shrink: 0;">
+                <input type="text" id="dci-filter-input" class="form-input" placeholder="Filter domains (e.g. reuters, onion, nature)..." style="max-width:320px; font-size:0.82rem; padding:0.35rem 0.6rem;" oninput="filterDciTable(this.value)">
                 <div style="display:flex; gap:0.35rem;">
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="filterDciTable('')">All</button>
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#4ade80;" onclick="filterDciTable('Tier A')">Tier A (Pristine)</button>
@@ -536,15 +536,15 @@
                 </div>
               </div>
 
-              <div class="ws-table-container" style="max-height:520px; overflow-y:auto;">
-                <table class="ws-table" id="dci-table">
-                  <thead>
+              <div class="ws-table-container ws-scroll-pane" style="flex: 1; min-height: 0; overflow-y: auto; overflow-x: auto; padding-right: 0.35rem;">
+                <table class="ws-table" id="dci-table" style="width: 100%; border-collapse: collapse;">
+                  <thead style="position: sticky; top: 0; background: var(--bg-card); z-index: 2;">
                     <tr>
-                      <th style="cursor:pointer; user-select:none;" onclick="sortDciTable('domain')">Domain / Publisher <span id="sort-icon-domain">↕</span></th>
-                      <th style="cursor:pointer; user-select:none;" onclick="sortDciTable('tier')">Trust Band <span id="sort-icon-tier">↕</span></th>
-                      <th style="cursor:pointer; user-select:none; color:var(--accent-cyan);" onclick="sortDciTable('suspicion')">Average Suspicion <span id="sort-icon-suspicion">▼</span></th>
-                      <th style="cursor:pointer; user-select:none;" onclick="sortDciTable('audits')">Network Ingests <span id="sort-icon-audits">↕</span></th>
-                      <th>Actions</th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('domain')">Domain / Publisher <span id="sort-icon-domain">↕</span></th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('tier')">Trust Band <span id="sort-icon-tier">↕</span></th>
+                      <th style="cursor:pointer; user-select:none; color:var(--accent-cyan); background: var(--bg-card);" onclick="sortDciTable('suspicion')">Average Suspicion <span id="sort-icon-suspicion">▼</span></th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('audits')">Network Ingests <span id="sort-icon-audits">↕</span></th>
+                      <th style="background: var(--bg-card);">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="dci-table-body">
@@ -630,14 +630,14 @@
                WORKSPACE 4: SIFTER STREAM (LIVE NETWORK INGESTION)
                =================================================================== -->
           <div id="tab-sifter" class="tab-panel" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
-            <div class="deck-card" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 0;">
-              <div class="deck-card-header">
+            <div class="deck-card" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; flex: 1; margin-bottom: 0;">
+              <div class="deck-card-header" style="flex-shrink: 0; padding-bottom: 0.65rem; margin-bottom: 0.2rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Syndicated Sifter Ingestion Stream</h3>
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0; font-weight:700;">Syndicated Sifter Ingestion Stream</h3>
                     <button class="info-btn" onclick="window.CredenceWS.openInfoModal('sifter')" title="Info: Feed Sifter">ℹ</button>
                   </div>
-                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">
+                  <p style="color:var(--text-muted); font-size:0.82rem; margin:0.2rem 0 0;">
                     Continuous background RSS feed ingestion and automated epistemic evaluation stream.
                   </p>
                 </div>
@@ -647,7 +647,7 @@
                 </div>
               </div>
 
-              <div id="sifter-stream-container" class="ws-scroll-pane" style="flex: 1; max-height: 580px; overflow-y: auto; display:flex; flex-direction:column; gap:0.65rem; margin-top:0.85rem; padding-right: 0.35rem;">
+              <div id="sifter-stream-container" class="ws-scroll-pane" style="flex: 1; min-height: 0; overflow-y: auto; display:flex; flex-direction:column; gap:0.65rem; margin-top:0.65rem; padding-right: 0.35rem;">
                 <!-- Populated dynamically via window.renderSifterStream() -->
               </div>
             </div>
