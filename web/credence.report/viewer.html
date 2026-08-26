@@ -934,10 +934,20 @@ City council members expressed optimism regarding the new administration's forei
       const hashStr = String(hash || "").trim();
       if (!hashStr) return;
 
-      const match = MOCK_CORPUS.find(c => c.content_sha256 === hashStr || c.url === hashStr || String(c.id) === hashStr || (c.url && (c.url.includes(hashStr) || hashStr.includes(c.url)))) ||
-                    dynamicCorpus.find(c => c.content_sha256 === hashStr || c.url === hashStr || String(c.id) === hashStr || (c.url && (c.url.includes(hashStr) || hashStr.includes(c.url))));
+      const cleanHash = hashStr.replace(/^sha256:/i, '').toLowerCase();
+
+      // 1. Search in dynamicCorpus (loaded live from /api/reports or reports.json)
+      const match = dynamicCorpus.find(c => {
+        if (!c) return false;
+        const cSha = (c.content_sha256 || '').replace(/^sha256:/i, '').toLowerCase();
+        if (cSha && (cSha === cleanHash || cSha === hashStr)) return true;
+        if (c.url && (c.url === hashStr || c.url.replace(/\/$/, '') === hashStr.replace(/\/$/, ''))) return true;
+        if (c.id && String(c.id) === hashStr) return true;
+        if (c.url && (c.url.includes(hashStr) || hashStr.includes(c.url))) return true;
+        return false;
+      });
       
-      if (match && match.title) {
+      if (match && match.title && match.violations) {
         document.getElementById("header-query").value = match.content_sha256 || match.url || match.id;
         renderReport(match);
         const url = new URL(window.location);
@@ -946,7 +956,7 @@ City council members expressed optimism regarding the new administration's forei
         return;
       }
 
-      // Query REST API for full reconstituted report
+      // 2. Query REST API for full reconstituted report from SQLite
       const apiBase = getApiBaseUrl();
       try {
         const res = await fetch(`${apiBase}/api/reports/${encodeURIComponent(hashStr)}`);
@@ -963,6 +973,48 @@ City council members expressed optimism regarding the new administration's forei
         }
       } catch (err) {
         console.warn("Direct lookup failed:", err);
+      }
+
+      // 2b. If hashStr has sha256 prefix or not, try alternative format
+      if (cleanHash !== hashStr) {
+        try {
+          const resClean = await fetch(`${apiBase}/api/reports/${encodeURIComponent(cleanHash)}`);
+          if (resClean.ok) {
+            const fullReport = await resClean.json();
+            if (fullReport && (fullReport.content_sha256 || fullReport.url)) {
+              document.getElementById("header-query").value = fullReport.content_sha256 || fullReport.id;
+              renderReport(fullReport);
+              const url = new URL(window.location);
+              url.searchParams.set("q", fullReport.content_sha256 || fullReport.id);
+              window.history.replaceState({}, "", url);
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("Clean hash lookup failed:", err);
+        }
+      }
+
+      // 3. If identifier is a URL, trigger on-demand live audit via REST API
+      if (hashStr.startsWith("http://") || hashStr.startsWith("https://") || hashStr.includes(".")) {
+        showToast("🔍 Fetching live epistemic audit from compute plane...");
+        try {
+          const auditRes = await fetch(`${apiBase}/api/audit?url=${encodeURIComponent(hashStr)}`, { method: "POST" });
+          if (auditRes.ok) {
+            const liveRep = await auditRes.json();
+            if (liveRep && (liveRep.content_sha256 || liveRep.url)) {
+              dynamicCorpus.unshift(liveRep);
+              renderReport(liveRep);
+              const url = new URL(window.location);
+              url.searchParams.set("q", liveRep.content_sha256 || liveRep.url);
+              window.history.replaceState({}, "", url);
+              showToast("✅ Live audit loaded successfully!");
+              return;
+            }
+          }
+        } catch (auditErr) {
+          console.warn("On-demand live audit failed:", auditErr);
+        }
       }
 
       if (match) {

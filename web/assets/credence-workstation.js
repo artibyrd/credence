@@ -1760,8 +1760,9 @@ export function initWorkstation(config = {}) {
   checkAuthStatus();
   normalizeLocalLinks();
 
-  function switchTab(tabId) {
+  function switchTab(tabId, pushHistory = false) {
     if (!tabId) return;
+
     const btns = document.querySelectorAll(tabButtonsSelector);
     const panels = document.querySelectorAll(tabPanelsSelector);
 
@@ -1787,7 +1788,11 @@ export function initWorkstation(config = {}) {
     );
 
     if (!isDeepLinkForTab && window.location.hash !== `#${tabId}`) {
-      history.replaceState(null, '', `#${tabId}`);
+      if (pushHistory) {
+        history.pushState({ tab: tabId }, '', `#${tabId}`);
+      } else {
+        history.replaceState({ tab: tabId }, '', `#${tabId}`);
+      }
     }
 
     normalizeLocalLinks();
@@ -1819,7 +1824,7 @@ export function initWorkstation(config = {}) {
     }
   }
   if (initialTab) {
-    switchTab(initialTab);
+    switchTab(initialTab, false);
   }
 
   // Bind click handlers to tab buttons
@@ -1828,9 +1833,16 @@ export function initWorkstation(config = {}) {
       const targetTab = btn.getAttribute('data-tab') || btn.getAttribute('href')?.replace(/^#/, '');
       if (targetTab && !targetTab.startsWith('http') && !targetTab.startsWith('/') && !targetTab.includes('.')) {
         e.preventDefault();
-        switchTab(targetTab);
+        switchTab(targetTab, true);
       }
     });
+  });
+
+  // Reactive popstate handler for forward/back browser buttons
+  window.addEventListener('popstate', () => {
+    if (typeof window.handleLocationRouting === 'function') {
+      window.handleLocationRouting();
+    }
   });
 
   // Global Keyboard Navigation
