@@ -57,19 +57,26 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                     # Synchronize node-configured sentinels from CREDENCE_SENTINEL_FEEDS environment variable
                     from credence.feeds.sentinel import sync_env_sentinel_sources
 
-                    activated = await sync_env_sentinel_sources(session)
-                    if activated > 0:
-                        logger.info("🛡️ Triggering initial sentinel sifting burst on boot for %d sources...", activated)
+                    await sync_env_sentinel_sources(session)
+
+                    # Trigger boot sifting burst on all active sentinel subscriptions
+                    stmt_s = select(FeedSubscription).where(
+                        FeedSubscription.is_sentinel == True,  # noqa: E712
+                        FeedSubscription.is_active == True,  # noqa: E712
+                    )
+                    sent_subs = (await session.exec(stmt_s)).all()
+                    if sent_subs:
+                        logger.info(
+                            "🛡️ Triggering initial sentinel sifting burst on boot for %d active sentinel sources...",
+                            len(sent_subs),
+                        )
                         from credence.feeds.worker import sync_single_feed
 
-                        stmt_s = select(FeedSubscription).where(
-                            FeedSubscription.is_sentinel == True,  # noqa: E712
-                            FeedSubscription.is_active == True,  # noqa: E712
-                        )
-                        sent_subs = (await session.exec(stmt_s)).all()
                         for s_sub in sent_subs:
                             try:
-                                await sync_single_feed(session, s_sub, dry_run=False, evaluate_novel=True)
+                                await sync_single_feed(
+                                    session, s_sub, dry_run=False, evaluate_novel=True, force_refresh=True
+                                )
                             except Exception as se:
                                 logger.warning("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
 

@@ -175,6 +175,7 @@ async def sync_single_feed(
     dry_run: bool = False,
     evaluate_novel: bool = True,
     profile_override: Any = None,
+    force_refresh: bool = False,
 ) -> FeedSyncSummary:
     """Synchronize a single syndicated feed subscription."""
     summary = FeedSyncSummary(total_feeds_polled=1)
@@ -184,42 +185,41 @@ async def sync_single_feed(
         try:
             parsed = await fetch_and_parse_feed(
                 feed_url=subscription.feed_url,
-                etag=subscription.etag,
-                last_modified=subscription.last_modified,
+                etag=None if force_refresh else subscription.etag,
+                last_modified=None if force_refresh else subscription.last_modified,
             )
         except Exception as e:
             summary.details.append({"feed": subscription.feed_url, "error": str(e)})
             return summary
 
     now = utc_now()
-    if not parsed.is_modified:
+    if not parsed.is_modified and not force_refresh:
         summary.feeds_unmodified_304 = 1
         if not dry_run:
             subscription.last_polled_at = now
             await session.commit()
-        return summary
+    else:
+        # Update subscription metadata
+        if not dry_run:
+            subscription.etag = parsed.etag
+            subscription.last_modified = parsed.last_modified
+            subscription.last_polled_at = now
+            if parsed.title and not subscription.title:
+                subscription.title = parsed.title
+            await session.commit()
 
-    # Update subscription metadata
-    if not dry_run:
-        subscription.etag = parsed.etag
-        subscription.last_modified = parsed.last_modified
-        subscription.last_polled_at = now
-        if parsed.title and not subscription.title:
-            subscription.title = parsed.title
-        await session.commit()
-
-    # Process discovered feed items
-    for entry in parsed.entries:
-        await _process_single_entry(
-            session=session,
-            entry=entry,
-            subscription=subscription,
-            summary=summary,
-            dry_run=dry_run,
-            now=now,
-            evaluate_novel=evaluate_novel,
-            profile_override=profile_override,
-        )
+        # Process discovered feed items
+        for entry in parsed.entries:
+            await _process_single_entry(
+                session=session,
+                entry=entry,
+                subscription=subscription,
+                summary=summary,
+                dry_run=dry_run,
+                now=now,
+                evaluate_novel=evaluate_novel,
+                profile_override=profile_override,
+            )
 
     return summary
 
