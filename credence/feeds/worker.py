@@ -15,7 +15,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.feeds.dedup import check_mesh_effort_avoidance
 from credence.feeds.parser import fetch_and_parse_feed
-from credence.models import FeedItem, FeedSubscription, utc_now
+from credence.models import Audit, FeedItem, FeedSubscription, Snapshot, utc_now
 from credence.pipeline.governor import get_token_headroom_status
 from credence.subjects.registry import classify_subject
 
@@ -60,34 +60,45 @@ async def _process_single_entry(
     stmt_item = select(FeedItem).where(FeedItem.item_url == entry.url)
     existing = (await session.exec(stmt_item)).first()
     if existing:
-        return
+        if not evaluate_novel or existing.processing_status == "audited":
+            return
 
-    summary.new_items_discovered += 1
-    classified_subject, _ = classify_subject(f"{entry.title} {entry.summary or ''}")
-
-    if dry_run:
-        summary.details.append(
-            {
-                "url": entry.url,
-                "title": entry.title,
-                "subject": classified_subject,
-                "action": "dry_run_discovered",
-            }
+        stmt_audit_exists = (
+            select(Audit).join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id)).where(Snapshot.url == entry.url)
         )
-        return
+        if (await session.exec(stmt_audit_exists)).first():
+            existing.processing_status = "audited"
+            session.add(existing)
+            await session.commit()
+            return
+        item_record = existing
+    else:
+        summary.new_items_discovered += 1
+        classified_subject, _ = classify_subject(f"{entry.title} {entry.summary or ''}")
 
-    item_record = FeedItem(
-        item_url=entry.url,
-        feed_id=subscription.id,
-        title=entry.title,
-        subject_id=classified_subject,
-        published_at=entry.published_at,
-        discovered_at=now,
-        processing_status="pending",
-    )
-    session.add(item_record)
-    await session.commit()
-    await session.refresh(item_record)
+        if dry_run:
+            summary.details.append(
+                {
+                    "url": entry.url,
+                    "title": entry.title,
+                    "subject": classified_subject,
+                    "action": "dry_run_discovered",
+                }
+            )
+            return
+
+        item_record = FeedItem(
+            item_url=entry.url,
+            feed_id=subscription.id,
+            title=entry.title,
+            subject_id=classified_subject,
+            published_at=entry.published_at,
+            discovered_at=now,
+            processing_status="pending",
+        )
+        session.add(item_record)
+        await session.commit()
+        await session.refresh(item_record)
 
     # Effort Avoidance Check
     dedup_result = await check_mesh_effort_avoidance(session, entry.url)
@@ -105,7 +116,7 @@ async def _process_single_entry(
         return
 
     # Check Token Budget Governor Headroom
-    headroom = await get_token_headroom_status(session)
+    headroom = await get_token_headroom_status(session, profile_override=profile_override)
     if headroom.circuit_breaker_tripped or headroom.daily_headroom_pct < 30.0:
         item_record.processing_status = "skipped"
         await session.commit()
