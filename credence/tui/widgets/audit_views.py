@@ -202,7 +202,7 @@ SAMPLE_AUDIT_PRESETS: List[dict] = [
         ],
     },
     {
-        "url": "https://inmaricopa.com/breaking/miracle-supplement-cures-all-chronic-illness",
+        "url": "https://health-news-wire.org/breaking/miracle-supplement-cures-all-chronic-illness",
         "title": "Local Clinic Discovers 100% Miracle Cure for Chronic Illness",
         "suspicion_score": 96.2,
         "classification": "PROVEN_HOAX",

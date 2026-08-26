@@ -53,6 +53,11 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                         from credence.feeds.worker import bootstrap_preset_feeds
 
                         await bootstrap_preset_feeds(session)
+
+                    # Synchronize node-configured sentinels from CREDENCE_SENTINEL_FEEDS environment variable
+                    from credence.feeds.sentinel import sync_env_sentinel_sources
+
+                    await sync_env_sentinel_sources(session)
             except Exception as e:
                 logger.warning("Auto-germination background task encountered error: %s", e)
 

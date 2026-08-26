@@ -35,8 +35,8 @@ def test_guaranteed_organic_soil_floor_partitioning() -> None:
 
 
 @pytest.mark.asyncio
-async def test_inmaricopa_preset_sentinel_bootstrap(db_session: AsyncSession) -> None:
-    """Assert bootstrap_preset_feeds configures inmaricopa.com as an active sentinel preset."""
+async def test_default_preset_feeds_sovereign_neutrality(db_session: AsyncSession) -> None:
+    """Assert bootstrap_preset_feeds seeds subscriptions with is_sentinel=False by default (neutrality)."""
     added = await bootstrap_preset_feeds(db_session, category="regional-civic")
     assert added >= 1
 
@@ -44,9 +44,26 @@ async def test_inmaricopa_preset_sentinel_bootstrap(db_session: AsyncSession) ->
     inmaricopa_sub = (await db_session.exec(stmt)).first()
 
     assert inmaricopa_sub is not None
-    assert inmaricopa_sub.is_sentinel is True
-    assert inmaricopa_sub.sentinel_interval_seconds == 300
+    assert inmaricopa_sub.is_sentinel is False
     assert inmaricopa_sub.priority_tier == 1
+
+
+@pytest.mark.asyncio
+async def test_env_sentinel_sources_sync(db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Assert sync_env_sentinel_sources dynamically activates sentinels declared in CREDENCE_SENTINEL_FEEDS."""
+    from credence.feeds.sentinel import sync_env_sentinel_sources
+
+    monkeypatch.setenv("CREDENCE_SENTINEL_FEEDS", "https://inmaricopa.com/feed/")
+    monkeypatch.setenv("CREDENCE_SENTINEL_INTERVAL", "180")
+
+    activated = await sync_env_sentinel_sources(db_session)
+    assert activated == 1
+
+    stmt = select(FeedSubscription).where(FeedSubscription.feed_url == "https://inmaricopa.com/feed/")
+    sub = (await db_session.exec(stmt)).first()
+    assert sub is not None
+    assert sub.is_sentinel is True
+    assert sub.sentinel_interval_seconds == 180
 
 
 @pytest.mark.asyncio
@@ -77,33 +94,3 @@ async def test_sentinel_rest_api(db_session: AsyncSession) -> None:
     data = resp_ok.json()
     assert data["is_sentinel"] is True
     assert data["interval_seconds"] == 180
-
-
-@pytest.mark.asyncio
-async def test_inmaricopa_preset_sentinel_upgrade_existing(db_session: AsyncSession) -> None:
-    """Assert pre-existing inmaricopa subscription with is_sentinel=False is automatically upgraded."""
-    stmt = select(FeedSubscription).where(FeedSubscription.feed_url == "https://inmaricopa.com/feed/")
-    sub = (await db_session.exec(stmt)).first()
-    if not sub:
-        sub = FeedSubscription(
-            feed_url="https://inmaricopa.com/feed/",
-            title="InMaricopa: Local News & Civic",
-            priority_tier=1,
-            is_active=True,
-            is_sentinel=False,
-            sentinel_interval_seconds=300,
-        )
-        db_session.add(sub)
-    else:
-        sub.is_sentinel = False
-        db_session.add(sub)
-    await db_session.commit()
-
-    # Re-run bootstrap_preset_feeds
-    await bootstrap_preset_feeds(db_session, category="regional-civic")
-
-    stmt = select(FeedSubscription).where(FeedSubscription.feed_url == "https://inmaricopa.com/feed/")
-    refreshed = (await db_session.exec(stmt)).first()
-    assert refreshed is not None
-    assert refreshed.is_sentinel is True
-    assert refreshed.sentinel_interval_seconds == 300

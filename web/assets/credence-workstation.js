@@ -462,6 +462,7 @@ export const INVARIANTS_REGISTRY = {
   "inv-epistemic-lensing": { legacyId: 42, class: "Class γ", scope: "universal", title: "The Epistemic Lensing & Information Pyramid Invariant" },
   "inv-web-component-isolation": { legacyId: 44, class: "Class γ", scope: "universal", title: "Web Component Isolation & Zero-Clone Safety" },
   "inv-dense-workstation-viewport": { legacyId: 45, class: "Class γ", scope: "domain", title: "Dense Workstation Viewport & Zero-Masking Invariant" },
+  "inv-sovereign-config-decoupling": { legacyId: 59, class: "Class α", scope: "universal", title: "Sovereign Multi-Tenant Decoupling & Zero Hardcoded Tenant Config" },
 };
 
 export function resolveInvariant(slugOrId) {

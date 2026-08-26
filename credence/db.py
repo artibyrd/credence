@@ -103,10 +103,6 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
                         await conn.exec_driver_sql(
                             "ALTER TABLE feedsubscription ADD COLUMN sentinel_interval_seconds INTEGER DEFAULT 300;"
                         )
-                    # Automatically ensure inmaricopa.com feed is marked as active sentinel
-                    await conn.exec_driver_sql(
-                        "UPDATE feedsubscription SET is_sentinel = 1, sentinel_interval_seconds = 300 WHERE feed_url LIKE '%inmaricopa.com%';"
-                    )
             except Exception:
                 pass
 

@@ -8,6 +8,8 @@ Governed by Invariants:
 
 from __future__ import annotations
 
+import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -17,6 +19,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from credence.feeds.reputation import get_or_create_domain_reputation, normalize_domain
 from credence.ingestion.security import is_safe_url
 from credence.models import FeedSubscription, utc_now
+
+logger = logging.getLogger("credence.feeds.sentinel")
 
 MAX_ACTIVE_SENTINELS: int = 10
 MIN_SENTINEL_INTERVAL_SECONDS: int = 60
@@ -192,3 +196,32 @@ async def list_sentinel_sources(session: AsyncSession) -> List[Dict[str, Any]]:
             }
         )
     return results
+
+
+async def sync_env_sentinel_sources(session: AsyncSession) -> int:
+    """Synchronize and activate sentinel sources declared in CREDENCE_SENTINEL_FEEDS env var.
+
+    Governed by inv-sovereign-config-decoupling: core engine contains zero hardcoded domains.
+    """
+    raw_env = os.environ.get("CREDENCE_SENTINEL_FEEDS", "").strip()
+    if not raw_env:
+        return 0
+
+    interval = int(os.environ.get("CREDENCE_SENTINEL_INTERVAL", str(DEFAULT_SENTINEL_INTERVAL_SECONDS)))
+    targets = [t.strip() for t in raw_env.split(",") if t.strip()]
+    activated = 0
+
+    for target in targets:
+        try:
+            await set_feed_sentinel_mode(
+                session=session,
+                target=target,
+                enabled=True,
+                interval_seconds=interval,
+            )
+            activated += 1
+            logger.info("🛡️ Activated sentinel source from environment config: %s (interval: %ds)", target, interval)
+        except Exception as e:
+            logger.warning("Could not activate sentinel source from env '%s': %s", target, e)
+
+    return activated

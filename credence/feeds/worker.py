@@ -328,23 +328,17 @@ async def bootstrap_preset_feeds(
                 stmt = select(FeedSubscription).where(FeedSubscription.feed_url == url)
                 existing = (await session.exec(stmt)).first()
                 if not existing:
-                    is_sentinel = "inmaricopa.com" in url
                     sub = FeedSubscription(
                         feed_url=url,
                         title=title,
                         priority_tier=priority,
                         is_active=True,
-                        is_sentinel=is_sentinel,
-                        sentinel_interval_seconds=300 if is_sentinel else 300,
+                        is_sentinel=False,
+                        sentinel_interval_seconds=300,
                     )
                     session.add(sub)
                     await session.commit()
                     added_count += 1
-                elif "inmaricopa.com" in url and not existing.is_sentinel:
-                    existing.is_sentinel = True
-                    existing.sentinel_interval_seconds = 300
-                    session.add(existing)
-                    await session.commit()
             except Exception:
                 await session.rollback()
 
