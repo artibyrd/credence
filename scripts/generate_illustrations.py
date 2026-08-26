@@ -6,8 +6,9 @@ Strictly satisfies:
 - Zero bullet points (•, *, -, 1., 2., etc.).
 - Max line length <= 38 characters per label.
 - Strict text character budget <= 450 characters per diagram.
-- Meaningful technical geometry (loops, decision trees, topologies, pipelines).
-- Dark-mode obsidian palette (#090d16) with vibrant accents.
+- High contrast typography: #ffffff titles, #cbd5e1 descriptions, obsidian #090d16 background.
+- Zero overlapping elements and zero connector/text collisions.
+- Clear, human-readable explanations (zero cryptic metric strings or internal formulas).
 """
 
 from __future__ import annotations
@@ -34,8 +35,8 @@ class SchematicCanvas:
         w: float,
         h: float,
         rx: float = 8,
-        fill: str = "#0f172a",
-        stroke: str = "rgba(56, 189, 248, 0.3)",
+        fill: str = "#111827",
+        stroke: str = "rgba(56, 189, 248, 0.4)",
         stroke_width: float = 1.2,
         filter_id: Optional[str] = None,
         dashed: bool = False,
@@ -67,7 +68,7 @@ class SchematicCanvas:
         y: float,
         content: str,
         font_size: float = 12,
-        fill: str = "#f8fafc",
+        fill: str = "#ffffff",
         font_family: str = "sans-serif",
         font_weight: str = "normal",
         anchor: str = "start",
@@ -123,46 +124,37 @@ class SchematicCanvas:
         subtitle: str = "",
         icon: str = "",
         accent: str = "#38bdf8",
-        fill: str = "#0f172a",
+        fill: str = "#111827",
         pill: str = "",
     ) -> None:
-        """Render a component node with clean typography and optional metric pill."""
+        """Render a clean card with high-contrast typography and collision-free layout."""
         self.rect(x, y, w, h, rx=8, fill=fill, stroke=accent, stroke_width=1.2, filter_id="card-shadow")
         self.rect(x, y, w, 3, rx=1.5, fill=accent, stroke="none")
 
         header_x = x + 12
         if icon:
-            self.text(header_x, y + 21, icon, font_size=14, anchor="start")
-            header_x += 22
+            self.text(header_x, y + 21, icon, font_size=13, anchor="start")
+            header_x += 20
 
-        self.text(header_x, y + 21, title, font_size=12, fill="#f8fafc", font_weight="600")
+        self.text(header_x, y + 21, title, font_size=11.5, fill="#ffffff", font_weight="bold")
 
         if subtitle:
             sub_lines = subtitle.split("\n")
             line_y = y + 38
             for s_line in sub_lines:
                 clean_line = s_line.replace("• ", "").replace("* ", "")
-                self.text(x + 12, line_y, clean_line, font_size=10, fill="#94a3b8")
-                line_y += 15
+                self.text(x + 12, line_y, clean_line, font_size=10, fill="#cbd5e1")
+                line_y += 14
 
         if pill:
-            pill_y = y + h - 22
-            self.rect(
-                x + 12,
-                pill_y,
-                w - 24,
-                16,
-                rx=4,
-                fill="rgba(30, 41, 59, 0.7)",
-                stroke="rgba(148, 163, 184, 0.2)",
-                stroke_width=1.0,
-            )
+            pill_y = y + h - 20
+            self.rect(x + 10, pill_y, w - 20, 15, rx=3, fill="#1e293b", stroke=accent, stroke_width=0.8)
             self.text(
                 x + w / 2,
-                pill_y + 12,
+                pill_y + 11,
                 pill,
-                font_size=9,
-                fill=accent,
+                font_size=8.5,
+                fill="#ffffff",
                 font_family="monospace",
                 font_weight="bold",
                 anchor="middle",
@@ -176,11 +168,11 @@ class SchematicCanvas:
         h: float,
         title: str = "",
         color: str = "#38bdf8",
-        bg: str = "rgba(15, 23, 42, 0.4)",
+        bg: str = "rgba(17, 24, 39, 0.6)",
         dashed: bool = False,
     ) -> None:
-        """Render an architectural boundary container."""
-        self.rect(x, y, w, h, rx=10, fill=bg, stroke=color, stroke_width=1.1, dashed=dashed)
+        """Render an architectural boundary container with clear margins."""
+        self.rect(x, y, w, h, rx=10, fill=bg, stroke=color, stroke_width=1.2, dashed=dashed)
         if title:
             self.text(
                 x + 14, y + 17, title.upper(), font_size=9, fill=color, font_family="monospace", font_weight="bold"
@@ -225,477 +217,470 @@ class SchematicCanvas:
     </marker>
   </defs>
   <rect width="{self.width}" height="{self.height}" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
-  <text x="32" y="30" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">{html.escape(self.category.upper())}</text>
-  <text x="32" y="52" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="bold">{html.escape(self.title.upper())}</text>
+  <text x="32" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">{html.escape(self.category.upper())}</text>
+  <text x="32" y="49" fill="#ffffff" font-size="14" font-family="sans-serif" font-weight="bold">{html.escape(self.title.upper())}</text>
   {"".join(self.elements)}
 </svg>
 """
 
 
 # ==============================================================================
-# 42 BESPOKE DOMAIN-ACCURATE SCHEMATIC BUILDERS (<400 CHARS BUDGET)
+# 42 BESPOKE DOMAIN-ACCURATE SCHEMATIC BUILDERS (HUMAN-READABLE & COLLISION-FREE)
 # ==============================================================================
 
 
 def diagram_conflict_of_punterest() -> str:
     """Maricopa Municipal vs Newsroom Closed Loop Conflict Model."""
-    c = SchematicCanvas(860, 280, "POLITICIAN-PUBLISHER CONFLICT vs AUDIT", "CIVIC CONFLICT FORENSICS")
-    c.container(28, 68, 804, 94, "Municipal Conflict Loop", "#ef4444", dashed=True)
-    c.node(44, 90, 220, 62, "Councilmember", "Council Seat\nNews Owner", "🏛️", "#ef4444", pill="Politician")
-    c.node(
-        320, 90, 220, 62, "Municipal Dais", "Votes Land Sales\nCity Contracts", "🗳️", "#f59e0b", pill="Council Action"
-    )
-    c.node(596, 90, 220, 62, "News Outlet", "inmaricopa.com\nAdvertorials", "📰", "#ef4444", pill="Publisher")
-    c.arrow(264, 121, 320, 121, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(540, 121, 596, 121, "#ef4444", marker="url(#arrow-rose)")
+    c = SchematicCanvas(860, 300, "POLITICIAN-PUBLISHER CONFLICT vs AUDIT", "CIVIC CONFLICT FORENSICS")
+    # Upper Row: Municipal Conflict Loop
+    c.container(30, 68, 800, 102, "Municipal Conflict Loop", "#ef4444", dashed=True)
+    c.node(46, 92, 210, 66, "Councilmember", "Holds Council Seat\nDirects news policy", "🏛️", "#ef4444")
+    c.node(325, 92, 210, 66, "Municipal Dais", "Votes on land deals\nApproves contracts", "🗳️", "#f59e0b")
+    c.node(604, 92, 210, 66, "News Outlet", "inmaricopa.com\nUnlabeled advertorials", "📰", "#ef4444")
+    c.arrow(256, 125, 325, 125, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(535, 125, 604, 125, "#ef4444", marker="url(#arrow-rose)")
+    # Return loop routes at y=164 below nodes with zero text collision
     c.path(
-        "M 706 90 L 706 78 L 154 78 L 154 90",
+        "M 709 158 L 709 164 L 151 164 L 151 158",
         stroke="#ef4444",
-        stroke_width=1.4,
+        stroke_width=1.3,
         dashed=True,
         marker_end="url(#arrow-rose)",
     )
 
-    c.container(28, 172, 804, 94, "Credence Attestation Layer", "#22c55e")
-    c.node(44, 194, 220, 62, "DOM Ingest", "Published HTML\nUntrusted Text", "📥", "#38bdf8", pill="Ingestion")
-    c.node(320, 194, 220, 62, "Grounding", "Transcript Match\nUnmask Ad Blur", "🔬", "#22c55e", pill="G=1.00 Quote")
-    c.node(596, 194, 220, 62, "Signed Proof", "SPJ-3.1 Flag\nEd25519 Seal", "🔐", "#a855f7", pill="Canonical JSON")
-    c.arrow(264, 225, 320, 225, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(540, 225, 596, 225, "#a855f7", marker="url(#arrow-purple)")
+    # Lower Row: Credence Attestation Layer
+    c.container(30, 180, 800, 102, "Credence Forensic Audit", "#22c55e")
+    c.node(46, 204, 210, 66, "DOM Ingestion", "Pulls published article\nIsolates raw text", "📥", "#38bdf8")
+    c.node(
+        325, 204, 210, 66, "Quote Verification", "Matches council records\nUnmasks hidden promotion", "🔬", "#22c55e"
+    )
+    c.node(604, 204, 210, 66, "Signed Audit Seal", "Flags conflict of interest\nSeals verified proof", "🔐", "#a855f7")
+    c.arrow(256, 237, 325, 237, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(535, 237, 604, 237, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_astroturfing_entropy() -> str:
     """Shannon Topic Entropy Collapse vs Organic Civic Discourse."""
-    c = SchematicCanvas(860, 280, "TOPIC ENTROPY COLLAPSE & BOT DEFENSE", "INFORMATION ENTROPY")
+    c = SchematicCanvas(860, 280, "TOPIC ENTROPY COLLAPSE & BOT DEFENSE", "INFORMATION ENTROPY FORENSICS")
     c.node(
-        36,
-        78,
-        230,
-        176,
+        35,
+        84,
+        235,
+        160,
         "Organic Discourse",
-        "Diverse Vocabulary\nWide Word Variance\nNatural Synthesis",
+        "Diverse vocabulary used\nNatural sentence variation\nBroad distribution of ideas",
         "🌱",
         "#22c55e",
-        pill="Entropy H >= 0.70",
+        pill="Healthy Variance",
     )
     c.node(
-        315,
-        78,
-        230,
-        176,
+        312,
+        84,
+        235,
+        160,
         "Astroturfed Swarm",
-        "Top-3 Tokens Collapsed\nSynthetic Duplication\nCoordinated Bot Feed",
+        "Top keywords overused\nIdentical talking points\nCoordinated narrative burst",
         "🤖",
         "#ef4444",
-        pill="Entropy H < 0.30",
+        pill="Coordinated Pattern",
     )
     c.node(
-        594,
-        78,
-        230,
-        176,
+        590,
+        84,
+        235,
+        160,
         "Defense Gate",
-        "SimHash Mirror Check\nTopic Entropy Penalty\nAuto Quarantine",
+        "Detects repeated phrasing\nPenalizes artificial spikes\nQuarantines bot campaigns",
         "🛡️",
         "#38bdf8",
-        pill="Zero Slander Pass",
+        pill="Automated Quarantine",
     )
-    c.arrow(266, 166, 315, 166, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(545, 166, 594, 166, "#38bdf8", marker="url(#arrow-cyan)")
+    c.arrow(270, 164, 312, 164, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(547, 164, 590, 164, "#38bdf8", marker="url(#arrow-cyan)")
     return c.render()
 
 
 def diagram_bicameral_finops() -> str:
     """Bicameral LLM Inference Triage Architecture."""
-    c = SchematicCanvas(860, 280, "BICAMERAL LLM INFERENCE & FINOPS", "INFERENCE COST")
+    c = SchematicCanvas(860, 280, "BICAMERAL LLM INFERENCE TRIAGE", "INFERENCE COST ARCHITECTURE")
     c.node(
-        36,
-        78,
+        35,
+        84,
         220,
-        176,
+        160,
         "Inbound Traffic",
-        "Raw Article Streams\nSSRF Scrubbed Text\n100% Audit Volume",
+        "Incoming article streams\nNetwork security scrubbed\nAll unverified claims",
         "📥",
         "#38bdf8",
-        pill="Untrusted Payloads",
+        pill="Raw Ingestion",
     )
     c.node(
-        306,
-        78,
-        235,
-        82,
-        "Tier 1 Fast Filter",
-        "Flash 2.0 Thinking 0k\nResolves 85% Traffic",
+        305,
+        84,
+        240,
+        74,
+        "Fast Triage Tier",
+        "Sub-second evaluation\nResolves 85% of claims",
         "⚡",
         "#22c55e",
-        pill="$0.0001 / Claim",
+        pill="Low Cost Model",
     )
     c.node(
-        306,
-        172,
-        235,
-        82,
-        "Tier 2 Arbiter",
-        "Gemini 3.7 Thinking 4k\nDeep Reasoning Step",
+        305,
+        170,
+        240,
+        74,
+        "Deep Arbiter Tier",
+        "Extended thinking mode\nResolves complex disputes",
         "🧠",
         "#a855f7",
-        pill="$0.0050 / Claim",
+        pill="Advanced Reasoner",
     )
     c.node(
-        591,
-        78,
-        235,
-        176,
-        "Headroom Guard",
-        "Preserves 30% Headroom\nQUOTA_PRESERVED Gate\n83% Cost Reduction",
+        595,
+        84,
+        230,
+        160,
+        "Budget Guardrail",
+        "Preserves token capacity\nPrevents runaway API costs\nMaintains 30% headroom",
         "📊",
         "#f59e0b",
-        pill="Active Breaker",
+        pill="83% Cost Reduction",
     )
-    c.arrow(256, 119, 306, 119, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(256, 213, 306, 213, "#a855f7", marker="url(#arrow-purple)")
-    c.arrow(541, 166, 591, 166, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(255, 121, 305, 121, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(255, 207, 305, 207, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(545, 164, 595, 164, "#f59e0b", marker="url(#arrow-amber)")
     return c.render()
 
 
 def diagram_finops_epistemology() -> str:
     """FinOps as Epistemic Discipline and Quota Circuit Breakers."""
-    c = SchematicCanvas(860, 280, "FINOPS AS EPISTEMIC DISCIPLINE & BREAKER", "TOKEN GOVERNANCE")
+    c = SchematicCanvas(860, 280, "FINOPS AS EPISTEMIC DISCIPLINE", "TOKEN BUDGET GOVERNANCE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Budget Governor",
-        "Tracks Token Velocity\nHourly Allocation\nPrevents Outages",
+        180,
+        150,
+        "Usage Monitor",
+        "Tracks token consumption\nMonitors hourly velocity\nPrevents sudden outages",
         "📊",
         "#38bdf8",
-        pill="Headroom Meter",
+        pill="Velocity Tracker",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "30% Safety Zone",
-        "Reserved Quota Zone\nPrevents Rate Limits\nPrioritizes Evidence",
+        180,
+        150,
+        "Safety Headroom",
+        "30% capacity reserved\nPrevents rate limit halts\nPrioritizes citations",
         "🛡️",
         "#22c55e",
-        pill="Headroom >= 30%",
+        pill="Headroom Safe",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Circuit Tripped",
-        "Graceful Degradation\nOffline Fallback\nLocal Verification",
+        180,
+        150,
+        "Circuit Breaker",
+        "Graceful degradation\nSwitches to offline check\nMaintains local service",
         "⚡",
         "#f59e0b",
-        pill="QUOTA_PRESERVED",
+        pill="Offline Fallback",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "Signed Output",
-        "Deterministic Output\nZero Truncation\nCanonical JSON",
+        180,
+        150,
+        "Signed Result",
+        "Deterministic output\nComplete audit evidence\nCanonical receipt stored",
         "🔐",
         "#a855f7",
-        pill="RFC 8785 Proof",
+        pill="Verified Audit",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_boredom_engine() -> str:
     """Autonomous Boredom Engine & Excitation Soil Harvesting."""
-    c = SchematicCanvas(860, 280, "AUTONOMOUS BOREDOM ENGINE & EXCITATION", "PROACTIVE SENSING")
+    c = SchematicCanvas(860, 280, "AUTONOMOUS PROACTIVE SENSING", "BACKGROUND INVESTIGATION")
+    c.node(30, 88, 180, 150, "Idle State", "No user queries\nCuriosity ramps up", "⏳", "#38bdf8", pill="Idle State")
     c.node(
-        36,
+        230,
         88,
-        175,
-        156,
-        "Idle Decay",
-        "Zero Inbound Calls\nDecay Timer Ticks\nTriggers Curiosity",
-        "⏳",
-        "#38bdf8",
-        pill="Idle State",
-    )
-    c.node(
-        243,
-        88,
-        175,
-        156,
-        "Curiosity Ramp",
-        "Excitement Accumulator\nE(t) Crosses Threshold\nActivates Hunter",
+        180,
+        150,
+        "Trigger Fired",
+        "Curiosity limit met\nLaunches research task",
         "📈",
         "#f59e0b",
-        pill="E(t) >= 1.0",
+        pill="Trigger Fired",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Soil Harvesting",
-        "Scans Municipal Feeds\nPulls arXiv Preprints\nIngests Primary DOM",
+        180,
+        150,
+        "Primary Sifting",
+        "Scans meeting minutes\nAnalyzes preprints",
         "🌾",
         "#22c55e",
-        pill="Active Sifting",
+        pill="Active Search",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "Attestation Cache",
-        "Ed25519 Signed Audit\nStores Fresh Evidence\nResets Boredom Timer",
+        180,
+        150,
+        "Evidence Stored",
+        "Signs verified findings\nStores audit evidence",
         "🔐",
         "#a855f7",
-        pill="Sealed Digest",
+        pill="Sealed Finding",
     )
-    c.arrow(211, 166, 243, 166, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_bittorrent_fact_checking() -> str:
     """BitTorrent P2P Fact-Checking Work Sharing & Rendezvous Hashing."""
-    c = SchematicCanvas(860, 280, "P2P FACT-CHECKING & RENDEZVOUS HASHING", "DISTRIBUTED WORK")
+    c = SchematicCanvas(860, 280, "P2P WORK SHARING & TASK ASSIGNMENT", "DISTRIBUTED VERIFICATION")
     c.node(
-        36,
-        88,
-        225,
-        156,
-        "Rendezvous Hash",
-        "Highest Random Weight\nDeterministic Mapping\nZero Master Leader",
+        35,
+        84,
+        235,
+        160,
+        "Task Assignment",
+        "Deterministic feed hashing\nFair workload allocation\nZero central bottlenecks",
         "🌐",
         "#38bdf8",
-        pill="HRW Feed Hash",
+        pill="Distributed Hash",
     )
     c.node(
-        311,
-        88,
+        312,
+        84,
         235,
-        156,
+        160,
         "Work Partition",
-        "Peer A audits Civic Feeds\nPeer B audits Preprints\nPeer C audits News",
+        "Node A audits civic feeds\nNode B audits preprints\nNode C audits newsrooms",
         "🐝",
         "#22c55e",
-        pill="Shared Load",
+        pill="Balanced Load",
     )
     c.node(
-        596,
-        88,
-        225,
-        156,
-        "Gossip Relay",
-        "Signed Audit Receipts\nDeduplicated Gossip\nZero Duplicate Calls",
+        590,
+        84,
+        235,
+        160,
+        "Gossip Sharing",
+        "Signed audit receipts\nShared among all peers\nZero redundant effort",
         "📡",
         "#a855f7",
-        pill="Ed25519 Gossip",
+        pill="Verified Gossip",
     )
-    c.arrow(261, 166, 311, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(546, 166, 596, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_bittorrent_economics() -> str:
     """Decentralized Swarm Economics vs Centralized Silos."""
-    c = SchematicCanvas(860, 280, "P2P SWARM ECONOMICS vs CENTRALIZED SILO", "SWARM FINOPS")
+    c = SchematicCanvas(860, 280, "P2P SWARM ECONOMICS vs CENTRALIZED SILO", "INFRASTRUCTURE COST COMPARISON")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Centralized Silo",
-        "High Cloud Computing Bills\nRedundant Scraping Runs\nSingle Point of Failure\nOpaque Fact Verdicts",
+        "High cloud server bills\nDuplicate scraping cycles\nSingle point of failure\nOpaque fact check verdicts",
         "🏢",
         "#ef4444",
-        pill="$10,000 / Month",
+        pill="High Operating Cost",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
         "Credence P2P Mesh",
-        "Shared Audit Attestations\nDeduplicated Compute\nByzantine Fault Tolerant\n98.8% Cost Reduction",
+        "Shared audit attestations\nDeduplicated compute work\nByzantine fault tolerant\n98% lower overall costs",
         "🐝",
         "#22c55e",
-        pill="$120 / Month (98.8% Less)",
+        pill="98% Lower Cost",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_satire_decision_tree() -> str:
     """Poe's Law Satire Safeguard vs SPJ-1.6 Mandatory Factual Override."""
-    c = SchematicCanvas(860, 280, "POE'S LAW SATIRE SAFEGUARD vs SPJ-1.6", "SATIRE CLASSIFIER")
+    c = SchematicCanvas(860, 280, "SATIRE vs DEFAMATION OVERRIDE", "CONTENT CLASSIFICATION")
     c.node(
-        36,
+        35,
         95,
-        200,
+        205,
         140,
         "Incoming Content",
-        "Satirical Markers Checked\nHumor Signal Detected\nDomain Profile Lookup",
+        "Checks satirical cues\nIdentifies parody style",
         "📄",
         "#38bdf8",
         pill="Input Ingest",
     )
     c.node(
-        276,
+        280,
         95,
         230,
         140,
         "Factual Allegation?",
-        "Names Real Figures\nAlleges Specific Crimes\nClaims Real Fraud",
+        "Names real individuals\nAlleges specific crimes",
         "⚖️",
         "#f59e0b",
-        pill="SPJ-1.6 Trigger",
+        pill="Audit Trigger",
     )
     c.node(
-        546,
+        550,
         75,
         275,
         78,
-        "Parody Exemption",
-        "Satire Score 0.00\nNo Defamation Cloak",
+        "Protected Parody",
+        "Pure satirical content\nExempt from penalty",
         "🎭",
         "#22c55e",
-        pill="Exempted Satire",
+        pill="True Satire",
     )
     c.node(
-        546,
+        550,
         165,
         275,
         78,
-        "Audit Override",
-        "Disinformation Cloaked\nVerbatim Proof Required",
+        "Mandatory Audit",
+        "Disinformation masked\nExact quote check enforced",
         "🚨",
         "#ef4444",
-        pill="Defamation Slashed",
+        pill="Audit Enforced",
     )
-    c.arrow(236, 165, 276, 165, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(506, 130, 546, 114, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(506, 200, 546, 204, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(240, 165, 280, 165, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(510, 130, 550, 114, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(510, 200, 550, 204, "#ef4444", marker="url(#arrow-rose)")
     return c.render()
 
 
 def diagram_500_loc_ceiling() -> str:
     """The 500 LOC Ceiling Law & Modular Subpackage Decoupling."""
-    c = SchematicCanvas(860, 280, "THE 500 LOC CEILING LAW & MODULAR DECOUPLING", "ARCHITECTURAL MODULARITY")
+    c = SchematicCanvas(860, 280, "THE 500 LOC CEILING LAW", "CODE ARCHITECTURE")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Monolithic Anti-Pattern",
-        "1,200+ Lines God File\nTangled Imports & Drift\nFragile Editing Risk\nUnenforceable Contracts",
+        "1,200+ line sprawling files\nTangled internal imports\nHigh risk when refactoring\nUnclear team ownership",
         "📦",
         "#ef4444",
-        pill="Violates Ceiling Law",
+        pill="Fragile Architecture",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
         "Modular Subpackages",
-        "Strict <=500 LOC per Module\nBounded Interfaces\nFast In-Memory Unit Tests\nSingle Responsibility",
+        "Strict under 500 lines limit\nClean interface contracts\nFast in-memory unit tests\nSingle clear responsibility",
         "🧩",
         "#22c55e",
-        pill="<= 500 LOC Compliant",
+        pill="Maintainable Units",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_500_loc_ceiling_governance() -> str:
     """Single Responsibility Code Decision Boundaries."""
-    c = SchematicCanvas(860, 280, "SINGLE RESPONSIBILITY CODE BOUNDARIES", "SUBPACKAGE DECOUPLING")
+    c = SchematicCanvas(860, 280, "MODULAR RESPONSIBILITY BOUNDARIES", "SUBPACKAGE DECOUPLING")
     c.node(
-        36,
-        88,
-        230,
-        156,
+        35,
+        84,
+        235,
+        160,
         "Ingestion Plane",
-        "Trafilatura Scrubber\nSSRF Network Defense\nHTML Sanitizer",
+        "Network security guards\nHTML article scrubbers\nClean context extractor",
         "🧹",
         "#38bdf8",
-        pill="ingestion/*.py <=500L",
+        pill="Small Focused Modules",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
+        312,
+        84,
+        235,
+        160,
         "Scoring Pipeline",
-        "Deterministic Math\nHeuristic Rules Engine\nConfidence Scores",
+        "Deterministic calculations\nHeuristic rule engine\nConfidence computations",
         "🔢",
         "#22c55e",
-        pill="pipeline/*.py <=500L",
+        pill="Mathematical Core",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
+        590,
+        84,
+        235,
+        160,
         "Storage Layer",
-        "SQLite WAL Storage\nAttestation Persistence\nRetention Pruning",
+        "Local SQLite database\nAudit log persistence\nAutomated pruning daemon",
         "💾",
         "#a855f7",
-        pill="storage/*.py <=500L",
+        pill="Isolated Persistence",
     )
-    c.arrow(266, 166, 315, 166, "#38bdf8")
-    c.arrow(545, 166, 594, 166, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(270, 164, 312, 164, "#38bdf8")
+    c.arrow(547, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_three_plane_architecture() -> str:
     """3-Plane Decoupled Deployment Governance Architecture."""
-    c = SchematicCanvas(860, 280, "3-PLANE DECOUPLED GOVERNANCE ARCHITECTURE", "DEPLOYMENT TOPOLOGY")
+    c = SchematicCanvas(860, 280, "3-PLANE DECOUPLED GOVERNANCE ARCHITECTURE", "SYSTEM ARCHITECTURE")
     c.node(
-        36,
-        88,
-        230,
-        156,
+        35,
+        84,
+        235,
+        160,
         "Edge Plane",
-        "Cloudflare Pages & Worker\nZero-Build Vanilla Web UI\nDynamic Origin Router",
+        "Cloudflare edge workers\nZero-build vanilla web UI\nInstant global delivery",
         "🌐",
         "#38bdf8",
-        pill="dev.credence.run",
+        pill="Edge Delivery",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
+        312,
+        84,
+        235,
+        160,
         "Compute Plane",
-        "Google Cloud Run Server\nFastMCP 2.0 & SQLite WAL\nScale-to-Zero Auto Scaling",
+        "Cloud Run compute server\nFastMCP 2.0 interface\nScale-to-zero efficiency",
         "⚡",
         "#22c55e",
-        pill="credence-server",
+        pill="Compute Server",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
+        590,
+        84,
+        235,
+        160,
         "Infra Plane",
-        "Terraform Declarative HCL\nKeyless WIF Identity\nZero Long-Lived Secrets",
+        "Declarative Terraform HCL\nKeyless cloud IAM roles\nZero stored static keys",
         "🏛️",
         "#a855f7",
-        pill="Multi-Cloud Terraform",
+        pill="Infrastructure",
     )
-    c.arrow(266, 166, 315, 166, "#38bdf8")
-    c.arrow(545, 166, 594, 166, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(270, 164, 312, 164, "#38bdf8")
+    c.arrow(547, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
@@ -706,295 +691,279 @@ def diagram_architecture_master() -> str:
 
 def diagram_deployment_cloudrun() -> str:
     """Serverless Cloud Run Compute & Keyless WIF Deployment."""
-    c = SchematicCanvas(860, 280, "CLOUD RUN COMPUTE & KEYLESS WIF DEPLOYMENT", "CLOUD RUN PIPELINE")
+    c = SchematicCanvas(860, 280, "CLOUD RUN & KEYLESS DEPLOYMENT", "DEPLOYMENT PIPELINE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
+        180,
+        150,
         "GitHub Actions",
-        "Triggers on Branch Push\nHermetic Unit Tests\nZero Static Secrets",
+        "Triggered on branch push\nRuns hermetic test suite\nZero long-lived secrets",
         "🔄",
         "#38bdf8",
-        pill="CI/CD Runner",
+        pill="CI Automation",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "Keyless WIF",
-        "Workload Identity Pool\nShort-Lived OIDC Token\nLeast Privilege IAM",
+        180,
+        150,
+        "Keyless IAM",
+        "Workload Identity Pool\nShort-lived tokens issued\nLeast-privilege access",
         "🔐",
         "#a855f7",
-        pill="GCP IAM Gate",
+        pill="Secure Token",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Artifact Image",
-        "Distroless Container\nSHA-256 Digest Lock\nOptimized Cold Start",
+        180,
+        150,
+        "Minimal Image",
+        "Hardened container build\nChecksum locked image\nFast boot optimization",
         "📦",
         "#60a5fa",
-        pill="Container Image",
+        pill="Hardened Image",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "Cloud Run Rev",
-        "Scale-to-Zero Scaler\nSub-1.2s Fast Boot\nZero Downtime Rollout",
+        180,
+        150,
+        "Live Service",
+        "Scale-to-zero auto scale\nFast warm container boot\nZero-downtime releases",
         "⚡",
         "#22c55e",
-        pill="Live Serving",
+        pill="Production Ready",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#a855f7", marker="url(#arrow-purple)")
-    c.arrow(625, 166, 657, 166, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(610, 163, 630, 163, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_cicd_pipeline() -> str:
     """Multi-Stage Container Optimization and Sub-40s Pipeline."""
-    c = SchematicCanvas(860, 280, "MULTI-STAGE BUILD & SUB-40S CI/CD", "BUILD OPTIMIZATION")
+    c = SchematicCanvas(860, 280, "MULTI-STAGE BUILD & RAPID CI/CD", "CONTAINER OPTIMIZATION")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Poetry Stage",
-        "Full Virtualenv Build\nInstalls Packages\nBuild Cache Primed",
+        180,
+        150,
+        "Builder Stage",
+        "Full environment compile\nInstalls project tooling\nPre-warms cache",
         "📦",
         "#ef4444",
-        pill="860MB Build Cache",
+        pill="Build Workspace",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "Distroless Prune",
-        "Strips Build Tooling\nRetains Pure Runtime\nEliminates Shell Flaws",
+        180,
+        150,
+        "Runtime Prune",
+        "Strips build dependencies\nRetains pure binaries\nEliminates shell tools",
         "🧹",
         "#38bdf8",
-        pill="Pruned Image",
+        pill="Clean Image",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
+        180,
+        150,
         "Hermetic QA",
-        "In-Memory Test Gate\n52 Integrity Assertions\nZero Browser Waste",
+        "In-memory test gate\n52 integrity assertions\nZero browser overhead",
         "🧪",
         "#22c55e",
-        pill="Passes <35s",
+        pill="Fast Tests (<35s)",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
+        180,
+        150,
         "Live Staging",
-        "Fast Cold Boot <1.2s\nMinimal Attack Surface\nInstant Deployment",
+        "Fast cold boot under 1.2s\nMinimal attack surface\nInstant deploy rollout",
         "🚀",
         "#a855f7",
-        pill="42MB Production",
+        pill="Minimal Surface",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_knowledge_demotion_highway() -> str:
     """4-Tier Knowledge Taxonomy & Invariant Demotion Highway."""
-    c = SchematicCanvas(860, 280, "4-TIER KNOWLEDGE TAXONOMY & DEMOTION HIGHWAY", "KNOWLEDGE GOVERNANCE")
+    c = SchematicCanvas(860, 280, "4-TIER KNOWLEDGE TAXONOMY", "KNOWLEDGE GOVERNANCE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Tier 0: Universal",
-        "Class Alpha Invariants\nSafety Non-Negotiables\nStrict Prompt Budget",
+        180,
+        150,
+        "Universal Rules",
+        "Safety non-negotiables\nHuman review gate\nSmall prompt budget",
         "🏛️",
         "#ef4444",
-        pill="AGENTS.md <800t",
+        pill="Core Invariants",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "Tier 1: Skills",
-        "Progressive Subsystems\nSpecialized Workflows\nOn-Demand Retrieval",
+        180,
+        150,
+        "Specialized Skills",
+        "Progressive workflows\nLoaded only on demand\nSubsystem playbooks",
         "🧠",
         "#38bdf8",
-        pill=".agents/skills/",
+        pill="Skill Modules",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Tier 2: Test Gates",
-        "Shift-Left Integrity\nStatic Code Assertions\nPre-Commit Gate CI",
+        180,
+        150,
+        "Automated Gates",
+        "Pre-commit test rules\nStatic code assertions\nContinuous validation",
         "🧪",
         "#22c55e",
-        pill="tests/governance/",
+        pill="Test Assertions",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "Tier 3: Blueprints",
-        "Exhaustive Docs\nDomain Blueprints\nOperator Guides",
+        180,
+        150,
+        "Architecture Docs",
+        "Comprehensive guides\nTechnical blueprints\nHistorical context",
         "📘",
         "#a855f7",
-        pill="docs/blueprints/",
+        pill="Documentation",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_invariants_canon() -> str:
     """Living Canon of System Invariants & Dynamic Reference."""
-    c = SchematicCanvas(860, 280, "LIVING CANON OF SYSTEM INVARIANTS", "LIVING CANON")
+    c = SchematicCanvas(860, 280, "LIVING CANON OF SYSTEM INVARIANTS", "COGNITIVE HIERARCHY")
     c.node(
-        36,
-        88,
-        230,
-        156,
-        "Class Alpha (P0)",
-        "Sovereign Safety & Custody\nHuman Mk1 Eyeball Review\nVerbatim Grounding G=1.00",
+        35,
+        84,
+        235,
+        160,
+        "Sovereign Safety",
+        "Human review sign-off\nUntrusted ingestion boundary\nExact quote verification",
         "🛡️",
         "#ef4444",
-        pill="P0 Non-Negotiable",
+        pill="Core Non-Negotiable",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
-        "Class Beta (P1)",
-        "Execution Topology\n4-Phase Release Lifecycle\n500 LOC Ceiling Law",
+        312,
+        84,
+        235,
+        160,
+        "Execution Lifecycle",
+        "4-phase release process\n500 line code file ceiling\nHermetic unit test suites",
         "⚙️",
         "#f59e0b",
-        pill="P1 Process Boundaries",
+        pill="Process Boundaries",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
-        "Class Gamma (P2)",
-        "Interface Symmetry\nUniversal 4-Way Parity\nZero-Build Standards",
+        590,
+        84,
+        235,
+        160,
+        "Interface Parity",
+        "Full symmetry across CLI,\nWeb, TUI, and FastMCP\nZero-build web standards",
         "📐",
         "#22c55e",
-        pill="P2 Ergonomics",
+        pill="Interface Standards",
     )
-    c.arrow(266, 166, 315, 166, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(545, 166, 594, 166, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(270, 164, 312, 164, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(547, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_agentic_engineering_lifecycle() -> str:
     """Antigravity 5-Stage Agentic Engineering Lifecycle."""
-    c = SchematicCanvas(860, 280, "ANTIGRAVITY 5-STAGE AGENTIC LIFECYCLE", "AGENTIC PAIRING")
+    c = SchematicCanvas(860, 280, "ANTIGRAVITY 5-STAGE AGENTIC LIFECYCLE", "PAIR PROGRAMMING LIFECYCLE")
     c.node(
-        28,
-        88,
-        140,
-        156,
-        "Research Phase",
-        "Explore Codebase\nZero Code Edits\nMap Dependencies",
-        "🔍",
-        "#38bdf8",
-        pill="Read-Only",
+        25, 88, 145, 150, "Research", "Read codebase\nZero code edits\nMap contracts", "🔍", "#38bdf8", pill="Read-Only"
     )
     c.node(
-        192,
-        88,
-        140,
-        156,
-        "Plan Phase",
-        "Implementation Plan\nDefine Test Gates\nSurface Decisions",
-        "📋",
-        "#60a5fa",
-        pill="Structured Design",
+        190, 88, 145, 150, "Plan", "Design plan\nDefine tests\nReview tradeoffs", "📋", "#60a5fa", pill="Design Phase"
     )
     c.node(
-        356,
+        355,
         88,
-        148,
-        156,
-        "Mk1 Review Gate",
-        "Human Approval\nInspect Trade-offs\nSign-Off Required",
+        150,
+        150,
+        "Human Review",
+        "Human sign-off\nReview choices\nApproval gate",
         "👁️",
         "#ef4444",
-        pill="Human Sovereign",
+        pill="Human Approval",
     )
     c.node(
-        528,
+        525,
         88,
-        140,
-        156,
-        "Execute Phase",
-        "Hermetic Unit Tests\nAtomic Commits\nZero Browser Waste",
+        145,
+        150,
+        "Execute",
+        "Apply changes\nHermetic tests\nAtomic commits",
         "⚡",
         "#22c55e",
-        pill="Hermetic QA",
+        pill="Targeted Edits",
     )
     c.node(
-        692,
+        690,
         88,
-        140,
-        156,
-        "Learn Phase",
-        "Walkthrough Brief\nExtract Invariants\nDemote to Skills",
+        145,
+        150,
+        "Learn",
+        "Summarize work\nExtract rules\nUpdate skills",
         "🧠",
         "#a855f7",
-        pill="/learn Patch",
+        pill="Continuous Lean",
     )
-    c.arrow(168, 166, 192, 166, "#38bdf8")
-    c.arrow(332, 166, 356, 166, "#ef4444", marker="url(#arrow-rose)")
-    c.arrow(504, 166, 528, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(668, 166, 692, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(170, 163, 190, 163, "#38bdf8")
+    c.arrow(335, 163, 355, 163, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(505, 163, 525, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(670, 163, 690, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_mesh_topology() -> str:
     """13-Node Watts-Strogatz Peer Mesh & Sybil Cartel Defense."""
-    c = SchematicCanvas(860, 280, "13-NODE WATTS-STROGATZ MESH & SYBIL DEFENSE", "CONSENSUS MESH")
+    c = SchematicCanvas(860, 280, "13-NODE MESH & SYBIL CARTEL DEFENSE", "CONSENSUS MESH TOPOLOGY")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Honest Peer Cluster",
-        "Watts-Strogatz Ring Lattice\nHigh Clustering Metric\nDeterministic Feed Hashing\nConsensus Median Shield",
+        "Small-world mesh topology\nHigh local connectivity\nDeterministic feed mapping\nConsensus truth protection",
         "🛡️",
         "#22c55e",
-        pill="Consensus Quorum N=13",
+        pill="Honest Quorum",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
         "Byzantine Sybil Cartel",
-        "Collusion Swarm Detected\nTopic Entropy Collapsed\nSuspicion Slashed >70%\nAutonomous Quarantine",
+        "Coordinated spam detected\nRepetitive content flagged\nTrust score slashed\nAutonomous peer quarantine",
         "🛑",
         "#ef4444",
-        pill="Isolated Cartel (3f+1)",
+        pill="Isolated Rogue Nodes",
     )
-    c.arrow(396, 165, 464, 165, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(395, 165, 465, 165, "#ef4444", marker="url(#arrow-rose)")
     return c.render()
 
 
@@ -1005,404 +974,390 @@ def diagram_watts_strogatz_dynamics() -> str:
 
 def diagram_raspberry_pi_mesh() -> str:
     """13-Node Swarm Simulation on Resource-Constrained Hardware."""
-    c = SchematicCanvas(860, 280, "13-NODE SWARM BENCHMARK ON RASPBERRY PI", "EMBEDDED BENCHMARK")
+    c = SchematicCanvas(860, 280, "13-NODE SWARM ON RASPBERRY PI", "HARDWARE CONSTRAINED BENCHMARK")
     c.node(
-        36,
-        88,
-        230,
-        156,
+        35,
+        84,
+        235,
+        160,
         "Hardware Host",
-        "Raspberry Pi 4 / 5\n4x ARM64 CPU Cores\nTotal RAM: 4.0 GB",
+        "Single Raspberry Pi device\n4 ARM CPU cores\nLow memory consumption",
         "🍓",
         "#ef4444",
         pill="Host Hardware",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
+        312,
+        84,
+        235,
+        160,
         "In-Memory Swarm",
-        "13 Hermetic SQLite Nodes\nHRW Gossip Work Sharing\nSub-250ms Consensus",
+        "13 lightweight database nodes\nShared gossip distribution\nSub-second consensus speed",
         "🐝",
         "#22c55e",
-        pill="< 1.2GB Swarm RAM",
+        pill="Low Memory Footprint",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
-        "Chaos Gauntlet",
-        "Simulated Link Drops\nByzantine Injection Test\nZero Swarm Deadlocks",
+        590,
+        84,
+        235,
+        160,
+        "Resilience Testing",
+        "Simulated packet loss\nInjected faulty statements\nZero deadlock behavior",
         "⚡",
         "#38bdf8",
-        pill="100% Hermetic Pass",
+        pill="100% Robustness Pass",
     )
-    c.arrow(266, 166, 315, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(545, 166, 594, 166, "#38bdf8")
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#38bdf8")
     return c.render()
 
 
 def diagram_untrusted_ingestion() -> str:
     """Untrusted Ingestion Boundary & SSRF Defense Pipeline."""
-    c = SchematicCanvas(860, 280, "UNTRUSTED INGESTION BOUNDARY & SSRF DEFENSE", "INGESTION DEFENSE")
+    c = SchematicCanvas(860, 280, "UNTRUSTED INGESTION BOUNDARY", "INGESTION DEFENSE PIPELINE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
+        180,
+        150,
         "Untrusted Source",
-        "Public URLs & Raw HTML\nUnknown Entity Authors\nPotential Poisoning",
+        "Public URLs & raw HTML\nUnknown web publishers",
         "🌐",
         "#ef4444",
         pill="Untrusted Input",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "SSRF Guard",
-        "Blocks Cloud Metadata\nBlocks Loopback IPs\nRejects DOCTYPE DTD",
+        180,
+        150,
+        "Network Guard",
+        "Blocks metadata endpoints\nFilters private IP ranges",
         "🛡️",
         "#38bdf8",
-        pill="169.254.x Filter",
+        pill="Network Filter",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "DOM Sanitizer",
-        "Trafilatura Scrubber\nStrips JavaScript & CSS\nExtracts Clean DOM",
+        180,
+        150,
+        "DOM Cleaner",
+        "Strips script tags\nSanitizes HTML structure",
         "🧹",
         "#22c55e",
-        pill="Cleaned Context",
+        pill="Sanitized DOM",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "Enclosed Payload",
-        "Wrapped in Safety Tags\nCharacter Indexed\nReady for Grounding",
+        180,
+        150,
+        "Safe Payload",
+        "Enclosed in safety tags\nReady for evaluation",
         "📦",
         "#a855f7",
-        pill="Prompt Safe DOM",
+        pill="Safe Context",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_security_threat_model() -> str:
     """Comprehensive Security Architecture & Threat Model."""
-    c = SchematicCanvas(860, 280, "SECURITY ARCHITECTURE & THREAT MODEL", "DEFENSE-IN-DEPTH")
+    c = SchematicCanvas(860, 280, "SECURITY DEFENSE MATRIX", "SECURITY ARCHITECTURE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Network Boundary",
-        "SSRF IP Blocking\nLoopback Defense\nXML Entity Rejection",
+        180,
+        150,
+        "Network Layer",
+        "Blocks internal IPs\nPrevents server exploits",
         "🌐",
         "#38bdf8",
         pill="Boundary Guard",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
+        180,
+        150,
         "Prompt Shield",
-        "Enclosed Untrusted Tags\nZero Inlined Blobs\nInjection Filter",
+        "Encloses untrusted text\nNeutralizes attacks",
         "🛡️",
         "#60a5fa",
         pill="Injection Guard",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Verbatim Ground",
-        "Whitespace-Insensitive\nQuote Match G=1.00\nHallucination Slash",
+        180,
+        150,
+        "Quote Matching",
+        "Exact character match\nEliminates fakes",
         "🔬",
         "#22c55e",
-        pill="Quote Lock G=1.0",
+        pill="Primary Source",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "Crypto Proof",
-        "RFC 8785 Canonical JSON\nEd25519 Signed Envelopes\nImmutable Attest",
+        180,
+        150,
+        "Crypto Seal",
+        "Canonical JSON format\nSigned with Ed25519",
         "🔐",
         "#a855f7",
-        pill="Tamper Seal",
+        pill="Signed Proof",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_fastmcp_protocol() -> str:
     """FastMCP 2.0 Dual Transport Protocol & Tool Architecture."""
-    c = SchematicCanvas(860, 280, "FASTMCP 2.0 DUAL TRANSPORT ARCHITECTURE", "PROTOCOL SPEC")
+    c = SchematicCanvas(860, 280, "FASTMCP PROTOCOL & AGENT TOOLS", "PROTOCOL SPECIFICATION")
     c.node(
-        36,
-        88,
-        220,
-        156,
-        "Client Runtime",
-        "Claude Desktop / Cursor\nAI Agent Autonomous Flow\nStdio / SSE Client",
+        35,
+        84,
+        225,
+        160,
+        "AI Assistants",
+        "Claude Desktop & Cursor\nAutonomous coding agents\nStandard input/output flow",
         "🤖",
         "#38bdf8",
-        pill="AI Assistant",
+        pill="Client Runtime",
     )
     c.node(
-        310,
-        88,
+        312,
+        84,
         240,
-        156,
-        "FastMCP 2.0 Server",
-        "JSON-RPC Protocol Stream\nTools: evaluate, audit\nResources: live reports",
+        160,
+        "FastMCP Server",
+        "Structured JSON tool calls\nLive resource subscriptions\nStandardized prompt templates",
         "⚡",
         "#22c55e",
-        pill="Dual Transport",
+        pill="Tool Protocol",
     )
     c.node(
         590,
-        88,
-        230,
-        156,
-        "Epistemic Backing",
-        "Deterministic Scoring\nEd25519 Signed Attest\nSQLite Storage",
+        84,
+        235,
+        160,
+        "Verification Core",
+        "Deterministic claim scoring\nSigned audit attestations\nDirect local database sync",
         "🔐",
         "#a855f7",
-        pill="Verifiable Facts",
+        pill="Verified Engine",
     )
-    c.arrow(256, 166, 310, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(550, 166, 590, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(260, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(552, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_agent_readable_web() -> str:
     """Agent-Readable Web: FastMCP vs Brittle DOM Scraping."""
-    c = SchematicCanvas(860, 280, "AGENT-READABLE WEB: FASTMCP vs SCRAPING", "DATA INGESTION")
+    c = SchematicCanvas(860, 280, "AGENT READABLE WEB vs FRAGILE SCRAPING", "DATA INGESTION EVOLUTION")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Legacy Web Scraping",
-        "Fragile HTML DOM Parsing\nBot Blocks & CAPTCHAs\nCSS Selector Breakages\nHigh Token Scraping Waste",
+        "Fragile HTML selectors\nBot blocks and captchas\nFrequent layout breakages\nWasted token bandwidth",
         "🕸️",
         "#ef4444",
-        pill="Brittle & High Failure",
+        pill="Fragile & Error Prone",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
-        "FastMCP Semantic Web",
-        "Typed JSON-RPC Resources\nStructured Claim Payload\nZero HTML Tag Overhead\nInstant Machine Grounding",
+        "FastMCP Machine Web",
+        "Typed structured resources\nClean claim assertions\nZero HTML tag overhead\nInstant source grounding",
         "⚡",
         "#22c55e",
-        pill="Reliable Agent Web",
+        pill="Reliable Agent Protocol",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_epistemic_brake() -> str:
     """The Epistemic Brake: Intercepting Agentic Hallucination."""
-    c = SchematicCanvas(860, 280, "EPISTEMIC BRAKE: INTERCEPTING HALLUCINATION", "HALLUCINATION DEFENSE")
+    c = SchematicCanvas(860, 280, "EPISTEMIC BRAKE INTERCEPTOR", "HALLUCINATION DEFENSE")
     c.node(
-        36,
-        88,
-        220,
-        156,
-        "Agent Generates Claim",
-        "LLM Synthesizes Text\nPotential Hallucination\nAsserts Factual Event",
+        35,
+        84,
+        225,
+        160,
+        "AI Drafts Claim",
+        "Model generates statements\nPotential factual errors\nAsserts unverified events",
         "🤖",
         "#f59e0b",
         pill="Unverified Draft",
     )
     c.node(
-        310,
-        88,
+        312,
+        84,
         240,
-        156,
-        "Epistemic Brake Gate",
-        "FastMCP Tool Intercept\nPrimary Source Quote Match\nEnforces G=1.00 Grounding",
+        160,
+        "Epistemic Brake",
+        "Tool intercepts assertion\nDemands exact primary quote\nVerifies real-world source",
         "🛑",
         "#ef4444",
-        pill="Grounding Brake",
+        pill="Citation Check",
     )
     c.node(
         590,
-        88,
-        230,
-        156,
-        "Grounded Output",
-        "Character-Exact Evidence\nVerified Claim Approved\nSigned Crypto Proof",
+        84,
+        235,
+        160,
+        "Verified Output",
+        "Only backed claims accepted\nSigned proof attached\nZero fabricated facts",
         "✅",
         "#22c55e",
-        pill="100% Fact Checked",
+        pill="Fact Checked",
     )
-    c.arrow(256, 166, 310, 166, "#ef4444", marker="url(#arrow-rose)")
-    c.arrow(550, 166, 590, 166, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(260, 164, 312, 164, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(552, 164, 590, 164, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_four_way_parity() -> str:
     """Universal 4-Way Symmetric Feature Parity."""
-    c = SchematicCanvas(860, 280, "UNIVERSAL 4-WAY SYMMETRIC FEATURE PARITY", "INTERFACE PARITY")
+    c = SchematicCanvas(860, 280, "UNIVERSAL 4-WAY INTERFACE PARITY", "SYMMETRIC INTERFACES")
+    c.node(35, 80, 180, 75, "Terminal CLI", "Command line automation\nFull script support", "💻", "#38bdf8")
+    c.node(35, 168, 180, 75, "FastMCP Server", "Native AI assistant tools\nDirect agent workflows", "⚡", "#22c55e")
     c.node(
-        36,
-        80,
-        175,
-        82,
-        "CLI Interface",
-        "credence audit <url>\nTerminal Automation",
-        "💻",
-        "#38bdf8",
-        pill="CLI Parity",
-    )
-    c.node(36, 170, 175, 82, "FastMCP 2.0", "Stdio / SSE RPC\nAgent Integrations", "⚡", "#22c55e", pill="MCP Parity")
-    c.node(
-        245,
+        250,
         95,
-        370,
+        360,
         140,
-        "Credence Core Engine",
-        "compute_* Ontology Math\nRFC 8785 Canonical JSON\nSQLite WAL Persistence\nUnified Logic",
+        "Core Epistemic Engine",
+        "Deterministic audit calculations\nCanonical JSON cryptographic signing\nLocal database persistence\nUnified verification logic",
         "⚙️",
         "#f59e0b",
-        pill="Single Source of Truth",
+        pill="Single Unified Engine",
     )
-    c.node(
-        649, 80, 175, 82, "TUI Workstation", "Terminal UI Console\nInteractive Nav", "🖥️", "#60a5fa", pill="TUI Parity"
-    )
-    c.node(
-        649, 170, 175, 82, "Zero-Build Web", "Vanilla HTML5 / ES\nInteractive Web", "🌐", "#a855f7", pill="Web Parity"
-    )
-    c.arrow(211, 121, 245, 145, "#38bdf8")
-    c.arrow(211, 211, 245, 185, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(615, 145, 649, 121, "#60a5fa")
-    c.arrow(615, 185, 649, 211, "#a855f7", marker="url(#arrow-purple)")
+    c.node(645, 80, 180, 75, "Terminal TUI", "Interactive text console\nDashboard navigation", "🖥️", "#60a5fa")
+    c.node(645, 168, 180, 75, "Zero-Build Web", "Vanilla web client\nInstant responsive UI", "🌐", "#a855f7")
+    c.arrow(215, 117, 250, 145, "#38bdf8")
+    c.arrow(215, 205, 250, 185, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 145, 645, 117, "#60a5fa")
+    c.arrow(610, 185, 645, 205, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_node_germination() -> str:
     """5-Second Zero-Touch Node Germination Sequence."""
-    c = SchematicCanvas(860, 280, "5-SECOND ZERO-TOUCH NODE GERMINATION", "NODE GENESIS")
+    c = SchematicCanvas(860, 280, "ZERO-TOUCH NODE GERMINATION SEQUENCE", "NODE GENESIS")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Keygen Genesis",
-        "Generates Ed25519 Pair\nMints Node Identity\nRoot Seed Anchor",
+        180,
+        150,
+        "Key Genesis",
+        "Generates cryptographic keys\nMints sovereign identity\nAnchors root node seed",
         "🔑",
         "#38bdf8",
-        pill="0.4s Genesis",
+        pill="Identity Initialized",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "Schema Priming",
-        "Initializes SQLite WAL\nLoads Invariant Rules\nPre-Warms Cache",
+        180,
+        150,
+        "Database Setup",
+        "Creates local database\nLoads verification rules\nPre-warms audit cache",
         "💾",
         "#60a5fa",
-        pill="1.1s DB Schema",
+        pill="Schema Primed",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Peer Handshake",
-        "Connects to Mesh Peers\nVerifies Signatures\nSyncs Gossip State",
+        180,
+        150,
+        "Peer Sync",
+        "Connects to trusted peers\nVerifies peer signatures\nSynchronizes gossip state",
         "🤝",
         "#22c55e",
-        pill="2.8s Mesh Sync",
+        pill="Mesh Connected",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
+        180,
+        150,
         "Active Sentry",
-        "Receives Feed Tasks\nCalculates Grounding\nRelays Audits",
+        "Receives real-world feeds\nPerforms quote checks\nShares verified audits",
         "🚀",
         "#a855f7",
-        pill="5.0s Fully Live",
+        pill="Fully Live",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_cold_start_optimization() -> str:
     """Cloud Run Scale-to-Zero Cold Start Optimization."""
-    c = SchematicCanvas(860, 280, "CLOUD RUN SCALE-TO-ZERO OPTIMIZATION", "COLD-BOOT TIMELINE")
+    c = SchematicCanvas(860, 280, "SCALE-TO-ZERO CONTAINER OPTIMIZATION", "CONTAINER LIFECYCLE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Scale-to-Zero",
-        "0 Active Instances\n$0 Idle Infra Cost\nInstant Sleep on Idle",
+        180,
+        150,
+        "Idle Sleep",
+        "Zero running instances\nZero cost while idle",
         "🧊",
         "#38bdf8",
-        pill="Zero Cost Idle",
+        pill="Zero Cost",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "HTTP Request",
-        "Inbound Traffic Spike\nFast Container Spin\nDistroless Optimize",
+        180,
+        150,
+        "Incoming Traffic",
+        "New audit request arrives\nCloud Run triggers start",
         "⚡",
         "#f59e0b",
         pill="Cold Wakeup",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Memory Warmup",
-        "Pre-Warmed State Init\nSQLite Schema Check\nReady for Serving",
+        180,
+        150,
+        "Fast Hydration",
+        "State restored in memory\nReady in under 1.2s",
         "💾",
         "#22c55e",
-        pill="Sub-1.2s Warmup",
+        pill="Fast Boot",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
+        180,
+        150,
         "Active Serving",
-        "Full Throughput\nMicrosecond Latency\nScale to N Instances",
+        "Processes audit request\nLow latency execution",
         "🚀",
         "#a855f7",
         pill="Live Serving",
     )
-    c.arrow(211, 166, 243, 166, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
@@ -1413,54 +1368,46 @@ def diagram_scale_to_zero_storage() -> str:
 
 def diagram_database_wal() -> str:
     """SQLite Write-Ahead Logging & 90-Day Retention Vacuum."""
-    c = SchematicCanvas(860, 280, "SQLITE WAL CONCURRENCY & PRUNING", "STORAGE LIFECYCLE")
+    c = SchematicCanvas(860, 280, "SQLITE CONCURRENCY & PRUNING", "STORAGE ENGINE")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
+        180,
+        150,
         "Writers & Readers",
-        "Concurrent Read Queries\nNon-Blocking Writes\nZero Reader Locks",
+        "Concurrent reader queries\nNon-blocking fast writes",
         "👥",
         "#38bdf8",
-        pill="Concurrent Clients",
+        pill="Concurrency",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "WAL Log File",
-        "Sequential Append Log\nAtomic Transactions\nHigh Write Rate",
+        180,
+        150,
+        "Write-Ahead Log",
+        "Append-only disk log\nAtomic transactions",
         "📝",
         "#60a5fa",
-        pill="credence.db-wal",
+        pill="Append Log",
     )
     c.node(
-        450,
-        88,
-        175,
-        156,
-        "Checkpointing",
-        "Periodic WAL Flush\nSyncs to Main Database\nZero Data Loss",
-        "💾",
-        "#22c55e",
-        pill="Main Database",
+        430, 88, 180, 150, "Checkpointing", "Periodic log flush\nSyncs main database", "💾", "#22c55e", pill="Safe Sync"
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
-        "90-Day Vacuum",
-        "Automated Vacuum\nPrunes Old Records\nPreserves Storage",
+        180,
+        150,
+        "Storage Pruning",
+        "Automated cleanup task\nRemoves expired records",
         "🧹",
         "#a855f7",
-        pill="Storage Pruned",
+        pill="Clean Storage",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
@@ -1468,427 +1415,427 @@ def diagram_disaster_recovery() -> str:
     """Multi-Region Replication & Automated Anycast Failover."""
     c = SchematicCanvas(860, 280, "MULTI-REGION REPLICATION & FAILOVER", "DISASTER RECOVERY")
     c.node(
-        36,
-        88,
-        230,
-        156,
+        35,
+        84,
+        235,
+        160,
         "Primary Region",
-        "Google Cloud Run\nActive SQLite Master\nServing 100% Traffic",
+        "Active compute server\nServing live audit requests\nPrimary local database",
         "🏛️",
         "#22c55e",
-        pill="us-central1 (Active)",
+        pill="Active Serving",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
+        312,
+        84,
+        235,
+        160,
         "Continuous Sync",
-        "Snapshot State Sync\nImmutable Ed25519\nContinuous Probes",
+        "Encrypted snapshot backups\nImmutable audit ledger\nContinuous health checks",
         "🔄",
         "#38bdf8",
-        pill="Cross-Region Sync",
+        pill="Continuous Backup",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
+        590,
+        84,
+        235,
+        160,
         "Standby Region",
-        "Warm Backup Instance\nInstant Anycast Switch\nZero RPO Data Loss",
+        "Warm backup server ready\nInstant DNS failover route\nZero data loss guarantee",
         "🛡️",
         "#a855f7",
-        pill="us-east1 (Standby)",
+        pill="Warm Standby",
     )
-    c.arrow(266, 166, 315, 166, "#38bdf8")
-    c.arrow(545, 166, 594, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(270, 164, 312, 164, "#38bdf8")
+    c.arrow(547, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_gcp_project_isolation() -> str:
     """Single-Project Prefixing vs Dual-Project Hard IAM Boundaries."""
-    c = SchematicCanvas(860, 280, "SINGLE vs DUAL GCP PROJECT BOUNDARIES", "IAM ISOLATION")
+    c = SchematicCanvas(860, 280, "SINGLE vs DUAL CLOUD PROJECT BOUNDARIES", "IAM ISOLATION COMPARISON")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
-        "Single-Project Anti-Pattern",
-        "Shared IAM Permissions\nResource Name Collisions\nAccidental Prod Data Leaks\nShared Workload Identity Pool",
+        "Shared Project Anti-Pattern",
+        "Shared credentials and keys\nResource naming collisions\nAccidental production leaks\nSingle breach compromises all",
         "⚠️",
         "#ef4444",
         pill="High Security Risk",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
-        "Dual-Project Architecture",
-        "credence-dev & credence-prod\nSeparate Keyless WIF Pools\nZero Cross-Project Access\nStrict CI/CD Separation",
+        "Isolated Project Architecture",
+        "Dedicated dev and prod projects\nSeparate identity pools\nZero cross-project access\nStrict role isolation",
         "🛡️",
         "#22c55e",
-        pill="Isolated IAM Boundaries",
+        pill="Hard IAM Boundaries",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_wireguard_mesh() -> str:
     """Encrypted Tailscale WireGuard Point-to-Point Overlay."""
-    c = SchematicCanvas(860, 280, "TAILSCALE WIREGUARD ENCRYPTED OVERLAY", "SECURE OVERLAY")
+    c = SchematicCanvas(860, 280, "ENCRYPTED POINT-TO-POINT OVERLAY MESH", "SECURE MESH NETWORK")
     c.node(
-        36,
-        88,
-        230,
-        156,
-        "Operator Laptop",
-        "Admin Dev Laptop\nTailscale Mesh Node\nDirect DB Inspection",
+        35,
+        84,
+        235,
+        160,
+        "Operator Device",
+        "Admin dev workstation\nCryptographic node key\nDirect database inspector",
         "💻",
         "#38bdf8",
-        pill="Admin Peer",
+        pill="Admin Node",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
-        "WireGuard Overlay",
-        "Point-to-Point Encryption\nAuto NAT Traversal\nZero Open Ports",
+        312,
+        84,
+        235,
+        160,
+        "WireGuard Tunnel",
+        "Point-to-point encryption\nAutomatic NAT traversal\nZero open public ports",
         "🔒",
         "#22c55e",
-        pill="WireGuard Tunnel",
+        pill="Encrypted Tunnel",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
-        "Homelab & Cloud",
-        "Raspberry Pi Clusters\nGoogle Cloud Run Nodes\nEncrypted Mesh Sync",
+        590,
+        84,
+        235,
+        160,
+        "Cluster Nodes",
+        "Raspberry Pi test devices\nCloud Run servers\nSecure private syncing",
         "☁️",
         "#a855f7",
-        pill="Private P2P Subnet",
+        pill="Private Subnet",
     )
-    c.arrow(266, 166, 315, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(545, 166, 594, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_synthetic_slop_collapse() -> str:
     """Model Collapse Degradation vs Verbatim Grounding."""
-    c = SchematicCanvas(860, 280, "SYNTHETIC MODEL COLLAPSE vs GROUNDING", "EPISTEMIC RECOVERY")
+    c = SchematicCanvas(860, 280, "SYNTHETIC MODEL COLLAPSE vs GROUNDING", "EPISTEMIC SIGNAL RECOVERY")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Recursive Synthetic Slop",
-        "Model Trained on Model Output\nProbability Tails Extinguished\nError Compounding Spiral\nEpistemic Degeneracy",
+        "Model trained on model output\nInformation richness lost\nCompounding errors over time\nDegraded output quality",
         "📉",
         "#ef4444",
-        pill="Model Collapse Spiral",
+        pill="Model Degeneration",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
-        "Verbatim Primary Grounding",
-        "Anchored to Source DOM\nExact Character Offset (G=1.0)\nHallucinations Slashed 50%\nPreserves Ground Truth",
+        "Primary Grounding",
+        "Anchored to source documents\nExact character quotation\nHallucinations penalized\nPreserves ground truth",
         "🔬",
         "#22c55e",
-        pill="Grounded Truth Anchor",
+        pill="Anchored to Reality",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_dead_internet_immune_system() -> str:
     """The Dead Internet Immune System: Multi-Tier Bot Defense."""
-    c = SchematicCanvas(860, 280, "THE DEAD INTERNET IMMUNE SYSTEM", "BOT DEFENSE")
+    c = SchematicCanvas(860, 280, "THE DEAD INTERNET IMMUNE SYSTEM", "BOT DEFENSE MATRIX")
     c.node(
-        36,
+        30,
         88,
-        175,
-        156,
-        "Entropy Filter",
-        "Detects Synthetic Slop\nFlags Collapsed Variance\nQuarantines Bot Feeds",
+        180,
+        150,
+        "Spam Filter",
+        "Detects synthetic text\nFlags collapsed diversity\nQuarantines bot campaigns",
         "🤖",
         "#ef4444",
-        pill="H < 0.30 Quarantine",
+        pill="Bot Detection",
     )
     c.node(
-        243,
+        230,
         88,
-        175,
-        156,
-        "FastMCP Ingest",
-        "Structured JSON-RPC Stream\nDirect Machine Schemas\nBypasses Scraping",
+        180,
+        150,
+        "Clean Ingestion",
+        "Structured machine protocol\nTyped JSON data feeds\nBypasses brittle scraping",
         "⚡",
         "#38bdf8",
-        pill="Typed RPC Protocol",
+        pill="Typed Protocol",
     )
     c.node(
-        450,
+        430,
         88,
-        175,
-        156,
-        "Verbatim Check",
-        "Character-Offset Grounding\nVerifies Source Quotes\nZero Hallucination Pass",
+        180,
+        150,
+        "Quote Matching",
+        "Exact character offsets\nVerifies source citations\nRejects ungrounded claims",
         "🔬",
         "#22c55e",
-        pill="Exact Quote (G=1.0)",
+        pill="Quote Verified",
     )
     c.node(
-        657,
+        630,
         88,
-        175,
-        156,
+        180,
+        150,
         "Signed Proof",
-        "RFC 8785 Canonical JSON\nEd25519 Root Seal\nImmutable Attestation",
+        "Canonical JSON format\nCryptographic signature\nImmutable truth audit",
         "🔐",
         "#a855f7",
-        pill="Sovereign Attest",
+        pill="Immutable Seal",
     )
-    c.arrow(211, 166, 243, 166, "#38bdf8")
-    c.arrow(418, 166, 450, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(625, 166, 657, 166, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(210, 163, 230, 163, "#38bdf8")
+    c.arrow(410, 163, 430, 163, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(610, 163, 630, 163, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_traffic_shaping_merit() -> str:
     """5-Factor Peer Quality Traffic Shaping Topology."""
-    c = SchematicCanvas(860, 280, "5-FACTOR PEER QUALITY & TRAFFIC TIERS", "PEER MERIT")
+    c = SchematicCanvas(860, 280, "PEER QUALITY & TRAFFIC TIERS", "PEER REPUTATION")
     c.node(
-        36,
-        88,
-        230,
-        156,
-        "5-Factor Formula",
-        "Qi = 0.25U + 0.30C + 0.25G\nPlus 0.10T + 0.10K Factors\nEvaluates Reliability",
+        35,
+        84,
+        235,
+        160,
+        "Trust Scoring",
+        "Evaluates node uptime\nMeasures citation accuracy\nScores peer reliability",
         "📊",
         "#38bdf8",
-        pill="Reputation Formula",
+        pill="Reputation Score",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
-        "Merit Tiers",
-        "Tier 1: High Priority\nTier 2: Standard Relay\nTier 3: Probation Tier",
+        312,
+        84,
+        235,
+        160,
+        "Priority Tiers",
+        "Tier 1: High priority tasks\nTier 2: Standard sharing\nTier 3: Probation status",
         "🏅",
         "#22c55e",
-        pill="Bandwidth Priority",
+        pill="Task Allocation",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
-        "Quarantine Gate",
-        "Scores < 0.30 Isolated\nZero Gossip Relay Rights\nProtects Quorum",
+        590,
+        84,
+        235,
+        160,
+        "Rogue Isolation",
+        "Low-scoring nodes isolated\nRelay rights revoked\nProtects network consensus",
         "🛑",
         "#ef4444",
-        pill="Sybil Quarantine",
+        pill="Rogue Quarantine",
     )
-    c.arrow(266, 166, 315, 166, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(545, 166, 594, 166, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(270, 164, 312, 164, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(547, 164, 590, 164, "#ef4444", marker="url(#arrow-rose)")
     return c.render()
 
 
 def diagram_anti_tamper_badge() -> str:
     """WebCrypto Anti-Tamper Badge DOM Mutation Integrity."""
-    c = SchematicCanvas(860, 280, "WEBCRYPTO ANTI-TAMPER BADGE INTEGRITY", "CLIENT-SIDE SECURITY")
+    c = SchematicCanvas(860, 280, "CLIENT-SIDE ANTI-TAMPER BADGE", "CLIENT SECURITY")
     c.node(
-        36,
-        88,
-        230,
-        156,
-        "Grounded Article",
-        "Article Published to DOM\nAttestation Badge Mounted\nInitial SHA-256 Sealed",
+        35,
+        84,
+        235,
+        160,
+        "Published Article",
+        "Article published to web\nAttestation badge mounted\nInitial text hash sealed",
         "📄",
         "#22c55e",
         pill="Verified Badge (Green)",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
-        "Mutation Watcher",
-        "WebCrypto Hashes DOM\nMonitors Post-Publish Edits\nDetects Bait & Switch",
+        312,
+        84,
+        235,
+        160,
+        "Tamper Watcher",
+        "Browser verifies text hash\nMonitors stealth post edits\nDetects bait and switch",
         "🔬",
         "#f59e0b",
-        pill="SHA-256 Check",
+        pill="Integrity Monitoring",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
-        "Tamper Alarm",
-        "Hash Mismatch Triggered\nBadge Flips to Red Warning\nProtects Reader Trust",
+        590,
+        84,
+        235,
+        160,
+        "Tamper Warning",
+        "Hash mismatch detected\nBadge switches to red alert\nWarns readers immediately",
         "🚨",
         "#ef4444",
         pill="Tampered (Red Alert)",
     )
-    c.arrow(266, 166, 315, 166, "#f59e0b", marker="url(#arrow-amber)")
-    c.arrow(545, 166, 594, 166, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(270, 164, 312, 164, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(547, 164, 590, 164, "#ef4444", marker="url(#arrow-rose)")
     return c.render()
 
 
 def diagram_subagent_parenthood() -> str:
     """Subagent Parenthood & Branched Workspace Task Delegation."""
-    c = SchematicCanvas(860, 280, "SUBAGENT PARENTHOOD & WORKSPACE DELEGATION", "MULTI-AGENT TOPOLOGY")
+    c = SchematicCanvas(860, 280, "SUBAGENT TASK DELEGATION TOPOLOGY", "AGENT ORCHESTRATION")
     c.node(
-        36,
+        35,
         95,
-        200,
+        205,
         140,
         "Parent Agent",
-        "Overall Task Orchestration\nDecomposes Sub-Tasks\nSynthesizes Responses",
+        "Coordinates overall task\nBreaks down components\nSynthesizes findings",
         "🧠",
         "#38bdf8",
-        pill="Main Coordinator",
+        pill="Coordinator",
     )
     c.node(
         310,
         75,
-        235,
+        240,
         78,
-        "Subagent Research",
-        "Explores Codebase & Docs\nRead-Only Sandbox Mode",
+        "Research Subagent",
+        "Explores codebase & docs\nOperates in read-only mode",
         "🔍",
         "#60a5fa",
-        pill="Branch: feat/research",
+        pill="Read-Only Branch",
     )
     c.node(
         310,
         165,
-        235,
+        240,
         78,
-        "Subagent Refactor",
-        "Executes Atomic Edits\nHermetic Unit Tests",
+        "Execution Subagent",
+        "Applies targeted code edits\nRuns automated test gates",
         "⚡",
         "#22c55e",
-        pill="Branch: feat/refactor",
+        pill="Targeted Edit Branch",
     )
     c.node(
         600,
         95,
         225,
         140,
-        "Merged Result",
-        "Proactive Task Wakeups\nContext Economy Preserved\nClean Atomic Commits",
+        "Consolidated Result",
+        "Proactive agent notifications\nContext economy preserved\nClean atomic git commit",
         "🎯",
         "#a855f7",
-        pill="Merged Production",
+        pill="Merged Output",
     )
-    c.arrow(236, 130, 310, 114, "#60a5fa")
-    c.arrow(236, 200, 310, 204, "#22c55e", marker="url(#arrow-emerald)")
-    c.arrow(545, 114, 600, 130, "#a855f7", marker="url(#arrow-purple)")
-    c.arrow(545, 204, 600, 200, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(240, 130, 310, 114, "#60a5fa")
+    c.arrow(240, 200, 310, 204, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(550, 114, 600, 130, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(550, 204, 600, 200, "#a855f7", marker="url(#arrow-purple)")
     return c.render()
 
 
 def diagram_token_headroom() -> str:
     """Token Headroom Budgeting & Circuit Breaker Margin."""
-    c = SchematicCanvas(860, 280, "TOKEN HEADROOM BUDGETING & PRESERVATION", "TOKEN BUDGET")
+    c = SchematicCanvas(860, 280, "TOKEN HEADROOM BUDGETING & PRESERVATION", "TOKEN GOVERNANCE")
     c.node(
-        36,
-        88,
-        230,
-        156,
-        "Active Prompt Zone",
-        "Up to 4,000 Tokens\nCore Instructions\nContext Efficient Inputs",
+        35,
+        84,
+        235,
+        160,
+        "Active Instructions",
+        "Core task instructions\nCompact context memory\nClean, efficient prompts",
         "💬",
         "#38bdf8",
         pill="Working Memory",
     )
     c.node(
-        315,
-        88,
-        230,
-        156,
-        "Thinking Headroom",
-        "Extended Reasoning Zone\nEpistemic Deductions\nGemini 3.7 Thinking",
+        312,
+        84,
+        235,
+        160,
+        "Thinking Space",
+        "Extended reasoning zone\nComplex deductive logic\nDeep analysis headroom",
         "🧠",
         "#a855f7",
         pill="Reasoning Budget",
     )
     c.node(
-        594,
-        88,
-        230,
-        156,
-        "Reserved 30% Zone",
-        "Protects from Overages\nQUOTA_PRESERVED Trigger\nPrevents Starvation",
+        590,
+        84,
+        235,
+        160,
+        "Safety Margin",
+        "30% buffer preserved\nPrevents sudden cutoffs\nProtects active session",
         "🛑",
         "#f59e0b",
         pill="Circuit Breaker",
     )
-    c.arrow(266, 166, 315, 166, "#a855f7", marker="url(#arrow-purple)")
-    c.arrow(545, 166, 594, 166, "#f59e0b", marker="url(#arrow-amber)")
+    c.arrow(270, 164, 312, 164, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(547, 164, 590, 164, "#f59e0b", marker="url(#arrow-amber)")
     return c.render()
 
 
 def diagram_anti_diploma() -> str:
     """The Anti-Diploma Invariant: Primary Evidence over Authority."""
-    c = SchematicCanvas(860, 280, "THE ANTI-DIPLOMA INVARIANT: EVIDENCE OVER AUTHORITY", "EPISTEMIC STANDARDS")
+    c = SchematicCanvas(860, 280, "EVIDENCE OVER AUTHORITY", "EPISTEMIC STANDARDS")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Authority Credential Bias",
-        "Institutional Checkmarks\nTitles & Academic Pedigree\nUnverified Press Releases\nArgumentum ad Verecundiam",
+        "Institutional checkmarks\nFormal job titles and status\nUnverified press statements\nAppeal to authority fallacy",
         "🎓",
         "#ef4444",
-        pill="Disqualified Signal",
+        pill="Disqualified Metric",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
-        "Verbatim Primary Grounding",
-        "Exact DOM Quote Offset G=1.0\nDirect Public Records Evidence\nCryptographic Attestation Hash\nEmpirical Ground Truth",
+        "Verifiable Evidence",
+        "Exact source quotation\nPublic records audit trail\nCryptographic signed proof\nInspectable ground truth",
         "🔬",
         "#22c55e",
-        pill="Sovereign Truth Standard",
+        pill="Objective Evidence",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
 def diagram_crawler_commons() -> str:
     """The Tragedy of the Crawler Commons & Polite P2P Sharing."""
-    c = SchematicCanvas(860, 280, "THE CRAWLER COMMONS: P2P SHARING vs DDOS", "COOPERATIVE CRAWLING")
+    c = SchematicCanvas(860, 280, "COOPERATIVE CRAWLING vs SCRAPER FLOODS", "COOPERATIVE INGESTION")
     c.node(
-        36,
+        35,
         80,
         360,
         170,
         "Uncoordinated Crawlers",
-        "100 Independent Scrapers\nHammering Small News Outlets\nServer Outages & IP Bans\nTragedy of the Commons",
+        "Dozens of redundant scrapers\nHammering local publishers\nServer slowdowns and bans\nTragedy of the commons",
         "💥",
         "#ef4444",
-        pill="Server Degradation",
+        pill="Overloaded Servers",
     )
     c.node(
-        464,
+        465,
         80,
         360,
         170,
-        "Cooperative P2P Gossip",
-        "Single Ingestion Crawl\nGossip Shared Attestations\nAdaptive Rate Limiting\nProtects Local Web Hosts",
+        "Cooperative P2P Sharing",
+        "Single polite crawl\nShared verified attestations\nAdaptive rate limits\nProtects independent web",
         "🤝",
         "#22c55e",
-        pill="Shared Ingestion Mesh",
+        pill="Shared Ingestion",
     )
-    c.arrow(396, 165, 464, 165, "#22c55e", marker="url(#arrow-emerald)")
+    c.arrow(395, 165, 465, 165, "#22c55e", marker="url(#arrow-emerald)")
     return c.render()
 
 
