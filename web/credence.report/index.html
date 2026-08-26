@@ -342,8 +342,8 @@
                     <!-- ===================================================================
                WORKSPACE 2: BROWSE DIRECTORY & SOURCE DOSSIERS (UNIFIED)
                =================================================================== -->
-          <div id="tab-browse" class="tab-panel" style="height: 100%; overflow: hidden;">
-            <div class="deck-card" style="padding:1.25rem; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+          <div id="tab-browse" class="tab-panel" style="height: 100%; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="deck-card" style="padding:1.25rem; height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; flex: 1;">
               
               <!-- Browse Header with Subview Switcher -->
               <div id="browse-header-banner" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.85rem; margin-bottom:0.85rem;">
@@ -372,7 +372,7 @@
               <!-- ===============================================================
                    SUBVIEW A: CURATED ARTICLES CATALOG
                    =============================================================== -->
-              <div id="browse-subview-articles" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+              <div id="browse-subview-articles" style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
                 <!-- Quick Category Filter Chips -->
                 <div style="display:flex; gap:0.4rem; margin-bottom:0.75rem; flex-wrap:wrap; align-items:center;">
                   <span style="font-size:0.75rem; color:var(--text-dim); font-weight:600;">Category:</span>
@@ -394,7 +394,7 @@
               <!-- ===============================================================
                    SUBVIEW B: PUBLISHER CATALOG & INLINE DOSSIER VIEW
                    =============================================================== -->
-              <div id="browse-subview-sources" style="flex: 1; display: none; flex-direction: column; overflow: hidden;">
+              <div id="browse-subview-sources" style="flex: 1; min-height: 0; display: none; flex-direction: column; overflow: hidden;">
                 
                 <!-- Publisher Catalog Grid (Shown when browsing all publishers) -->
                 <div id="publishers-catalog-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
@@ -413,61 +413,66 @@
                 </div>
 
                 <!-- Detailed Publisher Dossier View (Shown when a specific publisher is opened) -->
-                <div id="publisher-detail-container" style="display:none; flex-direction:column; gap:0.75rem;">
-                  <!-- Executive Header & Navigation Bar -->
-                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.65rem 0.85rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem;">
+                <div id="publisher-detail-container" class="ws-scroll-pane" style="display:none; flex-direction:column; gap:0.75rem; flex:1; min-height:0; overflow-y:auto; padding-right:0.35rem;">
+                  <!-- Executive Header & Prominent DCI Hero Banner -->
+                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.85rem;">
                     <!-- Left: Navigation & Publisher Identity -->
-                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-                      <button type="button" class="btn-secondary" style="font-size:0.78rem; padding:0.25rem 0.6rem;" onclick="closePublisherDetail()">
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; flex:1; min-width:280px;">
+                      <button type="button" class="btn-secondary" style="font-size:0.78rem; padding:0.3rem 0.65rem;" onclick="closePublisherDetail()">
                         &larr; Back to Publishers
                       </button>
                       <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                        <h2 id="dossier-domain-title" style="font-size:1.15rem; color:#fff; margin:0; font-family:var(--font-mono); font-weight:700;">inmaricopa.com</h2>
-                        <span class="badge" id="dossier-tier-badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid #f59e0b; border-radius:9999px; padding:0.12rem 0.5rem; font-size:0.7rem; font-weight:bold;">TIER C (WATCHLIST CASE STUDY)</span>
-                        <button id="dossier-pin-btn" class="btn-secondary" style="font-size:0.7rem; padding:0.12rem 0.45rem;" onclick="window.togglePinDossierDomain()" title="Pin this publisher">📌 Pin</button>
+                        <h2 id="dossier-domain-title" style="font-size:1.25rem; color:#fff; margin:0; font-family:var(--font-mono); font-weight:700;">inmaricopa.com</h2>
+                        <span class="badge" id="dossier-tier-badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid #f59e0b; border-radius:9999px; padding:0.15rem 0.55rem; font-size:0.72rem; font-weight:bold;">TIER C (WATCHLIST CASE STUDY)</span>
+                        <button id="dossier-pin-btn" class="btn-secondary" style="font-size:0.72rem; padding:0.15rem 0.45rem;" onclick="window.togglePinDossierDomain()" title="Pin this publisher">📌 Pin</button>
                         <button class="info-btn" onclick="window.CredenceWS.openInfoModal('dossier')" title="Info: Source Dossier">ℹ</button>
                       </div>
-                      <div id="dossier-domain-desc" style="color:var(--text-dim); font-size:0.78rem; max-width:480px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        Conflict of Pun-terest Case Study • Governance COI &amp; Native Advertorial Forensics
+                      <div id="dossier-domain-desc" style="color:var(--text-dim); font-size:0.8rem; line-height:1.4; width:100%;">
+                        Conflict of Pun-terest Case Study • Governance Conflict of Interest &amp; Native Advertorial Forensics
                       </div>
                     </div>
 
-                    <!-- Right: DCI Score Dial & Actions -->
-                    <div style="display:flex; align-items:center; gap:0.85rem;">
-                      <div style="display:flex; align-items:center; gap:0.45rem; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:4px; padding:0.2rem 0.6rem;">
-                        <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">DCI Score:</span>
-                        <span id="dossier-dci-score" style="font-size:1.15rem; font-weight:800; font-family:var(--font-mono); color:#f59e0b; line-height:1;">48.5</span>
+                    <!-- Right: Prominent Executive DCI Score Hero & Actions -->
+                    <div style="display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+                      <div style="display:flex; align-items:center; gap:0.75rem; background:rgba(0,0,0,0.4); border:1px solid rgba(245, 158, 11, 0.35); border-radius:8px; padding:0.4rem 0.85rem; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                        <div style="text-align:right;">
+                          <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Domain Credibility Index</div>
+                          <div style="font-size:0.72rem; color:#f59e0b; font-weight:700;" id="dossier-dci-rating-label">Watchlist Rating</div>
+                        </div>
+                        <div id="dossier-dci-score" style="font-size:1.85rem; font-weight:900; font-family:var(--font-mono); color:#f59e0b; line-height:1;">48.5</div>
                       </div>
-                      <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="switchBrowseSubview('articles')">
-                        📑 Articles Hub
-                      </button>
-                      <button type="button" class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" id="btn-dossier-search-filter" onclick="filterSearchByDomain(window.currentDomain || 'inmaricopa.com')">
-                        🔍 Filter in Search ↗
-                      </button>
+                      <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                        <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="switchBrowseSubview('articles')">
+                          📑 Articles Hub
+                        </button>
+                        <button type="button" class="btn-primary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" id="btn-dossier-search-filter" onclick="filterSearchByDomain(window.currentDomain || 'inmaricopa.com')">
+                          🔍 Filter in Search ↗
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <!-- Publisher Vitals & Trajectory Strip (Compact 4-Column Grid) -->
+                  <!-- Publisher Vitals Strip (Compact 4-Column Grid) -->
                   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.5rem;">
-                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                    <div class="dossier-stat-card" style="padding:0.5rem 0.75rem; gap:0.15rem;">
                       <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Curated Audits</span>
-                      <div id="dossier-stat-audits" style="font-weight:700; color:#fff; font-size:0.9rem;">5 Verified Audits</div>
+                      <div id="dossier-stat-audits" style="font-weight:700; color:#fff; font-size:0.95rem;">5 Verified Audits</div>
                       <div style="font-size:0.65rem; color:var(--accent-green);" id="dossier-stat-audits-sub">Verified Source Text (Zero Truncation)</div>
                     </div>
-                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                    <div class="dossier-stat-card" style="padding:0.5rem 0.75rem; gap:0.15rem;">
                       <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Syndication Feed</span>
-                      <div id="dossier-stat-syndication" style="font-weight:700; color:#fff; font-size:0.9rem;">● Active RSS (15m)</div>
+                      <div id="dossier-stat-syndication" style="font-weight:700; color:#fff; font-size:0.95rem;">● Active RSS (15m)</div>
                       <div style="font-size:0.65rem; color:var(--text-dim);" id="dossier-stat-syndication-sub">Continuous News Feed Surveillance</div>
                     </div>
-                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                    <div class="dossier-stat-card" style="padding:0.5rem 0.75rem; gap:0.15rem;">
                       <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Violation History</span>
-                      <div id="dossier-stat-violations" style="font-weight:700; color:#fff; font-size:0.9rem;">6 Epistemic Violations</div>
+                      <div id="dossier-stat-violations" style="font-weight:700; color:#fff; font-size:0.95rem;">6 Epistemic Violations</div>
                       <div style="font-size:0.65rem; color:var(--accent-rose);" id="dossier-stat-violations-sub">Governance Conflicts &amp; Native Advertorials</div>
                     </div>
-                    <div class="dossier-stat-card" style="padding:0.45rem 0.65rem; gap:0.1rem;">
+                    <div class="dossier-stat-card" style="padding:0.5rem 0.75rem; gap:0.15rem;">
                       <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Publisher Assessment</span>
-                      <div id="dossier-trajectory-stat" style="font-weight:700; color:var(--text-muted); font-size:0.82rem; font-family:var(--font-mono);">Watchlist • High Conflict Risk</div>
-                      <div id="dossier-trajectory-summary" style="font-size:0.65rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Governance conflicts &amp; native promotions</div>
+                      <div id="dossier-trajectory-stat" style="font-weight:700; color:var(--text-muted); font-size:0.85rem;">Watchlist • High Conflict Risk</div>
+                      <div id="dossier-trajectory-summary" style="font-size:0.68rem; color:var(--text-dim); line-height:1.3;">Monitored for undisclosed politician ownership and native advertising promotions.</div>
                     </div>
                   </div>
 
@@ -491,15 +496,15 @@
                         <div>
                           <div style="color:var(--text-dim); font-size:0.7rem; text-transform:uppercase; font-weight:700;">Grounding &amp; Custody Proof:</div>
                           <div style="font-family:var(--font-mono); font-size:0.75rem; color:#e2e8f0; margin-top:0.15rem;" id="dossier-math-crypto">
-                            G = 1.00 (RFC 8785 Ed25519 Verified)
+                            G = 1.00 (RFC 8785 Canonical JSON Envelope Verified)
                           </div>
                         </div>
                       </div>
                     </div>
                   </details>
 
-                  <!-- Full-Stage Audited Articles Table -->
-                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; gap:0.6rem; flex:1;">
+                  <!-- Full-Stage Audited Articles Table (Fully Scrollable) -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; gap:0.6rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
                       <div style="display:flex; align-items:center; gap:0.6rem;">
                         <h3 style="font-size:0.95rem; color:#fff; margin:0; font-weight:700;">Audited Articles from this Source</h3>
@@ -520,12 +525,11 @@
                           </tr>
                         </thead>
                         <tbody id="dossier-articles-body">
-                          <!-- Populated dynamically -->
+                          <!-- Populated dynamically via viewSourceDossier() -->
                         </tbody>
                       </table>
                     </div>
                   </div>
-
                 </div>
               </div>
 
@@ -913,8 +917,8 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS Wire (15m)",
         violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 100.0% • Bayesian α=412, β=1",
-        trajectorySummary: "Longitudinal publisher credibility evaluated across continuous multi-year ingestion. Consistent empirical attribution and strict adherence to wire service journalistic standards.",
+        trajectoryStat: "Pristine • Wire Standard",
+        trajectorySummary: "Consistent empirical attribution and strict adherence to wire service journalistic standards across longitudinal audits.",
         articles: [
           {
             title: "Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports",
@@ -954,7 +958,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active Wire Feed (10m)",
         violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 100.0% • Bayesian α=389, β=1",
+        trajectoryStat: "Pristine • Independent Wire",
         trajectorySummary: "Unbroken record of rigorous primary sourcing, on-the-record official verification, and immediate transparent corrections.",
         articles: [
           {
@@ -987,8 +991,8 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active DOI Feed (30m)",
         violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 100.0% • Bayesian α=288, β=0",
-        trajectorySummary: "Gold-standard scientific publishing with formal peer review and transparent methodology disclosures. All spectroscopic data verified against primary astronomical registries.",
+        trajectoryStat: "Pristine • Peer-Reviewed Science",
+        trajectorySummary: "Gold-standard scientific publishing with formal peer review and transparent methodology disclosures. All data verified against primary registries.",
         articles: [
           {
             title: "Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b",
@@ -1020,7 +1024,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active Feed (1h)",
         violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 100.0% • Bayesian α=164, β=1",
+        trajectoryStat: "Pristine • Public Interest",
         trajectorySummary: "Exemplary investigative reporting backed by published public records, FOIA documents, and transparent data methodologies.",
         articles: [
           {
@@ -1045,7 +1049,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (15m)",
         violationsCount: "1 Minor Retraction Disclosure",
-        trajectoryStat: "30d Stability: 99.4% • Bayesian α=338, β=2",
+        trajectoryStat: "High Integrity • Global Broadcaster",
         trajectorySummary: "Comprehensive global bureau reporting with established editorial standards and clear correction logging.",
         articles: [
           {
@@ -1070,7 +1074,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (30m)",
         violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 98.8% • Bayesian α=190, β=2",
+        trajectoryStat: "High Integrity • Tech Journalism",
         trajectorySummary: "Detailed technical analysis with direct links to whitepapers, benchmark logs, and verified repository commits.",
         articles: [
           {
@@ -1095,8 +1099,8 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active Feed (1h)",
         violationsCount: "0 Factual Violations (Poe Protected)",
-        trajectoryStat: "30d Stability: 100.0% • Satire Neutrality",
-        trajectorySummary: "Recognized parody outlet. Factual allegations evaluated for cloaking overrides (SPJ-1.6) and cleared of malicious defamatory or public health misrepresentations.",
+        trajectoryStat: "Protected • Legitimate Parody",
+        trajectorySummary: "Recognized parody outlet. Factual allegations evaluated for cloaking overrides and cleared of malicious defamatory misrepresentations.",
         articles: [
           {
             title: "Golden Retriever Elected Mayor in Historic Landslide After Promising More Park Visits",
@@ -1128,7 +1132,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active Feed (1h)",
         violationsCount: "0 Factual Violations",
-        trajectoryStat: "30d Stability: 100.0% • Satire Neutrality",
+        trajectoryStat: "Protected • Political Satire",
         trajectorySummary: "Political and cultural satire evaluated under Poe's Law neutrality with zero cloaking violations.",
         articles: [
           {
@@ -1153,8 +1157,8 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (15m)",
         violationsCount: "6 Epistemic Violations (COI & Advertorial)",
-        trajectoryStat: "30d Stability: 48.5% • Bayesian α=18, β=22",
-        trajectorySummary: "Empirical case study auditing publisher-politician conflict of interest (R_COI=0.44), undisclosed native advertorials (ASI=52.0), and uncorroborated single-source police blotter pass-through.",
+        trajectoryStat: "Watchlist • High Conflict Risk",
+        trajectorySummary: "Monitored for undisclosed councilmember co-ownership, native advertorial marketing, and police press release republishing.",
         articles: [
           {
             title: "Copper Sky Land Sale is No Scandal, Council Records Show",
@@ -1210,7 +1214,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (20m)",
         violationsCount: "5 Editorial Framing Queries",
-        trajectoryStat: "30d Stability: 91.5% • Bayesian α=192, β=18",
+        trajectoryStat: "Tier B • Monitored Tech Media",
         trajectorySummary: "Broad technology coverage with clear editorial voice; high attribution rigor on hardware benchmarks with occasional subjective review framing.",
         articles: [
           {
@@ -1235,7 +1239,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (2h)",
         violationsCount: "2 Minor Attribution Omissions",
-        trajectoryStat: "30d Stability: 94.8% • Bayesian α=74, β=4",
+        trajectoryStat: "Tier B • High Integrity Regional",
         trajectorySummary: "High-quality investigative and narrative longform journalism covering state politics, conservation, and cultural history.",
         articles: [
           {
@@ -2274,7 +2278,10 @@
       const detBox = document.getElementById('publisher-detail-container');
       if (banner) banner.style.display = 'none';
       if (catBox) catBox.style.display = 'none';
-      if (detBox) detBox.style.display = 'flex';
+      if (detBox) {
+        detBox.style.display = 'flex';
+        detBox.scrollTop = 0;
+      }
 
       if (pushHistory) {
         history.pushState({ tab: 'browse', domain: domain }, '', '#analytics/' + domain);
@@ -2353,10 +2360,15 @@
         dciScore.textContent = rawPub.dciScore;
         dciScore.style.color = rawPub.tierColor;
       }
+      const ratingLabel = document.getElementById('dossier-dci-rating-label');
+      if (ratingLabel) {
+        ratingLabel.textContent = rawPub.tierBadge ? rawPub.tierBadge.replace(/^[A-Z]+\s+[A-Z]+\s+\((.*)\)$/, '$1').trim() : "Watchlist Rating";
+        ratingLabel.style.color = rawPub.tierColor || "#f59e0b";
+      }
       if (statAudits) statAudits.textContent = `${totalAuditsCount} Verified Audit${totalAuditsCount === 1 ? '' : 's'}`;
       if (statSyn) statSyn.textContent = rawPub.syndication || "● Active Ingestion";
       if (statViol) statViol.textContent = rawPub.violationsCount || `${matchingArticles.filter(a => parseFloat(a.score) > 20).length} Epistemic Violations`;
-      if (trajStat) trajStat.textContent = rawPub.trajectoryStat || "30d Stability: 100%";
+      if (trajStat) trajStat.textContent = rawPub.trajectoryStat || "Watchlist • Monitored Source";
       if (trajSummary) trajSummary.textContent = rawPub.trajectorySummary || "Continuous monitoring across all published articles.";
       if (countLabel) countLabel.textContent = `Showing all ${totalAuditsCount} verified audit${totalAuditsCount === 1 ? '' : 's'}`;
 
@@ -2371,7 +2383,7 @@
         mathBayesian.textContent = `α = 18, β = 22, Entropy H = 0.42, Flagged Audits: ${matchingArticles.filter(a => parseFloat(a.score) > 20).length}`;
       }
       if (mathCrypto) {
-        mathCrypto.textContent = `Root Ed25519: 9580dc91...4cd0 • RFC 8785 Canonical JSON Envelope Verified`;
+        mathCrypto.textContent = `Root Ed25519: 9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0 • RFC 8785 Canonical JSON Envelope Verified`;
       }
 
       const tableBody = document.getElementById('dossier-articles-body');
