@@ -11,6 +11,26 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.17.3] - 2026-08-26
+
+### Added
+- **Universal Custom Scrollbar Styling & Governance Contract (`credence-ui.css`, `test_web.py`)**:
+  - Extended sleek 6px cyan-accented custom scrollbars across all scrollable containers and tab panels (`*`, `html`, `body`, `.tab-panel`, `.tab-panel.active`, `#tab-search`, `#search-results-list`, `.ws-scroll-pane`, `.ws-table-container`, `#sifter-stream-container`).
+  - Added shift-left governance test `test_universal_scrollbar_styling_invariant` in `tests/governance/test_web.py` to prevent unstyled scrollbar regressions.
+- **Contextual Cross-Linking & Human-Readable Surface Lensing (`credence.report/index.html`)**:
+  - Removed all mathematical notation and formula jargon ($G=1.00$, $\Delta St$) from Surface Glance (Lens 1) in favor of clear qualitative takeaways and plain-English executive verdicts.
+  - Implemented interactive contextual cross-linking hub with direct Publisher Dossier links, related audits list with 1-click inspect, standalone verification certificate links, and revision diff timeline links.
+  - Converted Search Landing screen into an interactive exploration hub with 4 featured case studies, publisher profile quick chips, and forensic issue filter shortcuts.
+
+### Fixed
+- **Workstation Tab Panel Vertical Scrolling Invariant (`credence-ui.css`, `test_web.py`)**:
+  - Restored vertical mouse wheel scrolling across multi-card workstation tabs by setting `.tab-panel.active` to `display: flex !important; flex-direction: column; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden;`.
+  - Added automated 7-view Playwright scroll matrix assertion in `test_workstation_scroll_and_lensing_governance`.
+- **Dynamic Category Filter Counts & Full-Height Viewports (`credence.report/index.html`)**:
+  - Implemented dynamic database category counts `updateCategoryCounts()` (`All Audits (20)`, `Clean Wire (5)`, `Flagged Violations (12)`, `Satire (2)`, `Local (6)`).
+  - Maximized vertical viewport height for DCI Honor Roll and Sifter Ingestion Stream.
+  - Realigned Publisher Dossier header with top-right DCI Hero Score and stacked action buttons.
+
 ## [2.17.2] - 2026-08-25
 
 ### Fixed
