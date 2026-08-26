@@ -1971,10 +1971,17 @@ def test_all_registered_playgrounds_have_active_dom_mounts(docs_root: Path) -> N
     app_js = docs_root / "app.js"
     app_js_text = app_js.read_text(encoding="utf-8")
 
-    # Verify mount handler calls in handleRoute()
-    assert "mountContentEvolutionLab();" in app_js_text, "app.js handleRoute must invoke mountContentEvolutionLab()"
-    assert "mountBadgeSecurityLab();" in app_js_text, "app.js handleRoute must invoke mountBadgeSecurityLab()"
-    assert "setupPlaygroundWidgets();" in app_js_text, "app.js handleRoute must invoke setupPlaygroundWidgets()"
+    # Verify mount handler calls in loadDocument() and handleRoute()
+    interactive_handlers = [
+        "mountContentEvolutionLab",
+        "mountBadgeSecurityLab",
+        "setupPlaygroundWidgets",
+        "setupInMaricopaCaseStudyWidget",
+        "setupInvariantsPageInteractivity",
+    ]
+    for handler in interactive_handlers:
+        assert f"{handler}();" in app_js_text, f"app.js must invoke {handler}() in document routing/loading"
+        assert f"function {handler}" in app_js_text, f"app.js must declare and export function {handler}()"
 
     # Verify lab containers exist in their respective markdown files
     lab13_md = docs_root / "docs" / "lab-content-evolution.md"

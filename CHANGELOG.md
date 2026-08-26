@@ -11,6 +11,33 @@ last_verified: '2026-08-20'
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.17.2] - 2026-08-25
+
+### Fixed
+- **InMaricopa Forensic Case Study ReferenceError (`credence-docs/app.js`)**:
+  - Corrected JavaScript identifier casing typo on widget invocation from `setupInmaricopaCaseStudyWidget();` to `setupInMaricopaCaseStudyWidget();`, resolving production outage and "Error Loading Document" failure on `https://blog.credence.run/conflict-of-pun-terest`.
+  - Added math- and code-aware markdown table cell splitting in `app.js` to preserve mathematical formulas containing pipe characters (`|`) without breaking GFM table column alignment.
+  - Added newline formatting separation after hero SVG illustration in `blog/conflict-of-pun-terest.md` to prevent DOM block tag nesting issues.
+- **Shift-Left Interactive Widget Mount Integrity Gate (Gate 2)**:
+  - Enhanced `test_all_registered_playgrounds_have_active_dom_mounts` in `tests/governance/test_docs_integrity.py` to assert that all interactive widget and laboratory mount handlers invoked in `loadDocument()` match declared and exported function signatures in `app.js`.
+
+## [2.17.1] - 2026-08-25
+
+### Added
+- **Curated Workspace Scratch Space & Archival Lifecycle (`inv-clean-scratch-scripts`)**:
+  - Transitioned scratch script storage from ephemeral brain directories to a curated, reusable workspace root `/scratch/` folder.
+  - Implemented multi-session modification provenance tracking in script headers (`# Created Session ID: <id>`, `# Modified Session IDs: [<id>, ...]`).
+  - Added structured archival lifecycle (`/scratch/archive/`) to preserve historical exploration context while preventing active workspace root clutter.
+
+## [2.17.0] - 2026-08-25
+
+### Added
+- **Dual-Optimized Living Invariant Canon Architecture (`invariants.md`)**:
+  - Implemented dual-view layout delivering human-readable explanations, "Why It Matters" rationale callouts, and KaTeX/LaTeX display math on the surface, paired with expandable Agent Deontic HUDs (`<details class="agent-translation">`) specifying machine-executable MUST/FORBIDDEN rules and trigger scopes.
+- **Two-Tier Portability Scope Classification & Starter Pack Exporter (`app.js`, `styles.css`)**:
+  - Cleanly partitioned invariants into `🌐 Universal Agentic Standards` (37 rules) and `🔬 Credence Domain Standards` (20 rules).
+  - Built interactive scope filter bar (`[All]`, `[🌐 Universal]`, `[🔬 Domain]`) with 1-click `📦 Export Universal Agentic Starter Pack` clipboard generator.
+
 ## [2.16.8] - 2026-08-25
 
 ### Added
