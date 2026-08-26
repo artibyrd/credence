@@ -47,6 +47,9 @@ async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
         return {
             "service": "credence",
             "url": snap.url if snap else "",
+            "title": snap.title if (snap and snap.title) else "",
+            "byline": snap.byline if (snap and snap.byline) else "",
+            "site_name": snap.site_name if (snap and snap.site_name) else "",
             "content_sha256": audit.content_sha256,
             "suspicion_score": audit.suspicion_score,
             "suspicion_density": audit.suspicion_density,
@@ -55,6 +58,7 @@ async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
             "is_satire": audit.is_satire,
             "audited_at": str(audit.audited_at),
             "findings": [v.model_dump(mode="json") for v in violations],
+            "violations": [v.model_dump(mode="json") for v in violations],
         }
 
 
@@ -101,14 +105,18 @@ async def api_reports(request: Any) -> Any:
         for audit, snap in res:
             reports.append(
                 {
+                    "id": str(audit.id),
+                    "url": snap.url if snap else "",
+                    "title": snap.title if (snap and snap.title) else "",
+                    "byline": snap.byline if (snap and snap.byline) else "",
+                    "site_name": snap.site_name if (snap and snap.site_name) else "",
                     "content_sha256": audit.content_sha256,
-                    "url": snap.url,
-                    "title": snap.title,
                     "suspicion_score": audit.suspicion_score,
-                    "classification": audit.classification,
+                    "suspicion_density": audit.suspicion_density,
                     "confidence_score": audit.confidence_score,
+                    "classification": audit.classification,
                     "is_satire": audit.is_satire,
-                    "audited_at": audit.audited_at.isoformat() if audit.audited_at else None,
+                    "audited_at": str(audit.audited_at),
                 }
             )
 
