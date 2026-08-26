@@ -78,7 +78,7 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                                     session, s_sub, dry_run=False, evaluate_novel=True, force_refresh=True
                                 )
                             except Exception as se:
-                                logger.warning("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
+                                logger.exception("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
 
                         # Create database backup after initial boot sifting
                         try:

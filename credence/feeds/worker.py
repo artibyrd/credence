@@ -135,6 +135,7 @@ async def _process_single_entry(
 
             report = await audit_url(
                 entry.url,
+                session=session,
                 force_refresh=False,
                 profile_override=profile_override,
             )
