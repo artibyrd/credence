@@ -183,132 +183,136 @@
             </div>
 
             <!-- Search Mode Landing Prompt (When no article is actively inspected) -->
-            <div id="search-landing-prompt" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+            <div id="search-landing-prompt" style="display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 0.5rem;">
               <!-- Hero Banner -->
-              <div class="deck-card" style="padding:1.35rem 1.5rem; background:linear-gradient(180deg, var(--bg-card) 0%, rgba(15,23,42,0.8) 100%); border:1px solid var(--border); border-radius:8px;">
+              <div class="deck-card" style="padding:1.15rem 1.35rem; background:linear-gradient(180deg, var(--bg-card) 0%, rgba(15,23,42,0.8) 100%); border:1px solid var(--border); border-radius:8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
                   <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <div style="width:42px; height:42px; border-radius:8px; background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                    <div style="width:40px; height:40px; border-radius:8px; background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); display:flex; align-items:center; justify-content:center; font-size:1.35rem;">
                       🔬
                     </div>
                     <div>
-                      <h3 style="color:#fff; font-size:1.15rem; margin:0 0 0.2rem 0; font-weight:700;">Epistemic Query &amp; Audit Engine</h3>
+                      <h3 style="color:#fff; font-size:1.1rem; margin:0 0 0.15rem 0; font-weight:700;">Credence Search &amp; Forensic Inspector</h3>
                       <p style="color:var(--text-muted); font-size:0.82rem; margin:0; line-height:1.4;">
-                        Multi-lens verification suite &bull; Grounded quote extraction (G=1.00) &bull; RFC 8785 Ed25519 cryptography
+                        Search any web article URL, explore publisher credibility rankings, or investigate empirical case studies.
                       </p>
                     </div>
                   </div>
-                  <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                    <button type="button" class="btn-primary" style="font-size:0.8rem; padding:0.4rem 0.9rem;" onclick="window.CredenceWS.switchTab('browse')">📚 Browse Full Directory</button>
-                    <button type="button" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.85rem;" onclick="loadRandomAudit()">🎲 Surprise Me [r]</button>
+                  <div style="display:flex; gap:0.45rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-primary" style="font-size:0.8rem; padding:0.35rem 0.85rem;" onclick="window.CredenceWS.switchTab('browse')">📚 Browse All Audits</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.75rem;" onclick="loadRandomAudit()">🎲 Surprise Me [r]</button>
                   </div>
                 </div>
               </div>
 
-              <!-- Quick Launch Featured Benchmark Cards Grid -->
+              <!-- Quick Launch Featured Case Studies Grid -->
               <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.55rem;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em;">Featured Forensic Benchmarks &bull; Quick Launch</span>
-                  <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">Click any card to inspect</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em;">Featured Case Studies &amp; Sample Reports</span>
+                  <span style="font-size:0.72rem; color:var(--text-dim);">Click any card to inspect full analysis</span>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.65rem;">
                   
                   <!-- Card 1: Clean Wire -->
-                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://reuters.com/world/energy/clean-grid-transition-2026', true)" class="selection-card">
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.8rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem; cursor:pointer;" onclick="evaluateSource('https://reuters.com/world/energy/clean-grid-transition-2026', true)" class="selection-card">
                     <div>
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
                         <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80; border:1px solid rgba(74,222,128,0.3); font-size:0.68rem; font-weight:700;">CLEAN • TIER A</span>
                         <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">reuters.com</span>
                       </div>
-                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Global Clean Energy Investments Hit $2 Trillion Milestone</h4>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.2rem; line-height:1.35;">Global Clean Energy Investments Hit $2 Trillion Milestone</h4>
                       <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                        Exemplary wire reporting with multi-agency primary data verification and zero ungrounded assertions.
+                        Exemplary wire reporting with primary multi-agency statistical attribution and zero unsourced claims.
                       </p>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
-                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#4ade80;">Score: <b>0.0 (Pristine)</b></span>
-                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#4ade80;">Score: <b>0.0 (Clean)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.18rem 0.5rem;">🔬 Inspect</button>
                     </div>
                   </div>
 
-                  <!-- Card 2: Peer-Reviewed Journal -->
-                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://nature.com/articles/s41586-026-exoplanet-atmosphere', true)" class="selection-card">
+                  <!-- Card 2: Scientific Research -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.8rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem; cursor:pointer;" onclick="evaluateSource('https://nature.com/articles/s41586-026-exoplanet-atmosphere', true)" class="selection-card">
                     <div>
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
                         <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80; border:1px solid rgba(74,222,128,0.3); font-size:0.68rem; font-weight:700;">CLEAN • TIER A</span>
                         <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">nature.com</span>
                       </div>
-                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b</h4>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.2rem; line-height:1.35;">Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b</h4>
                       <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                        Peer-reviewed astrophysical spectroscopy with 99.8% statistical significance filter.
+                        Peer-reviewed scientific study with transparent methodology and statistical significance data.
                       </p>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
-                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#4ade80;">Score: <b>1.2 (Pristine)</b></span>
-                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#4ade80;">Score: <b>1.2 (Clean)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.18rem 0.5rem;">🔬 Inspect</button>
                     </div>
                   </div>
 
-                  <!-- Card 3: Governance COI Case Study -->
-                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/', true)" class="selection-card">
+                  <!-- Card 3: Governance Conflict of Interest -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.8rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem; cursor:pointer;" onclick="evaluateSource('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/', true)" class="selection-card">
                     <div>
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
                         <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); font-size:0.68rem; font-weight:700;">SUSPICIOUS • TIER C</span>
                         <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">inmaricopa.com</span>
                       </div>
-                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Copper Sky Land Sale is No Scandal, Council Records Show</h4>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.2rem; line-height:1.35;">Copper Sky Land Sale is No Scandal, Council Records Show</h4>
                       <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                        Empirical case study: Editorial defense of municipal rezoning co-owned by voting councilmember (SPJ-3.1).
+                        Editorial defense of municipal land rezoning published by an outlet co-owned by a voting city councilmember.
                       </p>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
-                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#f59e0b;">Score: <b>78.4 (High Risk)</b></span>
-                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#f59e0b;">Score: <b>78.4 (High Conflict)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.18rem 0.5rem;">🔬 Inspect</button>
                     </div>
                   </div>
 
-                  <!-- Card 4: Satire Neutralized -->
-                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://theonion.com/golden-retriever-elected-mayor-historic-landslide', true)" class="selection-card">
+                  <!-- Card 4: Satire Protection -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.8rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem; cursor:pointer;" onclick="evaluateSource('https://theonion.com/golden-retriever-elected-mayor-historic-landslide', true)" class="selection-card">
                     <div>
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
                         <span class="badge" style="background:rgba(192, 132, 252, 0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.3); font-size:0.68rem; font-weight:700;">SATIRE PROTECTED</span>
                         <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">theonion.com</span>
                       </div>
-                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Golden Retriever Elected Mayor in Historic Landslide</h4>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.2rem; line-height:1.35;">Golden Retriever Elected Mayor in Historic Landslide</h4>
                       <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                        Poe's Law neutrality protection active (0.0 score) with SPJ-1.6 cloaking overrides evaluated as clean.
+                        Humorous satire recognized and protected from misclassification as intentional disinformation.
                       </p>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4rem;">
                       <span style="font-size:0.75rem; font-family:var(--font-mono); color:#c084fc;">Score: <b>0.0 (Satire)</b></span>
-                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.18rem 0.5rem;">🔬 Inspect</button>
                     </div>
                   </div>
 
                 </div>
               </div>
 
-              <!-- Real-Time Epistemic Network Vitals (4 Stat Cards) -->
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.65rem;">
-                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">📑 Corpus Coverage</div>
-                  <div style="font-size:1.15rem; font-weight:700; color:#fff; margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">20 Audits / 16 Orgs</div>
-                  <div style="font-size:0.72rem; color:var(--accent-cyan);">Pristine, Monitored &amp; Watchlist</div>
+              <!-- Quick Explore by Publisher & Topic (Interactive Cross-Links) -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem;">
+                <!-- Publisher Shortcuts -->
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.4rem;">🏛️ Explore Publisher Profiles</div>
+                  <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('reuters.com')">reuters.com (98.5 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('nature.com')">nature.com (99.8 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('apnews.com')">apnews.com (97.0 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('inmaricopa.com')">inmaricopa.com (48.5 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('texasmonthly.com')">texasmonthly.com (88.0 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('theonion.com')">theonion.com (Satire)</button>
+                  </div>
                 </div>
-                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">🔐 Cryptographic Custody</div>
-                  <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">100% Ed25519 Sealed</div>
-                  <div style="font-size:0.72rem; color:var(--text-muted);">RFC 8785 Canonical JSON Envelope</div>
-                </div>
-                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">🎯 Grounding Standard</div>
-                  <div style="font-size:1.15rem; font-weight:700; color:#38bdf8; margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">G = 1.00 Exact DOM</div>
-                  <div style="font-size:0.72rem; color:var(--text-muted);">Whitespace-Insensitive Verbatim</div>
-                </div>
-                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">⚡ Heuristic Latency</div>
-                  <div style="font-size:1.15rem; font-weight:700; color:#a855f7; margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">&lt; 0.4ms In-Memory</div>
-                  <div style="font-size:0.72rem; color:var(--text-muted);">Deterministic Multi-Lens Engine</div>
+
+                <!-- Forensic Issue Categories -->
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                  <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.4rem;">⚖️ Filter by Forensic Issue</div>
+                  <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="applyQuickFilter('rule', 'SPJ-3.1')">⚖️ Conflicts of Interest</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="applyQuickFilter('rule', 'SPJ-4.1')">📜 Stealth Edits</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="applyQuickFilter('rule', 'DEC-1.4')">📢 Native Advertorials</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="applyQuickFilter('verdict', 'CLEAN')">✅ Clean Articles</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="applyQuickFilter('verdict', 'DECEPTIVE')">⚠️ Deceptive Patterns</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -360,81 +364,92 @@
                 </div>
               </div>
 
-              <!-- LENS 1: SURFACE GLANCE (Enriched Forensics & Vitals) -->
+              <!-- LENS 1: SURFACE GLANCE (Human-Readable Summary & Cross-Links) -->
               <div id="lens-surface" class="lens-panel">
-                <!-- Executive Summary -->
-                <div style="margin-bottom:0.9rem;">
-                  <h4 style="color:#fff; font-size:0.92rem; margin:0 0 0.35rem;">Executive Summary &amp; Verdict</h4>
-                  <p id="insp-summary" style="color:var(--text-muted); font-size:0.88rem; line-height:1.55; margin:0;">
+                <!-- Executive Verdict & Summary -->
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.9rem 1.1rem; margin-bottom:0.85rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.4rem;">
+                    <h4 style="color:#fff; font-size:0.95rem; margin:0; font-weight:700;">Executive Verdict &amp; Analysis</h4>
+                    <span id="insp-surface-verdict-badge" class="badge" style="font-size:0.72rem; background:rgba(74,222,128,0.15); color:#4ade80; border:1px solid #4ade80;">Verified Evaluation</span>
+                  </div>
+                  <p id="insp-summary" style="color:var(--text-muted); font-size:0.88rem; line-height:1.55; margin:0 0 0.65rem 0;">
                     Rigorous empirical wire reporting on international clean energy capacity additions. All statistical figures are explicitly attributed to the International Energy Agency and Department of Energy datasets with multi-source independent verification.
                   </p>
-                </div>
-
-                <!-- Primary Score Vitals (3 Pillars) -->
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.75rem; margin-bottom:0.9rem;">
-                  <div style="background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
-                    <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Journalistic Ethics</span>
-                    <div id="insp-ethics-score" style="font-weight:700; color:#fff; font-size:1.15rem; margin-top:0.2rem; font-family:var(--font-mono);">10.0 / 10</div>
-                  </div>
-                  <div style="background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
-                    <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Logical Consistency</span>
-                    <div id="insp-logic-score" style="font-weight:700; color:#fff; font-size:1.15rem; margin-top:0.2rem; font-family:var(--font-mono);">10.0 / 10</div>
-                  </div>
-                  <div style="background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
-                    <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">UI &amp; Privacy Transparency</span>
-                    <div id="insp-ui-score" style="font-weight:700; color:#fff; font-size:1.15rem; margin-top:0.2rem; font-family:var(--font-mono);">10.0 / 10</div>
+                  
+                  <!-- Human-Readable Findings Bullet Points -->
+                  <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:0.55rem; margin-top:0.55rem;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#fff; margin-bottom:0.35rem;">Key Takeaways:</div>
+                    <ul id="insp-surface-takeaways" style="margin:0; padding-left:1.15rem; font-size:0.82rem; color:var(--text-muted); line-height:1.5;">
+                      <!-- Populated dynamically -->
+                    </ul>
                   </div>
                 </div>
 
-                <!-- Surface Forensic Glance Breakdown Grid (4 Vitals Cards) -->
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem; margin-bottom:0.9rem;">
-                  <!-- Card 1: Publisher Standing -->
-                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">🏛️ Publisher Standing</div>
-                    <div id="insp-surface-publisher-tier" style="font-weight:700; color:#fff; font-size:0.88rem; margin-bottom:0.15rem;">Tier A (Pristine Wire)</div>
-                    <div id="insp-surface-publisher-dci" style="font-size:0.75rem; color:var(--accent-green); font-family:var(--font-mono);">DCI Score: 98.5 / 100</div>
+                <!-- Primary Score Pillars (3 Pillars) -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.65rem; margin-bottom:0.85rem;">
+                  <div style="background:var(--bg-secondary); padding:0.7rem 0.9rem; border-radius:6px; border:1px solid var(--border);">
+                    <span style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Journalistic Ethics</span>
+                    <div id="insp-ethics-score" style="font-weight:700; color:#fff; font-size:1.1rem; margin-top:0.15rem; font-family:var(--font-mono);">10.0 / 10</div>
                   </div>
-
-                  <!-- Card 2: Taxonomy Violations -->
-                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">⚖️ Rule Violations</div>
-                    <div id="insp-surface-viol-badge" style="font-weight:700; color:var(--accent-green); font-size:0.88rem; margin-bottom:0.15rem;">0 Violations Flagged</div>
-                    <div id="insp-surface-viol-summary" style="font-size:0.75rem; color:var(--text-muted);">Passes all SPJ &amp; IEP checks</div>
+                  <div style="background:var(--bg-secondary); padding:0.7rem 0.9rem; border-radius:6px; border:1px solid var(--border);">
+                    <span style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Logical Consistency</span>
+                    <div id="insp-logic-score" style="font-weight:700; color:#fff; font-size:1.1rem; margin-top:0.15rem; font-family:var(--font-mono);">10.0 / 10</div>
                   </div>
-
-                  <!-- Card 3: Grounding Proof -->
-                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">🔬 DOM Grounding ($G$)</div>
-                    <div id="insp-surface-grounding" style="font-weight:700; color:var(--accent-green); font-size:0.88rem; font-family:var(--font-mono); margin-bottom:0.15rem;">G = 1.00 (100% Match)</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">0 Ellipses &bull; Zero Hallucination</div>
-                  </div>
-
-                  <!-- Card 4: Temporal Snapshot -->
-                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
-                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">📜 Temporal Status</div>
-                    <div id="insp-surface-temporal-badge" style="font-weight:700; color:#fff; font-size:0.88rem; margin-bottom:0.15rem;">Single Immutable Snapshot</div>
-                    <div id="insp-surface-temporal-status" style="font-size:0.75rem; color:var(--text-dim);">Clean History &bull; No Stealth Edits</div>
+                  <div style="background:var(--bg-secondary); padding:0.7rem 0.9rem; border-radius:6px; border:1px solid var(--border);">
+                    <span style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">UI &amp; Privacy Transparency</span>
+                    <div id="insp-ui-score" style="font-weight:700; color:#fff; font-size:1.1rem; margin-top:0.15rem; font-family:var(--font-mono);">10.0 / 10</div>
                   </div>
                 </div>
 
-                <!-- Key Epistemic Findings Card -->
-                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:6px; padding:0.85rem 1rem; margin-bottom:0.9rem;">
-                  <div style="font-size:0.78rem; font-weight:700; color:#fff; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem;">
-                    <span>💡</span> <span>Key Forensic Takeaways</span>
+                <!-- Context & Cross-Linking Hub (Publisher Profile & Related Articles) -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem; margin-bottom:0.85rem;">
+                  <!-- Publisher Dossier Card -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem 1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem;">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">🏛️ Publisher Profile</span>
+                        <span id="insp-surface-publisher-tier" class="badge" style="font-size:0.68rem; font-weight:700;">Tier A</span>
+                      </div>
+                      <h4 id="insp-surface-publisher-title" style="font-size:0.95rem; color:#fff; margin:0 0 0.2rem;">reuters.com</h4>
+                      <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem;" id="insp-surface-publisher-dci">DCI Credibility Score: <b>98.5 / 100</b></div>
+                    </div>
+                    <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
+                      <button type="button" class="btn-action btn-secondary" id="insp-surface-dossier-btn" style="width:100%; text-align:center; font-size:0.78rem; padding:0.3rem 0.6rem;" onclick="window.viewSourceDossier(window.currentDomain || 'reuters.com')">
+                        🏛️ View Full Publisher Dossier &rarr;
+                      </button>
+                    </div>
                   </div>
-                  <ul id="insp-surface-takeaways" style="margin:0; padding-left:1.2rem; font-size:0.82rem; color:var(--text-muted); line-height:1.55;">
-                    <!-- Populated dynamically -->
-                  </ul>
+
+                  <!-- Related Audits from this Domain -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem 1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem;">
+                    <div>
+                      <div style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.4rem;">
+                        📑 Other Audits from this Source
+                      </div>
+                      <div id="insp-surface-related-list" style="display:flex; flex-direction:column; gap:0.35rem;">
+                        <!-- Populated dynamically via evaluateSource() -->
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Quick Lens Explore Links -->
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.5rem 0.85rem; flex-wrap:wrap; gap:0.5rem;">
-                  <div style="font-size:0.78rem; color:var(--text-dim);">
-                    Want deeper evidence? Explore extracted DOM quotes or verify cryptographic signatures.
+                <!-- Deep Dive & Exploration Actions Bar -->
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.65rem 0.9rem; flex-wrap:wrap; gap:0.6rem;">
+                  <div style="display:flex; gap:0.45rem; flex-wrap:wrap;">
+                    <a id="insp-surface-viewer-link" href="viewer.html" target="_blank" class="btn-action btn-secondary" style="text-decoration:none; font-size:0.75rem; padding:0.25rem 0.6rem; color:var(--accent-cyan);">
+                      🔗 Standalone Certificate ↗
+                    </a>
+                    <a id="insp-surface-history-link" href="history.html" target="_blank" class="btn-action btn-secondary" style="text-decoration:none; font-size:0.75rem; padding:0.25rem 0.6rem;">
+                      📜 Revision Timeline &amp; Diff ↗
+                    </a>
                   </div>
-                  <div style="display:flex; gap:0.4rem;">
-                    <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="setLensMode('focus')">🔬 Focus Lens (Quotes &amp; Diffs) &rarr;</button>
-                    <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="setLensMode('spectrum')">🌌 Deep Spectrum (Crypto) &rarr;</button>
+                  <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-action btn-primary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="setLensMode('focus')">
+                      🔬 Inspect Evidence Quotes &rarr;
+                    </button>
+                    <button type="button" class="btn-action btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="setLensMode('spectrum')">
+                      🌌 Cryptographic Signatures &rarr;
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2227,39 +2242,56 @@
       const pubTier = pubObj ? pubObj.tierBadge : (data.domain === 'reuters.com' || data.domain === 'apnews.com' || data.domain === 'nature.com' || data.domain === 'propublica.org' ? 'Tier A (Pristine Wire)' : (parseFloat(data.score) < 20 ? 'Tier B (Monitored)' : 'Tier C (Watchlist)'));
       const pubDciScore = pubObj ? pubObj.dciScore : (parseFloat(data.score) < 10 ? '98.5' : (parseFloat(data.score) < 30 ? '82.0' : '48.5'));
 
+      const surfaceVerdictBadge = document.getElementById('insp-surface-verdict-badge');
+      if (surfaceVerdictBadge) {
+        surfaceVerdictBadge.textContent = data.badge;
+        surfaceVerdictBadge.style.color = data.badgeColor;
+        surfaceVerdictBadge.style.background = data.badgeBg;
+        surfaceVerdictBadge.style.borderColor = data.badgeColor;
+      }
+
+      const surfacePubTitle = document.getElementById('insp-surface-publisher-title');
       const surfacePubTier = document.getElementById('insp-surface-publisher-tier');
       const surfacePubDci = document.getElementById('insp-surface-publisher-dci');
+      const surfaceDossierBtn = document.getElementById('insp-surface-dossier-btn');
+      if (surfacePubTitle) surfacePubTitle.textContent = data.domain || 'Publisher Source';
       if (surfacePubTier) surfacePubTier.textContent = pubTier;
       if (surfacePubDci) {
-        surfacePubDci.textContent = `DCI Score: ${pubDciScore} / 100`;
-        surfacePubDci.style.color = parseFloat(pubDciScore) >= 80 ? 'var(--accent-green)' : (parseFloat(pubDciScore) >= 60 ? 'var(--accent-cyan)' : 'var(--accent-amber)');
+        surfacePubDci.innerHTML = `DCI Credibility Score: <b style="font-family:var(--font-mono); color:${parseFloat(pubDciScore) >= 80 ? 'var(--accent-green)' : (parseFloat(pubDciScore) >= 60 ? 'var(--accent-cyan)' : 'var(--accent-amber)')};">${pubDciScore} / 100</b>`;
+      }
+      if (surfaceDossierBtn) {
+        surfaceDossierBtn.onclick = () => window.viewSourceDossier(data.domain || 'reuters.com');
       }
 
-      const surfaceViolBadge = document.getElementById('insp-surface-viol-badge');
-      const surfaceViolSummary = document.getElementById('insp-surface-viol-summary');
-      if (surfaceViolBadge && surfaceViolSummary) {
-        if (!data.violations || data.violations.length === 0) {
-          surfaceViolBadge.textContent = '0 Violations Flagged';
-          surfaceViolBadge.style.color = 'var(--accent-green)';
-          surfaceViolSummary.textContent = 'Passes all SPJ & IEP checks';
-        } else {
-          surfaceViolBadge.textContent = `${data.violations.length} Violation${data.violations.length > 1 ? 's' : ''} Flagged`;
-          surfaceViolBadge.style.color = 'var(--accent-rose)';
-          surfaceViolSummary.textContent = data.violations.map(v => v.rule.split(' ')[0]).join(', ');
-        }
+      const surfaceViewerLink = document.getElementById('insp-surface-viewer-link');
+      if (surfaceViewerLink) {
+        surfaceViewerLink.href = `viewer.html?q=${encodeURIComponent(data.content_sha256 || targetUrl)}`;
+      }
+      const surfaceHistoryLink = document.getElementById('insp-surface-history-link');
+      if (surfaceHistoryLink) {
+        surfaceHistoryLink.href = `history.html?url=${encodeURIComponent(targetUrl)}`;
       }
 
-      const surfaceTempBadge = document.getElementById('insp-surface-temporal-badge');
-      const surfaceTempStatus = document.getElementById('insp-surface-temporal-status');
-      if (surfaceTempBadge && surfaceTempStatus) {
-        if (data.hasRevisions && data.diffDetails) {
-          surfaceTempBadge.textContent = '⚠️ Stealth Modification';
-          surfaceTempBadge.style.color = 'var(--accent-rose)';
-          surfaceTempStatus.textContent = 'Factual claim altered without disclosure';
+      // Related Audits from same Domain in Lens 1
+      const relatedContainer = document.getElementById('insp-surface-related-list');
+      if (relatedContainer && typeof SAMPLE_DATABASE !== 'undefined') {
+        const otherEntries = Object.entries(SAMPLE_DATABASE).filter(([u, a]) => (a.domain === data.domain || u.includes(data.domain)) && u !== targetUrl);
+        if (otherEntries.length > 0) {
+          relatedContainer.innerHTML = otherEntries.slice(0, 3).map(([u, a]) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); padding:0.35rem 0.6rem; border-radius:4px; font-size:0.78rem;">
+              <span style="color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:68%;">${a.title}</span>
+              <div style="display:flex; gap:0.4rem; align-items:center; flex-shrink:0;">
+                <span style="font-family:var(--font-mono); font-size:0.72rem; color:${a.badgeColor}; font-weight:700;">${a.score}</span>
+                <button type="button" class="btn-action btn-secondary" style="font-size:0.68rem; padding:0.12rem 0.4rem;" onclick="evaluateSource('${u}', true)">Inspect</button>
+              </div>
+            </div>
+          `).join('');
         } else {
-          surfaceTempBadge.textContent = 'Single Immutable Snapshot';
-          surfaceTempBadge.style.color = '#fff';
-          surfaceTempStatus.textContent = 'Clean History • No Stealth Edits';
+          relatedContainer.innerHTML = `
+            <div style="color:var(--text-dim); font-size:0.78rem; font-style:italic; padding:0.35rem 0.5rem; background:var(--bg-secondary); border-radius:4px;">
+              Primary verified case study from ${data.domain}.
+            </div>
+          `;
         }
       }
 
@@ -2267,15 +2299,15 @@
       if (takeawaysList) {
         const items = [];
         if (!data.violations || data.violations.length === 0) {
-          items.push('<b>Primary Sourcing Verified</b>: Claims are rigorously attributed to empirical sources and official datasets with multi-source independent verification.');
-          items.push('<b>Zero Cloaking or Advertorial Markers</b>: Editorial independence satisfied with transparent bylines and zero commercial call-to-actions.');
-          items.push('<b>Objective Framing</b>: Neutral tone maintaining factual precision without loaded emotional distortion or fallacy patterns.');
+          items.push('<b>Verified Primary Sources</b>: Claims are directly attributed to empirical institutions and official public records.');
+          items.push('<b>Editorial Independence</b>: Clear author bylines with zero hidden commercial promotions or affiliate steering.');
+          items.push('<b>Balanced Context</b>: Neutral reporting tone with zero misleading hyperbole or deceptive presentation.');
         } else {
           data.violations.forEach(v => {
-            items.push(`<b>${v.rule}</b> (${v.sev}): Identified in quote: <em>"${v.quote}"</em>`);
+            items.push(`<b>${v.rule}</b> (${v.sev}): Flagged in passage: <em>"${v.quote}"</em>`);
           });
           if (data.hasRevisions) {
-            items.push('<b>Stealth Revision Flagged</b>: Factual allegations altered between historical snapshots without standard correction notices.');
+            items.push('<b>Undisclosed Revision</b>: Substantive factual claims altered between historical snapshots without standard correction notices.');
           }
         }
         takeawaysList.innerHTML = items.map(it => `<li style="margin-bottom:0.35rem;">${it}</li>`).join('');
@@ -2995,6 +3027,20 @@
       showToast(`Filtered articles for rule: ${ruleCode}`, 'info');
     };
 
+    window.applyQuickFilter = function(type, val) {
+      if (type === 'rule') {
+        const rSelect = document.getElementById('filter-rule');
+        if (rSelect) rSelect.value = val;
+      } else if (type === 'verdict') {
+        const vSelect = document.getElementById('filter-verdict');
+        if (vSelect) vSelect.value = val;
+      } else if (type === 'tier') {
+        const tSelect = document.getElementById('filter-tier');
+        if (tSelect) tSelect.value = val;
+      }
+      window.applyCriteriaFilters();
+    };
+
     window.renderSifterStream = async function() {
       const container = document.getElementById('sifter-stream-container');
       const badge = document.getElementById('sifter-status-badge');
@@ -3049,15 +3095,59 @@
             timeAgo: "28 mins ago"
           },
           {
+            title: "Copper Sky Land Sale is No Scandal, Council Records Show",
+            url: "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
+            domain: "inmaricopa.com",
+            sha256: "c1d2e3f4a5b60000000000000000000000000000000000000000000000000004",
+            score: "78.4",
+            verdict: "Suspicious",
+            badgeColor: "#f59e0b",
+            badgeBg: "rgba(245, 158, 11, 0.15)",
+            timeAgo: "42 mins ago"
+          },
+          {
+            title: "Secret Audio Recordings Reveal Utility Commission Lobbying Network",
+            url: "https://propublica.org/article/utility-commission-lobbying-recordings",
+            domain: "propublica.org",
+            sha256: "d2e3f4a5b6c70000000000000000000000000000000000000000000000000005",
+            score: "0.0",
+            verdict: "Clean",
+            badgeColor: "#4ade80",
+            badgeBg: "rgba(74, 222, 128, 0.15)",
+            timeAgo: "1 hour ago"
+          },
+          {
+            title: "The Mystery of the Vanishing Panhandle Water Rights",
+            url: "https://texasmonthly.com/news-politics/panhandle-water-rights-investigation",
+            domain: "texasmonthly.com",
+            sha256: "e3f4a5b6c7d80000000000000000000000000000000000000000000000000006",
+            score: "5.0",
+            verdict: "Clean",
+            badgeColor: "#4ade80",
+            badgeBg: "rgba(74, 222, 128, 0.15)",
+            timeAgo: "2 hours ago"
+          },
+          {
             title: "Golden Retriever Elected Mayor in Historic Landslide",
             url: "https://theonion.com/golden-retriever-elected-mayor-historic-landslide",
             domain: "theonion.com",
-            sha256: "c5f789b3a0e40000000000000000000000000000000000000000000000000004",
+            sha256: "c5f789b3a0e40000000000000000000000000000000000000000000000000007",
             score: "0.0",
             verdict: "Satire",
             badgeColor: "#c084fc",
             badgeBg: "rgba(192, 132, 252, 0.15)",
-            timeAgo: "45 mins ago"
+            timeAgo: "3 hours ago"
+          },
+          {
+            title: "Local Man Solves Morning Traffic by Simply Refusing to Go to Work",
+            url: "https://babylonbee.com/news/local-man-solves-traffic",
+            domain: "babylonbee.com",
+            sha256: "f6a7b8c9d0e10000000000000000000000000000000000000000000000000008",
+            score: "0.0",
+            verdict: "Satire",
+            badgeColor: "#c084fc",
+            badgeBg: "rgba(192, 132, 252, 0.15)",
+            timeAgo: "4 hours ago"
           }
         ];
       }
