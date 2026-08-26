@@ -1760,7 +1760,7 @@ export function initWorkstation(config = {}) {
   checkAuthStatus();
   normalizeLocalLinks();
 
-  function switchTab(tabId, pushHistory = false) {
+  function switchTab(tabId, pushHistory = false, updateHash = true) {
     if (!tabId) return;
 
     const btns = document.querySelectorAll(tabButtonsSelector);
@@ -1779,19 +1779,21 @@ export function initWorkstation(config = {}) {
       else p.style.display = 'none';
     });
 
-    const currentHash = (window.location.hash || '').replace(/^#/, '');
-    const isDeepLinkForTab = (
-      (tabId === 'browse' && (currentHash.startsWith('analytics/') || currentHash.startsWith('dossier/') || currentHash.startsWith('publisher/') || currentHash.startsWith('browse/'))) ||
-      (tabId === 'search' && (currentHash.startsWith('report/') || currentHash.startsWith('inspect/') || currentHash.startsWith('search'))) ||
-      (tabId === 'merit' && (currentHash.startsWith('merit') || currentHash.startsWith('badges'))) ||
-      (tabId === 'governance' && (currentHash.startsWith('governance') || currentHash.startsWith('invariants')))
-    );
+    if (updateHash) {
+      const currentHash = (window.location.hash || '').replace(/^#/, '');
+      const isDeepLinkForTab = (
+        (tabId === 'browse' && (currentHash.startsWith('analytics/') || currentHash.startsWith('dossier/') || currentHash.startsWith('publisher/') || currentHash.startsWith('browse/'))) ||
+        (tabId === 'search' && (currentHash.startsWith('report/') || currentHash.startsWith('inspect/') || currentHash.startsWith('search'))) ||
+        (tabId === 'merit' && (currentHash.startsWith('merit') || currentHash.startsWith('badges'))) ||
+        (tabId === 'governance' && (currentHash.startsWith('governance') || currentHash.startsWith('invariants')))
+      );
 
-    if (!isDeepLinkForTab && window.location.hash !== `#${tabId}`) {
-      if (pushHistory) {
-        history.pushState({ tab: tabId }, '', `#${tabId}`);
-      } else {
-        history.replaceState({ tab: tabId }, '', `#${tabId}`);
+      if (!isDeepLinkForTab && window.location.hash !== `#${tabId}`) {
+        if (pushHistory) {
+          history.pushState({ tab: tabId }, '', `#${tabId}`);
+        } else {
+          history.replaceState({ tab: tabId }, '', `#${tabId}`);
+        }
       }
     }
 

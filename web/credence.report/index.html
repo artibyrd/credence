@@ -1947,7 +1947,7 @@
 
       // 1. Ensure Search tab is active, show Forensic Card, hide Landing Prompt
       if (window.CredenceWS && window.CredenceWS.switchTab) {
-        window.CredenceWS.switchTab('search', false);
+        window.CredenceWS.switchTab('search', false, false);
       }
       const prompt = document.getElementById('search-landing-prompt');
       const card = document.getElementById('inspector-forensic-card');
@@ -2263,7 +2263,7 @@
       window.lastViewedDomain = domain;
       window.currentDomain = domain;
       if (window.CredenceWS && window.CredenceWS.switchTab) {
-        window.CredenceWS.switchTab('browse', false);
+        window.CredenceWS.switchTab('browse', false, false);
       }
       if (typeof switchBrowseSubview === 'function') {
         switchBrowseSubview('sources');
