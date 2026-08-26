@@ -25,7 +25,7 @@ from credence.config import CostProfileConfig
 from credence.db import get_async_session, init_db
 from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.ingestion.extractor import ExtractedContent
-from credence.ingestion.snapshot import DualCaptureResult, capture_webpage
+from credence.ingestion.snapshot import DualCaptureResult, capture_webpage_fastpath
 from credence.models import Audit, Snapshot, Violation
 from credence.pipeline.adapters import LLMResponse, get_llm_provider
 from credence.pipeline.governor import (
@@ -259,8 +259,8 @@ async def audit_url(
     await init_db()
 
     async def _execute_with_session(s: AsyncSession) -> AuditReport:
-        # Step 1: Ingest snapshot
-        snapshot_result = await capture_webpage(url, save_artifacts=True)
+        # Step 1: Ingest snapshot (Fastpath with Playwright fallback)
+        snapshot_result = await capture_webpage_fastpath(url, save_artifacts=True)
 
         # Step 2: Check cache by content_sha256 unless forced
         if not force_refresh:
