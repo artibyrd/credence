@@ -91,14 +91,14 @@ async def api_reports(request: Any) -> Any:
     limit = int(request.query_params.get("limit", "20"))
     limit = max(1, min(100, limit))
 
+    domain = request.query_params.get("domain", "").strip()
+
     await init_db()
     async with get_async_session() as s:
-        stmt = (
-            select(Audit, Snapshot)
-            .join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
-            .order_by(col(Audit.audited_at).desc())
-            .limit(limit)
-        )
+        stmt = select(Audit, Snapshot).join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
+        if domain:
+            stmt = stmt.where(col(Snapshot.url).like(f"%{domain}%"))
+        stmt = stmt.order_by(col(Audit.audited_at).desc()).limit(limit)
         res = (await s.exec(stmt)).all()
 
         reports = []

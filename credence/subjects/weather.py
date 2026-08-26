@@ -357,6 +357,26 @@ async def get_publisher_analytics(
     first_audit = matched_audits[0].audited_at.isoformat() if matched_audits[0].audited_at else None
     last_audit = matched_audits[-1].audited_at.isoformat() if matched_audits[-1].audited_at else None
 
+    # All matched audited articles for full public transparency
+    snap_map: Dict[int, Snapshot] = {s.id: s for s in matched_snapshots if s.id is not None}
+    recent_articles: List[Dict[str, Any]] = []
+    for a in reversed(matched_audits):
+        target_snap: Optional[Snapshot] = snap_map.get(a.snapshot_id) if a.snapshot_id is not None else None
+        recent_articles.append(
+            {
+                "id": a.id,
+                "url": target_snap.url if target_snap else a.content_sha256,
+                "title": target_snap.title if (target_snap and target_snap.title) else "Audited Article",
+                "score": f"{a.suspicion_score:.1f}",
+                "suspicion_score": a.suspicion_score,
+                "classification": a.classification,
+                "confidence_score": a.confidence_score,
+                "date": a.audited_at.strftime("%Y-%m-%d") if a.audited_at else "2026-08-20",
+                "audited_at": a.audited_at.isoformat() if a.audited_at else "",
+                "content_sha256": a.content_sha256,
+            }
+        )
+
     return PublisherAnalyticsProfile(
         domain=clean_domain,
         dci_score=dci,
@@ -378,6 +398,7 @@ async def get_publisher_analytics(
         trend_timeline=trend_timeline,
         representative_flagged_quotes=flagged_quotes,
         representative_clean_articles=clean_articles,
+        recent_audited_articles=recent_articles,
         badges=badges,
         first_audited_at=first_audit,
         last_audited_at=last_audit,

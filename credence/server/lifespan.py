@@ -57,7 +57,29 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                     # Synchronize node-configured sentinels from CREDENCE_SENTINEL_FEEDS environment variable
                     from credence.feeds.sentinel import sync_env_sentinel_sources
 
-                    await sync_env_sentinel_sources(session)
+                    activated = await sync_env_sentinel_sources(session)
+                    if activated > 0:
+                        logger.info("🛡️ Triggering initial sentinel sifting burst on boot for %d sources...", activated)
+                        from credence.feeds.worker import sync_single_feed
+
+                        stmt_s = select(FeedSubscription).where(
+                            FeedSubscription.is_sentinel == True,  # noqa: E712
+                            FeedSubscription.is_active == True,  # noqa: E712
+                        )
+                        sent_subs = (await session.exec(stmt_s)).all()
+                        for s_sub in sent_subs:
+                            try:
+                                await sync_single_feed(session, s_sub, dry_run=False, evaluate_novel=True)
+                            except Exception as se:
+                                logger.warning("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
+
+                        # Create database backup after initial boot sifting
+                        try:
+                            from credence.storage.backup import create_database_backup_async
+
+                            await create_database_backup_async(upload_cloud=True)
+                        except Exception as cbe:
+                            logger.debug("Initial boot backup upload exception: %s", cbe)
             except Exception as e:
                 logger.warning("Auto-germination background task encountered error: %s", e)
 

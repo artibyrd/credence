@@ -2679,6 +2679,81 @@
           `;
         }
       }
+
+      // Asynchronously augment with live server analytics and dynamic recent audits
+      fetch(`/api/analytics/publisher/${encodeURIComponent(domain)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(liveData => {
+          if (!liveData) return;
+          if (liveData.dci_score !== undefined && dciScore) {
+            dciScore.textContent = liveData.dci_score.toFixed(1);
+          }
+          if (liveData.trust_band && ratingLabel) {
+            ratingLabel.textContent = liveData.trust_band;
+          }
+          if (liveData.total_audits && statAudits) {
+            statAudits.textContent = `${liveData.total_audits} Verified Audit${liveData.total_audits === 1 ? '' : 's'}`;
+          }
+          if (liveData.total_audits && countLabel) {
+            countLabel.textContent = `Showing all ${liveData.total_audits} verified audit${liveData.total_audits === 1 ? '' : 's'}`;
+          }
+          if (liveData.violations_by_domain && statViol) {
+            const violTotal = Object.values(liveData.violations_by_domain).reduce((a, b) => a + b, 0);
+            statViol.textContent = `${violTotal} Epistemic Violations`;
+          }
+          if (liveData.recent_audited_articles && liveData.recent_audited_articles.length > 0 && tableBody) {
+            // Merge live articles with sample matches
+            const liveMap = new Map();
+            liveData.recent_audited_articles.forEach(la => {
+              const scoreNum = parseFloat(la.score || la.suspicion_score || 0);
+              const isClean = scoreNum <= 15.0;
+              const isSusp = scoreNum > 15.0 && scoreNum < 60.0;
+              liveMap.set(la.url, {
+                url: la.url,
+                title: la.title || "Audited Article",
+                score: typeof la.score === "string" ? la.score : scoreNum.toFixed(1),
+                badge: la.classification || (isClean ? "CLEAN" : isSusp ? "SUSPICIOUS" : "PROVEN HOAX"),
+                badgeBg: isClean ? "rgba(34, 197, 94, 0.15)" : isSusp ? "rgba(245, 158, 11, 0.15)" : "rgba(244, 63, 94, 0.15)",
+                badgeColor: isClean ? "#22c55e" : isSusp ? "#f59e0b" : "#f43f5e",
+                date: la.date || (la.audited_at ? la.audited_at.split('T')[0] : "2026-08-20"),
+                content_sha256: la.content_sha256 || ""
+              });
+            });
+
+            // Also preserve any curated sample matches not returned by API
+            matchingArticles.forEach(sa => {
+              if (!liveMap.has(sa.url)) {
+                liveMap.set(sa.url, sa);
+              }
+            });
+
+            const mergedList = Array.from(liveMap.values());
+            if (countLabel) countLabel.textContent = `Showing all ${mergedList.length} verified audit${mergedList.length === 1 ? '' : 's'}`;
+            if (statAudits) statAudits.textContent = `${mergedList.length} Verified Audit${mergedList.length === 1 ? '' : 's'}`;
+
+            tableBody.innerHTML = mergedList.map(a => `
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                <td style="padding:0.45rem 0.55rem;">
+                  <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
+                  <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
+                </td>
+                <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
+                <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
+                <td style="padding:0.45rem 0.55rem;">
+                  <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
+                </td>
+                <td style="padding:0.45rem 0.55rem; text-align:right;">
+                  <div style="display:inline-flex; gap:0.35rem; align-items:center;">
+                    <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-action btn-secondary" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                    <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-action btn-secondary" title="View Temporal History & Diff">📜 History ↗</a>
+                    <button type="button" class="btn-action btn-primary" onclick="evaluateSource('${a.url}', true)">🔬 Inspect</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('');
+          }
+        })
+        .catch(err => console.debug("Dynamic publisher analytics fetch error:", err));
     };
 
 

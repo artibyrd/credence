@@ -128,6 +128,7 @@ class PublisherAnalyticsProfile:
     top_violated_rules: List[Any] = field(default_factory=list)
     representative_flagged_quotes: List[Any] = field(default_factory=list)
     representative_clean_articles: List[Any] = field(default_factory=list)
+    recent_audited_articles: List[Dict[str, Any]] = field(default_factory=list)
     trend_timeline: List[PublisherTrendBucket] = field(default_factory=list)
     first_audited_at: Optional[str] = None
     last_audited_at: Optional[str] = None
