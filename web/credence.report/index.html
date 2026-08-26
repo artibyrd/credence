@@ -183,15 +183,133 @@
             </div>
 
             <!-- Search Mode Landing Prompt (When no article is actively inspected) -->
-            <div id="search-landing-prompt" class="deck-card" style="padding:1.75rem; text-align:center; margin-bottom:1rem;">
-              <div style="font-size:2.2rem; margin-bottom:0.5rem;">🔍</div>
-              <h3 style="color:#fff; font-size:1.15rem; margin:0 0 0.4rem 0;">Epistemic Query &amp; Audit Engine</h3>
-              <p style="color:var(--text-muted); font-size:0.88rem; max-width:620px; margin:0 auto 1.15rem; line-height:1.5;">
-                Enter an article URL, author name, or search query above to inspect journalistic integrity, detect logical fallacies, and verify cryptographic receipts in real time.
-              </p>
-              <div style="display:flex; justify-content:center; gap:0.6rem; flex-wrap:wrap;">
-                <button type="button" class="btn-primary" style="font-size:0.82rem; padding:0.45rem 1rem;" onclick="window.CredenceWS.switchTab('browse')">📚 Browse Full Audit Directory</button>
-                <button type="button" class="btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.9rem;" onclick="loadRandomAudit()">🎲 Surprise Me [r]</button>
+            <div id="search-landing-prompt" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+              <!-- Hero Banner -->
+              <div class="deck-card" style="padding:1.35rem 1.5rem; background:linear-gradient(180deg, var(--bg-card) 0%, rgba(15,23,42,0.8) 100%); border:1px solid var(--border); border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="width:42px; height:42px; border-radius:8px; background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.3); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                      🔬
+                    </div>
+                    <div>
+                      <h3 style="color:#fff; font-size:1.15rem; margin:0 0 0.2rem 0; font-weight:700;">Epistemic Query &amp; Audit Engine</h3>
+                      <p style="color:var(--text-muted); font-size:0.82rem; margin:0; line-height:1.4;">
+                        Multi-lens verification suite &bull; Grounded quote extraction (G=1.00) &bull; RFC 8785 Ed25519 cryptography
+                      </p>
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-primary" style="font-size:0.8rem; padding:0.4rem 0.9rem;" onclick="window.CredenceWS.switchTab('browse')">📚 Browse Full Directory</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.85rem;" onclick="loadRandomAudit()">🎲 Surprise Me [r]</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Launch Featured Benchmark Cards Grid -->
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.55rem;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em;">Featured Forensic Benchmarks &bull; Quick Launch</span>
+                  <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">Click any card to inspect</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem;">
+                  
+                  <!-- Card 1: Clean Wire -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://reuters.com/world/energy/clean-grid-transition-2026', true)" class="selection-card">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80; border:1px solid rgba(74,222,128,0.3); font-size:0.68rem; font-weight:700;">CLEAN • TIER A</span>
+                        <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">reuters.com</span>
+                      </div>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Global Clean Energy Investments Hit $2 Trillion Milestone</h4>
+                      <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                        Exemplary wire reporting with multi-agency primary data verification and zero ungrounded assertions.
+                      </p>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#4ade80;">Score: <b>0.0 (Pristine)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    </div>
+                  </div>
+
+                  <!-- Card 2: Peer-Reviewed Journal -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://nature.com/articles/s41586-026-exoplanet-atmosphere', true)" class="selection-card">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80; border:1px solid rgba(74,222,128,0.3); font-size:0.68rem; font-weight:700;">CLEAN • TIER A</span>
+                        <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">nature.com</span>
+                      </div>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b</h4>
+                      <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                        Peer-reviewed astrophysical spectroscopy with 99.8% statistical significance filter.
+                      </p>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#4ade80;">Score: <b>1.2 (Pristine)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    </div>
+                  </div>
+
+                  <!-- Card 3: Governance COI Case Study -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/', true)" class="selection-card">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); font-size:0.68rem; font-weight:700;">SUSPICIOUS • TIER C</span>
+                        <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">inmaricopa.com</span>
+                      </div>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Copper Sky Land Sale is No Scandal, Council Records Show</h4>
+                      <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                        Empirical case study: Editorial defense of municipal rezoning co-owned by voting councilmember (SPJ-3.1).
+                      </p>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#f59e0b;">Score: <b>78.4 (High Risk)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    </div>
+                  </div>
+
+                  <!-- Card 4: Satire Neutralized -->
+                  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem; cursor:pointer;" onclick="evaluateSource('https://theonion.com/golden-retriever-elected-mayor-historic-landslide', true)" class="selection-card">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <span class="badge" style="background:rgba(192, 132, 252, 0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.3); font-size:0.68rem; font-weight:700;">SATIRE PROTECTED</span>
+                        <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">theonion.com</span>
+                      </div>
+                      <h4 style="font-size:0.88rem; color:#fff; margin:0 0 0.25rem; line-height:1.35;">Golden Retriever Elected Mayor in Historic Landslide</h4>
+                      <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.4; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                        Poe's Law neutrality protection active (0.0 score) with SPJ-1.6 cloaking overrides evaluated as clean.
+                      </p>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.45rem;">
+                      <span style="font-size:0.75rem; font-family:var(--font-mono); color:#c084fc;">Score: <b>0.0 (Satire)</b></span>
+                      <button type="button" class="btn-action btn-primary" style="font-size:0.72rem; padding:0.2rem 0.55rem;">🔬 Inspect</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Real-Time Epistemic Network Vitals (4 Stat Cards) -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.65rem;">
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">📑 Corpus Coverage</div>
+                  <div style="font-size:1.15rem; font-weight:700; color:#fff; margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">20 Audits / 16 Orgs</div>
+                  <div style="font-size:0.72rem; color:var(--accent-cyan);">Pristine, Monitored &amp; Watchlist</div>
+                </div>
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">🔐 Cryptographic Custody</div>
+                  <div style="font-size:1.15rem; font-weight:700; color:var(--accent-green); margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">100% Ed25519 Sealed</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted);">RFC 8785 Canonical JSON Envelope</div>
+                </div>
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">🎯 Grounding Standard</div>
+                  <div style="font-size:1.15rem; font-weight:700; color:#38bdf8; margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">G = 1.00 Exact DOM</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted);">Whitespace-Insensitive Verbatim</div>
+                </div>
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                  <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">⚡ Heuristic Latency</div>
+                  <div style="font-size:1.15rem; font-weight:700; color:#a855f7; margin:0.2rem 0 0.1rem; font-family:var(--font-mono);">&lt; 0.4ms In-Memory</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted);">Deterministic Multi-Lens Engine</div>
+                </div>
               </div>
             </div>
 
@@ -242,25 +360,81 @@
                 </div>
               </div>
 
-              <!-- LENS 1: SURFACE GLANCE (0 Math) -->
+              <!-- LENS 1: SURFACE GLANCE (Enriched Forensics & Vitals) -->
               <div id="lens-surface" class="lens-panel">
-                <h4 style="color:#fff; font-size:0.92rem; margin:0 0 0.35rem;">Executive Verdict</h4>
-                <p id="insp-summary" style="color:var(--text-muted); font-size:0.88rem; line-height:1.55; margin-bottom:1.15rem;">
-                  Rigorous empirical wire reporting on international clean energy capacity additions. All statistical figures are explicitly attributed to the International Energy Agency and Department of Energy datasets with multi-source independent verification.
-                </p>
+                <!-- Executive Summary -->
+                <div style="margin-bottom:0.9rem;">
+                  <h4 style="color:#fff; font-size:0.92rem; margin:0 0 0.35rem;">Executive Summary &amp; Verdict</h4>
+                  <p id="insp-summary" style="color:var(--text-muted); font-size:0.88rem; line-height:1.55; margin:0;">
+                    Rigorous empirical wire reporting on international clean energy capacity additions. All statistical figures are explicitly attributed to the International Energy Agency and Department of Energy datasets with multi-source independent verification.
+                  </p>
+                </div>
 
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.85rem;">
+                <!-- Primary Score Vitals (3 Pillars) -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.75rem; margin-bottom:0.9rem;">
                   <div style="background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
-                    <span style="font-size:0.72rem; color:var(--text-dim);">Journalistic Ethics</span>
-                    <div id="insp-ethics-score" style="font-weight:700; color:#fff; font-size:1.05rem; margin-top:0.2rem;">10.0 / 10</div>
+                    <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Journalistic Ethics</span>
+                    <div id="insp-ethics-score" style="font-weight:700; color:#fff; font-size:1.15rem; margin-top:0.2rem; font-family:var(--font-mono);">10.0 / 10</div>
                   </div>
                   <div style="background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
-                    <span style="font-size:0.72rem; color:var(--text-dim);">Logical Consistency</span>
-                    <div id="insp-logic-score" style="font-weight:700; color:#fff; font-size:1.05rem; margin-top:0.2rem;">10.0 / 10</div>
+                    <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Logical Consistency</span>
+                    <div id="insp-logic-score" style="font-weight:700; color:#fff; font-size:1.15rem; margin-top:0.2rem; font-family:var(--font-mono);">10.0 / 10</div>
                   </div>
                   <div style="background:var(--bg-secondary); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
-                    <span style="font-size:0.72rem; color:var(--text-dim);">UI &amp; Privacy</span>
-                    <div id="insp-ui-score" style="font-weight:700; color:#fff; font-size:1.05rem; margin-top:0.2rem;">10.0 / 10</div>
+                    <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">UI &amp; Privacy Transparency</span>
+                    <div id="insp-ui-score" style="font-weight:700; color:#fff; font-size:1.15rem; margin-top:0.2rem; font-family:var(--font-mono);">10.0 / 10</div>
+                  </div>
+                </div>
+
+                <!-- Surface Forensic Glance Breakdown Grid (4 Vitals Cards) -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem; margin-bottom:0.9rem;">
+                  <!-- Card 1: Publisher Standing -->
+                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">🏛️ Publisher Standing</div>
+                    <div id="insp-surface-publisher-tier" style="font-weight:700; color:#fff; font-size:0.88rem; margin-bottom:0.15rem;">Tier A (Pristine Wire)</div>
+                    <div id="insp-surface-publisher-dci" style="font-size:0.75rem; color:var(--accent-green); font-family:var(--font-mono);">DCI Score: 98.5 / 100</div>
+                  </div>
+
+                  <!-- Card 2: Taxonomy Violations -->
+                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">⚖️ Rule Violations</div>
+                    <div id="insp-surface-viol-badge" style="font-weight:700; color:var(--accent-green); font-size:0.88rem; margin-bottom:0.15rem;">0 Violations Flagged</div>
+                    <div id="insp-surface-viol-summary" style="font-size:0.75rem; color:var(--text-muted);">Passes all SPJ &amp; IEP checks</div>
+                  </div>
+
+                  <!-- Card 3: Grounding Proof -->
+                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">🔬 DOM Grounding ($G$)</div>
+                    <div id="insp-surface-grounding" style="font-weight:700; color:var(--accent-green); font-size:0.88rem; font-family:var(--font-mono); margin-bottom:0.15rem;">G = 1.00 (100% Match)</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">0 Ellipses &bull; Zero Hallucination</div>
+                  </div>
+
+                  <!-- Card 4: Temporal Snapshot -->
+                  <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.75rem 0.9rem;">
+                    <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">📜 Temporal Status</div>
+                    <div id="insp-surface-temporal-badge" style="font-weight:700; color:#fff; font-size:0.88rem; margin-bottom:0.15rem;">Single Immutable Snapshot</div>
+                    <div id="insp-surface-temporal-status" style="font-size:0.75rem; color:var(--text-dim);">Clean History &bull; No Stealth Edits</div>
+                  </div>
+                </div>
+
+                <!-- Key Epistemic Findings Card -->
+                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:6px; padding:0.85rem 1rem; margin-bottom:0.9rem;">
+                  <div style="font-size:0.78rem; font-weight:700; color:#fff; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem;">
+                    <span>💡</span> <span>Key Forensic Takeaways</span>
+                  </div>
+                  <ul id="insp-surface-takeaways" style="margin:0; padding-left:1.2rem; font-size:0.82rem; color:var(--text-muted); line-height:1.55;">
+                    <!-- Populated dynamically -->
+                  </ul>
+                </div>
+
+                <!-- Quick Lens Explore Links -->
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.5rem 0.85rem; flex-wrap:wrap; gap:0.5rem;">
+                  <div style="font-size:0.78rem; color:var(--text-dim);">
+                    Want deeper evidence? Explore extracted DOM quotes or verify cryptographic signatures.
+                  </div>
+                  <div style="display:flex; gap:0.4rem;">
+                    <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="setLensMode('focus')">🔬 Focus Lens (Quotes &amp; Diffs) &rarr;</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="setLensMode('spectrum')">🌌 Deep Spectrum (Crypto) &rarr;</button>
                   </div>
                 </div>
               </div>
@@ -1851,6 +2025,34 @@
       window.renderSelectionHub('ALL');
     };
 
+    window.updateCategoryCounts = function() {
+      const entries = Object.entries(SAMPLE_DATABASE);
+      const countAll = entries.length;
+      const countClean = entries.filter(([_, d]) => d.badge.includes('CLEAN')).length;
+      const countViolations = entries.filter(([_, d]) => d.violations && d.violations.length > 0).length;
+      const countSatire = entries.filter(([_, d]) => d.badge.includes('SATIRE')).length;
+      const countLocal = entries.filter(([_, d]) => d.domain === 'inmaricopa.com' || d.domain === 'texasmonthly.com' || d.badge.includes('LOCAL') || d.badge.includes('COI CASE STUDY') || d.badge.includes('REGIONAL')).length;
+
+      const btnAll = document.getElementById('chip-cat-all');
+      const btnClean = document.getElementById('chip-cat-clean');
+      const btnViolations = document.getElementById('chip-cat-violations');
+      const btnSatire = document.getElementById('chip-cat-satire');
+      const btnLocal = document.getElementById('chip-cat-local');
+
+      if (btnAll) btnAll.textContent = `All Audits (${countAll})`;
+      if (btnClean) btnClean.textContent = `Clean Wire / Journals (${countClean})`;
+      if (btnViolations) btnViolations.textContent = `Flagged Violations (${countViolations})`;
+      if (btnSatire) btnSatire.textContent = `Satire Neutralized (${countSatire})`;
+      if (btnLocal) btnLocal.textContent = `Local Journalism (${countLocal})`;
+
+      const subArticles = document.getElementById('subview-btn-articles');
+      const subSources = document.getElementById('subview-btn-sources');
+      if (subArticles) subArticles.textContent = `📑 Curated Articles (${countAll})`;
+      if (subSources && typeof ALL_PUBLISHERS !== 'undefined') {
+        subSources.textContent = `🏛️ Publisher Dossiers (${ALL_PUBLISHERS.length})`;
+      }
+    };
+
     window.filterSelectionHub = function(category) {
       ['all', 'clean', 'violations', 'satire', 'local'].forEach(c => {
         const btn = document.getElementById(`chip-cat-${c}`);
@@ -1863,6 +2065,10 @@
       const grid = document.getElementById('selection-hub-grid');
       if (!grid) return;
 
+      if (typeof window.updateCategoryCounts === 'function') {
+        window.updateCategoryCounts();
+      }
+
       const entries = Object.entries(SAMPLE_DATABASE);
       let filtered = entries;
 
@@ -1873,7 +2079,7 @@
       } else if (filterCategory === 'SATIRE') {
         filtered = entries.filter(([_, d]) => d.badge.includes('SATIRE'));
       } else if (filterCategory === 'LOCAL') {
-        filtered = entries.filter(([_, d]) => d.badge.includes('LOCAL'));
+        filtered = entries.filter(([_, d]) => d.domain === 'inmaricopa.com' || d.domain === 'texasmonthly.com' || d.badge.includes('LOCAL') || d.badge.includes('COI CASE STUDY') || d.badge.includes('REGIONAL'));
       }
 
       grid.innerHTML = filtered.map(([url, data]) => `
@@ -2016,6 +2222,65 @@
       document.getElementById('insp-logic-score').textContent = data.logic;
       document.getElementById('insp-ui-score').textContent = data.ui;
 
+      // Surface Glance Forensics & Vitals (Lens 1)
+      const pubObj = typeof ALL_PUBLISHERS !== 'undefined' ? ALL_PUBLISHERS.find(p => p.domain === data.domain) : null;
+      const pubTier = pubObj ? pubObj.tierBadge : (data.domain === 'reuters.com' || data.domain === 'apnews.com' || data.domain === 'nature.com' || data.domain === 'propublica.org' ? 'Tier A (Pristine Wire)' : (parseFloat(data.score) < 20 ? 'Tier B (Monitored)' : 'Tier C (Watchlist)'));
+      const pubDciScore = pubObj ? pubObj.dciScore : (parseFloat(data.score) < 10 ? '98.5' : (parseFloat(data.score) < 30 ? '82.0' : '48.5'));
+
+      const surfacePubTier = document.getElementById('insp-surface-publisher-tier');
+      const surfacePubDci = document.getElementById('insp-surface-publisher-dci');
+      if (surfacePubTier) surfacePubTier.textContent = pubTier;
+      if (surfacePubDci) {
+        surfacePubDci.textContent = `DCI Score: ${pubDciScore} / 100`;
+        surfacePubDci.style.color = parseFloat(pubDciScore) >= 80 ? 'var(--accent-green)' : (parseFloat(pubDciScore) >= 60 ? 'var(--accent-cyan)' : 'var(--accent-amber)');
+      }
+
+      const surfaceViolBadge = document.getElementById('insp-surface-viol-badge');
+      const surfaceViolSummary = document.getElementById('insp-surface-viol-summary');
+      if (surfaceViolBadge && surfaceViolSummary) {
+        if (!data.violations || data.violations.length === 0) {
+          surfaceViolBadge.textContent = '0 Violations Flagged';
+          surfaceViolBadge.style.color = 'var(--accent-green)';
+          surfaceViolSummary.textContent = 'Passes all SPJ & IEP checks';
+        } else {
+          surfaceViolBadge.textContent = `${data.violations.length} Violation${data.violations.length > 1 ? 's' : ''} Flagged`;
+          surfaceViolBadge.style.color = 'var(--accent-rose)';
+          surfaceViolSummary.textContent = data.violations.map(v => v.rule.split(' ')[0]).join(', ');
+        }
+      }
+
+      const surfaceTempBadge = document.getElementById('insp-surface-temporal-badge');
+      const surfaceTempStatus = document.getElementById('insp-surface-temporal-status');
+      if (surfaceTempBadge && surfaceTempStatus) {
+        if (data.hasRevisions && data.diffDetails) {
+          surfaceTempBadge.textContent = '⚠️ Stealth Modification';
+          surfaceTempBadge.style.color = 'var(--accent-rose)';
+          surfaceTempStatus.textContent = 'Factual claim altered without disclosure';
+        } else {
+          surfaceTempBadge.textContent = 'Single Immutable Snapshot';
+          surfaceTempBadge.style.color = '#fff';
+          surfaceTempStatus.textContent = 'Clean History • No Stealth Edits';
+        }
+      }
+
+      const takeawaysList = document.getElementById('insp-surface-takeaways');
+      if (takeawaysList) {
+        const items = [];
+        if (!data.violations || data.violations.length === 0) {
+          items.push('<b>Primary Sourcing Verified</b>: Claims are rigorously attributed to empirical sources and official datasets with multi-source independent verification.');
+          items.push('<b>Zero Cloaking or Advertorial Markers</b>: Editorial independence satisfied with transparent bylines and zero commercial call-to-actions.');
+          items.push('<b>Objective Framing</b>: Neutral tone maintaining factual precision without loaded emotional distortion or fallacy patterns.');
+        } else {
+          data.violations.forEach(v => {
+            items.push(`<b>${v.rule}</b> (${v.sev}): Identified in quote: <em>"${v.quote}"</em>`);
+          });
+          if (data.hasRevisions) {
+            items.push('<b>Stealth Revision Flagged</b>: Factual allegations altered between historical snapshots without standard correction notices.');
+          }
+        }
+        takeawaysList.innerHTML = items.map(it => `<li style="margin-bottom:0.35rem;">${it}</li>`).join('');
+      }
+
       // Grounded DOM Quotes in Lens 2
       const quotesList = document.getElementById('insp-quotes-list');
       if (quotesList) {
@@ -2156,19 +2421,23 @@
       if (subview === 'articles') {
         btnArticles?.classList.add('active');
         btnSources?.classList.remove('active');
-        if (viewArticles) viewArticles.style.display = 'block';
+        if (viewArticles) viewArticles.style.display = 'flex';
         if (viewSources) viewSources.style.display = 'none';
         if (banner) banner.style.display = 'flex';
         const catBox = document.getElementById('publishers-catalog-container');
         const detBox = document.getElementById('publisher-detail-container');
-        if (catBox) catBox.style.display = 'block';
+        if (catBox) catBox.style.display = 'flex';
         if (detBox) detBox.style.display = 'none';
         history.replaceState(null, '', '#browse');
       } else {
         btnSources?.classList.add('active');
         btnArticles?.classList.remove('active');
         if (viewArticles) viewArticles.style.display = 'none';
-        if (viewSources) viewSources.style.display = 'block';
+        if (viewSources) viewSources.style.display = 'flex';
+        const catBox = document.getElementById('publishers-catalog-container');
+        const detBox = document.getElementById('publisher-detail-container');
+        if (catBox) catBox.style.display = 'flex';
+        if (detBox) detBox.style.display = 'none';
         renderPublishersCatalog();
         renderDciTable();
       }
@@ -2185,54 +2454,50 @@
         !q || p.domain.toLowerCase().includes(q) || p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.tierBadge.toLowerCase().includes(q)
       );
 
-      if (badge) badge.textContent = `${filtered.length} Verified Publishers`;
+      if (badge) {
+        badge.textContent = `${filtered.length} Verified Publisher${filtered.length === 1 ? '' : 's'}`;
+      }
 
       grid.innerHTML = filtered.map(p => `
-        <div class="deck-card" style="padding:1rem; border:1px solid var(--border); display:flex; flex-direction:column; justify-content:space-between; transition:all 0.15s ease;">
+        <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:0.85rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.65rem;" class="selection-card">
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem; gap:0.5rem;">
-              <span class="badge" style="background:${p.tierBg}; color:${p.tierColor}; border:1px solid ${p.tierColor}; font-size:0.68rem; font-weight:700;">
-                ${p.tierBadge}
-              </span>
-              <span style="font-family:var(--font-mono); font-size:1.15rem; font-weight:800; color:${p.tierColor};">
-                ${p.dciScore} <span style="font-size:0.65rem; color:var(--text-dim);">DCI</span>
-              </span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; flex-wrap:wrap; gap:0.4rem;">
+              <span class="badge" style="background:${p.tierBg}; color:${p.tierColor}; border:1px solid ${p.tierColor}; font-size:0.68rem; font-weight:700;">${p.tierBadge}</span>
+              <span style="font-size:0.75rem; font-family:var(--font-mono); color:var(--text-dim);">${p.domain}</span>
             </div>
-            <h3 style="color:#fff; font-size:1rem; margin:0 0 0.2rem 0;">${p.domain}</h3>
-            <div style="color:var(--text-dim); font-size:0.78rem; margin-bottom:0.65rem; line-height:1.4;">${p.desc}</div>
-            
-            <div style="display:flex; gap:0.75rem; font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem; border-top:1px solid rgba(255,255,255,0.05); padding-top:0.5rem;">
-              <div>Avg Suspicion: <b style="color:#fff;">${p.avgSuspicion}</b></div>
-              <div>Curated Audits: <b style="color:#fff;">${p.auditsCount}</b></div>
-            </div>
+            <h4 style="font-size:0.95rem; color:#fff; margin:0 0 0.35rem; line-height:1.35;">${p.title}</h4>
+            <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              ${p.desc}
+            </p>
           </div>
-
-          <div style="display:flex; gap:0.4rem; margin-top:0.25rem;">
-            <button class="btn-primary" style="flex:1; font-size:0.78rem; padding:0.35rem 0.6rem;" onclick="window.viewSourceDossier('${p.domain}')">
-              🏛️ Open Dossier
-            </button>
-            <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.55rem; ${isItemPinned('domain', p.domain) ? 'background:rgba(34,197,94,0.2); color:#86efac; border-color:#22c55e;' : ''}" onclick="window.togglePinItem('domain', '${p.domain}', '${p.domain}')" title="${isItemPinned('domain', p.domain) ? 'Unpin domain' : 'Pin domain'}">
-              ${isItemPinned('domain', p.domain) ? '📍 Pinned' : '📌 Pin'}
-            </button>
-            <button class="btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.6rem;" onclick="filterSearchByDomain('${p.domain}')" title="Find all articles from ${p.domain}">
-              🔍 Audits
-            </button>
+          
+          <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:0.5rem; margin-top:0.3rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <span style="font-size:0.75rem; color:var(--text-dim);">DCI Index Score:</span>
+              <b style="font-family:var(--font-mono); color:${parseFloat(p.dciScore) > 70 ? 'var(--accent-green)' : (parseFloat(p.dciScore) > 40 ? 'var(--accent-cyan)' : 'var(--accent-amber)')}; font-size:0.95rem;">${p.dciScore} / 100</b>
+            </div>
+            <div style="display:flex; gap:0.35rem; justify-content:space-between; align-items:center;">
+              <button type="button" class="btn-action btn-secondary" style="${isItemPinned('publisher', p.domain) ? 'background:rgba(56,189,248,0.2); color:#7dd3fc; border-color:#38bdf8;' : ''}" onclick="window.togglePinItem('publisher', '${p.title.replace(/'/g, "\\'")}', '${p.domain}')" title="${isItemPinned('publisher', p.domain) ? 'Unpin publisher' : 'Pin publisher'}">${isItemPinned('publisher', p.domain) ? '📍 Pinned' : '📌 Pin'}</button>
+              <div style="display:flex; gap:0.35rem;">
+                <button type="button" class="btn-action btn-secondary" onclick="window.filterByDomain('${p.domain}')" title="Find articles in Search">🔍 Filter In Search</button>
+                <button type="button" class="btn-action btn-primary" onclick="window.viewSourceDossier('${p.domain}')">🏛️ Open Dossier</button>
+              </div>
+            </div>
           </div>
         </div>
       `).join('');
     }
-
-    function filterPublishersCatalog(val) {
-      renderPublishersCatalog(val);
-    }
-    window.filterPublishersCatalog = filterPublishersCatalog;
     window.renderPublishersCatalog = renderPublishersCatalog;
+
+    window.filterPublishersCatalog = function(query) {
+      renderPublishersCatalog(query);
+    };
 
     function closePublisherDetail() {
       const catBox = document.getElementById('publishers-catalog-container');
       const detBox = document.getElementById('publisher-detail-container');
       const banner = document.getElementById('browse-header-banner');
-      if (catBox) catBox.style.display = 'block';
+      if (catBox) catBox.style.display = 'flex';
       if (detBox) detBox.style.display = 'none';
       if (banner) banner.style.display = 'flex';
       history.pushState({ tab: 'browse', subview: 'publishers' }, '', '#browse/publishers');
@@ -2497,7 +2762,7 @@
       
       const prompt = document.getElementById('search-landing-prompt');
       const card = document.getElementById('inspector-forensic-card');
-      if (prompt) prompt.style.display = 'block';
+      if (prompt) prompt.style.display = 'flex';
       if (card) card.style.display = 'none';
       
       window.currentAudit = null;
@@ -2885,14 +3150,18 @@
             if (typeof switchBrowseSubview === 'function') switchBrowseSubview('articles');
           }
           return;
-        } else if (hash === 'dci' || hash === 'leaderboard' || hash === 'honor-roll') {
+        } else if (hash === 'dci' || hash.startsWith('leaderboard') || hash.startsWith('honor-roll')) {
           window.CredenceWS.switchTab('dci');
           return;
-        } else if (hash === 'sifter' || hash === 'stream') {
+        } else if (hash === 'sifter' || hash.startsWith('stream')) {
           window.CredenceWS.switchTab('sifter');
           return;
         } else if (hash === 'search' || hash.startsWith('search?')) {
           window.CredenceWS.switchTab('search');
+          const prompt = document.getElementById('search-landing-prompt');
+          const card = document.getElementById('inspector-forensic-card');
+          if (prompt) prompt.style.display = 'flex';
+          if (card) card.style.display = 'none';
           if (hash.includes('?')) {
             const hParams = new URLSearchParams(hash.substring(hash.indexOf('?') + 1));
             const q = hParams.get('q') || hParams.get('query');

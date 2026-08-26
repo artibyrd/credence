@@ -1122,7 +1122,11 @@ footer.footer {
 }
 
 .tab-panel.active {
-  display: block;
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {

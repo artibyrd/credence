@@ -1776,7 +1776,7 @@ export function initWorkstation(config = {}) {
     panels.forEach(p => {
       const match = p.id === `tab-${tabId}` || p.getAttribute('data-tab') === tabId;
       p.classList.toggle('active', match);
-      if (match) p.style.display = 'block';
+      if (match) p.style.display = 'flex';
       else p.style.display = 'none';
     });
 
