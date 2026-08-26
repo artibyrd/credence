@@ -1659,7 +1659,7 @@ export function transformTargetUrl(href) {
   // Handle Dev Preview Subdomains (stay on dev.* across ecosystem)
   if (isDev) {
     const prodMap = {
-      'https://admin.credence.run': 'https://dev.admin.credence.run',
+      'https://admin.credence.run': 'https://dev.credence.run/admin/',
       'https://credence.run': 'https://dev.credence.run',
       'https://credence.report': 'https://dev.credence.report',
       'https://credence.nexus': 'https://dev.credence.nexus',
@@ -1690,6 +1690,8 @@ export function transformTargetUrl(href) {
       'https://credence.nexus': '/credence.nexus/',
       'https://credence.foundation': '/credence.foundation/',
       'https://dev.admin.credence.run': '/admin.credence.run/',
+      'https://dev.credence.run/admin': '/admin.credence.run/',
+      'https://dev.credence.run/admin/': '/admin.credence.run/',
       'https://dev.credence.run': '/credence.run/',
       'https://dev.credence.report': '/credence.report/',
       'https://dev.credence.nexus': '/credence.nexus/',
