@@ -742,25 +742,26 @@ const INFO_TOPICS = {
     icon: "🏛️",
     tag: "REPUTATION PROFILE",
     tier1_plain_english: `
-      <b>In plain words:</b> Like a restaurant inspection grade for news websites.
+      <b>In plain words:</b> Like a restaurant inspection grade for news websites and publishers.
       <br><br>
-      Instead of judging a publisher by a single story, the dossier looks at their long-term track record over months—tracking how often they get facts right, how quickly they issue corrections, and whether they publish disguised advertorials.
+      Instead of judging a publisher by a single story, the dossier looks at their long-term track record over months—tracking how often they get facts right, how quickly they issue corrections, and whether they publish undisclosed advertorials.
     `,
     tier1_article: {
-      title: "✍️ Sovereign Essay: The Domain Epistemic Index",
-      desc: "Why long-term publisher track records matter more than single-article audits.",
-      url: "https://blog.credence.run/the-domain-epistemic-index"
+      title: "✍️ Empirical Case Study: Conflict of Pun-terest",
+      desc: "Investigating undisclosed councilmember co-ownership, native advertorial marketing, and police press release republishing in local journalism.",
+      url: "https://dev.credence.run/blog/conflict-of-pun-terest"
     },
     tier2_mechanics: [
-      "<b>Bayesian Smoothing</b>: Combines clean audits and violation flags so new publishers aren't unfairly penalized.",
-      "<b>Domain Credence Index (DCI)</b>: Tracks historical reliability, source transparency, and correction speed.",
-      "<b>1-Click All Audits Link</b>: Jump directly from any publisher dossier to all their curated articles in Search."
+      "<b>Longitudinal Track Record</b>: Aggregates verified audit scores across all stories published by this domain.",
+      "<b>Epistemic Integrity Classifications</b>: Detects conflicts of interest (COI), ungrounded claims, and sponsored content masquerading as reporting.",
+      "<b>Direct Article Access</b>: Inspect individual articles in the 3-tier lensing inspector or open standalone reports in the viewer."
     ],
-    cli: "credence dossier reuters.com",
-    math_proof: "DCI Score: DCI = 100 · (α + 1) / (α + β + 2). Longitudinal Stability: σ_30d = √(αβ / ((α+β)^2 · (α+β+1))).",
-    invariants: ["inv-cloudflare-assets", "inv-version-governance"],
+    cli: "credence dossier inmaricopa.com",
+    invariants: ["inv-production-telemetry-boundary", "inv-verbatim-anti-truncation"],
     links: [
-      { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics and domain normalization" }
+      { label: "📝 Conflict of Pun-terest Case Study", url: "https://dev.credence.run/blog/conflict-of-pun-terest", desc: "Longitudinal investigation of local publisher ownership conflicts and native advertorials" },
+      { label: "📘 Domain Epistemic Index Blueprint", url: "https://docs.credence.run/blueprints/domain-epistemic-index-and-sourcing-forensics", desc: "Bayesian reputation mechanics, domain normalization, and DCI scoring" },
+      { label: "🏛️ The Living Invariant Canon", url: "https://docs.credence.run/invariants", desc: "Epistemic grounding, anti-truncation, and verbatim source invariants" }
     ]
   },
 
