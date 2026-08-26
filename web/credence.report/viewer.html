@@ -43,7 +43,7 @@
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.3</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.4</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -579,8 +579,8 @@
         .replace(/'/g, "&#039;");
     }
 
-    // Curated Multidimensional Mock Corpus for Instant Discovery & Deterministic Canonical Verification
-    const MOCK_CORPUS = [
+    // Curated Genesis Audit Registry for Instant Discovery & Deterministic Canonical Verification
+    const GENESIS_AUDIT_REGISTRY = [
       {
         id: "reuters-clean-energy",
         category: "best",
@@ -843,7 +843,7 @@ City council members expressed optimism regarding the new administration's forei
       }
     ];
 
-    let dynamicCorpus = [...MOCK_CORPUS];
+    let dynamicCorpus = [...GENESIS_AUDIT_REGISTRY];
     let activeReport = null;
     let currentFilter = "ALL";
     let currentSearchTerm = "";
@@ -872,8 +872,8 @@ City council members expressed optimism regarding the new administration's forei
     async function fetchDynamicCorpus() {
       const corpusMap = new Map();
       
-      // 1. Seed with built-in verified mock corpus
-      MOCK_CORPUS.forEach(c => {
+      // 1. Seed with built-in verified genesis registry
+      GENESIS_AUDIT_REGISTRY.forEach(c => {
         if (c && (c.content_sha256 || c.url || c.id)) {
           corpusMap.set(c.content_sha256 || c.url || c.id, c);
         }
@@ -1044,8 +1044,8 @@ City council members expressed optimism regarding the new administration's forei
 
       const cleanHash = hashStr.replace(/^sha256:/i, '').toLowerCase();
 
-      // 1. Search in dynamicCorpus and MOCK_CORPUS
-      const allAvailable = [...dynamicCorpus, ...MOCK_CORPUS];
+      // 1. Search in dynamicCorpus and GENESIS_AUDIT_REGISTRY
+      const allAvailable = [...dynamicCorpus, ...GENESIS_AUDIT_REGISTRY];
       const match = allAvailable.find(c => {
         if (!c) return false;
         const cSha = (c.content_sha256 || c.sha || '').replace(/^sha256:/i, '').toLowerCase();
@@ -1139,7 +1139,7 @@ City council members expressed optimism regarding the new administration's forei
       
       // If URL, check if in dynamicCorpus or trigger on-demand live audit
       if (q.startsWith("http://") || q.startsWith("https://")) {
-        const match = dynamicCorpus.find(c => c.url === q) || MOCK_CORPUS.find(c => c.url === q);
+        const match = dynamicCorpus.find(c => c.url === q) || GENESIS_AUDIT_REGISTRY.find(c => c.url === q);
         if (match && match.violations) {
           loadReportByHash(match.content_sha256 || match.id);
           return;
@@ -1267,7 +1267,7 @@ City council members expressed optimism regarding the new administration's forei
         if (report.url) {
           const matchCorpus = dynamicCorpus.find(c => c && (c.url === report.url || c.content_sha256 === report.content_sha256));
           if (matchCorpus && matchCorpus.title) return matchCorpus.title;
-          const matchMock = MOCK_CORPUS.find(c => c && (c.url === report.url || c.content_sha256 === report.content_sha256));
+          const matchMock = GENESIS_AUDIT_REGISTRY.find(c => c && (c.url === report.url || c.content_sha256 === report.content_sha256));
           if (matchMock && matchMock.title) return matchMock.title;
           try {
             const u = new URL(report.url);

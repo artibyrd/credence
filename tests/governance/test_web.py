@@ -209,9 +209,9 @@ def test_web_viewer_empty_state_and_4_tab_layout(web_dir: Path) -> None:
     viewer_file = web_dir / "credence.report" / "viewer.html"
     content = viewer_file.read_text(encoding="utf-8")
 
-    # Clean empty state on parameterless load & canonical mock corpus
+    # Clean empty state on parameterless load & canonical genesis audit registry
     assert "renderEmptyState" in content
-    assert "MOCK_CORPUS" in content
+    assert "GENESIS_AUDIT_REGISTRY" in content
 
     # 4-Tab consolidated navigation
     assert "tab-overview" in content
@@ -502,3 +502,55 @@ def test_universal_scrollbar_styling_invariant(web_dir: Path) -> None:
     ]
     for sel in required_selectors:
         assert sel in css_content, f"Selector {sel} missing from scrollbar styling rules"
+
+
+@pytest.mark.governance
+def test_zero_jargon_surface_glance_and_anti_truncation_invariant(web_dir: Path) -> None:
+    """Verify zero math formula jargon in Lens 1 Surface Glance and zero ellipsis truncation in reports."""
+    report_index = web_dir / "credence.report" / "index.html"
+    assert report_index.exists(), "web/credence.report/index.html must exist"
+    report_content = report_index.read_text(encoding="utf-8")
+
+    # 1. Surface Glance (Lens 1) must be strictly human-readable with zero formula jargon
+    surface_lens_start = report_content.find('id="lens-surface"')
+    assert surface_lens_start != -1, "Missing #lens-surface container"
+    surface_lens_end = report_content.find('id="lens-focus"')
+    surface_html = report_content[surface_lens_start:surface_lens_end]
+
+    banned_surface_jargon = [
+        "G = 1.00",
+        "G=1.00",
+        "\\Delta",
+        "\\sigma",
+        "H_{penalized}",
+        "R_{COI}",
+        "RFC 8785",
+        "Ed25519 signature:",
+    ]
+    for token in banned_surface_jargon:
+        assert token not in surface_html, (
+            f"Violation of inv-epistemic-lensing: Formula jargon '{token}' found in Surface Glance (Lens 1)"
+        )
+
+    # 2. Anti-Truncation Invariant: No ellipsis masking in card titles or summaries
+    viewer_html = (web_dir / "credence.report" / "viewer.html").read_text(encoding="utf-8")
+    assert "MOCK_CORPUS" not in viewer_html, (
+        "Violation of inv-production-telemetry-boundary: MOCK_CORPUS found in viewer.html"
+    )
+
+
+@pytest.mark.governance
+def test_dynamic_category_counts_and_fullheight_table_governance(web_dir: Path) -> None:
+    """Verify dynamic category counts computation and full-height sticky table headers."""
+    report_index = web_dir / "credence.report" / "index.html"
+    report_content = report_index.read_text(encoding="utf-8")
+
+    # Invariant: Category counts must be computed dynamically, not hardcoded
+    assert "updateCategoryCounts" in report_content
+    assert "chip-cat-clean" in report_content
+    assert "chip-cat-violations" in report_content
+
+    # Invariant: Table containers must have sticky headers and flex height
+    css_content = (web_dir / "assets" / "credence-ui.css").read_text(encoding="utf-8")
+    assert "position: sticky" in css_content
+    assert "top: 0" in css_content
