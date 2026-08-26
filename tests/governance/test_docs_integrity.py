@@ -2434,3 +2434,84 @@ def test_svg_illustrations_visual_integrity_and_text_budget():
     assert not violations, f"Found {len(violations)} SVG illustration visual integrity violations:\n" + "\n".join(
         f"  - {v}" for v in violations
     )
+
+
+def test_cross_domain_links_and_deep_route_integrity():
+    """Validates that all cross-domain and internal deep-links across markdown documents point to valid, active endpoints and supported route handlers.
+
+    Enforces:
+    1. Zero dead hash prefixes on credence.report (must be #analytics/, #dossier/, #report/, #browse, #dci, #sifter, #search, #data=).
+    2. Valid sub-app file paths (index.html, viewer.html, dashboard.html, etc.).
+    3. Valid hash prefixes on credence.nexus (#merit, #nodes, #topology, #mesh, #studio, #admin).
+    4. Valid hash prefixes on credence.foundation (#governance, #taxonomies, #custody, #sandbox, #invariants).
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    docs_root = repo_root / "credence-docs"
+
+    valid_report_hashes = (
+        "#analytics/",
+        "#dossier/",
+        "#publisher/",
+        "#report/",
+        "#inspect/",
+        "#browse",
+        "#dci",
+        "#sifter",
+        "#search",
+        "#data=",
+    )
+    valid_nexus_hashes = ("#merit", "#badges", "#nodes", "#topology", "#mesh", "#studio", "#admin")
+    valid_foundation_hashes = ("#governance", "#taxonomies", "#custody", "#sandbox", "#invariants", "#charter")
+
+    violations = []
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8", errors="ignore")
+        links = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", content)
+        html_links = re.findall(r'<a\s+[^>]*href=["\']([^"\']+)["\']', content)
+        all_urls = [link_tuple[1] for link_tuple in links] + html_links
+
+        for url in all_urls:
+            # Check credence.report URLs
+            if "credence.report" in url:
+                parsed = url.split("credence.report", 1)[1]
+                path_part = parsed.split("#")[0] if "#" in parsed else parsed
+                hash_part = "#" + parsed.split("#", 1)[1] if "#" in parsed else ""
+
+                if (
+                    path_part
+                    and path_part not in ("", "/", "/index.html", "/viewer.html", "/history.html")
+                    and not path_part.startswith("/api/")
+                ):
+                    # Check if domain path like /domain/... or /receipt/...
+                    if not path_part.startswith(("/domain/", "/receipt/", "/assets/")):
+                        violations.append(f"{md_file.name}: Invalid credence.report path '{path_part}' in '{url}'")
+
+                if hash_part:
+                    if not any(hash_part.startswith(vh) for vh in valid_report_hashes):
+                        violations.append(f"{md_file.name}: Invalid credence.report hash '{hash_part}' in '{url}'")
+
+            # Check credence.nexus URLs
+            elif "credence.nexus" in url:
+                parsed = url.split("credence.nexus", 1)[1]
+                path_part = parsed.split("#")[0] if "#" in parsed else parsed
+                hash_part = "#" + parsed.split("#", 1)[1] if "#" in parsed else ""
+
+                if hash_part:
+                    if not any(hash_part.startswith(vh) for vh in valid_nexus_hashes):
+                        violations.append(f"{md_file.name}: Invalid credence.nexus hash '{hash_part}' in '{url}'")
+
+            # Check credence.foundation URLs
+            elif "credence.foundation" in url:
+                parsed = url.split("credence.foundation", 1)[1]
+                path_part = parsed.split("#")[0] if "#" in parsed else parsed
+                hash_part = "#" + parsed.split("#", 1)[1] if "#" in parsed else ""
+
+                if hash_part:
+                    if not any(hash_part.startswith(vh) for vh in valid_foundation_hashes):
+                        violations.append(f"{md_file.name}: Invalid credence.foundation hash '{hash_part}' in '{url}'")
+
+    assert not violations, f"Found {len(violations)} deep-link route integrity violations:\n" + "\n".join(
+        f"  - {v}" for v in violations
+    )

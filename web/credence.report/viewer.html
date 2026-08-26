@@ -1860,23 +1860,70 @@ ${summaryContent}
       }
     };
 
-    // Check URL hash for direct JSON payload (e.g. #data=<base64_encoded_json>)
-    function checkUrlHashData() {
-      if (window.location.hash && window.location.hash.startsWith("#data=")) {
-        try {
-          const rawB64 = window.location.hash.slice(6);
-          const decoded = JSON.parse(decodeURIComponent(escape(atob(rawB64))));
-          if (decoded && decoded.content_sha256) {
-            renderReport(decoded);
-            document.getElementById("header-query").value = decoded.content_sha256;
-            return true;
+    // Universal Client-Side Hash & Parameter Router
+    async function handleLocationRouting() {
+      const hash = (window.location.hash || '').replace(/^#/, '').trim();
+      const q = getQueryParam("q") || getQueryParam("url");
+      const domainParam = getQueryParam("domain");
+      const tabParam = getQueryParam("tab");
+
+      if (hash) {
+        if (hash.startsWith("data=")) {
+          if (checkUrlHashData()) return;
+        } else if (hash.startsWith("analytics/") || hash.startsWith("trends/") || hash.startsWith("publisher/") || hash.startsWith("dossier/")) {
+          const domain = hash.split("/")[1] || "";
+          if (domain && window.loadPublisherAnalytics) {
+            await window.loadPublisherAnalytics(domain);
+            return;
           }
-        } catch (e) {
-          console.warn("Failed to parse #data hash payload:", e);
+        } else if (hash.startsWith("report/") || hash.startsWith("inspect/") || hash.startsWith("audit/")) {
+          const target = hash.substring(hash.indexOf("/") + 1);
+          if (target && window.loadReportByHash) {
+            await window.loadReportByHash(target);
+            return;
+          }
+        } else if (hash === "publisher" || hash === "trends" || hash === "tab-publisher") {
+          window.switchTab("tab-publisher");
+          return;
+        } else if (hash === "findings" || hash === "reader" || hash === "tab-findings") {
+          window.switchTab("tab-findings");
+          return;
+        } else if (hash === "crypto" || hash === "proof" || hash === "tab-crypto") {
+          window.switchTab("tab-crypto");
+          return;
+        } else if (hash === "overview" || hash === "tab-overview") {
+          window.switchTab("tab-overview");
+          return;
         }
       }
-      return false;
+
+      if (domainParam && window.loadPublisherAnalytics) {
+        await window.loadPublisherAnalytics(domainParam);
+        return;
+      }
+
+      if (q && window.loadReportByHash) {
+        await window.loadReportByHash(q);
+        return;
+      }
+
+      if (tabParam && window.switchTab) {
+        const tabMap = {
+          overview: "tab-overview",
+          findings: "tab-findings",
+          publisher: "tab-publisher",
+          trends: "tab-publisher",
+          crypto: "tab-crypto",
+          proof: "tab-crypto",
+        };
+        window.switchTab(tabMap[tabParam] || tabParam);
+        return;
+      }
+
+      renderEmptyState();
     }
+
+    window.handleLocationRouting = handleLocationRouting;
 
     // Initialization lifecycle
     window.addEventListener("DOMContentLoaded", async () => {
@@ -1885,22 +1932,11 @@ ${summaryContent}
         window.setViewMode(viewParam);
       }
 
-      // Check if direct base64 data was supplied in URL hash
-      if (checkUrlHashData()) {
-        return;
-      }
-
       // Fetch dynamic reports from live REST backend or static catalog
       await fetchDynamicCorpus();
 
-      const q = getQueryParam("q") || getQueryParam("url");
-      if (q) {
-        await window.loadReportByHash(q);
-        return;
-      }
-
-      // When no query parameter is provided, render clean empty state waiting for user input
-      renderEmptyState();
+      await handleLocationRouting();
+      window.addEventListener("hashchange", handleLocationRouting);
     });
   </script>
 

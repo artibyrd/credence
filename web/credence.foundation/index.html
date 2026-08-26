@@ -1187,8 +1187,25 @@ clusters:
   <script type="module">
     import { initWorkstation, verifyEd25519Signature, showToast } from '../assets/credence-workstation.js';
 
+    function handleFoundationRouting() {
+      const hash = (window.location.hash || '').replace(/^#/, '').trim();
+      const tabMap = {
+        taxonomies: 'taxonomies',
+        custody: 'custody',
+        sandbox: 'sandbox',
+        governance: 'governance',
+        invariants: 'governance',
+        charter: 'governance',
+      };
+      if (hash && tabMap[hash] && window.CredenceWS && window.CredenceWS.switchTab) {
+        window.CredenceWS.switchTab(tabMap[hash]);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       initWorkstation({ defaultTab: 'taxonomies' });
+      handleFoundationRouting();
+      window.addEventListener('hashchange', handleFoundationRouting);
     });
 
     window.copyRuleId = function(ruleId) {

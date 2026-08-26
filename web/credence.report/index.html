@@ -2842,32 +2842,89 @@
     window.renderDossierDom('reuters.com');
     window.renderSifterStream();
 
-    // Check for incoming rule, query, domain, or URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const incomingRule = urlParams.get('rule');
-    const incomingUrl = urlParams.get('url');
-    const incomingQuery = urlParams.get('query') || urlParams.get('subject');
-    const incomingDomain = urlParams.get('domain');
-    const incomingTab = urlParams.get('tab');
+    // Universal Client-Side Hash & Parameter Router
+    function handleLocationRouting() {
+      const hash = (window.location.hash || '').replace(/^#/, '').trim();
+      const urlParams = new URLSearchParams(window.location.search);
 
-    if (incomingTab) {
-      window.CredenceWS.switchTab(incomingTab);
+      // 1. Handle Hash Routes
+      if (hash) {
+        if (hash.startsWith('analytics/') || hash.startsWith('dossier/') || hash.startsWith('publisher/')) {
+          const domain = hash.split('/')[1] || '';
+          if (domain) {
+            window.viewSourceDossier(domain);
+            return;
+          }
+        } else if (hash.startsWith('report/') || hash.startsWith('inspect/') || hash.startsWith('audit/')) {
+          const target = hash.substring(hash.indexOf('/') + 1);
+          if (target) {
+            window.CredenceWS.switchTab('search');
+            evaluateSource(target);
+            return;
+          }
+        } else if (hash === 'browse' || hash.startsWith('browse/')) {
+          window.CredenceWS.switchTab('browse');
+          if (hash === 'browse/publishers' || hash === 'browse/sources') {
+            if (typeof switchBrowseSubview === 'function') switchBrowseSubview('sources');
+          } else {
+            if (typeof switchBrowseSubview === 'function') switchBrowseSubview('articles');
+          }
+          return;
+        } else if (hash === 'dci' || hash === 'leaderboard' || hash === 'honor-roll') {
+          window.CredenceWS.switchTab('dci');
+          return;
+        } else if (hash === 'sifter' || hash === 'stream') {
+          window.CredenceWS.switchTab('sifter');
+          return;
+        } else if (hash === 'search' || hash.startsWith('search?')) {
+          window.CredenceWS.switchTab('search');
+          if (hash.includes('?')) {
+            const hParams = new URLSearchParams(hash.substring(hash.indexOf('?') + 1));
+            const q = hParams.get('q') || hParams.get('query');
+            if (q) {
+              const qInput = document.getElementById('query');
+              if (qInput) qInput.value = q;
+              window.performMultiCriteriaSearch(true);
+            }
+          }
+          return;
+        } else if (hash.startsWith('rule/')) {
+          const ruleCode = hash.split('/')[1];
+          window.applyRuleFilter(ruleCode);
+          return;
+        }
+      }
+
+      // 2. Handle URL Query Parameters
+      const incomingRule = urlParams.get('rule');
+      const incomingUrl = urlParams.get('url');
+      const incomingQuery = urlParams.get('query') || urlParams.get('subject');
+      const incomingDomain = urlParams.get('domain');
+      const incomingTab = urlParams.get('tab');
+
+      if (incomingTab) {
+        window.CredenceWS.switchTab(incomingTab);
+      }
+
+      if (incomingDomain) {
+        window.viewSourceDossier(incomingDomain);
+      } else if (incomingRule) {
+        window.applyRuleFilter(incomingRule);
+      } else if (incomingQuery) {
+        window.CredenceWS.switchTab('search');
+        const qInput = document.getElementById('query');
+        if (qInput) qInput.value = incomingQuery;
+        window.performMultiCriteriaSearch(true);
+      } else if (incomingUrl) {
+        evaluateSource(incomingUrl);
+      } else {
+        showDiscoveryHub();
+      }
     }
 
-    if (incomingDomain) {
-      window.viewSourceDossier(incomingDomain);
-    } else if (incomingRule) {
-      window.applyRuleFilter(incomingRule);
-    } else if (incomingQuery) {
-      window.CredenceWS.switchTab('search');
-      document.getElementById('query').value = incomingQuery;
-      window.performMultiCriteriaSearch(true);
-    } else if (incomingUrl) {
-      evaluateSource(incomingUrl);
-    } else {
-      // Default: clean initial state with selection catalog initialized
-      showDiscoveryHub();
-    }
+    window.handleLocationRouting = handleLocationRouting;
+    window.addEventListener('hashchange', handleLocationRouting);
+    handleLocationRouting();
 
     // Global Keybindings
     window.addEventListener('keydown', (e) => {
