@@ -340,6 +340,11 @@ async def bootstrap_preset_feeds(
                     session.add(sub)
                     await session.commit()
                     added_count += 1
+                elif "inmaricopa.com" in url and not existing.is_sentinel:
+                    existing.is_sentinel = True
+                    existing.sentinel_interval_seconds = 300
+                    session.add(existing)
+                    await session.commit()
             except Exception:
                 await session.rollback()
 

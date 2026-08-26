@@ -77,3 +77,33 @@ async def test_sentinel_rest_api(db_session: AsyncSession) -> None:
     data = resp_ok.json()
     assert data["is_sentinel"] is True
     assert data["interval_seconds"] == 180
+
+
+@pytest.mark.asyncio
+async def test_inmaricopa_preset_sentinel_upgrade_existing(db_session: AsyncSession) -> None:
+    """Assert pre-existing inmaricopa subscription with is_sentinel=False is automatically upgraded."""
+    stmt = select(FeedSubscription).where(FeedSubscription.feed_url == "https://inmaricopa.com/feed/")
+    sub = (await db_session.exec(stmt)).first()
+    if not sub:
+        sub = FeedSubscription(
+            feed_url="https://inmaricopa.com/feed/",
+            title="InMaricopa: Local News & Civic",
+            priority_tier=1,
+            is_active=True,
+            is_sentinel=False,
+            sentinel_interval_seconds=300,
+        )
+        db_session.add(sub)
+    else:
+        sub.is_sentinel = False
+        db_session.add(sub)
+    await db_session.commit()
+
+    # Re-run bootstrap_preset_feeds
+    await bootstrap_preset_feeds(db_session, category="regional-civic")
+
+    stmt = select(FeedSubscription).where(FeedSubscription.feed_url == "https://inmaricopa.com/feed/")
+    refreshed = (await db_session.exec(stmt)).first()
+    assert refreshed is not None
+    assert refreshed.is_sentinel is True
+    assert refreshed.sentinel_interval_seconds == 300

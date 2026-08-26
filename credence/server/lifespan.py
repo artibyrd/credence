@@ -49,6 +49,10 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                         from credence.germinate import germinate_node
 
                         await germinate_node(session=session, burst_items=3, sync_mesh=True, verbose=True)
+                    else:
+                        from credence.feeds.worker import bootstrap_preset_feeds
+
+                        await bootstrap_preset_feeds(session)
             except Exception as e:
                 logger.warning("Auto-germination background task encountered error: %s", e)
 
