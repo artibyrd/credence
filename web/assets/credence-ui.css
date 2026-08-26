@@ -1774,63 +1774,123 @@ body.tui-mode .workstation-tab-btn.active {
   color: var(--accent-cyan);
 }
 
-/* Sleek Workstation Scrollpane & Custom Scrollbars */
+/* Sleek Workstation Universal Custom Scrollbars */
+*,
+html,
+body,
+.tab-panel,
+.tab-panel.active,
+#tab-search,
+#tab-browse,
+#tab-dci,
+#tab-sifter,
+.deck-stage,
+.deck-rail,
 .ws-scroll-pane,
 .ws-table-container,
-.deck-rail,
 #search-results-list,
 #pinned-sources-container,
 #sifter-stream-feed,
 #sifter-stream-container,
-.log-terminal-body {
+.log-terminal-body,
+.info-modal-body,
+.discovery-drawer-body {
   scrollbar-width: thin;
   scrollbar-color: rgba(56, 189, 248, 0.25) rgba(0, 0, 0, 0.3);
 }
 
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.tab-panel::-webkit-scrollbar,
+.tab-panel.active::-webkit-scrollbar,
+#tab-search::-webkit-scrollbar,
+#tab-browse::-webkit-scrollbar,
+#tab-dci::-webkit-scrollbar,
+#tab-sifter::-webkit-scrollbar,
+.deck-stage::-webkit-scrollbar,
+.deck-rail::-webkit-scrollbar,
 .ws-scroll-pane::-webkit-scrollbar,
 .ws-table-container::-webkit-scrollbar,
-.deck-rail::-webkit-scrollbar,
 #search-results-list::-webkit-scrollbar,
 #pinned-sources-container::-webkit-scrollbar,
 #sifter-stream-feed::-webkit-scrollbar,
 #sifter-stream-container::-webkit-scrollbar,
-.log-terminal-body::-webkit-scrollbar {
+.log-terminal-body::-webkit-scrollbar,
+.info-modal-body::-webkit-scrollbar,
+.discovery-drawer-body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
+*::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.tab-panel::-webkit-scrollbar-track,
+.tab-panel.active::-webkit-scrollbar-track,
+#tab-search::-webkit-scrollbar-track,
+#tab-browse::-webkit-scrollbar-track,
+#tab-dci::-webkit-scrollbar-track,
+#tab-sifter::-webkit-scrollbar-track,
+.deck-stage::-webkit-scrollbar-track,
+.deck-rail::-webkit-scrollbar-track,
 .ws-scroll-pane::-webkit-scrollbar-track,
 .ws-table-container::-webkit-scrollbar-track,
-.deck-rail::-webkit-scrollbar-track,
 #search-results-list::-webkit-scrollbar-track,
 #pinned-sources-container::-webkit-scrollbar-track,
 #sifter-stream-feed::-webkit-scrollbar-track,
 #sifter-stream-container::-webkit-scrollbar-track,
-.log-terminal-body::-webkit-scrollbar-track {
+.log-terminal-body::-webkit-scrollbar-track,
+.info-modal-body::-webkit-scrollbar-track,
+.discovery-drawer-body::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.25);
   border-radius: 4px;
 }
 
+*::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.tab-panel::-webkit-scrollbar-thumb,
+.tab-panel.active::-webkit-scrollbar-thumb,
+#tab-search::-webkit-scrollbar-thumb,
+#tab-browse::-webkit-scrollbar-thumb,
+#tab-dci::-webkit-scrollbar-thumb,
+#tab-sifter::-webkit-scrollbar-thumb,
+.deck-stage::-webkit-scrollbar-thumb,
+.deck-rail::-webkit-scrollbar-thumb,
 .ws-scroll-pane::-webkit-scrollbar-thumb,
 .ws-table-container::-webkit-scrollbar-thumb,
-.deck-rail::-webkit-scrollbar-thumb,
 #search-results-list::-webkit-scrollbar-thumb,
 #pinned-sources-container::-webkit-scrollbar-thumb,
 #sifter-stream-feed::-webkit-scrollbar-thumb,
 #sifter-stream-container::-webkit-scrollbar-thumb,
-.log-terminal-body::-webkit-scrollbar-thumb {
+.log-terminal-body::-webkit-scrollbar-thumb,
+.info-modal-body::-webkit-scrollbar-thumb,
+.discovery-drawer-body::-webkit-scrollbar-thumb {
   background: rgba(56, 189, 248, 0.25);
   border-radius: 4px;
 }
 
+*::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.tab-panel::-webkit-scrollbar-thumb:hover,
+.tab-panel.active::-webkit-scrollbar-thumb:hover,
+#tab-search::-webkit-scrollbar-thumb:hover,
+#tab-browse::-webkit-scrollbar-thumb:hover,
+#tab-dci::-webkit-scrollbar-thumb:hover,
+#tab-sifter::-webkit-scrollbar-thumb:hover,
+.deck-stage::-webkit-scrollbar-thumb:hover,
+.deck-rail::-webkit-scrollbar-thumb:hover,
 .ws-scroll-pane::-webkit-scrollbar-thumb:hover,
 .ws-table-container::-webkit-scrollbar-thumb:hover,
-.deck-rail::-webkit-scrollbar-thumb:hover,
 #search-results-list::-webkit-scrollbar-thumb:hover,
 #pinned-sources-container::-webkit-scrollbar-thumb:hover,
 #sifter-stream-feed::-webkit-scrollbar-thumb:hover,
 #sifter-stream-container::-webkit-scrollbar-thumb:hover,
-.log-terminal-body::-webkit-scrollbar-thumb:hover {
+.log-terminal-body::-webkit-scrollbar-thumb:hover,
+.info-modal-body::-webkit-scrollbar-thumb:hover,
+.discovery-drawer-body::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 189, 248, 0.5);
 }
 
