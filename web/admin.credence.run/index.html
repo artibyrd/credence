@@ -171,6 +171,35 @@
           Looking to inspect public node reality? Visit the <a href="https://credence.nexus" style="color: #38bdf8;">Nexus NOC</a> or <a href="https://credence.report" style="color: #38bdf8;">Reports Lab</a>.
         </div>
       </div>
+
+      <!-- Public Sentinel Ingestion Transparency (Full Epistemic Disclosure) -->
+      <div class="cockpit-card" style="max-width: 840px; margin: 2rem auto; padding: 1.5rem;">
+        <div class="cockpit-card-header">
+          <h3 class="cockpit-card-title">
+            <span>🛡️ Active Sentinel Sources (Public Surveillance Disclosure)</span>
+          </h3>
+          <span class="pill" id="locked-sentinel-count-pill" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:9999px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">0 Sentinels Active</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+          In accordance with our <strong>Universal Epistemic Disclosure Invariant</strong>, node configuration changes are operator-gated, but all active prioritized Sentinel feeds on this node are publicly disclosed to prevent covert narrative manipulation.
+        </p>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #f1f5f9;">
+            <thead>
+              <tr style="background: #060911; color: var(--admin-cyan); border-bottom: 1px solid var(--admin-card-border);">
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Domain</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Target Feed URL</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Interval</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Quarantine Status</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Reputation</th>
+              </tr>
+            </thead>
+            <tbody id="locked-sentinels-tbody">
+              <tr><td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading active sentinel sources...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- UNLOCKED COMMAND COCKPIT (When authenticated) -->
@@ -758,8 +787,57 @@
       if (feed) feed.innerHTML = '<div class="log-entry info">[SYSTEM] Log feed cleared</div>';
     };
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function loadPublicSentinels() {
+      try {
+        const res = await fetch('/api/feeds/sentinels');
+        if (res.ok) {
+          const data = await res.json();
+          renderPublicSentinels(data.sentinels || []);
+        }
+      } catch (err) {
+        console.warn('Unable to load public sentinels:', err);
+      }
+    }
+
+    function renderPublicSentinels(sentinels) {
+      const tbody = document.getElementById('locked-sentinels-tbody');
+      const countEl = document.getElementById('locked-sentinel-count-pill');
+      if (countEl) countEl.textContent = `${sentinels.length} Active Sentinel${sentinels.length === 1 ? '' : 's'}`;
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!sentinels.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:1rem; text-align:center; color:var(--text-muted);">No active sentinel sources on this node.</td></tr>';
+        return;
+      }
+      sentinels.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        const isQuarantined = s.quarantine_status && s.quarantine_status !== 'NEUTRAL' && s.quarantine_status !== 'CLEAN';
+        const qColor = isQuarantined ? '#f43f5e' : '#4ade80';
+        tr.innerHTML = `
+          <td style="padding:0.6rem 0.75rem; font-weight:700;">${escapeHtml(s.domain || '')}</td>
+          <td style="padding:0.6rem 0.75rem;"><code style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(s.feed_url || '')}</code></td>
+          <td style="padding:0.6rem 0.75rem;"><span style="color:#38bdf8;">${s.interval_seconds || 300}s</span> (${Math.round((s.interval_seconds || 300)/60)}m)</td>
+          <td style="padding:0.6rem 0.75rem;"><span style="color:${qColor}; font-weight:600;">${s.quarantine_status || 'NEUTRAL'}</span></td>
+          <td style="padding:0.6rem 0.75rem; font-family:monospace;">Q = ${s.reputation_score ? s.reputation_score.toFixed(1) : '50.0'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     // Initial render
     renderAdminView();
+    loadPublicSentinels();
   </script>
 </body>
 </html>

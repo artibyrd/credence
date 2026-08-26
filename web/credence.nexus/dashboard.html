@@ -456,6 +456,35 @@
 
     <!-- Tab 2: Sources & Domains -->
     <div id="tab-sources" class="tab-content">
+      <!-- Active Sentinel Sources (Public Surveillance Disclosure) -->
+      <div class="chart-box" style="margin-bottom: 1.5rem;">
+        <div class="chart-title">
+          <span>🛡️ Active Node Sentinel Sources (Public Surveillance Disclosure)</span>
+          <span class="pill pill-cyan" id="sentinel-count-pill">0 Sentinels Active</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+          Under the <strong>Living Canon Invariants</strong>, node operators may prioritize high-frequency polling for longitudinal case studies. To guarantee full epistemic disclosure and prevent hidden manipulation, all active sentinel targets on this node are publicly disclosed below.
+        </p>
+        <div class="data-table-container">
+          <table class="stats-table" id="sentinels-stats-table">
+            <thead>
+              <tr>
+                <th>Domain / Publisher</th>
+                <th>Target Feed URL</th>
+                <th>Priority Tier</th>
+                <th>Ingestion Interval</th>
+                <th>Quarantine Status</th>
+                <th>Reputation ($Q_i$)</th>
+                <th>Last Polled</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading sentinel telemetry...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="chart-box">
         <div class="chart-title">
           <span>Audited Publisher Domains & Epistemic Trust Bands</span>
@@ -804,6 +833,46 @@
         console.warn('Live endpoint unreachable:', err);
         renderOfflineState(endpoint, err);
       }
+      fetchSentinels(endpoint);
+    }
+
+    async function fetchSentinels(endpoint) {
+      try {
+        const res = await fetch(`${endpoint.replace(/\/$/, '')}/api/feeds/sentinels`);
+        if (res.ok) {
+          const data = await res.json();
+          renderSentinels(data.sentinels || []);
+        }
+      } catch (err) {
+        console.warn('Sentinel telemetry unavailable:', err);
+      }
+    }
+
+    function renderSentinels(sentinels) {
+      const tbody = document.querySelector('#sentinels-stats-table tbody');
+      const countPill = document.getElementById('sentinel-count-pill');
+      if (countPill) countPill.textContent = `${sentinels.length} Active Sentinel${sentinels.length === 1 ? '' : 's'}`;
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!sentinels.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No active sentinel sources configured on this node.</td></tr>';
+        return;
+      }
+      sentinels.forEach(s => {
+        const tr = document.createElement('tr');
+        const isQuarantined = s.quarantine_status && s.quarantine_status !== 'NEUTRAL' && s.quarantine_status !== 'CLEAN';
+        const qPill = isQuarantined ? 'pill-red' : 'pill-green';
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(s.domain || '')}</strong></td>
+          <td><code style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(s.feed_url || '')}</code></td>
+          <td><span class="pill pill-cyan">Tier ${s.priority_tier || 1}</span></td>
+          <td><strong>${s.interval_seconds || 300}s</strong> (${Math.round((s.interval_seconds || 300)/60)}m)</td>
+          <td><span class="pill ${qPill}">${s.quarantine_status || 'NEUTRAL'}</span></td>
+          <td>Q = ${s.reputation_score ? s.reputation_score.toFixed(1) : '50.0'}</td>
+          <td style="font-size:0.78rem; color:var(--text-muted);">${s.last_polled_at ? new Date(s.last_polled_at).toLocaleTimeString() : 'Pending'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function renderOfflineState(endpoint, err) {
