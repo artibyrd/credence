@@ -86,7 +86,8 @@ async def capture_webpage_fastpath(
             dom_path: Optional[str] = None
             if save_artifacts:
                 storage = get_blob_storage()
-                cas_key = f"cas/sha256/{content_hash}.html"
+                clean_hex = content_hash.removeprefix("sha256:")
+                cas_key = f"cas/sha256/{clean_hex}.html"
                 dom_path = await storage.put_blob(
                     cas_key, raw_html.encode("utf-8"), content_type="text/plain; charset=utf-8"
                 )
