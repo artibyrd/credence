@@ -248,18 +248,23 @@ def build_parser() -> argparse.ArgumentParser:
     # mesh
     p_mesh = subparsers.add_parser("mesh", help="Manage P2P mesh peering, gossip, and decentralized submission")
     p_mesh.add_argument(
-        "action", default="start", nargs="?", choices=["start", "peers", "health", "discover", "status", "submit"]
+        "action",
+        default="start",
+        nargs="?",
+        choices=["start", "peers", "health", "discover", "status", "submit", "audit-feed", "feed"],
     )
-    p_mesh.add_argument("target", nargs="?", default="", help="Target URL or report JSON file (for submit)")
+    p_mesh.add_argument("target", nargs="?", default="", help="Target URL or report JSON file (for submit/feed)")
     p_mesh.add_argument("--port", type=int, default=8765, help="Mesh listen port")
     p_mesh.add_argument("--host", default="0.0.0.0", help="Mesh listen host")  # noqa: S104
     p_mesh.add_argument("--peer", nargs="*", help="Initial peer websocket URL")
-    p_mesh.add_argument("--node", help="Target remote mesh node URL (for submit)")
+    p_mesh.add_argument("--node", help="Target remote mesh node URL (for submit/feed)")
     p_mesh.add_argument("--batch", action="store_true", help="Submit in batch format")
     p_mesh.add_argument("--json", action="store_true", help="Output raw JSON response")
     p_mesh.add_argument("--node-id", "--node-name", dest="node_id", default=None, help="Node alias")
     p_mesh.add_argument("--tier", default="dns-srv", help="Discovery tier")
     p_mesh.add_argument("--org-manifest", help="Path to organization manifest")
+    p_mesh.add_argument("--limit", type=int, default=10, help="Maximum articles to audit from feed")
+    p_mesh.add_argument("--profile", default="balanced", help="Cost / evaluation profile (balanced, ultra, free)")
 
     # compare (alias: models)
     p_comp = subparsers.add_parser(

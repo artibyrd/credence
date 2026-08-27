@@ -248,3 +248,9 @@ ignite burst="3":
 [group('core: engine')]
 experiment task="shadow-audit" *args="": (preflight "poetry")
     poetry run python -m credence.experiments.{{replace(task, "-", "_")}} {{args}}
+
+# Routinely audit InMaricopa feed articles and contribute signed attestations to remote node
+[group('core: cluster')]
+audit-inmaricopa node="https://credence-dev-865363499314.us-central1.run.app" limit="10": (preflight "poetry")
+    poetry run credence mesh audit-feed https://inmaricopa.com/feed/ --node {{node}} --limit {{limit}}
+

@@ -198,6 +198,19 @@ def dispatch_command(args: argparse.Namespace) -> None:
                 )
             )
             sys.exit(code)
+        elif args.action in ("audit-feed", "feed"):
+            from credence.cli.commands.mesh import run_mesh_audit_feed_command
+
+            code = asyncio.run(
+                run_mesh_audit_feed_command(
+                    feed_or_domain=args.target,
+                    node=getattr(args, "node", None),
+                    limit=getattr(args, "limit", 10),
+                    profile=getattr(args, "profile", "balanced"),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+            sys.exit(code)
         elif args.action in ("peers", "health", "status"):
             cli_stats(mesh=True)
         else:
