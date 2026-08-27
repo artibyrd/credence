@@ -132,20 +132,28 @@ class TaxonomyRegistry:
 
     def get_catalog(self, catalog_id: str) -> Optional[TaxonomyCatalog]:
         """Retrieve a loaded catalog by catalog_id."""
+        if not self.catalogs:
+            self.load_all()
         return self.catalogs.get(catalog_id)
 
     def get_rule(self, rule_id_or_uri: str) -> Optional[TaxonomyRule]:
         """Lookup a rule by either its short rule_id (e.g. SPJ-1.1) or full namespaced URI."""
+        if not self.catalogs:
+            self.load_all()
         if rule_id_or_uri in self.rules_by_uri:
             return self.rules_by_uri[rule_id_or_uri]
         return self.rules_by_id.get(rule_id_or_uri)
 
     def list_catalogs(self) -> List[TaxonomyCatalog]:
         """Return list of all registered catalogs."""
+        if not self.catalogs:
+            self.load_all()
         return list(self.catalogs.values())
 
     def list_rules(self) -> List[TaxonomyRule]:
         """Return list of all registered rules."""
+        if not self.catalogs:
+            self.load_all()
         return list(self.rules_by_uri.values())
 
     def get_catalog_hashes(self) -> Dict[str, str]:

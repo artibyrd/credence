@@ -11,8 +11,9 @@ from typing import AsyncGenerator
 from sqlmodel import col, func, select
 from starlette.applications import Starlette
 
+from credence.config import NodeRole, settings
 from credence.db import get_async_session, init_db
-from credence.models import Audit, FeedSubscription, Snapshot
+from credence.models import FeedSubscription
 
 logger = logging.getLogger("credence.server.lifespan")
 
@@ -80,25 +81,22 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                             except Exception as se:
                                 logger.exception("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
 
-                        # Re-evaluate all stored URLs to ensure scores reflect the latest heuristic engine
-                        try:
-                            from credence.pipeline.evaluator import audit_url
+                        # Trigger aggressive re-scoring of heuristic audits on evaluator nodes
+                        if (
+                            settings.CREDENCE_NODE_ROLE in (NodeRole.EVALUATOR, NodeRole.HYBRID)
+                            and settings.CREDENCE_AUTO_RESCORE_HEURISTICS
+                        ):
+                            try:
+                                from credence.pipeline.rescore import rescore_heuristic_audits
 
-                            stmt_re = (
-                                select(Snapshot.url)
-                                .join(Audit, col(Audit.snapshot_id) == col(Snapshot.id))
-                                .where(col(Snapshot.url).is_not(None))
-                                .distinct()
-                            )
-                            stored_urls = list((await session.exec(stmt_re)).all())
-                            for s_url in stored_urls:
-                                if s_url and s_url.startswith("http"):
-                                    try:
-                                        await audit_url(s_url, session=session, force_refresh=True)
-                                    except Exception as ue:
-                                        logger.debug("Background re-evaluation exception for %s: %s", s_url, ue)
-                        except Exception as re_err:
-                            logger.debug("Stored URLs re-evaluation error: %s", re_err)
+                                rescored = await rescore_heuristic_audits(session, limit=20)
+                                if rescored:
+                                    logger.info(
+                                        "⚡ Evaluator sweep successfully rescored %d low-confidence audits with LLM pipeline",
+                                        len(rescored),
+                                    )
+                            except Exception as r_err:
+                                logger.debug("Evaluator re-scoring sweep exception: %s", r_err)
 
                         # Create database backup after initial boot sifting
                         try:

@@ -246,16 +246,48 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("benchmark", help="Run epistemic benchmark evaluation")
 
     # mesh
-    p_mesh = subparsers.add_parser("mesh", help="Manage P2P mesh peering and gossip daemon")
+    p_mesh = subparsers.add_parser("mesh", help="Manage P2P mesh peering, gossip, and decentralized submission")
     p_mesh.add_argument(
-        "action", default="start", nargs="?", choices=["start", "peers", "health", "discover", "status"]
+        "action", default="start", nargs="?", choices=["start", "peers", "health", "discover", "status", "submit"]
     )
+    p_mesh.add_argument("target", nargs="?", default="", help="Target URL or report JSON file (for submit)")
     p_mesh.add_argument("--port", type=int, default=8765, help="Mesh listen port")
     p_mesh.add_argument("--host", default="0.0.0.0", help="Mesh listen host")  # noqa: S104
     p_mesh.add_argument("--peer", nargs="*", help="Initial peer websocket URL")
+    p_mesh.add_argument("--node", help="Target remote mesh node URL (for submit)")
+    p_mesh.add_argument("--batch", action="store_true", help="Submit in batch format")
+    p_mesh.add_argument("--json", action="store_true", help="Output raw JSON response")
     p_mesh.add_argument("--node-id", "--node-name", dest="node_id", default=None, help="Node alias")
     p_mesh.add_argument("--tier", default="dns-srv", help="Discovery tier")
     p_mesh.add_argument("--org-manifest", help="Path to organization manifest")
+
+    # compare (alias: models)
+    p_comp = subparsers.add_parser(
+        "compare", aliases=["models"], help="Compare multi-model evaluation passes and score discrepancies for a URL"
+    )
+    p_comp.add_argument("url", help="Target URL or content SHA-256")
+    p_comp.add_argument("--json", action="store_true", help="Output raw JSON matrix")
+
+    # heuristics
+    p_heur = subparsers.add_parser("heuristics", help="Manage heuristic calibration benchmark and anchor corpus")
+    p_heur.add_argument(
+        "action", default="benchmark", nargs="?", choices=["benchmark", "add-corpus-sample", "add-sample"]
+    )
+    p_heur.add_argument("target", nargs="?", default="", help="Target URL (for add-corpus-sample) or corpus JSON file")
+    p_heur.add_argument("--corpus", help="Path to calibration corpus JSON")
+    p_heur.add_argument("--json", action="store_true", help="Output raw JSON report")
+
+    # node
+    p_node = subparsers.add_parser("node", help="Configure node operational role, exhaustion strategy, and re-scoring")
+    p_node.add_argument("action", default="status", nargs="?", choices=["status", "role", "rescore", "sweep"])
+    p_node.add_argument("--role", choices=["evaluator", "serving", "hybrid"], help="Node operational role")
+    p_node.add_argument(
+        "--strategy", choices=["heuristic_fallback", "serving_mode", "defer"], help="Exhaustion strategy"
+    )
+    p_node.add_argument("--auto-rescore", action="store_true", default=None, help="Enable automatic re-scoring")
+    p_node.add_argument("--limit", type=int, default=20, help="Maximum audits to rescore")
+    p_node.add_argument("--force", action="store_true", help="Force re-scoring disregarding governor")
+    p_node.add_argument("--json", action="store_true", help="Output raw JSON")
 
     # import
     p_imp = subparsers.add_parser("import", aliases=["import-pack"], help="Import truth attestation pack")

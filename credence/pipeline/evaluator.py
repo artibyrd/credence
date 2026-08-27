@@ -219,8 +219,10 @@ async def evaluate_snapshot(
     if used_llm and not quota_preserved:
         eval_method = f"llm_multi_agent_{provider.model_name if provider else 'active'}"
     else:
-        confidence_score = min(0.50, confidence_score)
-        eval_method = "offline_structural_heuristic"
+        from credence.config import settings
+
+        confidence_score = min(settings.HEURISTIC_MAX_CONFIDENCE_CEILING, confidence_score)
+        eval_method = f"offline_structural_heuristic@{settings.HEURISTIC_ENGINE_VERSION}"
         quota_preserved = True
 
     # Step 6: Assemble Report

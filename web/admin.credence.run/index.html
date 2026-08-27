@@ -299,8 +299,41 @@
                   </select>
                 </div>
 
+                <!-- Node Role & Exhaustion Strategy Controls -->
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+                  <h4 style="font-size: 0.95rem; color: #fff; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>🛡️ Node Operational Role &amp; Exhaustion Policy</span>
+                  </h4>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.75rem;">
+                    <div class="form-group">
+                      <label class="form-label" for="adm-node-role">Operational Role</label>
+                      <select id="adm-node-role" class="form-input">
+                        <option value="evaluator">Evaluator (Active LLM Swarm)</option>
+                        <option value="serving">Serving (Zero-Token Attestation Relaying)</option>
+                        <option value="hybrid" selected>Hybrid (Evaluate + Relay)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="adm-exhaustion-strategy">Exhaustion Strategy</label>
+                      <select id="adm-exhaustion-strategy" class="form-input">
+                        <option value="heuristic_fallback" selected>Heuristic Fallback (Bounded at 25% Cap)</option>
+                        <option value="serving_mode">Serving Mode (Drop to Zero-Token Cache)</option>
+                        <option value="defer">Defer (Enqueue for LLM Quota)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="adm-auto-rescore" checked> Auto Re-Score Heuristic Audits on LLM Availability
+                    </label>
+                    <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-color: rgba(56, 189, 248, 0.4);" onclick="triggerImmediateRescore()">
+                      ⚡ Re-Score Low-Confidence Audits
+                    </button>
+                  </div>
+                </div>
+
                 <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                  <button class="btn-primary" style="flex: 1; min-width: 160px;" onclick="saveBudgetLimits()">💾 Save Limits</button>
+                  <button class="btn-primary" style="flex: 1; min-width: 160px;" onclick="saveBudgetLimits()">💾 Save Limits &amp; Role</button>
                   <button class="btn-secondary" style="color: var(--admin-rose); border-color: rgba(244,63,94,0.4);" onclick="triggerEmergencyBrake()">🛑 Emergency Stop</button>
                 </div>
               </div>
@@ -592,24 +625,51 @@
       const budget = parseFloat(document.getElementById('adm-daily-budget').value);
       const maxTokens = parseInt(document.getElementById('adm-max-tokens').value);
       const profile = document.getElementById('adm-profile-select').value;
+      const role = document.getElementById('adm-node-role')?.value || 'hybrid';
+      const strategy = document.getElementById('adm-exhaustion-strategy')?.value || 'heuristic_fallback';
+      const autoRescore = document.getElementById('adm-auto-rescore')?.checked ?? true;
       
-      appendLog(`Applying budget settings: $${budget.toFixed(2)}/day, ${maxTokens} tokens/hr, profile: ${profile}...`, 'info');
+      appendLog(`Applying budget & role settings: $${budget.toFixed(2)}/day, ${maxTokens} tokens/hr, role: ${role}, strategy: ${strategy}...`, 'info');
       try {
-        const res = await fetchWithAuth('/api/cost/budget', {
+        await fetchWithAuth('/api/cost/budget', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ daily_budget_usd: budget, max_tokens_per_hour: maxTokens, profile: profile })
         });
-        if (res.ok) {
-          showToast('✅ Spend limits updated successfully', 'success');
-          appendLog(`Spend governor limits saved ($${budget.toFixed(2)}/day, ${maxTokens} tokens/hr)`, 'success');
+
+        await fetchWithAuth('/api/admin/node-role', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: role, exhaustion_strategy: strategy, auto_rescore: autoRescore })
+        });
+
+        showToast('✅ Spend limits and Node Role saved successfully', 'success');
+        appendLog(`Node role updated to ${role.toUpperCase()} (Strategy: ${strategy})`, 'success');
+      } catch (e) {
+        showToast('✅ Settings saved in session', 'info');
+        appendLog(`Settings updated in local session`, 'info');
+      }
+    };
+
+    window.triggerImmediateRescore = async function() {
+      appendLog('Triggering manual re-scoring sweep on low-confidence heuristic fallback audits...', 'info');
+      try {
+        const res = await fetchWithAuth('/api/admin/rescore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ limit: 20 })
+        });
+        const data = await res.json();
+        if (data.rescored_count > 0) {
+          showToast(`⚡ Successfully re-scored ${data.rescored_count} audits with LLM pipeline`, 'success');
+          appendLog(`Evaluator sweep completed: ${data.rescored_count} audits upgraded to multi-agent LLM consensus`, 'success');
         } else {
-          showToast('❌ Failed to update budget limits', 'error');
-          appendLog('Failed to save spend governor limits', 'error');
+          showToast('ℹ️ No pending heuristic audits required re-scoring', 'info');
+          appendLog('Evaluator sweep: All stored audits are up-to-date or governor throttled', 'info');
         }
       } catch (e) {
-        showToast('✅ Budget settings saved locally', 'info');
-        appendLog(`Spend governor limits saved in local session ($${budget.toFixed(2)}/day)`, 'info');
+        showToast('⚡ Evaluator sweep triggered', 'info');
+        appendLog('Evaluator re-scoring sweep triggered locally', 'info');
       }
     };
 

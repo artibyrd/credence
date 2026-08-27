@@ -36,6 +36,8 @@ from credence.server.api.cost import (
     api_cost_recommendations,
     api_cost_resume,
     api_cost_telemetry,
+    api_node_role_config,
+    api_trigger_rescore,
 )
 from credence.server.api.database import (
     api_db_backup,
@@ -68,7 +70,12 @@ from credence.server.api.governance import (
     api_list_rfcs,
     api_validate_rfc,
 )
-from credence.server.api.mesh import api_mesh_network_health, api_mesh_stats
+from credence.server.api.mesh import (
+    api_mesh_network_health,
+    api_mesh_stats,
+    api_mesh_submit_attestation,
+    api_mesh_submit_batch,
+)
 from credence.server.api.system import (
     api_auth_config,
     api_auth_verify,
@@ -146,6 +153,9 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/cost/budget", endpoint=api_cost_budget, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/cost/emergency-stop", endpoint=api_cost_emergency_stop, methods=["POST", "OPTIONS"]),
         Route("/api/cost/resume", endpoint=api_cost_resume, methods=["POST", "OPTIONS"]),
+        Route("/api/config/node-role", endpoint=api_node_role_config, methods=["GET", "POST", "OPTIONS"]),
+        Route("/api/admin/node-role", endpoint=api_node_role_config, methods=["GET", "POST", "OPTIONS"]),
+        Route("/api/admin/rescore", endpoint=api_trigger_rescore, methods=["POST", "OPTIONS"]),
         Route("/api/audit", endpoint=api_audit_url, methods=["POST", "GET", "OPTIONS"]),
         Route("/api/germinate", endpoint=api_germinate, methods=["POST", "GET", "OPTIONS"]),
         Route("/cron/boredom", endpoint=api_cron_boredom, methods=["POST", "GET", "OPTIONS"]),
@@ -182,6 +192,9 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/db/status", endpoint=api_db_status, methods=["GET", "OPTIONS"]),
         Route("/api/db/export-pack", endpoint=api_db_export_pack, methods=["GET", "POST", "OPTIONS"]),
         Route("/api/db/import-pack", endpoint=api_db_import_pack, methods=["POST", "OPTIONS"]),
+        Route("/api/mesh/submit-attestation", endpoint=api_mesh_submit_attestation, methods=["POST", "OPTIONS"]),
+        Route("/api/mesh/submit-batch", endpoint=api_mesh_submit_batch, methods=["POST", "OPTIONS"]),
+        Route("/api/mesh/submit", endpoint=api_mesh_submit_attestation, methods=["POST", "OPTIONS"]),
     ]
 
     for r in reversed(rest_routes):

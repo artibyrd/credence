@@ -35,13 +35,15 @@ def check_spj_heuristics(
         "guest contributor",
         "admin",
     ]
-    is_generic_byline = (
-        not byline
-        or byline_lower in generic_bylines
-        or byline_lower.endswith(" staff")
-        or " staff" in byline_lower
-        or "newsroom" in byline_lower
-        or "sponsored" in byline_lower
+    is_generic_byline = bool(
+        byline
+        and (
+            byline_lower in generic_bylines
+            or byline_lower.endswith(" staff")
+            or " staff" in byline_lower
+            or "newsroom" in byline_lower
+            or "sponsored" in byline_lower
+        )
     )
     if is_generic_byline:
         rule_id = "SPJ-3.2" if "advertising" in byline_lower or "sponsored" in byline_lower else "SPJ-4.1"

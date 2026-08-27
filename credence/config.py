@@ -18,6 +18,27 @@ class CostProfile(str, Enum):
     ULTRA = "ultra"
 
 
+class NodeRole(str, Enum):
+    """Operational node roles in the sovereign mesh topology."""
+
+    EVALUATOR = "evaluator"  # Active LLM multi-agent auditing engine
+    SERVING = "serving"  # Zero-token static public serving node ($0.00 cloud spend)
+    HYBRID = "hybrid"  # Standard dynamic auto-switching node
+
+
+class ExhaustionStrategy(str, Enum):
+    """Behavior when LLM token governor budget or upstream quota is exhausted."""
+
+    HEURISTIC_FALLBACK = "heuristic_fallback"  # Fall back to offline structural heuristics (25% cap)
+    SERVING_MODE = "serving_mode"  # Switch to static serving mode (zero novel audits)
+    DEFER = "defer"  # Defer novel articles to pending queue
+
+
+# Versioned Offline Structural Heuristics Engine
+HEURISTIC_ENGINE_VERSION: str = "v1.1.0"
+HEURISTIC_MAX_CONFIDENCE_CEILING: float = 0.25
+
+
 class CostProfileConfig(BaseModel):
     """Configuration definition for an operational cost profile."""
 
@@ -267,6 +288,13 @@ class Settings(BaseSettings):
     MAX_DAILY_BUDGET_USD: float = 0.15
     ENABLE_CIRCUIT_BREAKER: bool = True
 
+    # Sovereign Node Role & Exhaustion Strategies
+    CREDENCE_NODE_ROLE: NodeRole = NodeRole.HYBRID
+    CREDENCE_EXHAUSTION_STRATEGY: ExhaustionStrategy = ExhaustionStrategy.HEURISTIC_FALLBACK
+    CREDENCE_AUTO_RESCORE_HEURISTICS: bool = True
+    HEURISTIC_ENGINE_VERSION: str = HEURISTIC_ENGINE_VERSION
+    HEURISTIC_MAX_CONFIDENCE_CEILING: float = HEURISTIC_MAX_CONFIDENCE_CEILING
+
     # P2P Mesh & MCP Networking
     MESH_ENABLED: bool = True
     MESH_HOST: str = "0.0.0.0"  # noqa: S104
@@ -282,6 +310,7 @@ class Settings(BaseSettings):
     CANONICAL_MCP_URL: str = "https://mcp.credence.run/sse"
     CANONICAL_TAXONOMY_URL: str = "https://taxonomies.credence.foundation"
     CANONICAL_REPORT_URL: str = "https://credence.report"
+    CREDENCE_SENTINEL_NODE_URL: str = "https://credence.run"
     TRUSTED_ROOT_PUBKEY: Optional[str] = None
     ENABLE_LOCAL_DISCOVERY: bool = True
     DISCOVERY_BEACON_PORT: int = 8766
