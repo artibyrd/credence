@@ -297,7 +297,7 @@
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('reuters.com')">reuters.com (98.5 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('nature.com')">nature.com (99.8 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('apnews.com')">apnews.com (97.0 DCI)</button>
-                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('inmaricopa.com')">inmaricopa.com (48.5 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('inmaricopa.com')">inmaricopa.com (76.2 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('texasmonthly.com')">texasmonthly.com (88.0 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('theonion.com')">theonion.com (Satire)</button>
                   </div>
@@ -788,11 +788,11 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="inmaricopa.com" data-tier="Tier C" data-suspicion="56.5" data-audits="5">
-                      <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Conflict of Pun-terest &bull; Case Study</span></td>
-                      <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b;">Tier C (Watchlist)</span></td>
-                      <td style="font-family:var(--font-mono); color:#f59e0b;">56.5 / 100</td>
-                      <td>5 Audits</td>
+                    <tr data-domain="inmaricopa.com" data-tier="Tier B" data-suspicion="18.2" data-audits="51">
+                      <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Continuous Epistemic Surveillance &bull; N=51 Audits</span></td>
+                      <td><span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">Tier B (Monitored)</span></td>
+                      <td style="font-family:var(--font-mono); color:#38bdf8;">18.2 / 100</td>
+                      <td>51 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/')">Inspect</button>
@@ -1329,17 +1329,17 @@
       "inmaricopa.com": {
         domain: "inmaricopa.com",
         title: "InMaricopa Local News (Empirical Case Study)",
-        desc: "Conflict of Pun-terest Case Study • Governance COI & Native Advertorial Forensics",
-        tierBadge: "TIER C (WATCHLIST CASE STUDY)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
-        dciScore: "48.5",
-        totalAudits: "5 Live Audits",
+        desc: "Continuous Epistemic Surveillance • N=51 Expanded Corpus Forensics",
+        tierBadge: "TIER B (MONITORED)",
+        tierColor: "#38bdf8",
+        tierBg: "rgba(56, 189, 248, 0.15)",
+        dciScore: "76.2",
+        totalAudits: "51 Verified Audits",
         groundingRate: "100% (G=1.00)",
-        syndication: "● Active RSS (15m)",
-        violationsCount: "6 Epistemic Violations (COI & Advertorial)",
-        trajectoryStat: "Watchlist • High Conflict Risk",
-        trajectorySummary: "Monitored for undisclosed councilmember co-ownership, native advertorial marketing, and police press release republishing.",
+        syndication: "● Active P2P Mesh & Feed",
+        violationsCount: "14 Epistemic Violations",
+        trajectoryStat: "30d Stability: 92.4%",
+        trajectorySummary: "Publisher evaluated across N=51 live network audits (74% clean news, 16% single-source blotters, 10% advertorials/COI).",
         articles: [
           {
             title: "Copper Sky Land Sale is No Scandal, Council Records Show",
@@ -2597,6 +2597,34 @@
       trajectorySummary: p.trajectorySummary || ""
     }));
 
+    function syncLivePublisherStats(domain) {
+      if (!domain) return;
+      fetch(`/api/analytics/publisher/${encodeURIComponent(domain)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || data.dci_score === undefined) return;
+          const dciStr = data.dci_score.toFixed(1);
+          if (PUBLISHER_DATABASE[domain]) {
+            PUBLISHER_DATABASE[domain].dciScore = dciStr;
+            if (data.total_audits) {
+              PUBLISHER_DATABASE[domain].totalAudits = `${data.total_audits} Verified Audits`;
+            }
+          }
+          const pub = ALL_PUBLISHERS.find(p => p.domain === domain);
+          if (pub) {
+            pub.dciScore = dciStr;
+            if (data.total_audits) pub.auditsCount = data.total_audits;
+            if (data.avg_suspicion !== undefined) {
+              pub.avgSuspicion = parseFloat(data.avg_suspicion).toFixed(1);
+            }
+          }
+          renderPublishersCatalog();
+          renderDciTable();
+        })
+        .catch(err => console.debug("Sync live publisher stats error:", err));
+    }
+    window.syncLivePublisherStats = syncLivePublisherStats;
+
     function switchBrowseSubview(subview) {
       const btnArticles = document.getElementById('subview-btn-articles');
       const btnSources = document.getElementById('subview-btn-sources');
@@ -2626,6 +2654,7 @@
         if (detBox) detBox.style.display = 'none';
         renderPublishersCatalog();
         renderDciTable();
+        syncLivePublisherStats('inmaricopa.com');
       }
     }
     window.switchBrowseSubview = switchBrowseSubview;
@@ -2969,8 +2998,18 @@
         .then(res => res.ok ? res.json() : null)
         .then(liveData => {
           if (!liveData) return;
-          if (liveData.dci_score !== undefined && dciScore) {
-            dciScore.textContent = liveData.dci_score.toFixed(1);
+          if (liveData.dci_score !== undefined) {
+            const dciStr = liveData.dci_score.toFixed(1);
+            if (dciScore) dciScore.textContent = dciStr;
+            if (PUBLISHER_DATABASE[domain]) {
+              PUBLISHER_DATABASE[domain].dciScore = dciStr;
+            }
+            const pubObj = ALL_PUBLISHERS.find(p => p.domain === domain);
+            if (pubObj) {
+              pubObj.dciScore = dciStr;
+              if (liveData.total_audits) pubObj.auditsCount = liveData.total_audits;
+              if (liveData.avg_suspicion !== undefined) pubObj.avgSuspicion = parseFloat(liveData.avg_suspicion).toFixed(1);
+            }
           }
           if (liveData.trust_band && ratingLabel) {
             ratingLabel.textContent = liveData.trust_band;
