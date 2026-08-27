@@ -60,43 +60,48 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
 
                     await sync_env_sentinel_sources(session)
 
-                    # Trigger boot sifting burst on all active sentinel subscriptions
-                    stmt_s = select(FeedSubscription).where(
-                        FeedSubscription.is_sentinel == True,  # noqa: E712
-                        FeedSubscription.is_active == True,  # noqa: E712
-                    )
-                    sent_subs = (await session.exec(stmt_s)).all()
-                    if sent_subs:
+                    # Trigger boot sifting burst on active sentinels if enabled and role allows
+                    if not settings.CREDENCE_SENTINEL_ENABLED or settings.CREDENCE_NODE_ROLE == NodeRole.SERVING:
                         logger.info(
-                            "🛡️ Triggering initial sentinel sifting burst on boot for %d active sentinel sources...",
-                            len(sent_subs),
+                            "ℹ️ Serving mode active (or sentinel disabled) — skipping background feed sifting and heuristic rescore sweeps"
                         )
-                        from credence.feeds.worker import sync_single_feed
+                    else:
+                        stmt_s = select(FeedSubscription).where(
+                            FeedSubscription.is_sentinel == True,  # noqa: E712
+                            FeedSubscription.is_active == True,  # noqa: E712
+                        )
+                        sent_subs = (await session.exec(stmt_s)).all()
+                        if sent_subs:
+                            logger.info(
+                                "🛡️ Triggering initial sentinel sifting burst on boot for %d active sentinel sources...",
+                                len(sent_subs),
+                            )
+                            from credence.feeds.worker import sync_single_feed
 
-                        for s_sub in sent_subs:
-                            try:
-                                await sync_single_feed(
-                                    session, s_sub, dry_run=False, evaluate_novel=True, force_refresh=True
-                                )
-                            except Exception as se:
-                                logger.exception("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
-
-                        # Trigger aggressive re-scoring of heuristic audits on evaluator nodes
-                        if (
-                            settings.CREDENCE_NODE_ROLE in (NodeRole.EVALUATOR, NodeRole.HYBRID)
-                            and settings.CREDENCE_AUTO_RESCORE_HEURISTICS
-                        ):
-                            try:
-                                from credence.pipeline.rescore import rescore_heuristic_audits
-
-                                rescored = await rescore_heuristic_audits(session, limit=20)
-                                if rescored:
-                                    logger.info(
-                                        "⚡ Evaluator sweep successfully rescored %d low-confidence audits with LLM pipeline",
-                                        len(rescored),
+                            for s_sub in sent_subs:
+                                try:
+                                    await sync_single_feed(
+                                        session, s_sub, dry_run=False, evaluate_novel=True, force_refresh=True
                                     )
-                            except Exception as r_err:
-                                logger.debug("Evaluator re-scoring sweep exception: %s", r_err)
+                                except Exception as se:
+                                    logger.exception("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
+
+                            # Trigger aggressive re-scoring of heuristic audits on evaluator nodes
+                            if (
+                                settings.CREDENCE_NODE_ROLE in (NodeRole.EVALUATOR, NodeRole.HYBRID)
+                                and settings.CREDENCE_AUTO_RESCORE_HEURISTICS
+                            ):
+                                try:
+                                    from credence.pipeline.rescore import rescore_heuristic_audits
+
+                                    rescored = await rescore_heuristic_audits(session, limit=20)
+                                    if rescored:
+                                        logger.info(
+                                            "⚡ Evaluator sweep successfully rescored %d low-confidence audits with LLM pipeline",
+                                            len(rescored),
+                                        )
+                                except Exception as r_err:
+                                    logger.debug("Evaluator re-scoring sweep exception: %s", r_err)
 
                         # Create database backup after initial boot sifting
                         try:

@@ -65,10 +65,12 @@ def check_spj_heuristics(
             )
 
     # 2. Commercial Call-to-Action / Embedded Contact (SPJ-3.2)
-    phone_match = re.search(
-        r"(?:call|dial|contact|phone)\s+(?:\(?\d{3}\)?[\s.-]?)?\d{3}[\s.-]?\d{4}", text, re.IGNORECASE
+    contact_match = re.search(
+        r"(?:phone|tel|web|email|address|call|contact)[\s:]+(?:\(?\d{3}\)?[\s.-]?)?\d{3}[\s.-]?\d{4}|(?:web|website)[\s:]+[a-zA-Z0-9.-]+\.(?:com|org|net)",
+        text,
+        re.IGNORECASE,
     )
-    if phone_match:
+    if contact_match:
         rule = active_reg.get_rule("SPJ-3.2")
         if rule:
             findings.append(
@@ -79,8 +81,8 @@ def check_spj_heuristics(
                     cluster_id="ACT_INDEPENDENTLY",
                     severity=rule.severity,
                     confidence=0.95,
-                    quote_or_element=phone_match.group(0),
-                    reasoning="Direct commercial call-to-action or phone contact embedded within editorial newsroom copy.",
+                    quote_or_element=contact_match.group(0),
+                    reasoning="Direct commercial call-to-action, phone contact, or business web address embedded within editorial newsroom copy.",
                     is_grounded=True,
                 )
             )
@@ -195,6 +197,10 @@ def check_spj_heuristics(
 
     # 6. Civic Voting / Municipal Conflict of Interest (SPJ-3.1)
     civic_patterns = [
+        r"searching\s+for\s+a\s+scandal\s+that\s+does\s+not\s+exist",
+        r"your\s+candidate\s+won",
+        r"preferred\s+candidate\s+already\s+won",
+        r"councilmember\s+[a-zA-Z\s]+\s+voted",
         r"voted\s+in\s+favor",
         r"voted\s+against",
         r"city\s+council\s+voted",
@@ -217,9 +223,9 @@ def check_spj_heuristics(
                         domain="JOURNALISTIC_ETHICS",
                         cluster_id="ACT_INDEPENDENTLY",
                         severity=rule.severity,
-                        confidence=0.85,
+                        confidence=0.88,
                         quote_or_element=sentence[:150],
-                        reasoning="Municipal governance or land transaction reporting without explicit conflict of interest disclosures.",
+                        reasoning="Municipal governance reporting or unattributed publisher-politician defense commentary without explicit conflict of interest disclosures.",
                         is_grounded=True,
                     )
                 )

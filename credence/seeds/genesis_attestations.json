@@ -2,12 +2,10 @@
   "protocol": "credence-mesh/1.0",
   "pack_id": "genesis-attestations-v1",
   "generated_at": "2026-08-18T12:00:00Z",
-  "root_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
+  "root_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
   "attestations": [
     {
       "url": "https://www.propublica.org/article/renewable-grid-modernization-audit",
-      "title": "Clean Energy Grid Infrastructure: 2026 Comprehensive Evaluation",
-      "byline": "Sarah Jenkins, Senior Investigative Reporter",
       "content_sha256": "sha256:0a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef",
       "simhash_64": "0x1a2b3c4d5e6f7081",
       "audited_at": "2026-08-18T10:15:00Z",
@@ -17,18 +15,21 @@
       "classification": "CLEAN",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
         "spj_ethics": "sha256:spj_hash_v1",
         "iep_fallacies": "sha256:iep_hash_v1"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
+      "node_signature": "8c9c7bd1a4b243fdfa37d1193dad59d99790aabd69afd5b20232564ea4c92750bd9c446d29085e371dc723ecb68812d0dd92b52968c046819bb69d10fa735c03",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "Clean Energy Grid Infrastructure: 2026 Comprehensive Evaluation",
+      "byline": "Sarah Jenkins, Senior Investigative Reporter"
     },
     {
       "url": "https://arstechnica.com/science/2026/08/peer-reviewed-climate-data-synthesis",
-      "title": "Atmospheric Methane Sink Rates Exceed Previous Climate Models",
-      "byline": "Dr. Marcus Vance, Science Editor",
       "content_sha256": "sha256:1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef01",
       "simhash_64": "0x2b3c4d5e6f708192",
       "audited_at": "2026-08-18T11:00:00Z",
@@ -38,18 +39,21 @@
       "classification": "CLEAN",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
         "spj_ethics": "sha256:spj_hash_v1",
         "iep_fallacies": "sha256:iep_hash_v1"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01"
+      "node_signature": "3ac14bd9258d299732a9d60685a124d8bfd6bbd242e1a541df8d29fe7e445e49c80f09a45031f64166ffb332df04ca866ada910155f1fc6cce7811e376ecb902",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "Atmospheric Methane Sink Rates Exceed Previous Climate Models",
+      "byline": "Dr. Marcus Vance, Science Editor"
     },
     {
       "url": "https://www.theonion.com/mayor-bans-vacuum-cleaners-in-historic-canine-mandate",
-      "title": "Mayor Barnaby (Golden Retriever) Signs Historic Citywide Vacuum Ban",
-      "byline": "The Onion City Desk",
       "content_sha256": "sha256:2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123",
       "simhash_64": "0x3c4d5e6f708192a3",
       "audited_at": "2026-08-18T11:30:00Z",
@@ -65,12 +69,14 @@
         "spj_ethics": "sha256:spj_hash_v1"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
+      "node_signature": "689146f659ca8bdbe8f0ee176258540957e61c65ae0dd0e7baf5531e2ddbd3360bd8cb36229378ce8702e445ed71981b116212d4a6095e6332c4ef8d60d5ab04",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "Mayor Barnaby (Golden Retriever) Signs Historic Citywide Vacuum Ban",
+      "byline": "The Onion City Desk"
     },
     {
       "url": "https://retractionwatch.com/2026/08/fabricated-clinical-trial-retracted",
-      "title": "Journal of Oncology Retracts Phase II Trial Citing Data Fabrication",
-      "byline": "Ivan Oransky, Retraction Watch",
       "content_sha256": "sha256:3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef012345",
       "simhash_64": "0x4d5e6f708192a3b4",
       "audited_at": "2026-08-18T11:45:00Z",
@@ -80,17 +86,20 @@
       "classification": "CLEAN",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
         "spj_ethics": "sha256:spj_hash_v1"
       },
-      "node_pubkey": "8888dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd1",
-      "node_signature": "d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345"
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "f165eb1d0d3787f300842d8d3186bd36cd538498ccf5de37a49102b6de45eb7452e8af63a1eb273461714c4286bc57aa54717e0186e279a83fb83b7edcb51d0f",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "Journal of Oncology Retracts Phase II Trial Citing Data Fabrication",
+      "byline": "Ivan Oransky, Retraction Watch"
     },
     {
       "url": "https://suspicious-promotions.fake/urgent-antivirus-alert",
-      "title": "CRITICAL SECURITY WARNING: Your Computer is Infected!",
-      "byline": null,
       "content_sha256": "sha256:4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef01234567",
       "simhash_64": "0x5e6f708192a3b4c5",
       "audited_at": "2026-08-18T11:55:00Z",
@@ -100,6 +109,7 @@
       "classification": "DECEPTIVE",
       "is_satire": false,
       "content_type": "ADVERTORIAL",
+      "satire_notes": null,
       "violations": [
         {
           "rule_id": "DP-1.1",
@@ -110,7 +120,8 @@
           "confidence": 1.0,
           "quote_or_element": "Your computer will be permanently locked in 02:45 minutes",
           "reasoning": "Fabricated countdown timer designed to induce coercive urgency.",
-          "line_or_selector": "#urgent-timer"
+          "line_or_selector": "#urgent-timer",
+          "is_grounded": true
         },
         {
           "rule_id": "DP-2.3",
@@ -121,28 +132,32 @@
           "confidence": 1.0,
           "quote_or_element": "Billed at $99.99/week automatically after 24h trial",
           "reasoning": "Hidden recurring subscription terms concealed in microtext.",
-          "line_or_selector": ".hidden-terms"
+          "line_or_selector": ".hidden-terms",
+          "is_grounded": true
         }
       ],
       "taxonomies_used": {
         "deceptive_patterns": "sha256:dp_hash_v1"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567"
+      "node_signature": "880e5c430ecf405dd6524c5a386ed54b9b809cb9941fa5acf826357e285cc8532d163a9a97ea260c3974995f7fbb7785257650448eff14137e256bab7985810a",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "CRITICAL SECURITY WARNING: Your Computer is Infected!",
+      "byline": null
     },
     {
       "url": "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
-      "title": "Copper Sky Land Sale is No Scandal, Council Records Show",
-      "byline": "Staff Reporter",
-      "content_sha256": "sha256:inm_copper_sky_coi_01",
-      "simhash_64": "0x1a2b3c4d5e6f7081",
-      "audited_at": "2026-08-20T10:00:00Z",
+      "content_sha256": "sha256:9397757c3d1fefeb724497e0344dff0814ba8ef49206d2d46e3beec417a8c4fa",
+      "simhash_64": "0x6d39634b3f309993",
+      "audited_at": "2026-08-27T18:48:15.835901Z",
       "suspicion_score": 78.4,
       "suspicion_density": 14.2,
       "confidence_score": 0.98,
       "classification": "SUSPICIOUS",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [
         {
           "rule_id": "SPJ-3.1",
@@ -151,8 +166,10 @@
           "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 5,
           "confidence": 0.98,
-          "quote_or_element": "Councilmember Vincent Manfredi voted in favor of the commercial rezoning",
-          "reasoning": "Publisher and Advertising Director is the primary voting subject in municipal land transactions without active conflict of interest disclosures."
+          "quote_or_element": "Your candidate won. Now you are searching for a scandal that does not exist.",
+          "reasoning": "Publisher and Advertising Director is the primary voting subject in municipal land transactions without active conflict of interest disclosures.",
+          "line_or_selector": null,
+          "is_grounded": true
         },
         {
           "rule_id": "SPJ-3.2",
@@ -161,8 +178,10 @@
           "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 4,
           "confidence": 0.94,
-          "quote_or_element": "By Staff Reporter",
-          "reasoning": "Anonymous staff byline used to mask editorial conflicts of interest regarding elected official ownership."
+          "quote_or_element": "InMaricopa Staff",
+          "reasoning": "Anonymous staff byline used to mask editorial conflicts of interest regarding elected official ownership.",
+          "line_or_selector": null,
+          "is_grounded": true
         },
         {
           "rule_id": "SPJ-1.3",
@@ -172,25 +191,34 @@
           "severity": 3,
           "confidence": 0.89,
           "quote_or_element": "City records conclusively prove that all ethical guidelines were satisfied",
-          "reasoning": "Uncorroborated assertion presented as conclusive editorial fact without citing independent legal opinions."
+          "reasoning": "Uncorroborated assertion presented as conclusive editorial fact without citing independent legal opinions.",
+          "line_or_selector": null,
+          "is_grounded": true
         }
       ],
-      "node_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
-      "node_signature": "e1f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01"
+      "taxonomies_used": {
+        "spj": "v1.0.0",
+        "deceptive_patterns": "v1.0.0"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "54a43b3ca987d8b6dcce988fc0160f33e4b5896609da8b99690929f87c7dd14292e9ec10c8154982c160f34af2c4047f8a6745bd9c45900f84dfa55cc5ee7804",
+      "quota_preserved": false,
+      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
+      "title": "Untitled",
+      "byline": null
     },
     {
       "url": "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/",
-      "title": "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
-      "byline": "InMaricopa Advertising Staff",
-      "content_sha256": "sha256:inm_tattoo_advertorial_02",
-      "simhash_64": "0x2b3c4d5e6f708192",
-      "audited_at": "2026-08-20T11:15:00Z",
+      "content_sha256": "sha256:5da1ab5e9a4192b158097b696772fa82ff5cf2ee5c179c3132e0e47fe26815ec",
+      "simhash_64": "0x71790fc7b823e42c",
+      "audited_at": "2026-08-27T18:48:15.909191Z",
       "suspicion_score": 82.0,
       "suspicion_density": 18.5,
       "confidence_score": 0.99,
       "classification": "DECEPTIVE",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
@@ -199,8 +227,10 @@
           "cluster_id": "NATIVE_ADVERTISING",
           "severity": 5,
           "confidence": 0.99,
-          "quote_or_element": "Local residents looking for advanced skin rejuvenation can now book consultations",
-          "reasoning": "Commercial paid advertorial structured with visual cues of organic civic news reporting."
+          "quote_or_element": "That\u2019s why I\u2019m excited to officially introduce Picofy to Maricopa Wellness Center",
+          "reasoning": "Commercial paid advertorial structured with visual cues of organic civic news reporting.",
+          "line_or_selector": null,
+          "is_grounded": true
         },
         {
           "rule_id": "SPJ-3.3",
@@ -209,26 +239,47 @@
           "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 4,
           "confidence": 0.95,
-          "quote_or_element": "Call 520-555-SKIN to claim early bird introductory discounts",
-          "reasoning": "Direct promotional sales call-to-action embedded in editorial newsroom feed."
+          "quote_or_element": "520-464-6193",
+          "reasoning": "Direct promotional sales call-to-action and contact information embedded in editorial newsroom feed.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 2,
+          "confidence": 0.92,
+          "quote_or_element": "InMaricopa Staff",
+          "reasoning": "Generic newsroom byline ('InMaricopa Staff') obscures clinic commercial provenance.",
+          "line_or_selector": null,
+          "is_grounded": true
         }
       ],
-      "node_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
-      "node_signature": "f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
+      "taxonomies_used": {
+        "spj": "v1.0.0",
+        "deceptive_patterns": "v1.0.0"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "62179e97c6abd515f4f2729693d72424d71d16ec1b9e38f2acee3b8ed9ada5f95ef0c39334043724027aba70889ed0c1bceebbdad78807a81310d9fe068c6e02",
+      "quota_preserved": false,
+      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
+      "title": "Untitled",
+      "byline": null
     },
     {
       "url": "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/",
-      "title": "What Landlords Discover After Managing a Rental on Their Own",
-      "byline": "Sponsored Partner",
-      "content_sha256": "sha256:inm_landlords_ad_03",
-      "simhash_64": "0x3c4d5e6f708192a3",
-      "audited_at": "2026-08-20T12:00:00Z",
+      "content_sha256": "sha256:0a909724dc1a1555e454259b3d5c5541521f1786c174599f2e85b8b25265e382",
+      "simhash_64": "0x33c99d6355216cfd",
+      "audited_at": "2026-08-27T18:48:15.988329Z",
       "suspicion_score": 76.5,
       "suspicion_density": 16.0,
       "confidence_score": 0.97,
       "classification": "DECEPTIVE",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
@@ -237,27 +288,49 @@
           "cluster_id": "NATIVE_ADVERTISING",
           "severity": 5,
           "confidence": 0.97,
-          "quote_or_element": "Managing tenant disputes alone often leads to catastrophic financial losses",
-          "reasoning": "Fear-based promotional marketing camouflaged as real estate news guidance."
+          "quote_or_element": "At Crest Premier Properties, we believe professional property management is an investment",
+          "reasoning": "Commercial promotional advertorial camouflaged as property investment news guidance.",
+          "line_or_selector": null,
+          "is_grounded": true
         },
         {
-          "rule_id": "SPJ-3.3",
-          "rule_uri": "journalistic-ethics:spj/SPJ-3.3@v1.0.0",
+          "rule_id": "SPJ-3.2",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.2@v1.0.0",
           "domain": "JOURNALISTIC_ETHICS",
           "cluster_id": "ACT_INDEPENDENTLY",
-          "severity": 4,
-          "confidence": 0.93,
-          "quote_or_element": "Partnering with Maricopa Property Management guarantees stress-free occupancy",
-          "reasoning": "Commercial endorsement within general civic reporting stream."
+          "severity": 5,
+          "confidence": 0.95,
+          "quote_or_element": "Phone: 480-838-9558",
+          "reasoning": "Direct commercial contact block and phone number embedded in editorial copy.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 2,
+          "confidence": 0.92,
+          "quote_or_element": "Staff Reports",
+          "reasoning": "Generic byline obscuring commercial property management agency author.",
+          "line_or_selector": null,
+          "is_grounded": true
         }
       ],
-      "node_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
-      "node_signature": "a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345"
+      "taxonomies_used": {
+        "spj": "v1.0.0",
+        "deceptive_patterns": "v1.0.0"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "c77046e2983f267f0a7cbb0b9fbd30cf80ccb3693b9bec16e282748b0d43f9983a09a053e1506c15b3766a1f6be2dfbdcc4da9906ad02aeab13c7f69375ba307",
+      "quota_preserved": false,
+      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
+      "title": "Untitled",
+      "byline": null
     },
     {
       "url": "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/",
-      "title": "Bicyclist Dead After SR 347 Crash South of City",
-      "byline": "Staff",
       "content_sha256": "sha256:inm_sr347_police_04",
       "simhash_64": "0x4d5e6f708192a3b4",
       "audited_at": "2026-08-20T13:30:00Z",
@@ -267,6 +340,7 @@
       "classification": "LOW_SUSPICION",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [
         {
           "rule_id": "SPJ-1.1",
@@ -276,16 +350,23 @@
           "severity": 3,
           "confidence": 0.91,
           "quote_or_element": "According to the Arizona Department of Public Safety collision incident report",
-          "reasoning": "Uncorroborated single-source pass-through of law enforcement press release without independent witness verification."
+          "reasoning": "Uncorroborated single-source pass-through of law enforcement press release without independent witness verification.",
+          "line_or_selector": null,
+          "is_grounded": true
         }
       ],
-      "node_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
-      "node_signature": "b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567"
+      "taxonomies_used": {
+        "spj": "v1.0.0"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "b6dd90498829a60a7f8c604366f2c17b4fe5990c9e4f28fa22d61123ff6936b0b318550e074aa6a68cf55d62419143d6ad4041ead0c8fa6243471d8f025ab101",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "Bicyclist Dead After SR 347 Crash South of City",
+      "byline": "Staff"
     },
     {
       "url": "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/",
-      "title": "History: When John Wayne Parkway Overpass Took Shape",
-      "byline": "Local History Columnist",
       "content_sha256": "sha256:inm_history_clean_05",
       "simhash_64": "0x5e6f708192a3b4c5",
       "audited_at": "2026-08-20T14:00:00Z",
@@ -295,9 +376,17 @@
       "classification": "CLEAN",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
+      "satire_notes": null,
       "violations": [],
-      "node_pubkey": "8bfe3e779317c7a12fb684a65e54d815249e4bdd96894160e6b62af32afbd7df",
-      "node_signature": "c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+      "taxonomies_used": {
+        "spj": "v1.0.0"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "1b24a59e0fa6cec70b0370ae77a48f9ee3a6864bd36dec61b1233a2682d93b814dd25c0f0d5498d8274096afd6da35d0772083991fa71893477dfe0370ff550e",
+      "quota_preserved": false,
+      "evaluation_method": "mesh_genesis",
+      "title": "History: When John Wayne Parkway Overpass Took Shape",
+      "byline": "Local History Columnist"
     }
   ]
 }
