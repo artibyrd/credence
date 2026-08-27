@@ -112,7 +112,7 @@ jobs:
             --cpu="1" \
             --execution-environment="gen2" \
             --cpu-boost \
-            --clear-secrets \
+            --set-secrets="GEMINI_API_KEY=credence-gemini-api-key:latest" \
             --set-env-vars="ENV=development,CREDENCE_PROFILE=${PROFILE},CREDENCE_BACKUP_BUCKET=${PROJECT_ID}-seeds-nexus,STORAGE_BACKEND=gcs,CREDENCE_SENTINEL_FEEDS=https://inmaricopa.com/feed/" \
             --allow-unauthenticated
 

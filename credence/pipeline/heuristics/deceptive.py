@@ -72,22 +72,39 @@ def check_deceptive_heuristics(
                 )
             )
 
-    # Rule: DP-3.1 Disguised Advertisements / Fake System Update
-    if "download official critical update" in text_lower or "fake-system-btn" in raw_html:
-        rule = active_reg.get_rule("DP-3.1")
-        if rule:
-            findings.append(
-                SpecialistViolationFinding(
-                    rule_id="DP-3.1",
-                    rule_uri=rule.namespaced_uri or "deceptive-pattern:visual-and-interface-interference/DP-3.1@v1.0.0",
-                    domain="DECEPTIVE_PATTERN",
-                    cluster_id="VISUAL_AND_INTERFACE_INTERFERENCE",
-                    severity=rule.severity,
-                    confidence=0.95,
-                    quote_or_element="DOWNLOAD OFFICIAL CRITICAL UPDATE NOW",
-                    reasoning="Commercial advertisement styled to mimic an authentic operating system update dialog.",
-                    is_grounded=True,
+    # Rule: DP-1.1 Native Advertising & Advertorial Cues
+    promo_phrases = [
+        "book a consultation",
+        "book an appointment",
+        "special introductory offer",
+        "claim your discount",
+        "exclusive discount",
+        "emergency repair call overnight",
+        "sponsored partner content",
+    ]
+    for phrase in promo_phrases:
+        if phrase in text_lower:
+            rule = active_reg.get_rule("DP-1.1")
+            if rule:
+                start = max(0, text_lower.rfind(".", 0, text_lower.find(phrase)) + 1)
+                end = text_lower.find(".", text_lower.find(phrase))
+                if end == -1:
+                    end = len(text_lower)
+                sentence = text_lower[start:end].strip()
+                findings.append(
+                    SpecialistViolationFinding(
+                        rule_id="DP-1.1",
+                        rule_uri=rule.namespaced_uri
+                        or "deceptive-pattern:visual-and-attention-interference/DP-1.1@v1.0.0",
+                        domain="DECEPTIVE_PATTERN",
+                        cluster_id="VISUAL_AND_ATTENTION_INTERFERENCE",
+                        severity=rule.severity,
+                        confidence=0.90,
+                        quote_or_element=sentence[:150],
+                        reasoning="Promotional marketing language structured with organic editorial newsroom visual cues.",
+                        is_grounded=True,
+                    )
                 )
-            )
+            break
 
     return findings
