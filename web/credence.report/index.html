@@ -2690,49 +2690,6 @@
     }
     window.closePublisherDetail = closePublisherDetail;
 
-    window.viewSourceDossier = function(domain, pushHistory = true) {
-      if (!domain) return;
-      window.lastViewedDomain = domain;
-      window.currentDomain = domain;
-      if (window.CredenceWS && window.CredenceWS.switchTab) {
-        window.CredenceWS.switchTab('browse', false, false);
-      }
-      if (typeof switchBrowseSubview === 'function') {
-        switchBrowseSubview('sources');
-      }
-
-      const banner = document.getElementById('browse-header-banner');
-      const catBox = document.getElementById('publishers-catalog-container');
-      const detBox = document.getElementById('publisher-detail-container');
-      if (banner) banner.style.display = 'none';
-      if (catBox) catBox.style.display = 'none';
-      if (detBox) {
-        detBox.style.display = 'flex';
-        detBox.scrollTop = 0;
-      }
-
-      if (pushHistory) {
-        history.pushState({ tab: 'browse', domain: domain }, '', '#analytics/' + domain);
-      } else {
-        history.replaceState({ tab: 'browse', domain: domain }, '', '#analytics/' + domain);
-      }
-
-      // Fetch publisher profile from PUBLISHER_DATABASE or ALL_PUBLISHERS
-      const rawPub = PUBLISHER_DATABASE[domain] || ALL_PUBLISHERS.find(p => p.domain === domain) || {
-        domain: domain,
-        title: `${domain} Publisher`,
-        desc: "Web Publisher • Continuous Epistemic Surveillance",
-        tierBadge: "TIER B (MONITORED)",
-        tierColor: "#38bdf8",
-        tierBg: "rgba(56, 189, 248, 0.15)",
-        dciScore: "75.0",
-        avgSuspicion: "25.0",
-        syndication: "● Active Ingestion",
-        violationsCount: "0 Violations",
-        trajectoryStat: "30d Stability: 95.0%",
-        trajectorySummary: "Publisher evaluated across live network ingestions."
-      };
-
     // Dossier Table Interactive State (Sort & Filter)
     window.currentDossierArticles = [];
     window.dossierSortField = 'score';
@@ -3060,8 +3017,6 @@
         })
         .catch(err => console.debug("Dynamic publisher analytics fetch error:", err));
     };
-    };
-
 
     window.filterSearchByDomain = function(domain) {
       if (!domain) return;
