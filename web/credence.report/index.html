@@ -732,11 +732,14 @@
               </div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin:0.6rem 0; flex-wrap:wrap; gap:0.5rem; flex-shrink: 0;">
-                <input type="text" id="dci-filter-input" class="form-input" placeholder="Filter domains (e.g. reuters, onion, nature)..." style="max-width:320px; font-size:0.82rem; padding:0.35rem 0.6rem;" oninput="filterDciTable(this.value)">
-                <div style="display:flex; gap:0.35rem;">
+                <input type="text" id="dci-filter-input" class="form-input" placeholder="Filter domains (e.g. reuters, inmaricopa, nature)..." style="max-width:320px; font-size:0.82rem; padding:0.35rem 0.6rem;" oninput="filterDciTable(this.value)">
+                <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="filterDciTable('')">All</button>
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#4ade80;" onclick="filterDciTable('Tier A')">Tier A (Pristine)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#38bdf8;" onclick="filterDciTable('Tier B')">Tier B (Monitored)</button>
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f59e0b;" onclick="filterDciTable('Tier C')">Tier C (Watchlist)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f43f5e;" onclick="filterDciTable('Tier D')">Tier D (Deceptive)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#c084fc;" onclick="filterDciTable('Satire')">Satire Neutral</button>
                 </div>
               </div>
 
@@ -746,17 +749,19 @@
                     <tr>
                       <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('domain')">Domain / Publisher <span id="sort-icon-domain">↕</span></th>
                       <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('tier')">Trust Band <span id="sort-icon-tier">↕</span></th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('dci')">DCI Score <span id="sort-icon-dci">↕</span></th>
                       <th style="cursor:pointer; user-select:none; color:var(--accent-cyan); background: var(--bg-card);" onclick="sortDciTable('suspicion')">Average Suspicion <span id="sort-icon-suspicion">▼</span></th>
-                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('audits')">Network Ingests <span id="sort-icon-audits">↕</span></th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('audits')">Verified Audits <span id="sort-icon-audits">↕</span></th>
                       <th style="background: var(--bg-card);">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="dci-table-body">
-                    <tr data-domain="reuters.com" data-tier="Tier A" data-suspicion="0.0" data-audits="1">
+                    <tr data-domain="reuters.com" data-tier="Tier A" data-dci="99.8" data-suspicion="0.1" data-audits="412">
                       <td><strong>reuters.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Global Wire Service</span></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">Tier A (Pristine)</span></td>
-                      <td style="font-family:var(--font-mono); color:#4ade80;">0.0 / 100</td>
-                      <td>1 Audit</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80; font-weight:700;">99.8 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80;">0.1 / 100</td>
+                      <td>412 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://reuters.com/world/energy/clean-grid-transition-2026')">Inspect</button>
@@ -764,11 +769,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="nature.com" data-tier="Tier A" data-suspicion="1.2" data-audits="1">
+                    <tr data-domain="nature.com" data-tier="Tier A" data-dci="100.0" data-suspicion="0.0" data-audits="288">
                       <td><strong>nature.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Peer-Reviewed Science Journal</span></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">Tier A (Pristine)</span></td>
-                      <td style="font-family:var(--font-mono); color:#4ade80;">1.2 / 100</td>
-                      <td>1 Audit</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80; font-weight:700;">100.0 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80;">0.0 / 100</td>
+                      <td>288 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://nature.com/articles/s41586-026-exoplanet-atmosphere')">Inspect</button>
@@ -776,11 +782,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="theonion.com" data-tier="Satire" data-suspicion="0.0" data-audits="1">
+                    <tr data-domain="theonion.com" data-tier="Satire" data-dci="100.0" data-suspicion="0.0" data-audits="145">
                       <td><strong>theonion.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Protected Satire &bull; Poe's Law</span></td>
                       <td><span class="badge" style="background:rgba(192, 132, 252, 0.15); color:#c084fc;">Satire Neutral</span></td>
+                      <td style="font-family:var(--font-mono); color:#c084fc; font-weight:700;">100.0 / 100</td>
                       <td style="font-family:var(--font-mono); color:#c084fc;">0.0 / 100</td>
-                      <td>1 Audit</td>
+                      <td>145 Ingests</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://theonion.com/golden-retriever-elected-mayor-historic-landslide')">Inspect</button>
@@ -788,9 +795,10 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="inmaricopa.com" data-tier="Tier B" data-suspicion="18.2" data-audits="51">
+                    <tr data-domain="inmaricopa.com" data-tier="Tier B" data-dci="76.2" data-suspicion="18.2" data-audits="51">
                       <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Continuous Epistemic Surveillance &bull; N=51 Audits</span></td>
                       <td><span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">Tier B (Monitored)</span></td>
+                      <td style="font-family:var(--font-mono); color:#38bdf8; font-weight:700;">76.2 / 100</td>
                       <td style="font-family:var(--font-mono); color:#38bdf8;">18.2 / 100</td>
                       <td>51 Audits</td>
                       <td>
@@ -800,11 +808,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="metro-sensationalist.com" data-tier="Tier C" data-suspicion="61.3" data-audits="1">
+                    <tr data-domain="metro-sensationalist.com" data-tier="Tier C" data-dci="38.7" data-suspicion="61.3" data-audits="38">
                       <td><strong>metro-sensationalist.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Sensationalist Editorial</span></td>
                       <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b;">Tier C (Watchlist)</span></td>
+                      <td style="font-family:var(--font-mono); color:#f59e0b; font-weight:700;">38.7 / 100</td>
                       <td style="font-family:var(--font-mono); color:#f59e0b;">61.3 / 100</td>
-                      <td>1 Audit</td>
+                      <td>38 Ingests</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://metro-sensationalist.com/zoning-sludge-crisis')">Inspect</button>
@@ -812,11 +821,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="malware-protection-alert.net" data-tier="Tier D" data-suspicion="92.5" data-audits="1">
+                    <tr data-domain="malware-protection-alert.net" data-tier="Tier D" data-dci="7.5" data-suspicion="92.5" data-audits="19">
                       <td><strong>malware-protection-alert.net</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Deceptive Pattern Sandbox</span></td>
                       <td><span class="badge" style="background:rgba(244, 63, 94, 0.15); color:#f43f5e;">Tier D (Deceptive)</span></td>
+                      <td style="font-family:var(--font-mono); color:#f43f5e; font-weight:700;">7.5 / 100</td>
                       <td style="font-family:var(--font-mono); color:#f43f5e;">92.5 / 100</td>
-                      <td>1 Audit</td>
+                      <td>19 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://malware-protection-alert.net/scan-now')">Inspect</button>
@@ -2589,8 +2599,8 @@
       tierColor: p.tierColor,
       tierBg: p.tierBg,
       dciScore: p.dciScore,
-      avgSuspicion: (p.articles && p.articles.length > 0) ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) : "0.0",
-      auditsCount: (p.articles && p.articles.length > 0) ? p.articles.length : 1,
+      avgSuspicion: p.avgSuspicion || ((p.articles && p.articles.length > 0) ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) : Math.max(0, (100.0 - parseFloat(p.dciScore || 0))).toFixed(1)),
+      auditsCount: parseInt(p.totalAudits) || ((p.articles && p.articles.length > 0) ? p.articles.length : 1),
       syndication: p.syndication || "● Active RSS",
       violationsCount: p.violationsCount || "0 Violations",
       trajectoryStat: p.trajectoryStat || "30d Stability: 100%",
@@ -3088,7 +3098,7 @@
       if (!tbody) return;
 
       // Update sort indicators in table headers
-      ['domain', 'tier', 'suspicion', 'audits'].forEach(c => {
+      ['domain', 'tier', 'dci', 'suspicion', 'audits'].forEach(c => {
         const icon = document.getElementById(`sort-icon-${c}`);
         if (icon) {
           if (window.dciSortCol === c) {
@@ -3104,23 +3114,30 @@
       let pubs = Object.values(PUBLISHER_DATABASE).map(p => {
         const firstArt = (p.articles && p.articles[0]) ? p.articles[0] : null;
         const inspectUrl = firstArt ? firstArt.url : `https://${p.domain}`;
-        let avgSusp = 0.0;
+        const dciNum = parseFloat(p.dciScore || 0);
+        
         let auditCount = 1;
-        if (p.auditsCount) {
+        if (p.totalAudits) {
+          auditCount = parseInt(p.totalAudits) || 1;
+        } else if (p.auditsCount) {
           auditCount = parseInt(p.auditsCount) || 1;
         } else if (p.articles && p.articles.length > 0) {
           auditCount = p.articles.length;
-        } else if (p.totalAudits) {
-          auditCount = parseInt(p.totalAudits) || 1;
         }
+
+        let avgSusp = 0.0;
         if (p.avgSuspicion !== undefined) {
           avgSusp = parseFloat(p.avgSuspicion);
         } else if (p.articles && p.articles.length > 0) {
           avgSusp = p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length;
+        } else {
+          avgSusp = Math.max(0, 100.0 - dciNum);
         }
+
         return {
           ...p,
           inspectUrl,
+          dciNum,
           avgSusp: avgSusp.toFixed(1),
           avgSuspNum: avgSusp,
           auditCount
@@ -3140,7 +3157,10 @@
       // Sort
       pubs.sort((a, b) => {
         let vA, vB;
-        if (window.dciSortCol === 'suspicion') {
+        if (window.dciSortCol === 'dci') {
+          vA = a.dciNum;
+          vB = b.dciNum;
+        } else if (window.dciSortCol === 'suspicion') {
           vA = a.avgSuspNum;
           vB = b.avgSuspNum;
         } else if (window.dciSortCol === 'audits') {
@@ -3162,7 +3182,7 @@
       if (pubs.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
+            <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
               No publishers match the filter criteria.
             </td>
           </tr>
@@ -3170,20 +3190,24 @@
         return;
       }
 
-      tbody.innerHTML = pubs.map(p => `
-        <tr data-domain="${p.domain}" data-tier="${p.tierBadge}" data-suspicion="${p.avgSusp}" data-audits="${p.auditCount}">
-          <td><strong>${p.domain}</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">${p.title}</span></td>
-          <td><span class="badge" style="background:${p.tierBg}; color:${p.tierColor}; border:1px solid ${p.tierColor}; font-size:0.7rem;">${p.tierBadge}</span></td>
-          <td style="font-family:var(--font-mono); color:${p.tierColor}; font-weight:700;">${p.avgSusp} / 100</td>
-          <td>${p.auditCount} ${p.auditCount === 1 ? 'Audit' : 'Audits'}</td>
-          <td>
-            <div style="display:flex; gap:0.35rem;">
-              <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('${p.inspectUrl}')">Inspect</button>
-              <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${p.domain}')">Dossier ↗</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = pubs.map(p => {
+        const suspColor = p.avgSuspNum <= 15.0 ? '#4ade80' : (p.avgSuspNum <= 40.0 ? '#38bdf8' : (p.avgSuspNum <= 70.0 ? '#f59e0b' : '#f43f5e'));
+        return `
+          <tr data-domain="${p.domain}" data-tier="${p.tierBadge}" data-dci="${p.dciScore}" data-suspicion="${p.avgSusp}" data-audits="${p.auditCount}">
+            <td><strong>${p.domain}</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">${p.title}</span></td>
+            <td><span class="badge" style="background:${p.tierBg}; color:${p.tierColor}; border:1px solid ${p.tierColor}; font-size:0.7rem;">${p.tierBadge}</span></td>
+            <td style="font-family:var(--font-mono); color:${p.tierColor}; font-weight:700;">${p.dciScore} / 100</td>
+            <td style="font-family:var(--font-mono); color:${suspColor}; font-weight:600;">${p.avgSusp} / 100</td>
+            <td>${p.auditCount} ${p.auditCount === 1 ? 'Audit' : 'Audits'}</td>
+            <td>
+              <div style="display:flex; gap:0.35rem;">
+                <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('${p.inspectUrl}')">Inspect</button>
+                <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${p.domain}')">Dossier ↗</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
     window.renderDciTable = renderDciTable;
 
