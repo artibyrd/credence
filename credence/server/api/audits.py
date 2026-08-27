@@ -95,14 +95,19 @@ async def api_reports(request: Any) -> Any:
 
     await init_db()
     async with get_async_session() as s:
-        stmt = select(Audit, Snapshot).join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id))
+        stmt = select(Audit, Snapshot).join(Snapshot, col(Audit.snapshot_id) == col(Snapshot.id), isouter=True)
         if domain:
             stmt = stmt.where(col(Snapshot.url).like(f"%{domain}%"))
-        stmt = stmt.order_by(col(Audit.audited_at).desc()).limit(limit)
+        stmt = stmt.order_by(col(Audit.audited_at).desc())
         res = (await s.exec(stmt)).all()
 
+        seen_urls = set()
         reports = []
         for audit, snap in res:
+            target_url = snap.url if snap and snap.url else audit.content_sha256
+            if target_url in seen_urls:
+                continue
+            seen_urls.add(target_url)
             reports.append(
                 {
                     "id": str(audit.id),
@@ -119,6 +124,8 @@ async def api_reports(request: Any) -> Any:
                     "audited_at": str(audit.audited_at),
                 }
             )
+            if len(reports) >= limit:
+                break
 
         return JSONResponse(
             {

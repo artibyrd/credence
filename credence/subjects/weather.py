@@ -6,7 +6,7 @@ Architecture: Decoupled Weather & Forensic Profiling Engine (<480 LOC).
 
 import math
 from collections import Counter, defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from sqlmodel import col, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -174,16 +174,16 @@ async def get_publisher_analytics(
     )
     rows = list((await session.exec(stmt)).all())
 
-    matched_audits: List[Audit] = []
-    matched_snapshots: List[Snapshot] = []
-
+    # Deduplicate matched audits to keep the latest canonical audit per distinct article URL
+    latest_by_url: Dict[str, Tuple[Audit, Optional[Snapshot]]] = {}
     for audit, snap in rows:
         target_url = snap.url if snap and snap.url else audit.content_sha256
         root_dom = extract_root_domain(target_url)
         if root_dom == clean_domain:
-            matched_audits.append(audit)
-            if snap:
-                matched_snapshots.append(snap)
+            latest_by_url[target_url] = (audit, snap)
+
+    matched_audits: List[Audit] = [a for a, _ in latest_by_url.values()]
+    matched_snapshots: List[Snapshot] = [s for _, s in latest_by_url.values() if s is not None]
 
     if not matched_audits:
         return None

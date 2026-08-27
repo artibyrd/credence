@@ -115,6 +115,25 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
             except Exception:
                 pass
 
+            # Prune duplicate legacy audit rows, retaining only the latest canonical audit per URL
+            try:
+                await conn.exec_driver_sql(
+                    """
+                    DELETE FROM audit WHERE id IN (
+                        SELECT a.id FROM audit a
+                        JOIN snapshot s ON a.snapshot_id = s.id
+                        WHERE s.url IS NOT NULL AND a.id NOT IN (
+                            SELECT MAX(a2.id) FROM audit a2
+                            JOIN snapshot s2 ON a2.snapshot_id = s2.id
+                            GROUP BY s2.url
+                        )
+                    );
+                    """
+                )
+                await conn.exec_driver_sql("DELETE FROM snapshot WHERE id NOT IN (SELECT snapshot_id FROM audit);")
+            except Exception:
+                pass
+
 
 async def init_db(engine: AsyncEngine | None = None) -> None:
     """Initialize database schemas, apply performance pragmas, and run v1->v2 migrations.
