@@ -59,6 +59,8 @@ async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
             "audited_at": str(audit.audited_at),
             "findings": [v.model_dump(mode="json") for v in violations],
             "violations": [v.model_dump(mode="json") for v in violations],
+            "quota_preserved": audit.quota_preserved,
+            "evaluation_method": audit.evaluation_method,
         }
 
 
@@ -122,6 +124,8 @@ async def api_reports(request: Any) -> Any:
                     "classification": audit.classification,
                     "is_satire": audit.is_satire,
                     "audited_at": str(audit.audited_at),
+                    "quota_preserved": audit.quota_preserved,
+                    "evaluation_method": audit.evaluation_method,
                 }
             )
             if len(reports) >= limit:
