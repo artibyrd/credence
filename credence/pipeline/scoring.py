@@ -117,3 +117,80 @@ def compute_aggregate_confidence(violations: List[SpecialistViolationFinding]) -
         return 1.0
 
     return round(total_conf / grounded_count, 2)
+
+
+GENERIC_STAFF_BYLINES = {
+    "staff",
+    "staff reports",
+    "editorial staff",
+    "news staff",
+    "admin",
+    "administrator",
+    "news desk",
+    "contributor",
+    "press release",
+    "wire service",
+    "anonymous",
+}
+
+
+def compute_sourcing_ratios(
+    byline: str,
+    content_type: str,
+    violations: List[SpecialistViolationFinding],
+    suspicion_score: float,
+) -> Dict[str, float]:
+    """Calculate article-level forensic sourcing ratios.
+
+    - R_byline: 100.0 (named human author) vs 0.0 (anonymous or generic staff handle).
+    - R_single: 100.0 if relying exclusively on law enforcement blotter/wire pass-through.
+    - R_coi: 100.0 if unrecused governance/business conflict present.
+    - ASI: Advertorial Separation Index (100.0 down to 0.0 based on commercial blur).
+    """
+    byline_clean = (byline or "").strip().lower()
+    is_staff_handle = (
+        byline_clean in GENERIC_STAFF_BYLINES
+        or "staff" in byline_clean
+        or "news desk" in byline_clean
+        or "press release" in byline_clean
+    )
+    is_named_author = bool(byline_clean and not is_staff_handle)
+    r_byline = 100.0 if is_named_author else 0.0
+
+    # Check for single-source law enforcement blotter reliance
+    has_single_source = any(v.rule_id in ("SPJ-1.1", "SPJ-1.3") for v in violations)
+    r_single = 100.0 if (has_single_source or content_type == "POLICE_BLOTTER") else 0.0
+
+    # Check for governance conflict of interest
+    has_coi = any(v.rule_id in ("SPJ-3.1", "SPJ-3.2") for v in violations)
+    r_coi = 100.0 if has_coi else 0.0
+
+    # Advertorial Separation Index
+    adv_viols = [
+        v
+        for v in violations
+        if v.rule_id in ("DEC-1.1", "DEC-1.2", "DEC-1.3", "DEC-1.4", "SPJ-3.3", "SPJ-4.1", "AST-1.1", "AST-1.2")
+    ]
+    asi = max(0.0, min(100.0, 100.0 - (len(adv_viols) * 15.0)))
+
+    return {
+        "r_byline": round(r_byline, 1),
+        "r_single": round(r_single, 1),
+        "r_coi": round(r_coi, 1),
+        "asi": round(asi, 1),
+    }
+
+
+def compute_domain_dci(
+    mean_suspicion: float,
+    mean_density: float = 0.0,
+    r_byline_avg: float = 1.0,
+) -> float:
+    """Calculate the aggregate Domain Credence Index (DCI) across a publisher's cohort.
+
+    Formula: DCI = 100.0 - (0.50 * S_recency + 0.30 * Density + 0.20 * (1 - R_byline) * 100)
+    """
+    byline_penalty = (1.0 - min(1.0, max(0.0, r_byline_avg))) * 100.0
+    deduction = (0.50 * mean_suspicion) + (0.30 * min(50.0, mean_density)) + (0.20 * byline_penalty)
+    dci = max(0.0, min(100.0, 100.0 - deduction))
+    return round(dci, 1)

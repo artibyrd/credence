@@ -9,8 +9,8 @@ from credence.pipeline.schemas import SpecialistViolationFinding
 from credence.taxonomy_loader import TaxonomyRegistry
 
 
-def extract_grounded_sentence(extracted: ExtractedContent, phrase: str) -> str:
-    """Extract a verbatim grounded sentence from title, clean_text, or byline containing the phrase."""
+def extract_grounded_sentence(extracted: ExtractedContent, phrase: str, raw_html: str = "") -> str:
+    """Extract a verbatim grounded sentence from title, clean_text, byline, or raw_html containing the phrase."""
     if extracted.title and phrase.lower() in extracted.title.lower():
         return extracted.title.strip()
 
@@ -31,6 +31,17 @@ def extract_grounded_sentence(extracted: ExtractedContent, phrase: str) -> str:
         sentence = text[start:end].strip()
         if sentence:
             return sentence[:200]
+
+    if raw_html and phrase.lower() in raw_html.lower():
+        h_idx = raw_html.lower().find(phrase.lower())
+        start_tag = raw_html.rfind(">", 0, h_idx)
+        end_tag = raw_html.find("<", h_idx)
+        start = start_tag + 1 if start_tag != -1 else h_idx
+        end = end_tag if end_tag != -1 else h_idx + len(phrase)
+        snippet = raw_html[start:end].strip()
+        if snippet:
+            return snippet[:200]
+
     return phrase
 
 
@@ -41,7 +52,7 @@ def check_deceptive_heuristics(
 ) -> List[SpecialistViolationFinding]:
     """Check for obvious deceptive patterns in text and HTML DOM."""
     findings: List[SpecialistViolationFinding] = []
-    text_lower = f"{extracted.title or ''}\n{extracted.clean_text}".lower()
+    text_lower = f"{extracted.title or ''}\n{extracted.clean_text}\n{raw_html}".lower()
 
     # Rule: DP-2.1 Confirmshaming
     for phrase in ["no thanks, i prefer letting", "i hate saving", "prefer letting hackers"]:
@@ -56,7 +67,7 @@ def check_deceptive_heuristics(
                         cluster_id="EMOTIONAL_AND_SOCIAL_PRESSURE",
                         severity=rule.severity,
                         confidence=1.0,
-                        quote_or_element=phrase,
+                        quote_or_element=extract_grounded_sentence(extracted, phrase, raw_html=raw_html),
                         reasoning="Confirmshaming opt-out phrasing designed to guilt the user into complying.",
                         is_grounded=True,
                     )
@@ -75,7 +86,8 @@ def check_deceptive_heuristics(
                     cluster_id="EMOTIONAL_AND_SOCIAL_PRESSURE",
                     severity=rule.severity,
                     confidence=0.95,
-                    quote_or_element="Deal expires in 04:59",
+                    quote_or_element=extract_grounded_sentence(extracted, "deal expires", raw_html=raw_html)
+                    or extract_grounded_sentence(extracted, "expires in", raw_html=raw_html),
                     reasoning="Artificial urgency banner inducing panic or manufactured time pressure.",
                     is_grounded=True,
                 )
@@ -93,7 +105,7 @@ def check_deceptive_heuristics(
                     cluster_id="FORCED_ACTION_AND_OBSTRUCTION",
                     severity=rule.severity,
                     confidence=0.98,
-                    quote_or_element="recurring charge of $99 billed every Friday",
+                    quote_or_element=extract_grounded_sentence(extracted, "recurring charge"),
                     reasoning="Hidden recurring billing concealed with microscopic font and obstructive cancellation terms.",
                     is_grounded=True,
                 )

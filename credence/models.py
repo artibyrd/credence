@@ -102,6 +102,15 @@ class Audit(SQLModel, table=True):
         default="llm_multi_agent",
         description="Method used for evaluation (llm_multi_agent or offline_structural_heuristic)",
     )
+    evaluation_model: Optional[str] = Field(
+        default=None, description="Exact cognitive model or engine used (e.g. gemini-3.7-flash, antigravity_pro)"
+    )
+    taxonomy_root_hash: Optional[str] = Field(
+        default=None, index=True, description="Composite SHA-256 root hash of active taxonomy suite"
+    )
+    sourcing_ratios_json: str = Field(
+        default="{}", description="JSON map of publisher sourcing ratios (R_byline, R_single, R_COI, ASI, DCI)"
+    )
 
     # Relationships
     snapshot: Optional[Snapshot] = Relationship(back_populates="audits")

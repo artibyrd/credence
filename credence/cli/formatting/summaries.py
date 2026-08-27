@@ -21,6 +21,26 @@ def build_audit_summary_panel(report: AuditReport) -> Panel:
     summary_text.append(f"\nSuspicion Density: {report.suspicion_density:.2f} violations/1k words\n")
     summary_text.append(f"Confidence: {report.confidence_score * 100:.0f}%\n")
 
+    if report.evaluation_model:
+        summary_text.append(f"Cognitive Engine: {report.evaluation_model}\n", style="cyan")
+    if report.taxonomy_root_hash:
+        summary_text.append(f"Taxonomy Root: {report.taxonomy_root_hash[:16]}...\n", style="dim")
+
+    if report.sourcing_ratios:
+        r_byline = report.sourcing_ratios.get("r_byline", 0.0)
+        r_single = report.sourcing_ratios.get("r_single", 0.0)
+        asi = report.sourcing_ratios.get("asi", 100.0)
+        summary_text.append(
+            f"Sourcing Forensics: Byline {r_byline:.0f}% | Single-Source {r_single:.0f}% | ASI {asi:.0f}/100\n",
+            style="magenta",
+        )
+
+    if report.is_taxonomy_stale:
+        summary_text.append(
+            "⚠️  TAXONOMY STALE: Catalogs have expanded since this audit. Use --force to re-evaluate.\n",
+            style="bold yellow",
+        )
+
     if report.node_pubkey:
         summary_text.append(f"Signed By Node: {report.node_pubkey[:16]}... (Ed25519 Verified)\n", style="green")
 

@@ -17,6 +17,36 @@ from credence.server.middleware.security import _check_admin_auth
 logger = logging.getLogger("credence.server.api")
 
 
+def _format_clean_title(raw_title: Optional[str], url: Optional[str]) -> str:
+    """Extract and format a human-readable title, stripping Mesh Submission prefixes and converting slugs."""
+    if raw_title and not raw_title.startswith("Mesh Submission:") and not raw_title.startswith("http"):
+        return raw_title
+    target = (raw_title.replace("Mesh Submission:", "").strip() if raw_title else "") or (url or "")
+    from urllib.parse import unquote, urlparse
+
+    try:
+        slug = urlparse(target).path.rstrip("/").split("/")[-1]
+        if "." in slug:
+            slug = slug.rsplit(".", 1)[0]
+        if slug and len(slug) > 2:
+            return unquote(slug).replace("-", " ").replace("_", " ").strip().title()
+    except Exception:
+        pass
+    return raw_title or "Audited Article"
+
+
+def _derive_source_type(eval_method: Optional[str], node_pubkey: Optional[str] = None) -> str:
+    """Determine standardized human-readable source category."""
+    if eval_method:
+        if "sifter" in eval_method.lower():
+            return "Sentinel Feed"
+        if "genesis" in eval_method.lower():
+            return "Genesis Seeder"
+        if "cli" in eval_method.lower():
+            return "CLI / Manual"
+    return "P2P Mesh"
+
+
 async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
     """Reconstitute full audit report JSON from SQLite."""
     await init_db()
@@ -44,10 +74,15 @@ async def _reconstitute_report_from_db(identifier: str) -> Optional[dict]:
         stmt_v = select(Violation).where(Violation.audit_id == audit.id)
         violations = list((await session.exec(stmt_v)).all())
 
+        raw_title = snap.title if snap else ""
+        clean_title = _format_clean_title(raw_title, snap.url if snap else "")
+        source_type = _derive_source_type(audit.evaluation_method, audit.node_pubkey)
+
         return {
             "service": "credence",
             "url": snap.url if snap else "",
-            "title": snap.title if (snap and snap.title) else "",
+            "title": clean_title,
+            "source": source_type,
             "byline": snap.byline if (snap and snap.byline) else "",
             "site_name": snap.site_name if (snap and snap.site_name) else "",
             "content_sha256": audit.content_sha256,
@@ -110,11 +145,17 @@ async def api_reports(request: Any) -> Any:
             if target_url in seen_urls:
                 continue
             seen_urls.add(target_url)
+
+            raw_title = snap.title if snap else ""
+            clean_title = _format_clean_title(raw_title, snap.url if snap else "")
+            source_type = _derive_source_type(audit.evaluation_method, audit.node_pubkey)
+
             reports.append(
                 {
                     "id": str(audit.id),
                     "url": snap.url if snap else "",
-                    "title": snap.title if (snap and snap.title) else "",
+                    "title": clean_title,
+                    "source": source_type,
                     "byline": snap.byline if (snap and snap.byline) else "",
                     "site_name": snap.site_name if (snap and snap.site_name) else "",
                     "content_sha256": audit.content_sha256,

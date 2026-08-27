@@ -115,6 +115,22 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
             except Exception:
                 pass
 
+            # Ensure audit table has evaluation_model, taxonomy_root_hash, and sourcing_ratios_json
+            try:
+                res_aud = await conn.exec_driver_sql("PRAGMA table_info(audit);")
+                cols_aud = [row[1] for row in res_aud.fetchall()]
+                if cols_aud:
+                    if "evaluation_model" not in cols_aud:
+                        await conn.exec_driver_sql("ALTER TABLE audit ADD COLUMN evaluation_model VARCHAR;")
+                    if "taxonomy_root_hash" not in cols_aud:
+                        await conn.exec_driver_sql("ALTER TABLE audit ADD COLUMN taxonomy_root_hash VARCHAR;")
+                    if "sourcing_ratios_json" not in cols_aud:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE audit ADD COLUMN sourcing_ratios_json VARCHAR DEFAULT '{}';"
+                        )
+            except Exception:
+                pass
+
             # Prune duplicate legacy audit rows, retaining only the latest canonical audit per URL
             try:
                 await conn.exec_driver_sql(

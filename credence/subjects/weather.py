@@ -362,11 +362,39 @@ async def get_publisher_analytics(
     recent_articles: List[Dict[str, Any]] = []
     for a in reversed(matched_audits):
         target_snap: Optional[Snapshot] = snap_map.get(a.snapshot_id) if a.snapshot_id is not None else None
+        target_url = target_snap.url if target_snap else a.content_sha256
+        raw_title = target_snap.title if (target_snap and target_snap.title) else ""
+        clean_title = raw_title
+        if not clean_title or clean_title.startswith("Mesh Submission:") or clean_title.startswith("http"):
+            from urllib.parse import unquote, urlparse
+
+            try:
+                slug_part = (clean_title.replace("Mesh Submission:", "").strip() if clean_title else "") or target_url
+                slug = urlparse(slug_part).path.rstrip("/").split("/")[-1]
+                if "." in slug:
+                    slug = slug.rsplit(".", 1)[0]
+                if slug and len(slug) > 2:
+                    clean_title = unquote(slug).replace("-", " ").replace("_", " ").strip().title()
+                else:
+                    clean_title = f"Article from {clean_domain}"
+            except Exception:
+                clean_title = "Audited Article"
+
+        source_label = "P2P Mesh"
+        if a.evaluation_method:
+            if "sifter" in a.evaluation_method.lower():
+                source_label = "Sentinel Feed"
+            elif "genesis" in a.evaluation_method.lower():
+                source_label = "Genesis Seeder"
+            elif "cli" in a.evaluation_method.lower():
+                source_label = "CLI / Manual"
+
         recent_articles.append(
             {
                 "id": a.id,
-                "url": target_snap.url if target_snap else a.content_sha256,
-                "title": target_snap.title if (target_snap and target_snap.title) else "Audited Article",
+                "url": target_url,
+                "title": clean_title,
+                "source": source_label,
                 "score": f"{a.suspicion_score:.1f}",
                 "suspicion_score": a.suspicion_score,
                 "classification": a.classification,

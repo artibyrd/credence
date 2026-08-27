@@ -91,11 +91,30 @@ async def api_mesh_submit_attestation(request: Any) -> Any:
         if existing_snap:
             snap_id = existing_snap.id
         else:
+            from urllib.parse import unquote, urlparse
+
+            clean_title = getattr(report, "title", None)
+            if not clean_title or clean_title.startswith("Mesh Submission:") or clean_title.startswith("http"):
+                try:
+                    slug_part = (
+                        clean_title.replace("Mesh Submission:", "").strip() if clean_title else ""
+                    ) or report.url
+                    slug = urlparse(slug_part).path.rstrip("/").split("/")[-1]
+                    if "." in slug:
+                        slug = slug.rsplit(".", 1)[0]
+                    if slug and len(slug) > 2:
+                        clean_title = unquote(slug).replace("-", " ").replace("_", " ").strip().title()
+                    else:
+                        clean_title = f"Article from {urlparse(report.url).netloc}"
+                except Exception:
+                    clean_title = "Audited Article"
+
             new_snap = Snapshot(
                 url=report.url,
+                domain=urlparse(report.url).netloc or "mesh-contributed",
                 content_sha256=report.content_sha256,
                 simhash_64=report.simhash_64,
-                title=f"Mesh Submission: {report.url}",
+                title=clean_title,
                 word_count=len(report.violations) * 50,
             )
             session.add(new_snap)

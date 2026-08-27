@@ -671,24 +671,39 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; flex-shrink:0;">
                       <div style="display:flex; align-items:center; gap:0.6rem;">
                         <h3 style="font-size:0.92rem; color:#fff; margin:0; font-weight:700;">Audited Articles from this Source</h3>
-                        <span style="font-size:0.7rem; color:var(--accent-cyan); background:rgba(56,189,248,0.1); padding:0.12rem 0.45rem; border-radius:4px; font-family:var(--font-mono); font-weight:600;" id="dossier-article-count-label">Showing all 5 verified audits</span>
+                        <span style="font-size:0.7rem; color:var(--accent-cyan); background:rgba(56,189,248,0.1); padding:0.12rem 0.45rem; border-radius:4px; font-family:var(--font-mono); font-weight:600;" id="dossier-article-count-label">Showing all verified audits</span>
                       </div>
-                      <span style="font-size:0.7rem; color:var(--text-dim);">Click <b>Inspect</b> for 3-tier lensing or <b>Viewer</b> for standalone analysis</span>
+                      <span style="font-size:0.7rem; color:var(--text-dim);">Click column header to <b>sort</b> • Filter or click <b>Inspect</b></span>
+                    </div>
+
+                    <!-- Interactive Filter & Search Bar -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; padding-bottom:0.25rem; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0;">
+                      <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:220px; max-width:360px;">
+                        <input type="text" id="dossier-filter-input" class="form-input" placeholder="Filter articles (e.g. crash, blotter, mesh)..." style="width:100%; font-size:0.78rem; padding:0.28rem 0.55rem;" oninput="window.filterDossierArticles(this.value)">
+                      </div>
+                      <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="window.setDossierFilterCategory('all')">All</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#4ade80;" onclick="window.setDossierFilterCategory('clean')">Clean (0-15)</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#f59e0b;" onclick="window.setDossierFilterCategory('flagged')">Flagged (35+)</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#38bdf8;" onclick="window.setDossierFilterCategory('mesh')">P2P Mesh</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#c084fc;" onclick="window.setDossierFilterCategory('sentinel')">Sentinel Feed</button>
+                      </div>
                     </div>
 
                     <div class="ws-scroll-pane" style="flex:1; min-height:0; overflow-y:auto; overflow-x:auto; padding-right:0.35rem;">
                       <table class="dossier-articles-table" id="dossier-articles-table" style="width:100%; border-collapse:collapse;">
                         <thead style="position:sticky; top:0; background:var(--bg-card); z-index:2;">
                           <tr style="border-bottom:1px solid var(--border); text-align:left; font-size:0.73rem; color:var(--text-dim); text-transform:uppercase;">
-                            <th style="padding:0.45rem 0.55rem; background:var(--bg-card);">Article Headline / Published Claim</th>
-                            <th style="padding:0.45rem 0.55rem; width:95px; background:var(--bg-card);">Audited Date</th>
-                            <th style="padding:0.45rem 0.55rem; width:110px; background:var(--bg-card);">Suspicion Score</th>
-                            <th style="padding:0.45rem 0.55rem; width:170px; background:var(--bg-card);">Epistemic Classification</th>
+                            <th style="padding:0.45rem 0.55rem; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('title')" title="Sort by Headline">Article Headline / Published Claim <span id="dossier-sort-title">↕</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:115px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('source')" title="Sort by Ingestion Source">Source <span id="dossier-sort-source">↕</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:95px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('date')" title="Sort by Audited Date">Audited Date <span id="dossier-sort-date">↕</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:115px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('score')" title="Sort by Suspicion Score">Suspicion Score <span id="dossier-sort-score">▼</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:160px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('badge')" title="Sort by Classification">Epistemic Classification <span id="dossier-sort-badge">↕</span></th>
                             <th style="padding:0.45rem 0.55rem; width:220px; text-align:right; background:var(--bg-card);">Forensic Actions</th>
                           </tr>
                         </thead>
                         <tbody id="dossier-articles-body">
-                          <!-- Populated dynamically via viewSourceDossier() -->
+                          <!-- Populated dynamically via renderDossierTable() -->
                         </tbody>
                       </table>
                     </div>
@@ -2148,6 +2163,36 @@
     const REPORTS_CATALOG_MAP = new Map();
     const REPORTS_SHA_MAP = new Map();
 
+    function formatHumanTitle(rawTitle, url) {
+      if (rawTitle && !rawTitle.startsWith("Mesh Submission:") && !rawTitle.startsWith("http://") && !rawTitle.startsWith("https://") && rawTitle !== "Audited Publication Record" && rawTitle !== "Audited Article" && rawTitle !== "Epistemic Audit Report") {
+        return rawTitle;
+      }
+      let target = rawTitle && rawTitle.startsWith("Mesh Submission:") ? rawTitle.replace(/^Mesh Submission:\s*/, "") : (url || "");
+      try {
+        const parsed = new URL(target.startsWith("http") ? target : `https://${target}`);
+        let slug = parsed.pathname.replace(/\/$/, "").split("/").pop() || "";
+        slug = slug.replace(/\.[a-zA-Z0-9]+$/, "");
+        if (slug && slug.length > 2) {
+          return decodeURIComponent(slug).replace(/[-_]+/g, " ").trim().replace(/\b\w/g, c => c.toUpperCase());
+        }
+      } catch (_) {}
+      return rawTitle && !rawTitle.startsWith("Mesh Submission:") ? rawTitle : "Audited Article";
+    }
+
+    function getSourceMeta(sourceStr) {
+      const src = (sourceStr || "P2P Mesh").toLowerCase();
+      if (src.includes("sentinel") || src.includes("sifter") || src.includes("feed")) {
+        return { label: "Sentinel Feed", color: "#c084fc", bg: "rgba(192, 132, 252, 0.12)", border: "rgba(192, 132, 252, 0.3)" };
+      }
+      if (src.includes("genesis") || src.includes("seed")) {
+        return { label: "Genesis Seeder", color: "#34d399", bg: "rgba(52, 211, 153, 0.12)", border: "rgba(52, 211, 153, 0.3)" };
+      }
+      if (src.includes("cli") || src.includes("manual")) {
+        return { label: "CLI / Manual", color: "#fbbf24", bg: "rgba(251, 191, 36, 0.12)", border: "rgba(251, 191, 36, 0.3)" };
+      }
+      return { label: "P2P Mesh", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.3)" };
+    }
+
     function formatRawReportToCard(r) {
       if (!r) return null;
       let url = r.url || "";
@@ -2179,9 +2224,13 @@
       const ethicsScore = (Math.max(1.0, 10.0 - (scoreNum / 10.0))).toFixed(1) + " / 10";
       const logicScore = (Math.max(1.0, 10.0 - (scoreNum / 15.0))).toFixed(1) + " / 10";
       const uiScore = (isDecept ? "3.5 / 10" : "9.8 / 10");
+
+      const cleanTitle = formatHumanTitle(r.title, url);
+      const sourceStr = r.source || r.source_type || (r.evaluation_method?.includes("sifter") ? "Sentinel Feed" : (r.evaluation_method?.includes("genesis") ? "Genesis Seeder" : (r.evaluation_method?.includes("cli") ? "CLI / Manual" : "P2P Mesh")));
       
       return {
-        title: r.title || "Audited Publication Record",
+        title: cleanTitle,
+        source: sourceStr,
         domain: domain,
         url: url,
         score: scoreStr,
@@ -2684,11 +2733,199 @@
         trajectorySummary: "Publisher evaluated across live network ingestions."
       };
 
+    // Dossier Table Interactive State (Sort & Filter)
+    window.currentDossierArticles = [];
+    window.dossierSortField = 'score';
+    window.dossierSortAsc = false;
+    window.dossierFilterQuery = '';
+    window.dossierFilterCategory = 'all';
+
+    window.sortDossierTable = function(field) {
+      if (window.dossierSortField === field) {
+        window.dossierSortAsc = !window.dossierSortAsc;
+      } else {
+        window.dossierSortField = field;
+        window.dossierSortAsc = (field === 'title' || field === 'source');
+      }
+      window.renderDossierTable();
+    };
+
+    window.filterDossierArticles = function(query) {
+      window.dossierFilterQuery = (query || '').toLowerCase().trim();
+      window.renderDossierTable();
+    };
+
+    window.setDossierFilterCategory = function(cat) {
+      window.dossierFilterCategory = cat;
+      const input = document.getElementById('dossier-filter-input');
+      if (input && cat === 'all') input.value = '';
+      window.renderDossierTable();
+    };
+
+    window.renderDossierTable = function() {
+      const tableBody = document.getElementById('dossier-articles-body');
+      const countLabel = document.getElementById('dossier-article-count-label');
+      if (!tableBody) return;
+
+      // Update sort indicators
+      ['title', 'source', 'date', 'score', 'badge'].forEach(col => {
+        const icon = document.getElementById(`dossier-sort-${col}`);
+        if (icon) {
+          if (window.dossierSortField === col) {
+            icon.textContent = window.dossierSortAsc ? '▲' : '▼';
+            icon.style.color = 'var(--accent-cyan)';
+          } else {
+            icon.textContent = '↕';
+            icon.style.color = 'var(--text-dim)';
+          }
+        }
+      });
+
+      let list = [...(window.currentDossierArticles || [])];
+
+      // Filter by category
+      if (window.dossierFilterCategory === 'clean') {
+        list = list.filter(a => parseFloat(a.score || 0) <= 15.0);
+      } else if (window.dossierFilterCategory === 'flagged') {
+        list = list.filter(a => parseFloat(a.score || 0) > 30.0);
+      } else if (window.dossierFilterCategory === 'mesh') {
+        list = list.filter(a => (a.source || '').toLowerCase().includes('mesh'));
+      } else if (window.dossierFilterCategory === 'sentinel') {
+        list = list.filter(a => (a.source || '').toLowerCase().includes('sentinel') || (a.source || '').toLowerCase().includes('feed'));
+      }
+
+      // Filter by search query
+      if (window.dossierFilterQuery) {
+        const q = window.dossierFilterQuery;
+        list = list.filter(a =>
+          (a.title && a.title.toLowerCase().includes(q)) ||
+          (a.url && a.url.toLowerCase().includes(q)) ||
+          (a.source && a.source.toLowerCase().includes(q)) ||
+          (a.badge && a.badge.toLowerCase().includes(q)) ||
+          (String(a.score).includes(q))
+        );
+      }
+
+      // Sort list
+      list.sort((a, b) => {
+        let vA, vB;
+        if (window.dossierSortField === 'score') {
+          vA = parseFloat(a.score || 0);
+          vB = parseFloat(b.score || 0);
+        } else if (window.dossierSortField === 'date') {
+          vA = a.date || '';
+          vB = b.date || '';
+        } else if (window.dossierSortField === 'source') {
+          vA = (a.source || '').toLowerCase();
+          vB = (b.source || '').toLowerCase();
+        } else if (window.dossierSortField === 'badge') {
+          vA = (a.badge || '').toLowerCase();
+          vB = (b.badge || '').toLowerCase();
+        } else {
+          vA = (a.title || '').toLowerCase();
+          vB = (b.title || '').toLowerCase();
+        }
+
+        if (vA < vB) return window.dossierSortAsc ? -1 : 1;
+        if (vA > vB) return window.dossierSortAsc ? 1 : -1;
+        return 0;
+      });
+
+      if (countLabel) {
+        const total = (window.currentDossierArticles || []).length;
+        countLabel.textContent = list.length === total
+          ? `Showing all ${total} verified audit${total === 1 ? '' : 's'}`
+          : `Showing ${list.length} of ${total} verified audit${total === 1 ? '' : 's'}`;
+      }
+
+      if (list.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
+              No articles match current filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = list.map(a => {
+        const srcMeta = getSourceMeta(a.source);
+        return `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <td style="padding:0.45rem 0.55rem;">
+              <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
+              <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
+            </td>
+            <td style="padding:0.45rem 0.55rem; white-space:nowrap;">
+              <span class="badge" style="font-size:0.65rem; padding:0.12rem 0.45rem; background:${srcMeta.bg}; color:${srcMeta.color}; border:1px solid ${srcMeta.border}; font-weight:700;">${srcMeta.label}</span>
+            </td>
+            <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
+            <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
+            <td style="padding:0.45rem 0.55rem;">
+              <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
+            </td>
+            <td style="padding:0.45rem 0.55rem; text-align:right;">
+              <div style="display:inline-flex; gap:0.35rem; align-items:center;">
+                <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-action btn-secondary" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-action btn-secondary" title="View Temporal History & Diff">📜 History ↗</a>
+                <button type="button" class="btn-action btn-primary" onclick="evaluateSource('${a.url}', true)">🔬 Inspect</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    window.viewSourceDossier = function(domain, pushHistory = true) {
+      if (!domain) return;
+      window.lastViewedDomain = domain;
+      window.currentDomain = domain;
+      if (window.CredenceWS && window.CredenceWS.switchTab) {
+        window.CredenceWS.switchTab('browse', false, false);
+      }
+      if (typeof switchBrowseSubview === 'function') {
+        switchBrowseSubview('sources');
+      }
+
+      const banner = document.getElementById('browse-header-banner');
+      const catBox = document.getElementById('publishers-catalog-container');
+      const detBox = document.getElementById('publisher-detail-container');
+      if (banner) banner.style.display = 'none';
+      if (catBox) catBox.style.display = 'none';
+      if (detBox) {
+        detBox.style.display = 'flex';
+        detBox.scrollTop = 0;
+      }
+
+      if (pushHistory) {
+        history.pushState({ tab: 'browse', domain: domain }, '', '#analytics/' + domain);
+      } else {
+        history.replaceState({ tab: 'browse', domain: domain }, '', '#analytics/' + domain);
+      }
+
+      // Fetch publisher profile from PUBLISHER_DATABASE or ALL_PUBLISHERS
+      const rawPub = PUBLISHER_DATABASE[domain] || ALL_PUBLISHERS.find(p => p.domain === domain) || {
+        domain: domain,
+        title: `${domain} Publisher`,
+        desc: "Web Publisher • Continuous Epistemic Surveillance",
+        tierBadge: "TIER B (MONITORED)",
+        tierColor: "#38bdf8",
+        tierBg: "rgba(56, 189, 248, 0.15)",
+        dciScore: "75.0",
+        avgSuspicion: "25.0",
+        syndication: "● Active Ingestion",
+        violationsCount: "0 Violations",
+        trajectoryStat: "30d Stability: 95.0%",
+        trajectorySummary: "Publisher evaluated across live network ingestions."
+      };
+
       // Collect all authentic matching articles from SAMPLE_DATABASE, REPORTS_CATALOG_MAP, and rawPub.articles
       const sampleMatches = Object.entries(SAMPLE_DATABASE).filter(([u, a]) => a.domain === domain || u.includes(domain));
       let matchingArticles = sampleMatches.map(([u, a]) => ({
         url: u,
-        title: a.title,
+        title: formatHumanTitle(a.title, u),
+        source: a.source || "Genesis Seeder",
         score: a.score,
         badge: a.badge ? a.badge.split(' • ')[0] : 'AUDITED',
         badgeBg: a.badgeBg || "rgba(255,255,255,0.05)",
@@ -2702,7 +2939,8 @@
         if ((ca.domain === domain || u.includes(domain)) && !matchingArticles.some(m => m.url === u)) {
           matchingArticles.push({
             url: u,
-            title: ca.title,
+            title: formatHumanTitle(ca.title, u),
+            source: ca.source || "P2P Mesh",
             score: ca.score,
             badge: ca.badge ? ca.badge.split(' • ')[0] : 'AUDITED',
             badgeBg: ca.badgeBg || "rgba(255,255,255,0.05)",
@@ -2718,7 +2956,8 @@
           if (!matchingArticles.some(m => m.url === pa.url)) {
             matchingArticles.push({
               url: pa.url,
-              title: pa.title,
+              title: formatHumanTitle(pa.title, pa.url),
+              source: pa.source || "P2P Mesh",
               score: pa.score,
               badge: pa.badge || "AUDITED",
               badgeBg: "rgba(255,255,255,0.05)",
@@ -2741,7 +2980,6 @@
       const statViol = document.getElementById('dossier-stat-violations');
       const trajStat = document.getElementById('dossier-trajectory-stat');
       const trajSummary = document.getElementById('dossier-trajectory-summary');
-      const countLabel = document.getElementById('dossier-article-count-label');
 
       if (titleEl) titleEl.textContent = rawPub.domain;
       if (descEl) descEl.textContent = `${rawPub.title} • ${rawPub.desc}`;
@@ -2765,41 +3003,9 @@
       if (statViol) statViol.textContent = rawPub.violationsCount || `${matchingArticles.filter(a => parseFloat(a.score) > 20).length} Epistemic Violations`;
       if (trajStat) trajStat.textContent = rawPub.trajectoryStat || "Watchlist • Monitored Source";
       if (trajSummary) trajSummary.textContent = rawPub.trajectorySummary || "Continuous monitoring across all published articles.";
-      if (countLabel) countLabel.textContent = `Showing all ${totalAuditsCount} verified audit${totalAuditsCount === 1 ? '' : 's'}`;
 
-      const tableBody = document.getElementById('dossier-articles-body');
-      if (tableBody) {
-        if (matchingArticles.length > 0) {
-          tableBody.innerHTML = matchingArticles.map(a => `
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-              <td style="padding:0.45rem 0.55rem;">
-                <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
-                <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
-              </td>
-              <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
-              <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
-              <td style="padding:0.45rem 0.55rem;">
-                <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
-              </td>
-              <td style="padding:0.45rem 0.55rem; text-align:right;">
-                <div style="display:inline-flex; gap:0.35rem; align-items:center;">
-                  <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-action btn-secondary" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
-                  <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-action btn-secondary" title="View Temporal History & Diff">📜 History ↗</a>
-                  <button type="button" class="btn-action btn-primary" onclick="evaluateSource('${a.url}', true)">🔬 Inspect</button>
-                </div>
-              </td>
-            </tr>
-          `).join('');
-        } else {
-          tableBody.innerHTML = `
-            <tr>
-              <td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
-                No curated articles found for ${domain}. You can inspect any article from this domain in <a href="javascript:void(0)" onclick="filterSearchByDomain('${domain}')" style="color:var(--accent-cyan);">Search & Audit</a>.
-              </td>
-            </tr>
-          `;
-        }
-      }
+      window.currentDossierArticles = matchingArticles;
+      window.renderDossierTable();
 
       // Asynchronously augment with live server analytics and dynamic recent audits
       fetch(`/api/analytics/publisher/${encodeURIComponent(domain)}`)
@@ -2815,23 +3021,22 @@
           if (liveData.total_audits && statAudits) {
             statAudits.textContent = `${liveData.total_audits} Verified Audit${liveData.total_audits === 1 ? '' : 's'}`;
           }
-          if (liveData.total_audits && countLabel) {
-            countLabel.textContent = `Showing all ${liveData.total_audits} verified audit${liveData.total_audits === 1 ? '' : 's'}`;
-          }
           if (liveData.violations_by_domain && statViol) {
             const violTotal = Object.values(liveData.violations_by_domain).reduce((a, b) => a + b, 0);
             statViol.textContent = `${violTotal} Epistemic Violations`;
           }
-          if (liveData.recent_audited_articles && liveData.recent_audited_articles.length > 0 && tableBody) {
+          if (liveData.recent_audited_articles && liveData.recent_audited_articles.length > 0) {
             // Merge live articles with sample matches
             const liveMap = new Map();
             liveData.recent_audited_articles.forEach(la => {
               const scoreNum = parseFloat(la.score || la.suspicion_score || 0);
               const isClean = scoreNum <= 15.0;
               const isSusp = scoreNum > 15.0 && scoreNum < 60.0;
+              const cleanT = formatHumanTitle(la.title, la.url);
               liveMap.set(la.url, {
                 url: la.url,
-                title: la.title || "Audited Article",
+                title: cleanT,
+                source: la.source || "P2P Mesh",
                 score: typeof la.score === "string" ? la.score : scoreNum.toFixed(1),
                 badge: la.classification || (isClean ? "CLEAN" : isSusp ? "SUSPICIOUS" : "PROVEN HOAX"),
                 badgeBg: isClean ? "rgba(34, 197, 94, 0.15)" : isSusp ? "rgba(245, 158, 11, 0.15)" : "rgba(244, 63, 94, 0.15)",
@@ -2842,39 +3047,19 @@
             });
 
             // Also preserve any curated sample matches not returned by API
-            matchingArticles.forEach(sa => {
+            (window.currentDossierArticles || []).forEach(sa => {
               if (!liveMap.has(sa.url)) {
                 liveMap.set(sa.url, sa);
               }
             });
 
-            const mergedList = Array.from(liveMap.values());
-            if (countLabel) countLabel.textContent = `Showing all ${mergedList.length} verified audit${mergedList.length === 1 ? '' : 's'}`;
-            if (statAudits) statAudits.textContent = `${mergedList.length} Verified Audit${mergedList.length === 1 ? '' : 's'}`;
-
-            tableBody.innerHTML = mergedList.map(a => `
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                <td style="padding:0.45rem 0.55rem;">
-                  <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
-                  <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
-                </td>
-                <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
-                <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
-                <td style="padding:0.45rem 0.55rem;">
-                  <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
-                </td>
-                <td style="padding:0.45rem 0.55rem; text-align:right;">
-                  <div style="display:inline-flex; gap:0.35rem; align-items:center;">
-                    <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-action btn-secondary" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
-                    <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-action btn-secondary" title="View Temporal History & Diff">📜 History ↗</a>
-                    <button type="button" class="btn-action btn-primary" onclick="evaluateSource('${a.url}', true)">🔬 Inspect</button>
-                  </div>
-                </td>
-              </tr>
-            `).join('');
+            window.currentDossierArticles = Array.from(liveMap.values());
+            if (statAudits) statAudits.textContent = `${window.currentDossierArticles.length} Verified Audit${window.currentDossierArticles.length === 1 ? '' : 's'}`;
+            window.renderDossierTable();
           }
         })
         .catch(err => console.debug("Dynamic publisher analytics fetch error:", err));
+    };
     };
 
 

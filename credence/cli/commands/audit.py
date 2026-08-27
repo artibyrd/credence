@@ -55,6 +55,9 @@ async def cli_audit(
     profile_name: str = "economy",
     profile: Optional[str] = None,
     output_format: Optional[str] = None,
+    driver: str = "auto",
+    check_staleness: bool = False,
+    incremental_delta: bool = False,
     *args: Any,
     **kwargs: Any,
 ) -> AuditReport:
@@ -67,6 +70,24 @@ async def cli_audit(
         url_or_text.startswith("http://") or url_or_text.startswith("https://") or url_or_text.startswith("file://")
     )
     await init_db()
+
+    if check_staleness and is_url:
+        existing = await cli_lookup(url=url_or_text, format_type="silent")
+        if existing:
+            from credence.taxonomy_loader import registry
+
+            is_stale, reasons = registry.is_audit_stale(existing.taxonomies_used, existing.taxonomy_root_hash)
+            if is_stale:
+                console.print(f"[bold yellow]⚠️  STALE AUDIT for {url_or_text}[/bold yellow]")
+                for r in reasons:
+                    console.print(f"  • {r}", style="yellow")
+                console.print("[dim]Use --force to re-audit against the latest taxonomy catalogs.[/dim]")
+            else:
+                console.print(
+                    f"[bold green]✓ Audit for {url_or_text} is UP-TO-DATE with active taxonomies.[/bold green]"
+                )
+            return existing
+
     async with get_async_session() as session:
         if is_url:
             snapshot_result = await capture_webpage(url_or_text)
@@ -113,13 +134,31 @@ async def cli_lookup(
 
         res = (await session.exec(stmt)).first()
         if not res:
-            if url:
+            if url and format_type != "silent":
                 console.print(f"[yellow]No previous audit found for {url}[/yellow]")
             return None
         audit_record, snap = res
 
         stmt_v = select(Violation).where(col(Violation.audit_id) == audit_record.id)
         violations = (await session.exec(stmt_v)).all()
+
+        try:
+            tax_map = json.loads(audit_record.taxonomies_used_json)
+        except Exception:
+            tax_map = {}
+
+        try:
+            ratios_map = (
+                json.loads(audit_record.sourcing_ratios_json)
+                if hasattr(audit_record, "sourcing_ratios_json") and audit_record.sourcing_ratios_json
+                else {}
+            )
+        except Exception:
+            ratios_map = {}
+
+        from credence.taxonomy_loader import registry
+
+        is_stale, _ = registry.is_audit_stale(tax_map, getattr(audit_record, "taxonomy_root_hash", None))
 
         report = AuditReport(
             url=snap.url,
@@ -130,6 +169,8 @@ async def cli_lookup(
             confidence_score=audit_record.confidence_score,
             classification=audit_record.classification,
             is_satire=audit_record.is_satire,
+            content_type=audit_record.content_type,
+            satire_notes=audit_record.satire_notes,
             violations=[
                 SpecialistViolationFinding(
                     rule_id=v.rule_id,
@@ -144,8 +185,14 @@ async def cli_lookup(
                 )
                 for v in violations
             ],
+            taxonomies_used=tax_map,
             node_pubkey=audit_record.node_pubkey,
             node_signature=audit_record.node_signature,
+            evaluation_method=audit_record.evaluation_method,
+            evaluation_model=getattr(audit_record, "evaluation_model", None),
+            taxonomy_root_hash=getattr(audit_record, "taxonomy_root_hash", None),
+            sourcing_ratios=ratios_map,
+            is_taxonomy_stale=is_stale,
         )
         if format_type in ("json", "ndjson"):
             console.print_json(data=report.model_dump(mode="json"))
