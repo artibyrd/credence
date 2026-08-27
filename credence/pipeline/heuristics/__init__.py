@@ -25,9 +25,10 @@ def heuristic_evaluate_content(
     """Offline heuristic rule evaluator used for hermetic testing and fallback analysis."""
     active_reg = reg or registry
     violations: List[SpecialistViolationFinding] = []
-    text_lower = extracted.clean_text.lower()
+    full_text = f"{extracted.title or ''}\nBy {extracted.byline or ''}\n{extracted.clean_text}"
+    text_lower = full_text.lower()
 
-    violations.extend(check_deceptive_heuristics(text_lower, raw_html, active_reg))
+    violations.extend(check_deceptive_heuristics(extracted, raw_html, active_reg))
     violations.extend(check_fallacy_heuristics(text_lower, active_reg))
     violations.extend(check_spj_heuristics(extracted, raw_html, active_reg))
 

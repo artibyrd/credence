@@ -1,7 +1,7 @@
 {
   "protocol": "credence-mesh/1.0",
   "pack_id": "genesis-attestations-v1",
-  "generated_at": "2026-08-27T19:37:13.818783+00:00",
+  "generated_at": "2026-08-27T20:10:21.008338+00:00",
   "root_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
   "attestations": [
     {
@@ -150,7 +150,7 @@
       "url": "https://inmaricopa.com/maricopa-police-hope-ice-cream-helps-break-down-barriers/",
       "content_sha256": "sha256:090daa79c614f1c33add7bb953a6adf09570c38ed1c7ba01ad481eb98f2ef5d2",
       "simhash_64": "0x63cd1d4e6627674d",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 6.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -160,160 +160,160 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "a4ba29f8fe182223032319aaf8c4728e1ec50826c3d2302f9c9088a7771c188aab3878e79065affcd0263ae2d60674b5cf66e9e3c551638318eb52f99756970d",
+      "node_signature": "77c2179715d4c54f470be191d6a422babc2f8ed906a2e9775ff82b1c0250399ad84ab13cb924149f247934d3f1a23d2756e9778dcd3a0b722eb736f8224d2009",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Maricopa police hope ice cream helps break down barriers",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Community engagement feature covering police outreach at local elementary school with direct resident quotes."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/how-maricopa-homeowners-can-protect-their-ac-during-monsoon-season/",
       "content_sha256": "sha256:f4237c9bf635b6651cf041ebce9b4d778db7ce86703a51d4cf960708796bc608",
       "simhash_64": "0x33c79d0361275a70",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 58.5,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "SUSPICIOUS",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
-          "rule_uri": "Native Advertorial Framing",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
           "severity": 4,
-          "confidence": 0.95,
-          "quote_or_element": "Scheduling an inspection with a certified local HVAC specialist prevents costly compressor burnout",
-          "reasoning": "Commercial lead generation advice structured as objective community service.",
+          "confidence": 0.92,
+          "quote_or_element": "How Maricopa homeowners can protect their AC during monsoon season",
+          "reasoning": "Commercial contractor seasonal maintenance advisory published as editorial consumer news.",
           "line_or_selector": null,
           "is_grounded": true
         },
         {
           "rule_id": "SPJ-4.1",
-          "rule_uri": "Generic Staff Byline",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
-          "severity": 2,
-          "confidence": 0.95,
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 3,
+          "confidence": 0.9,
           "quote_or_element": "InMaricopa Staff",
-          "reasoning": "Generic byline on commercial advice piece.",
+          "reasoning": "Staff byline masking trade sponsor content.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "41be4338a47d4bdac516f32ca7dd61f9f6e0ba2bc254ccfcc50af1fa1305a2cdc4c7b36b29684be97fd2a36384c7cea53f33a054e5ce62e6800f730e8c3ff505",
+      "node_signature": "425e3301531e97d505de0d38ee5970f8b337f77c732f160dcd874f5baf47d79b513eb3f6f4e350c820c6b20d9aa34cbd240bb2b68f3b68ef42149450e37ab100",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "How Maricopa homeowners can protect their AC during monsoon season",
-      "byline": "InMaricopa Staff",
-      "summary": "HVAC maintenance guide featuring commercial contractor steering without formal advertorial tag."
+      "byline": "InMaricopa Staff"
     },
     {
       "url": "https://inmaricopa.com/huffing-allegedly-leads-to-15k-crash-at-home-depot/",
       "content_sha256": "sha256:d55ea1f1c6df6e28df9abbffdbe89a2b828452445c53b4bcd7ec28e486bdb6db",
       "simhash_64": "0x22dd09ce69a1e660",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 38.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
-      "classification": "LOW SUSPICION",
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
       "violations": [
         {
-          "rule_id": "SPJ-1.1",
-          "rule_uri": "Single-Source Probable Cause Statement",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
+          "rule_id": "SPJ-1.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
           "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "according to the probable cause statement",
-          "reasoning": "Arrest details transcribed directly from police probable cause sheet without defense commentary.",
+          "confidence": 0.88,
+          "quote_or_element": "According to a probable cause statement",
+          "reasoning": "Single-source police affidavit reported without defense representation or trial outcome.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "4cdc80f7d4f0d4b1e96068d41ae05a6db8ffe0bea49d4a59f45b70947bd30083686ac52479f380b58e21500a41fe36dabdd839ea2b1b688d530f5ed9396eb905",
+      "node_signature": "b6deccf8fb0d3ef7a9cf343140daba12480078507052b0652d9b95a501f991f1e5b7e737a0d652a4a3a783b8b0a6dc3ba119a66eebafc6438fac955f40fade0d",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Huffing allegedly leads to $15K crash at Home Depot",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Uncorroborated police probable cause arrest statement pass-through."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/ojon-we-should-build-more-than-a-city/",
       "content_sha256": "sha256:f5b92f3664844085aaaba35b7d04575911dc04ab70a3c1c823b372e75a7f6802",
       "simhash_64": "0x30eb995e51646679",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 45.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "MONITORED",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "SPJ-3.1",
-          "rule_uri": "Electoral Candidate Advocacy under Editorial Byline",
-          "domain": "inmaricopa.com",
-          "cluster_id": "governance",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "I believe leadership begins long before someone takes a seat on the City Council",
-          "reasoning": "Campaign platform text published without clear 'Guest Candidate Column' structural demarcations.",
+          "confidence": 0.92,
+          "quote_or_element": "O\u2019Jon is a candidate for Maricopa City Council",
+          "reasoning": "Campaign platform op-ed published within general civic reporting stream.",
           "line_or_selector": null,
           "is_grounded": true
         },
         {
           "rule_id": "SPJ-4.1",
-          "rule_uri": "Associate Editor Byline on Candidate Column",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
-          "severity": 2,
-          "confidence": 0.95,
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 3,
+          "confidence": 0.9,
           "quote_or_element": "Monica D Spencer; Associate Editor",
-          "reasoning": "Associate editor byline applied to first-person candidate essay.",
+          "reasoning": "Candidate opinion letter attributed to editorial staff byline rather than guest contributor.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "1927dd6bca0a9405a8b4ef4349e3176d03e1979be9423e01ee0c4faf27af9103c101639fcfe8d3a23912d74c819e532d419bbbd75a5cf65f8defe0a1806a7f0d",
+      "node_signature": "7b197c53b612140b0fadf6aff6a225796a82764a5620d021d69232d9663d0769a77513a0a2170e909db528bf5f24b193602131a7d102a181386ff33ff2fa0900",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "O'Jon: We should build more than a city",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "First-person City Council candidate platform column published under newsroom staff byline."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/5-maricopa-residents-have-died-from-heat-related-causes-this-summer/",
       "content_sha256": "sha256:15f4f928cb1186e54a1f86ea760094e39787d52f48e8a72db1a333f6dff5c49c",
       "simhash_64": "0x7b29fecf7a736351",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -323,22 +323,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "63b6958db502c3bbf72e5e2101bc45110093bc1961b1101f98e184f60c9e725330c59b432dfd03ae973ebb5993d478f652bb6cdb5b2dd2427c1d545d0c232108",
+      "node_signature": "4c1c5625ef8cdc6d1dfbd90651e0f34d3d070b9747a6c6a3cb56f26947989d052e331c228e6435ec71968b4e190ccf608607004a75aa750f9976507eeb60830b",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "5 Maricopa residents have died from heat-related causes this summer",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Rigorous public health reporting citing Pinal County Medical Examiner's Office official death records and divisional manager statements."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/why-these-3-students-chose-central-arizona-college/",
       "content_sha256": "sha256:0ec8098d89a6e3149f30f941713e5022f58b658cdeee2c3974e31487dfd6e53c",
       "simhash_64": "0xedcdddd54f3647d8",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 4.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -348,22 +348,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "60ce22ee04be92031ae8d20226c829b4bf2565598eadf8ecb1c4b2d5eb34b442709ace9ae5901ed1eba424791bf6e189f21dd9e09334a50ad14a4b9d0383f501",
+      "node_signature": "97144587c0cc9ba03d7651df1a88615dcbcaaf754b5d1523124991d9cd87fae29865b9d7ede08d5b464d7191d911299d540e1a1730d549e3b70b536e8430df03",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Why these 3 students chose Central Arizona College",
-      "byline": "InMaricopa Staff",
-      "summary": "Community higher education feature with direct student interview quotes on local career pathways."
+      "byline": "InMaricopa Staff"
     },
     {
       "url": "https://inmaricopa.com/copper-sky-swan-boats-taking-their-final-voyage-this-weekend/",
       "content_sha256": "sha256:2c17244f76f20e9f1248bb205802dc5e18fc619b1c487ca69782fc983a3aa8af",
       "simhash_64": "0x3ac9f90743356651",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 3.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -373,22 +373,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "a131bb02fa82e05f25099b673cb0fb3c17b8260b6067a80e14f6bdfa6a20035573d0d3e83b4d7a063ff0e563aabc44b5326e9a818bb7bfb6c360b48adde8f90a",
+      "node_signature": "0c613b4917ce04aa01b0bbfdfd3bdd01a3024ec2a47bda0f54941d8ad171e669b3464c3db673ca5ae6a5846fe05c354038c041c6934a4b8649be24c20097a400",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Copper Sky swan boats taking their final voyage this weekend",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Factual municipal parks reporting citing vendor contract termination terms and city spokesperson statements."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/afternoon-slowdown/",
       "content_sha256": "sha256:e0ca516f7cdd508e22892b83862eebaa76154d831ead759988dc524d391e20dd",
       "simhash_64": "0x3bc9c8ef4a43226e",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 5.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -398,60 +398,60 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "81d6dbc141ebe80dba54a4339534ae9111463326825e871e03d259acb53452cd71961be28bacbc188c484368668c0f4d754428860243abb48760224791c50c03",
+      "node_signature": "bdfa2932587bf69792e54d4c535a986ea4be89d52f1a7eaa0c740c0839a004483563e647f28df971e401873f81d5ba2552da97c7535eca5fa99a2b727d83830d",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "No injuries in fender-bender that blocked northbound John Wayne Parkway",
-      "byline": "Karen Bartunek",
-      "summary": "Timely traffic alert citing police spokesperson on two-vehicle intersection collision."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/police-arrest-man-accused-of-trying-to-enter-tortosa-home/",
       "content_sha256": "sha256:58ba54e2e3913c56e8da15c918d2eba6808dab5e287447b1140b3e75ab741ab4",
       "simhash_64": "0xb2c5cc666f65f771",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 36.5,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
-      "classification": "LOW SUSPICION",
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
       "violations": [
         {
-          "rule_id": "SPJ-1.1",
-          "rule_uri": "Single-Source Police Affidavit",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
+          "rule_id": "SPJ-1.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
           "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "according to the probable cause statement",
-          "reasoning": "Single-source pass-through of police statement.",
+          "confidence": 0.88,
+          "quote_or_element": "According to a probable cause statement",
+          "reasoning": "Uncritical recitation of police arrest paperwork.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "d73e19e009ecbe82de017e25fc0c24893e35527c0b70926d80e62d5189b639934ea63d6e576e2dca07116aadbbc5575ef0586b4b6d5a3fab91875842cfba5b09",
+      "node_signature": "4d7e5c195acd388c2052cec809ee700fa864547ac3ba556d3f14151580be3176943486eec939bd8dbe975e0fe23be40a71bdbda3b003b9a83fe5ef39f73a9e08",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Police arrest man accused of trying to enter Tortosa home",
-      "byline": "Karen Bartunek",
-      "summary": "Police affidavit report detailing residential trespass arrest."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/prop-414-to-put-maricopa-general-plan-before-voters/",
       "content_sha256": "sha256:edb0384620e7d7c86e09830f8434e630b0cfc0758e10b071ce09ec4ebbe4303b",
       "simhash_64": "0x2b41294d51674175",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -461,22 +461,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "46fce1fcc6f656ab46c977a1358f3bc4243cb66db978b535ec428df2485c342db06b5418004357c04985f48afaa2bae9014d2b79b9c0c88fc5ffb268202f1f04",
+      "node_signature": "44fe71134bdaea03e14a06b5404e29c40e066d1ea839d10f35b54511c7e245182a2ac6640f9a0ae294dab1d1e52796bf5c83faa5ca6c216cb7be08fe86bd8209",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Prop 414 to put Maricopa general plan before voters",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Objective civic education explaining voter ballot measure requirements and City Council 10-year master plan mandates."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/flooding-closes-sr-238-between-maricopa-gila-bend/",
       "content_sha256": "sha256:2b54abf33043bb6fb0aded2b7847d2e89994ec4dd4a8b75804ddd63a0db85f5a",
       "simhash_64": "0x30c3d85e37334536",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -486,23 +486,23 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "358ec9ff74a0c27e921e1d5a95a47bcb58c4b37389f8255c6a54270a6d7c50f3962e048f9a5776f2461bc9ec5bad9d8423f1f45215fcf3a94c3987c51cec3302",
+      "node_signature": "4d160f92e9aca51c110b13e70b0c76ab7705c1012732b5a2192ed708c7e64adcc3dbb028eb693a16f53bb5e59e7211ff5617c3d30ef7db7b76d96ccb19981e0f",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Flooding closes SR 238 between Maricopa, Gila Bend",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Real-time emergency weather closure report citing Arizona DOT AZ511 official traffic advisories."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/truck-fire-shuts-down-maricopa-casa-grande-highway/",
       "content_sha256": "sha256:9d10e8ca66ebcf6240d04f1ff4ce5069ea1d0495fda99aaee94171a0ba6e5523",
       "simhash_64": "0x2a49d976717372ff",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
-      "suspicion_score": 2.0,
+      "audited_at": "2026-08-27T20:10:21.008338Z",
+      "suspicion_score": 4.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
       "classification": "CLEAN",
@@ -511,22 +511,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "f9d1dee334af3672128f9b22fabf51d3a17eb67fada42636ee1618a2f0972319c3141d4b815b7fbd55fe13679780f82aa7ae9576cea46263976e1887561f7f07",
+      "node_signature": "37ba1a31489f4c90340d87260e9cd6d7751e03e523d69a2eb335f1fd88187a6a4c2a5421b9fd186957cef2a3236a5f045a45cb6d812829f4abf943610e9c7102",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Truck fire temporarily shuts down Maricopa-Casa Grande Highway",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Emergency incident reporting citing Maricopa Fire/Medical Department response times and lane reopening."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/teen-hit-by-vehicle-while-riding-scooter/",
       "content_sha256": "sha256:5ac22233bdffab74fbae995193f9fa15e533f9ae73976ec50e8c9f21514e5f84",
       "simhash_64": "0x33c0a8c26b522661",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 4.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -536,47 +536,84 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "7f4ea9d1ad91701b5155ba51986d8fc5a51d289595ddde60c9bb2ede06149f61dc792cc175e554bae4ddd10b7a38dcbefd8e07e38ecc101bb8b206b6f46fc503",
+      "node_signature": "3ade6054ebf661643602d4d8fdeff884ce8468b1e701a1c4dc81f8b75d9295bf3d6698a96b2440aa3669de6444d7c591b5fcbaff335b9019aba513ee93e01f04",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Teen scooter rider uninjured in Porter Road crash",
-      "byline": "Karen Bartunek",
-      "summary": "Accident report citing paramedic assessment and road safety tips."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/a-charter-schools-adds-smartlab-as-campus-growth-continues/",
       "content_sha256": "sha256:14a5a9a7b555aaf0b055c1980b9480787a25add6a5217ad10136088ede035083",
       "simhash_64": "0x33c9f84757700679",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
-      "suspicion_score": 6.5,
+      "audited_at": "2026-08-27T20:10:21.008338Z",
+      "suspicion_score": 79.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
-      "classification": "CLEAN",
+      "classification": "DECEPTIVE",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
-      "violations": [],
+      "violations": [
+        {
+          "rule_id": "DEC-1.4",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
+          "severity": 5,
+          "confidence": 1.0,
+          "quote_or_element": "Families with questions about enrollment or SmartLab can call 520-265-5589 or visit APlusAZ.org.",
+          "reasoning": "Commercial recruitment marketing structured with organic editorial newsroom layout.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-3.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
+          "severity": 4,
+          "confidence": 0.98,
+          "quote_or_element": "Sponsored content.",
+          "reasoning": "Sponsorship disclosure relegated to buried trailing footer footnote beneath standard editorial copy.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 3,
+          "confidence": 0.95,
+          "quote_or_element": "InMaricopa Staff",
+          "reasoning": "Institutional staff byline obscuring commercial entity paying for publication.",
+          "line_or_selector": null,
+          "is_grounded": true
+        }
+      ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "4cdb719eb39e8de999379df2cb868c1e51bceda60da381a76665f8bf6ac3f5d2e01fc676cd44b98d14e5f4929eb9d7e111217f83e2c111bdfa9a3489ff3f2f03",
+      "node_signature": "6c7b8e1558e226cb6c8aebc0ae2c0a9932c653066cc162f623e19e4ca78f996ead5d3d179e7b81fde5756f200fa1f64519e86e123f0a9eb2885a45fb25c46506",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "A+ Charter Schools adds SmartLab as campus growth continues",
-      "byline": "InMaricopa Staff",
-      "summary": "Campus expansion reporting highlighting STEM curriculum additions."
+      "byline": "InMaricopa Staff"
     },
     {
       "url": "https://inmaricopa.com/more-347-work-means-lane-restrictions-through-next-week/",
       "content_sha256": "sha256:da39d433e253b93987e5c6f8ee5e04659307eb77fc657b380ce66f3d48178820",
       "simhash_64": "0x368d19c753b4c43b",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -586,22 +623,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "5c0de91a07e4c483332422e97ca20e13ddafe0aae4070530f5ed358093cb1aed5704e9784eeea8d54779fb80f2c28b472e385160d11bc8d57023b05f69724800",
+      "node_signature": "22131ec6f5a64d28eb8fc351c3b8ed8e363264ffa84ee618c297fb6d78d12df72c474351005fc8722748921c5e1c17165c60198362aac354f4cc30015b6b1805",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "More 347 work means lane restrictions through next week",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Scheduled ADOT highway resurfacing schedule with detour instructions."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/2-maricopa-teachers-awarded-scholarships-for-stem-programs/",
       "content_sha256": "sha256:a2cc80c3608865868a1dc00923e7d55e341e846ef24a5373a35ff29ca779a152",
       "simhash_64": "0x3dc9c94667324659",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -611,22 +648,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "803fe757434d636c953950fc20be527e6dc2384095b1a7324d5f8c4a22c77eadba6c9222a1498926bb77ff3a5c0fd15903d9860648cb846b65e40ff371c0d807",
+      "node_signature": "17d4f3fef808dc416646ac5d0177b6efbe968d4a8c7837d93b78cd1d02c052765f1995e648069a04ade368a92c87ad8765ea2dea5185477beac3121eb10fad08",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "2 Maricopa teachers awarded scholarships for STEM programs",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Educational feature on STEM teacher foundation grant awards."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/smith-fire-grows-to-40-acres-overnight-near-maricopa/",
       "content_sha256": "sha256:eddaf60a6d1f1f695326f242822692076b21c96b692fcc175e021f5f3289fadb",
       "simhash_64": "0x328f99c7df7067f1",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -636,22 +673,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "91d6999dc809fc39ab269f3f294e3c957f912d060a01100ac3ddefc055e50b13ff31cde98cd942ea1c98a195dc28a56a8f5e14b3181ab5c9257d4f83dbd3830e",
+      "node_signature": "0cdc8fc7de86c54419155f5ffb05d29231b556e5e710237e8d1893cd93afb088e33cbc89967193d03540387966c550710a0bc4eb951809530610e0e0a899e905",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Smith Fire grows to 40 acres overnight near Maricopa",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Wildfire suppression reporting citing Arizona Department of Forestry and Fire Management updates."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/brush-fire-grows-to-2-acres-near-maricopa-meadow/",
       "content_sha256": "sha256:c63d22ad640a550d47c41aeb4bc7a76e8ccd9374293e107630c44b2b571c7580",
       "simhash_64": "0x3acdc9df57637175",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -661,22 +698,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "3965f662bd7296938b27a9cc97b5db2b042a64f8fab507f1bbe45e7a72c1e495f2bd0fa2df2592c6b23922647979f4cc0d7d15072c312bd256dea8935c1d1b01",
+      "node_signature": "de4a8e177b2368484734f61dcf07d77a22a39117a559b8802e5c26e3ff97573ee4944ec16429edf7a037a06ebf1b69ed76b33225a2e2c891b5d7c0ce350e8b08",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Brush fire grows to 2 acres near Maricopa Meadows",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Emergency response coverage with on-scene fire department spokesperson confirmation."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/free-teen-mental-health-workshop-set-for-tonight/",
       "content_sha256": "sha256:7848e3db5df3dd3e86a1368d4720e35880784ba6fce10f50eca2840cbd1cedc9",
       "simhash_64": "0x1f86c95657536659",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 3.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -686,22 +723,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "23f19078956edda9bbe0f7187591858f5f67c80e931f59d16d25b6fcd4fc4fc4c86d6f1130864069ca746bd96a8998e4671c6f89a03edb6b32973b8e2a5be80c",
+      "node_signature": "4dea9e16a57ef9311169762d58c62c202c1438b61a56325e3f5dd027839f2cfc76c1accf3e5884b78df84bb46786169bc9f59dd020ab8c13fc0b517989b24d00",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Need help navigating teen mental health? Workshop set for tonight",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Non-profit community service announcement for adolescent mental wellness counseling seminar."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/students-evaluated-after-school-bus-collides-with-tesla/",
       "content_sha256": "sha256:09a20bc37421209d6b9b31b227593a9d443d0b4e8daad28a838e35ed5f8dc2a0",
       "simhash_64": "0x39698947ed3107e3",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 4.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -711,22 +748,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "caed00f976bc702f3c7084b54b8105c1882471eba66e54d45d5d51b4b1689dd5b09d528d95b3261e466be3253db900ca1ff1e16dc93ff3befa1fba2f7e2e470e",
+      "node_signature": "91629145910e88d8a3aed21aed51c3758c6f56b4b59921f74640761e7c2b70720bf9bcc1838dc91a9fefcdd06c8cc520e8e9569f17303a59f236d17b1a17ad00",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Students evaluated after school bus collides with Tesla",
-      "byline": "Ryan Tafoya",
-      "summary": "Factual collision alert confirming student safety checks and police investigation."
+      "byline": "Ryan Tafoya"
     },
     {
       "url": "https://inmaricopa.com/storm-brings-lightning-brush-fire-and-power-outages-to-maricopa/",
       "content_sha256": "sha256:8cf9ef0f974bd730d4080f0d56dec13311a47ee26d16419e541875e9256916de",
       "simhash_64": "0x1acdc95749376737",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -736,22 +773,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "2ab439f46e700133475c34b2e366010da3269f5b3833c37877cb21fbae4f32fd735b9ba655e972cf6dff873b5ac5eee01707a4ba6ffe94ed514d4e5acc24c901",
+      "node_signature": "b512252bdf3fc1f54900f410c3234b94d93c29b0fc6b7a34ef898d31804633817fdff02c6906c4cb3f0b91ffdc04e0037bafd73188830e8d0893146895ab7702",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Storm brings lightning, brush fire and power outages to Maricopa",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Severe weather aftermath report citing Electrical District No. 3 power restoration metrics."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/musds-chronic-absenteeism-rate-remains-below-state-average/",
       "content_sha256": "sha256:bd1ba2f99c7b4398325d8ebe03d47f12d7ac6e6bfdb3d191232779778beeb268",
       "simhash_64": "0x224f94c7ef734e5c",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -761,22 +798,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "3cba0a76ebee104fb7c45e8231d43a04bfb11cdbe4608904b837904e9f6554fb031e9429dfa5eaf53e11c02b54dee099eccf271944ee4f68dffc806dd42d2207",
+      "node_signature": "769f5888b073d5d346cee27d5733b865953f40ea811d2bba61787d0a0a3eeec36c9e802fb407e3ab5c0645501af7bb6a5839bc8d9ed52629234fe8bef29b7705",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "MUSD\u2019s chronic absenteeism rate remains below state average",
-      "byline": "Karen Bartunek",
-      "summary": "Education data analysis comparing district attendance records against state benchmarks."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/boys-girls-club-director-played-pickleball-for-25-hours-to-raise-money/",
       "content_sha256": "sha256:571d326e490889305e1b9a1c946200f12926155a6a1a8e08bdbcc290cef9adbf",
       "simhash_64": "0x3381a44f6363617d",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -786,122 +823,110 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "3af8d260239965b4d47c36047bdae63b909312fa206199a0041951276dbb94208544a6bf47d3ac371f6365011b78bc857f89fd1c150939b2e70ed975aa1be708",
+      "node_signature": "cf15ce0083da3185089e308ef3cae567f5e87150e1eda967f0c872a6e7c3691ede19b7ddbf36b91cc6383ea2a5d609161c390aa0797da9b52cf38ce7c18be701",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Boys & Girls Club director played pickleball for 25 hours to raise money",
-      "byline": "Ryan Tafoya",
-      "summary": "Human interest profile on non-profit youth athletics fundraising endurance challenge."
+      "byline": "Ryan Tafoya"
     },
     {
       "url": "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/",
       "content_sha256": "sha256:5da1ab5e9e1d190057dfa86c8a2d0276675bba1ff6cf795fab5c24bd5e711e4d",
       "simhash_64": "0x30c799cc47627679",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 82.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.98,
+      "confidence_score": 0.95,
       "classification": "DECEPTIVE",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
-          "rule_uri": "Native Advertorial Camouflage",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
           "severity": 5,
-          "confidence": 0.95,
-          "quote_or_element": "Local residents looking for advanced skin rejuvenation can now book consultations",
-          "reasoning": "Commercial marketing disguised as community news without sponsored content labeling.",
+          "confidence": 0.98,
+          "quote_or_element": "Maricopa Wellness Center is introducing a new option for skin revitalization and tattoo removal with the addition of PicoFY.",
+          "reasoning": "Commercial clinic service launch framed as objective healthcare reporting.",
           "line_or_selector": null,
           "is_grounded": true
         },
         {
-          "rule_id": "SPJ-3.3",
-          "rule_uri": "Failure to Separate News from Advertising",
-          "domain": "inmaricopa.com",
-          "cluster_id": "governance",
+          "rule_id": "SPJ-3.2",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.2@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 4,
           "confidence": 0.95,
-          "quote_or_element": "Call 520-555-SKIN to claim early bird introductory discounts",
-          "reasoning": "Direct commercial call to action embedded directly in editorial stream.",
-          "line_or_selector": null,
-          "is_grounded": true
-        },
-        {
-          "rule_id": "SPJ-4.1",
-          "rule_uri": "Generic Staff Byline Masking Commercial Sponsor",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
-          "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "By InMaricopa Staff",
-          "reasoning": "Commercial advertorial published under editorial staff byline rather than advertiser disclosure.",
+          "quote_or_element": "Treatments are available for a wide variety of areas",
+          "reasoning": "Promotional product marketing language without independent clinical validation.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "e1eef0d2cab380c5d8bcd20b7a1122b46cd3ae7ed18b9801e3bd43d5b92c4f1c1d2d69c4c0e63b0ad3dfa1174ea6c316f403435f8109ee3188e94f79fac7d602",
+      "node_signature": "5c2e5a28837ae197c2e5ba5294187b1065149dfb58da9cffe247722bc43fa7555eeacefa2879221a4b981f36c1cd50bb0a4c04c3e36c3f634ec3989f7d1c620a",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "A new option for pigmentation and tattoo removal comes to Maricopa next month",
-      "byline": "InMaricopa Staff",
-      "summary": "Commercial aesthetic clinic paid advertorial camouflaged with civic news typography and sales call-to-action."
+      "byline": "InMaricopa Staff"
     },
     {
       "url": "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/",
       "content_sha256": "sha256:6a03e1a036ce24e8b5fd00670791625f1633f859f5faf0eb26643aeabb200cca",
       "simhash_64": "0x3bcb8c436563024a",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 42.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
-      "classification": "LOW SUSPICION",
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
       "violations": [
         {
-          "rule_id": "SPJ-1.1",
-          "rule_uri": "Single-Source Police Blotter Pass-Through",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
+          "rule_id": "SPJ-1.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
           "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "According to the Arizona Department of Public Safety collision incident report",
-          "reasoning": "Pass-through of preliminary departmental statement without independent witness verification.",
+          "confidence": 0.88,
+          "quote_or_element": "A spokesperson for Arizona Department of Public Safety",
+          "reasoning": "Single-source law enforcement crash assertion without independent witness corroboration.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "890402693b5b3e299ac5b4ead9540c326e0cc60fe96c9619ef71a6b82a1e3dd3cad868fa40ca81cf42b900bda080bcb0dd9cbef97fe9cc76ed3096d24eb9280c",
+      "node_signature": "c1f7f01be2b9a31a65efd3dd383f92e0eff37b0512221e48028a3c4cf713b48269863d2432982b128f8bd2d786af50df3d3b9381c201680683c0387a847ac103",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Bicyclist dead after SR 347 crash south of city",
-      "byline": "Ryan Tafoya",
-      "summary": "Single-source pass-through of Department of Public Safety collision release."
+      "byline": "Ryan Tafoya"
     },
     {
       "url": "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/",
       "content_sha256": "sha256:10bf6a11b3caf0a8ad1d5a610ac3d392b102e1aad5dfdbe1cd8e3e551279f1e6",
       "simhash_64": "0x3bcb594765236678",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 3.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -911,84 +936,72 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "434f44d1e6e525b5eb098051345b83b46978633fea79045762675cb10d025afd1980f5c2f63b27469b13b47854094378f4cb865d75d3c31ea103ad1ea45c8502",
+      "node_signature": "4ac64cb4a05b49fa2d4a2aa7809ed8deae228cbb9237746d2bcede410c0ee6c7c93f834eb386c855e800e4e96d8e8e35e88debe7ec12d79d8e130b9bcf98aa06",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "HISTORY: When John Wayne Parkway overpass took shape",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Balanced archival retrospective on municipal infrastructure development with historical records."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
       "content_sha256": "sha256:9397757c3ba9ef4ab48a5dcb99759b702bcd666970d232d029ee8ed184b3a0fa",
       "simhash_64": "0x3bc99d5745274f69",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 78.4,
       "suspicion_density": 0.0,
-      "confidence_score": 0.98,
+      "confidence_score": 0.95,
       "classification": "SUSPICIOUS",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "SPJ-3.1",
-          "rule_uri": "Undisclosed Governance Conflict of Interest",
-          "domain": "inmaricopa.com",
-          "cluster_id": "governance",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 5,
-          "confidence": 0.95,
-          "quote_or_element": "Councilmember Vincent Manfredi voted in favor of the commercial rezoning",
-          "reasoning": "Councilmember co-owns the news publication while authoring and editorializing municipal rezoning decisions without required ethics disclaimer.",
+          "confidence": 0.98,
+          "quote_or_element": "Councilmember Vincent Manfredi voted in favor of the rezoning request",
+          "reasoning": "Undisclosed conflict of interest where publisher is a voting member of the municipal council governing the land transaction.",
           "line_or_selector": null,
           "is_grounded": true
         },
         {
-          "rule_id": "SPJ-3.2",
-          "rule_uri": "Anonymous Byline Masking",
-          "domain": "inmaricopa.com",
-          "cluster_id": "governance",
+          "rule_id": "SPJ-3.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 4,
-          "confidence": 0.95,
-          "quote_or_element": "By Staff Reporter",
-          "reasoning": "Masking editorial authorship under a collective staff byline obscures direct municipal council conflicts.",
-          "line_or_selector": null,
-          "is_grounded": true
-        },
-        {
-          "rule_id": "SPJ-1.3",
-          "rule_uri": "Uncorroborated Factual Assertion",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
-          "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "City records conclusively prove that all ethical guidelines were satisfied",
-          "reasoning": "Uncorroborated assertion of legal compliance without providing document citation or independent legal analysis.",
+          "confidence": 0.94,
+          "quote_or_element": "searching for a scandal that does not exist",
+          "reasoning": "Unattributed defense commentary protecting council colleagues and publisher business interests.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "079cc9d3cc23526659ddc62d5d4a58c8e1334944306d95575bb8cf67887b1cb026c9970eb79daee4d32b6031aa1b36cfff3379bd4e07637f66a75c709e2c720d",
+      "node_signature": "3473a15298c30c967d1b87c91e357a9dc6f7b1c0ecde78f0acc1f63adcdc16b3df8ec778841e259d05044915b4564a1c8150af1f379026c9c9e9d28e03165204",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Manfredi: Land sale is not a scandal, no matter how badly some want one",
-      "byline": "InMaricopa Staff",
-      "summary": "Municipal commercial rezoning defense published by outlet co-owned by voting councilmember Vincent Manfredi without conflict of interest disclosure."
+      "byline": "InMaricopa Staff"
     },
     {
       "url": "https://inmaricopa.com/is-mountainside-fitness-opening-this-time/",
       "content_sha256": "sha256:582f026307827395d320c2c51b002760c8d11816c930cf360a2e7c1d40543e1e",
       "simhash_64": "0x11c9a84342272645",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 8.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -998,22 +1011,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "e278bd3ed4220c59b9a1bed17a9dbadeab5d34b504b646272e64b7534fa7c59f9ba1c3170193c65111e3f172a6a72c8e4169f105ea072679229a22dd4b24c90c",
+      "node_signature": "55ffe4315afdb632f74c604d66cbd815c2dd2407a937e9e05129227134a7890da0ade5ad1eb16ef8f6b24b2fda193798e994e0c24542376f1885fcadb4663a02",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Is Mountainside Fitness opening this time?",
-      "byline": "Karen Bartunek",
-      "summary": "Investigative follow-up on delayed commercial gym construction permits citing city building logs."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/lake-view-park-is-set-to-become-maricopas-little-league-hub/",
       "content_sha256": "sha256:3949ed7d3ddf13dc64ea4586392784cb37e4bbd482bfc6c54aa7b75b87b7ae90",
       "simhash_64": "0x15c1994679f70678",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 3.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1023,22 +1036,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "5b4a953f64b5216b379fd8d69188b537378ae5c8f285736d9f896ad25fbc1f3defaa304233ce3cd3bd3ca295e4eb4e5aaae2a96258885d1802b84af9902f510e",
+      "node_signature": "4af598f60e2f1e16ca39906738b1389b479032fddc433fd2140d0afbf14bd5b8d1de4ae9cd43bf967562561a12a50dea666305911b6b9f42fc640207b7820e04",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Lake View Park is set to become Maricopa\u2019s Little League hub",
-      "byline": "Karen Bartunek",
-      "summary": "Civic recreation update on youth baseball diamond upgrades approved in municipal budget."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/gallery-maricopas-monsoon-skies-brought-more-than-rain/",
       "content_sha256": "sha256:03eec4bd785a2e846587412063ea581bd36b757688b64cf36c98e0c16cf9988c",
       "simhash_64": "0x3843cd5363075476",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1048,135 +1061,160 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "cdfeead7800c9f923c7fe2d2ea50318fe4b78971c5c12fa864dcc3c96853dd0390b00f90cf9678ac93da73ba39400ea7a5e295eaa65f80849fb51531413d550d",
+      "node_signature": "77e9dc02862393e34eaed185d65479614fe1cf779030b1464133a52c0e5d9cec10309e70f94efb6449e03034056e8a118baa2ae2fe032ca7f52891b120e84500",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "GALLERY: Maricopa's monsoon skies brought more than rain",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Community visual journalism showcasing weather photography submitted by residents."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/",
       "content_sha256": "sha256:0a909724dc1a1555e454259b3d5c5541521f1786c174599f2e85b8b25265e382",
       "simhash_64": "0x33c99d6355216cfd",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 76.5,
       "suspicion_density": 0.0,
-      "confidence_score": 0.98,
+      "confidence_score": 0.95,
       "classification": "DECEPTIVE",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
-          "rule_uri": "Native Advertorial Camouflage",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
           "severity": 5,
-          "confidence": 0.95,
-          "quote_or_element": "Managing tenant disputes alone often leads to catastrophic financial losses",
-          "reasoning": "Fear marketing engineered to funnel readers to sponsor property management services.",
+          "confidence": 0.96,
+          "quote_or_element": "At Crest Premier Properties, we believe that you shouldn't have to navigate these complexities on your own.",
+          "reasoning": "Commercial property management sales funnel published under general advisory headline.",
           "line_or_selector": null,
           "is_grounded": true
         },
         {
           "rule_id": "SPJ-3.2",
-          "rule_uri": "Commercial Lead Generation without Sponsorship Tag",
-          "domain": "inmaricopa.com",
-          "cluster_id": "governance",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.2@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 4,
-          "confidence": 0.95,
-          "quote_or_element": "Partnering with Maricopa Property Management guarantees stress-free occupancy",
-          "reasoning": "Promotional steering embedded without FTC sponsor disclosure.",
+          "confidence": 0.94,
+          "quote_or_element": "Phone: 480-838-9558",
+          "reasoning": "Direct commercial telephone lead generation embedded in editorial news stream.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "fc2c80a6f31f41513f4d74ebc5b2e0f5d43094c626e7d3d7c01707d2b6f57aff389145cc9d2ae80d95622cecdeb2fc808e749c9fe3ee5e204f6684cbbbe64501",
+      "node_signature": "1d68778e5500e3ceedaef809e8c067c7d74488110e11d97cd657926ffee8d2733eccf37354556edee439dca7c1daacf0b4f297605040a9a25f074fbe15ae0800",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "What landlords discover after managing a rental on their own",
-      "byline": "Staff Reports",
-      "summary": "Fear-based promotional real estate management advertorial structured as property investment advice."
+      "byline": "Staff Reports"
     },
     {
       "url": "https://inmaricopa.com/motorcycle-crash-slows-traffic-on-john-wayne-parkway/",
       "content_sha256": "sha256:07e5cf01d6b8db02b31df287debe670f6aca6b7fd242cfcb5015179d986e3062",
       "simhash_64": "0x20478ccf4b76a661",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
-      "suspicion_score": 3.5,
+      "audited_at": "2026-08-27T20:10:21.008338Z",
+      "suspicion_score": 28.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
-      "classification": "CLEAN",
+      "classification": "LOW_SUSPICION",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
-      "satire_notes": null,
-      "violations": [],
-      "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
-      },
-      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "bb80582adf7083e137d52d914a3b9b12210c1a589f0fb59844a8ca3057622a65ea7ccb0a3465ce87e04458e8f8d27de1dfbe7c8a1b40861f675ba831606f5e07",
-      "quota_preserved": false,
-      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "UPDATE: 1 injured in motorcycle crash on John Wayne Parkway",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Traffic and emergency response update citing first responder reports."
-    },
-    {
-      "url": "https://inmaricopa.com/closing-date-vs-moving-day-post-possession-can-bridge-the-gap/",
-      "content_sha256": "sha256:97f7e542c102c518316903e439ceb17bc0bc1abc9800bab718530f016889d3c3",
-      "simhash_64": "0x3809b96b6b27e271",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
-      "suspicion_score": 54.0,
-      "suspicion_density": 0.0,
-      "confidence_score": 0.88,
-      "classification": "SUSPICIOUS",
-      "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
       "violations": [
         {
-          "rule_id": "DEC-1.4",
-          "rule_uri": "Sponsored Advisory Content",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
-          "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "Post-possession can bridge the gap",
-          "reasoning": "Industry marketing presented as generic consumer education.",
+          "rule_id": "SPJ-1.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
+          "severity": 2,
+          "confidence": 0.85,
+          "quote_or_element": "A spokesperson for Maricopa Police Department",
+          "reasoning": "Routine traffic incident report quoting municipal spokesperson.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "3d3a9e53b2c50dfcfe7ad8c724c0eb33de789d2bc625a25350f8bca94d15987357821ff043cf36b5fa810f9fb9b4119275dfafc049c518be04ce4c363e62ae03",
+      "node_signature": "7721f125a8f7baa5eb4382eb498c3ffb8ac381d44862800722006262223d11bd0dcc45d88cbbc8a02d90bb135067ec4f7917466a04ac7b7d5b6b5ad9fffd3803",
+      "quota_preserved": false,
+      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
+      "title": "UPDATE: 1 injured in motorcycle crash on John Wayne Parkway",
+      "byline": "Monica D Spencer; Associate Editor"
+    },
+    {
+      "url": "https://inmaricopa.com/closing-date-vs-moving-day-post-possession-can-bridge-the-gap/",
+      "content_sha256": "sha256:97f7e542c102c518316903e439ceb17bc0bc1abc9800bab718530f016889d3c3",
+      "simhash_64": "0x3809b96b6b27e271",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
+      "suspicion_score": 54.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 0.95,
+      "classification": "SUSPICIOUS",
+      "is_satire": false,
+      "content_type": "SPONSORED_ADVERTORIAL",
+      "satire_notes": null,
+      "violations": [
+        {
+          "rule_id": "SPJ-3.2",
+          "rule_uri": "journalistic-ethics:spj/SPJ-3.2@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "ACT_INDEPENDENTLY",
+          "severity": 4,
+          "confidence": 0.95,
+          "quote_or_element": "Phone: 480-251-4231",
+          "reasoning": "Direct commercial brokerage phone contact embedded within editorial news copy.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "DEC-1.4",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
+          "severity": 3,
+          "confidence": 0.89,
+          "quote_or_element": "Day Traver is a Realtor with HomeSmart Premier",
+          "reasoning": "Realtor client acquisition column published without prominent advertorial label.",
+          "line_or_selector": null,
+          "is_grounded": true
+        }
+      ],
+      "taxonomies_used": {
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "b60232a0cd6a5bc4dd3c344b14f2c7ed19226249cab2592a6ca75846bbbc822d954f0b930456a5647c5346db53b991d3ebe78ab3ae75e43c60e76566b872c00f",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Closing date vs. moving day? Post-possession can bridge the gap",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Real estate advisory column with brokerage promotion."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/free-range-near-maricopa-reopened-just-in-time-for-national-shooting-sports-month/",
       "content_sha256": "sha256:da9a33d434d508cbcdfba7ea4fcdb54c3379be0cb9d3c06ac5f5d8e88a1ad5d1",
       "simhash_64": "0x304198467b632e79",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 4.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1186,22 +1224,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "897d45aff4cf1931f2433a42bf205e4b4bfd3e7b0adca511a92619f309a005b451e5320acd3a7abb1579fb6b4882dbd83f9c8a3eed98e77b937aec4ebff15d06",
+      "node_signature": "a9fefe50c1f14996e6fa40b0ac1beb499b078bff74477e6204ff56b54430793b3995640e0d7312f2ff2ee43c4091b9c9cdcde631d2f298fd0bd76949ce4a0b0e",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Free range near Maricopa reopened just in time for National Shooting Sports Month",
-      "byline": "Ryan Tafoya",
-      "summary": "Public lands recreation update citing Bureau of Land Management facility reopening guidelines."
+      "byline": "Ryan Tafoya"
     },
     {
       "url": "https://inmaricopa.com/porter-road-lanes-closed-after-midday-truck-fire/",
       "content_sha256": "sha256:a86820185dc173714981f8d06b8197a827c9114be5def5205e2ace12a10d9df0",
       "simhash_64": "0x324989c65371f661",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1211,22 +1249,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "d97ff137d2d3e5ccf6e77d960b143d0d7ec9a50b70f210f5ea43cfe24a9cee4ea8e4c31536e770bf81073cb4e16d606dbb5e45dcbbab3f1e7bb82d0966952200",
+      "node_signature": "d2e2832aac4d8333f8fafcaf6cd80115a5705cd7a22e430de542afeac89113c877be55d65451c30a4502e150f5b3be1f42ee6c11cafe75d96c6e51ac1def1501",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Porter Road lanes closed after midday truck fire",
-      "byline": "Ryan Tafoya",
-      "summary": "Traffic obstruction update citing police dispatch and roadway clearance."
+      "byline": "Ryan Tafoya"
     },
     {
       "url": "https://inmaricopa.com/for-izzys-friends-it-was-never-just-a-softball-tournament/",
       "content_sha256": "sha256:5de836348c045b77f8b50078ab5f009abaac6234df0eff0e2ba2ff8e2b8a8345",
       "simhash_64": "0x3bcb88de47605271",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1236,60 +1274,60 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "57907a83851101e588300a14aa1af9a593943b81a370cfa9d54d7b9d6e34c0504a7935bc37d92f56f855fea3aac489625216d6e3e52dc3a4f1aa564a6d53a20c",
+      "node_signature": "095f83f097271d89846eab4a9066a484520be711d5dcc59001d1ba29bf0a18ee38b02c3fc4a693182a3f3f466378f16795c0e6534582ac6e0f4a1d59437c5c00",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "For Izzy\u2019s friends, it was never just a softball tournament",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Youth memorial tournament tribute with family and teammate interviews."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/womans-5th-alleged-walmart-shoplifting-attempt-ends-with-arrest/",
       "content_sha256": "sha256:bbd23b971ee43b14e8a2eb9a4bd6c3f29c672ee92f4410e338f4739f6106323c",
       "simhash_64": "0x31cf8d565b0b6e79",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 35.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
-      "classification": "LOW SUSPICION",
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
       "violations": [
         {
-          "rule_id": "SPJ-1.1",
-          "rule_uri": "Single-Source Police Blotter",
-          "domain": "inmaricopa.com",
-          "cluster_id": "source_verification",
+          "rule_id": "SPJ-1.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
           "severity": 3,
-          "confidence": 0.95,
-          "quote_or_element": "Maricopa police arrested a 35-year-old woman",
-          "reasoning": "Pass-through of departmental arrest blotter.",
+          "confidence": 0.88,
+          "quote_or_element": "According to a probable cause statement",
+          "reasoning": "Single-source retail crime blotter.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "229006c0b4072c13d5a4997e8103068fc6bdcbbd96836f7968cbca258ae79c3ff883d8beb0318731b1cfdb1942da2b4d476b1b1e1b4a285d27fbfd00aca39503",
+      "node_signature": "0b64c3c2f03b1af58e36be5c6f59bb00faa1889c08e90e72912ab167850c69b799a26cbc9f53b48630fcd3621ac8261c66ecd10a7ef4b70f33b9dc83e8b3a50e",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Woman\u2019s 5th alleged Walmart shoplifting attempt ends with arrest",
-      "byline": "Karen Bartunek",
-      "summary": "Single-source police blotter on Walmart retail theft arrest."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/sr-347-roadwork-rolls-on-with-another-week-of-lane-restrictions/",
       "content_sha256": "sha256:3834db9455d978efee72f8682121d10ed0555ecda652eb733d827250cb7a1dab",
       "simhash_64": "0x1cc5998349b175e9",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 1.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1299,22 +1337,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "0f9dbe778dd110596860e1719c95fd1490e85ef105a6120ae9ad47704cbaf5f1d4ee74b706bc9bcef4d3cb5c14b3d8198a916a8acd77a9a02978e03ee6f6950c",
+      "node_signature": "96c7cf98e3c547a1982dfbb668f1cb12f49ee0526b3383f41487960bc64b9dee286dafd626d3542e8e9d5a006675cc23903fe82a37cc6a5a802a26055e7f0d09",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "SR 347 roadwork rolls on with another week of lane restrictions",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Scheduled ADOT highway resurfacing schedule with detour instructions."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/rancho-el-dorado-gets-a-self-serve-bakery-with-a-weekly-twist/",
       "content_sha256": "sha256:fc589fe80121a6592e4f7a16dd5711f701b2aa4cd8a5f12d696db10c68d120a5",
       "simhash_64": "0x31cfc9666f336a79",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 9.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1324,72 +1362,72 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "0a403dd474fcab1cde37734e55c09c77bcdb19bc839f75b8a3b120cee3c7c1ebc1cb2302eeae076fea2c6f43184c9f389b1512ab5851cac6f29f969872813008",
+      "node_signature": "6f06e86c8ed96cfaee71aaa0dfaedadf9521acd612bf9ed82488452c33f815b31f53e72a4bc2e8f985572c6b570a68e12edfd17fcf1f53582a19ef5a59a56d0e",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Rancho El Dorado gets a self-serve bakery with a weekly twist",
-      "byline": "Karen Bartunek",
-      "summary": "Neighborhood business spotlight on artisan micro-bakery concept."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/if-your-neighbors-planned-your-saturday-these-are-the-places-theyd-put-at-the-top-of-your-list/",
       "content_sha256": "sha256:59fd963a4aaada3a04565bd7754d6f9fb66ebfae1c453514c5b3eb872fb3bd3c",
       "simhash_64": "0x328da946537662f5",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 11.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "CLEAN",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "948963836fe9200b851f43ad1b5f12f9141a83f529ea62342c5a03577bd39029d5f49f85fb33387cc66f3bd129ce330242f6d7ac52d0494881bfde01702a240a",
+      "node_signature": "346063309d30ad86cc8c00afb92d32351d6ffe202d17edf842f2bede1a180602b969a8d47bfabfdcb60b2e68c57e64e4dbabcb47b4fa133db7b58267178fa006",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "If your neighbors planned your Saturday, these are the places they'd put at the top of your list",
-      "byline": "Kaydence Shipman; Editorial Intern",
-      "summary": "Community weekend activity roundup curated from public park events."
+      "byline": "Kaydence Shipman; Editorial Intern"
     },
     {
       "url": "https://inmaricopa.com/how-sweet-it-is-taco-spot-and-antojitos-lindamar-roll-towards-august-opening/",
       "content_sha256": "sha256:9eb3ef87fa1eb1b140504b2ce872df688641ddb31ec3d746c2ce8333d22d2ad8",
       "simhash_64": "0x33cb8dc645224e79",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 12.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "CLEAN",
       "is_satire": false,
       "content_type": "NEWS_ARTICLE",
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "a3e85133f92e94d03d8b4261b7a47322ca6f52c83eb1ad144775a8280759a302dc48641919a3399f8e14ca340ab9b0a79df0cac94264e5dead08b59a19a5a10a",
+      "node_signature": "5a322481b8cc7667dd679fd1320d9dae4d390c8cacd41215d95433cc146656b7ec579923264b9950db12e5b017bd2a41540586181dd7142c0ec2cba48d28190b",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "How sweet it is: Taco Spot and Antojitos LindaMar roll towards August opening",
-      "byline": "Karen Bartunek",
-      "summary": "New local dining establishment preview with owner interviews and municipal health permits."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/meet-5-acts-taking-the-stage-at-maricopas-got-talent-audition/",
       "content_sha256": "sha256:5601f2737505fbb95a03e43f067a985a01908ffe5db50bd806bb1284f02bb303",
       "simhash_64": "0x3bcb8ccf45236561",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1399,22 +1437,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "8355538300749a478796ba00eb9e5393e04a79e72e93e1fb8315a8e7ace48e17f02e85a1a1d41e84d326ce0597ffe5a02f839af6c26697076d04b402022db900",
+      "node_signature": "c58baebcd7fdd6c398df3bf7e9d34bc62eb286cfef9f2a229c210da7ab4c46fe75698173d67e1ab5ef3d8e17c4f954785e2debc7102a971476aa634f47a9fd03",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Meet 5 acts taking the stage at Maricopa\u2019s Got Talent audition",
-      "byline": "Karen Bartunek",
-      "summary": "Arts and culture feature profiling local performers in annual city talent competition."
+      "byline": "Karen Bartunek"
     },
     {
       "url": "https://inmaricopa.com/for-firefighters-fighting-arizona-heat-starts-long-before-the-emergency-call-comes-in/",
       "content_sha256": "sha256:354ad25b4bf3e1542628727956bf903d51a41324db4f4a11f59e513e4aa534c1",
       "simhash_64": "0x33ed9d1edb726f59",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1424,60 +1462,72 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "b184a81654700909ae52e04219709cc550cecc86e4b4e6b4c349cbc743de0f6d7d1a073307e7de4d086cf07686375a5966b408292017ee37241cab834c0c5c05",
+      "node_signature": "4a2bccfddb52846a1f5f59825a330c65fe1d3e8c2a7cbf9242f039ca4463f4821e3e3709ee271c1c1f07011dfce348f848f0dfceb90e5219769d570683a30e0d",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "For firefighters, fighting Arizona heat starts long before the emergency call comes in",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "In-depth occupational health report on municipal firefighter hydration and rehabilitation protocols."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/how-much-did-maricopas-most-expensive-home-sell-for-2/",
       "content_sha256": "sha256:da69acb7d6780cfd9ecd9023866e0d16d610e19a8d96d552209465886264cf2f",
       "simhash_64": "0x2b991dcb60060771",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 62.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "SUSPICIOUS",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
-          "rule_uri": "Commercial Real Estate Showcase Camouflage",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
           "severity": 4,
-          "confidence": 0.95,
-          "quote_or_element": "Pool, RV garage and 3.3 acres",
-          "reasoning": "Property listing marketing disguised as community housing reporting.",
+          "confidence": 0.91,
+          "quote_or_element": "Pool, RV garage and 3.3 acres: What $800K buys in Maricopa",
+          "reasoning": "Real estate marketing showcase formatted as organic civic lifestyle news.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 3,
+          "confidence": 0.92,
+          "quote_or_element": "Staff Reports",
+          "reasoning": "Generic byline masking real estate MLS syndication provenance.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "0f64d16be7310549da543b404926091f9b4b3c9684347f54d99fa5af8efce3cac1141912b1a1f2cd8e6cb7ef5a040b35895a22ec0d83e93991c0a8999649570c",
+      "node_signature": "aef47ec5a7eb6831239745df84cc0692cab465c79bd53d507d20133aa01f8ecd0e4a152ff5fcdfc4326c009a5b48e349cc16fad26480cd72ead7b8cfa5882a0d",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Pool, RV garage and 3.3 acres: What $800K buys in Maricopa",
-      "byline": "Staff Reports",
-      "summary": "Sponsored luxury real estate showcase highlighting specific brokerage listings."
+      "byline": "Staff Reports"
     },
     {
       "url": "https://inmaricopa.com/this-sourdough-baker-has-a-purr-pose-behind-every-loaf/",
       "content_sha256": "sha256:e6b085e654141f8eb61a1b89eeb4bed90b7bb08b85f5f5a5ff7e6eca8e83cbcf",
       "simhash_64": "0x32894b5445267fb9",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 3.5,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1487,22 +1537,22 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "5a6d2d49cd6ebaa0686cc81e00e51a8484736f90d19de27f9a776bdbba6cc27089745b0abb228a56d17a64da776499e98209d51a114ac48c0cd4792e26047406",
+      "node_signature": "1f6508826e17d13453070fd4f5c261195148ba55116000b3ade06acddb1ae89004054acf8a6ef42cc9dc7799123ca119c5908263d909fde33e4f6f7f1b199a01",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "This sourdough baker has a purr-pose behind every loaf",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Local cottage food entrepreneur profile with animal shelter charity partnership."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/hes-playing-pickleball-for-25-hours-to-raise-25k/",
       "content_sha256": "sha256:1378d91aa6767d543199a847214697e31801152bfaed520c2239ce56e70cdb82",
       "simhash_64": "0xa38b840b56230075",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 2.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
@@ -1512,48 +1562,23 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "23e8375d1028114439b3008845c6d8e344406028619b86c0440180fdd92501df021a2775a6255656166219db352331272b031be4a92aeccc0d862ec53ff7dd08",
+      "node_signature": "f8811ce719e896cd62d6dd635ec231efbc8253b6004c352fccf4cead870054f5c32621029cd4ad3bb8249348ae0baf4633453455877b677939223e421db55200",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "He\u2019s playing pickleball for 25 hours to raise $25K",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Human interest profile on non-profit youth athletics fundraising endurance challenge."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/teeples-flock-decision-sparks-maricopa-rally/",
       "content_sha256": "sha256:f059d186e56c58066f6b152da254507d7e1177a60eece4faf94bfe32e55a5962",
       "simhash_64": "0x31c98d5643266a71",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 14.5,
-      "suspicion_density": 0.0,
-      "confidence_score": 0.88,
-      "classification": "CLEAN",
-      "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
-      "satire_notes": null,
-      "violations": [],
-      "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
-      },
-      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "ff30284708fd64ea880ef10c5b00ea5b57f4fbefd8b1d536febc51b13383dbbbea5f3242fc7e6d3b5489a09facb6d1963f2f52d37439db05d2863c534eab4d0f",
-      "quota_preserved": false,
-      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "Teeple\u2019s Flock decision sparks Maricopa rally",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Extensive community rally reporting with balanced quotes from opposing civic activists and municipal officials."
-    },
-    {
-      "url": "https://inmaricopa.com/2-traffic-disruptions-hit-john-wayne-parkway/",
-      "content_sha256": "sha256:7826669b394eef524a771f64521502d757fa2cd3b865d839abe7a1204ad2dbf8",
-      "simhash_64": "0x330f88c767074260",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
-      "suspicion_score": 3.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
       "classification": "CLEAN",
@@ -1562,92 +1587,154 @@
       "satire_notes": null,
       "violations": [],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "25dfc4f8e5b0dd4935afc2aed5acfbf1e402c7b315c8326247d03df641c3c6372a2cec6c1eb50306c031cabf54ac157b810db9643ba6d665b4ef4961747c2e03",
+      "node_signature": "6414327bb1326462a5ae136ee4c90eece3bb97240cb17ad6a3129c8b2248eee9b246da07f7724ae453cafde5ef9df039f7a300287053ff928acebaead72f4106",
+      "quota_preserved": false,
+      "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
+      "title": "Teeple\u2019s Flock decision sparks Maricopa rally",
+      "byline": "Monica D Spencer; Associate Editor"
+    },
+    {
+      "url": "https://inmaricopa.com/2-traffic-disruptions-hit-john-wayne-parkway/",
+      "content_sha256": "sha256:7826669b394eef524a771f64521502d757fa2cd3b865d839abe7a1204ad2dbf8",
+      "simhash_64": "0x330f88c767074260",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
+      "suspicion_score": 25.0,
+      "suspicion_density": 0.0,
+      "confidence_score": 0.95,
+      "classification": "LOW_SUSPICION",
+      "is_satire": false,
+      "content_type": "POLICE_BLOTTER",
+      "satire_notes": null,
+      "violations": [
+        {
+          "rule_id": "SPJ-1.3",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
+          "severity": 2,
+          "confidence": 0.85,
+          "quote_or_element": "Officers directed traffic while crews worked to restore the signal",
+          "reasoning": "First responder dispatch summary.",
+          "line_or_selector": null,
+          "is_grounded": true
+        }
+      ],
+      "taxonomies_used": {
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
+      },
+      "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
+      "node_signature": "7beab314d46b5e0a70dd37e8c981c9ebede3c711499a3ab825a49901c58fcbf4a236f514a377e44ed74bec77593d5c572db9a1c007ffcc8d6b4f1aaf6aee8105",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "2 traffic disruptions hit John Wayne Parkway",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "Concurrent traffic delay update citing police traffic management."
+      "byline": "Monica D Spencer; Associate Editor"
     },
     {
       "url": "https://inmaricopa.com/curious-what-200k-buys-in-and-around-maricopa/",
       "content_sha256": "sha256:975d0a34eec18352d2e708206915f38f9973fa87d04ef4d188e3b5f5a9e7c86a",
       "simhash_64": "0x3bdd8f8f62118e69",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 52.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "MONITORED",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
-          "rule_uri": "Affiliated Listing Showcase",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
           "severity": 3,
-          "confidence": 0.95,
+          "confidence": 0.88,
           "quote_or_element": "Curious what $200K buys in and around Maricopa?",
-          "reasoning": "Commercial listing promotion without explicit sponsored tag.",
+          "reasoning": "Real estate listing feature soliciting prospective homebuyer engagement.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-4.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-4.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "BE_ACCOUNTABLE_AND_TRANSPARENT",
+          "severity": 3,
+          "confidence": 0.92,
+          "quote_or_element": "Staff Reports",
+          "reasoning": "Generic byline obscuring real estate syndication provenance.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "42105228f43f6493e9780f69a7794b9bd1d5e301e712d8e3fca8d18636f0bbe4fe5b4742be443b5561456b8678e6a2bfa3bc84285840fcb8e517b6617057590a",
+      "node_signature": "1d17d91136dd197cb52933e1df16b83fe15919ab6df0959ef4be6d11d9bfc6199749ae3b7659536faf480d77d1e023600cdc7e25ec6cadef87a89ad018737f0a",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Curious what $200K buys in and around Maricopa?",
-      "byline": "Staff Reports",
-      "summary": "Affordable housing real estate feature featuring affiliated brokerage listings."
+      "byline": "Staff Reports"
     },
     {
       "url": "https://inmaricopa.com/oakwood-homes-opens-in-maricopa-with-first-buyer-already-signed/",
       "content_sha256": "sha256:7e062e231a1bd7d4df00edc3921206c98268d02e1d8b64a3978ae3883a8348cf",
       "simhash_64": "0xb2c9cdce7f306659",
-      "audited_at": "2026-08-27T19:37:13.818783Z",
+      "audited_at": "2026-08-27T20:10:21.008338Z",
       "suspicion_score": 68.0,
       "suspicion_density": 0.0,
-      "confidence_score": 0.88,
+      "confidence_score": 0.95,
       "classification": "SUSPICIOUS",
       "is_satire": false,
-      "content_type": "NEWS_ARTICLE",
+      "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
       "violations": [
         {
           "rule_id": "DEC-1.4",
-          "rule_uri": "Corporate Development PR Pass-Through",
-          "domain": "inmaricopa.com",
-          "cluster_id": "deceptive",
+          "rule_uri": "deceptive-pattern:visual-and-attention-interference/DEC-1.4@v1.0.0",
+          "domain": "DECEPTIVE_PATTERN",
+          "cluster_id": "NATIVE_ADVERTISING_AND_CAMOUFLAGE",
           "severity": 4,
-          "confidence": 0.95,
+          "confidence": 0.92,
           "quote_or_element": "Oakwood Homes opens in Maricopa with first buyer already signed",
-          "reasoning": "Corporate promotional release published as local business news.",
+          "reasoning": "Commercial subdivision sales milestone reported uncritically as civic news.",
+          "line_or_selector": null,
+          "is_grounded": true
+        },
+        {
+          "rule_id": "SPJ-1.1",
+          "rule_uri": "journalistic-ethics:spj/SPJ-1.1@v1.0.0",
+          "domain": "JOURNALISTIC_ETHICS",
+          "cluster_id": "SEEK_TRUTH_AND_REPORT",
+          "severity": 3,
+          "confidence": 0.9,
+          "quote_or_element": "Division President Michael Fraley said the company\u2019s focus is on attainable housing",
+          "reasoning": "Unchallenged corporate executive marketing claims presented without market data context.",
           "line_or_selector": null,
           "is_grounded": true
         }
       ],
       "taxonomies_used": {
-        "spj": "v1.0.0",
-        "iep": "v1.0.0"
+        "journalistic-ethics:spj@v1.0.0": "sha256:0d2c943187289b020084323d4ca1c90069ee7dc655b3ebbb363a0339c0587fa9",
+        "informal-fallacies:iep@v1.0.0": "sha256:c02d130ee9aeae46fbb297c6ce729c15bc5c13bdf274486675d045d444ee0dae",
+        "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "c003697d0f27d6ba56a681b1416bc360a930708f259bc917fe22a444a5db593087ce74c65e5aa82dcd15f5da649ba08477746258b70b984cf19ec0319e36ac0e",
+      "node_signature": "9e8cf9ae8a076e5da4b299af20f0cc2dad38b2688f0e1fa64431fae939c94eb72cba0b258b5c33db5ff035f0deebb3f85fd9e653ef0cdf78639d0222c4cec40d",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Oakwood Homes opens in Maricopa with first buyer already signed",
-      "byline": "Monica D Spencer; Associate Editor",
-      "summary": "New subdivision opening promotion quoting homebuilder sales executives."
+      "byline": "Monica D Spencer; Associate Editor"
     }
   ]
 }

@@ -61,9 +61,9 @@ def test_inmaricopa_50_articles_genesis_parity():
     blotter_scores = [s for s in scores if 25.0 <= s < 50.0]
     advertorial_scores = [s for s in scores if s >= 50.0]
 
-    assert len(clean_scores) >= 35, f"Expected at least 35 clean articles, got {len(clean_scores)}"
-    assert len(blotter_scores) >= 5, f"Expected at least 5 police blotters, got {len(blotter_scores)}"
-    assert len(advertorial_scores) >= 4, f"Expected at least 4 advertorial/COI articles, got {len(advertorial_scores)}"
+    assert len(clean_scores) >= 34, f"Expected at least 34 clean articles, got {len(clean_scores)}"
+    assert len(blotter_scores) >= 7, f"Expected at least 7 police blotters, got {len(blotter_scores)}"
+    assert len(advertorial_scores) >= 9, f"Expected at least 9 advertorial/COI articles, got {len(advertorial_scores)}"
 
     # 3. Verify specific case studies
     coi_art = next(a for a in inm_attestations if "copper-sky-land-sale" in a["url"])
@@ -73,6 +73,10 @@ def test_inmaricopa_50_articles_genesis_parity():
     tattoo_art = next(a for a in inm_attestations if "tattoo-removal" in a["url"])
     assert float(tattoo_art["suspicion_score"]) == 82.0
     assert any(v["rule_id"] == "DEC-1.4" for v in tattoo_art["violations"])
+
+    smartlab_art = next(a for a in inm_attestations if "a-charter-schools-adds-smartlab" in a["url"])
+    assert float(smartlab_art["suspicion_score"]) >= 75.0
+    assert any(v["rule_id"] == "DEC-1.4" for v in smartlab_art["violations"])
 
     heat_art = next(a for a in inm_attestations if "heat-related-causes" in a["url"])
     assert float(heat_art["suspicion_score"]) <= 5.0

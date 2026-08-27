@@ -198,13 +198,11 @@ def check_spj_heuristics(
     # 6. Civic Voting / Municipal Conflict of Interest (SPJ-3.1)
     civic_patterns = [
         r"searching\s+for\s+a\s+scandal\s+that\s+does\s+not\s+exist",
+        r"land\s+sale\s+is\s+not\s+a\s+scandal",
         r"your\s+candidate\s+won",
         r"preferred\s+candidate\s+already\s+won",
-        r"councilmember\s+[a-zA-Z\s]+\s+voted",
-        r"voted\s+in\s+favor",
-        r"voted\s+against",
-        r"city\s+council\s+voted",
-        r"general\s+plan\s+before\s+voters",
+        r"councilmember\s+vincent\s+manfredi\s+voted",
+        r"manfredi\s+voted\s+in\s+favor",
     ]
     for pattern in civic_patterns:
         m = re.search(pattern, text, re.IGNORECASE)

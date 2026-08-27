@@ -165,9 +165,12 @@ async def evaluate_snapshot(
         discovered_violations = heuristic_evaluate_content(snapshot.extracted, snapshot.raw_html, reg=active_reg)
 
     # Step 2: Grounded Quote Validation
+    full_source_text = (
+        f"{snapshot.extracted.title or ''}\n{snapshot.extracted.byline or ''}\n{snapshot.extracted.clean_text}"
+    )
     validated_violations = validate_all_violations(
         discovered_violations,
-        raw_text=snapshot.extracted.clean_text,
+        raw_text=full_source_text,
         raw_html=snapshot.raw_html,
     )
 
