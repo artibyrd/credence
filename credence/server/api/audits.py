@@ -35,15 +35,51 @@ def _format_clean_title(raw_title: Optional[str], url: Optional[str]) -> str:
     return raw_title or "Audited Article"
 
 
-def _derive_source_type(eval_method: Optional[str], node_pubkey: Optional[str] = None) -> str:
+GENESIS_SEED_SUBSTRINGS = {
+    "copper-sky-land-sale-is-no-scandal",
+    "a-new-option-for-pigmentation",
+    "what-landlords-discover",
+    "bicyclist-dead-after-sr-347",
+    "history-when-john-wayne-parkway-overpass",
+    "clean-grid-transition",
+    "supreme-court-digital-privacy",
+    "exoplanet-atmosphere",
+    "groundwater-contamination-records",
+    "rail-expansion",
+    "tandem-silicon-solar",
+    "golden-retriever-elected-mayor",
+    "nasa-giant-squeegee",
+    "zoning-sludge-crisis",
+    "breakthrough-battery-claim",
+    "senate-tax-debate",
+    "scan-now",
+    "claim-token-2026",
+}
+
+
+def _derive_source_type(
+    eval_method: Optional[str],
+    node_pubkey: Optional[str] = None,
+    snap_url: Optional[str] = None,
+) -> str:
     """Determine standardized human-readable source category."""
     if eval_method:
-        if "sifter" in eval_method.lower():
+        em = eval_method.lower()
+        if "sifter" in em or "sentinel" in em or "rss" in em:
             return "Sentinel Feed"
-        if "genesis" in eval_method.lower():
+        if "genesis" in em:
             return "Genesis Seeder"
-        if "cli" in eval_method.lower():
+        if "cli" in em or "manual" in em:
             return "CLI / Manual"
+
+    if node_pubkey:
+        np_lower = node_pubkey.lower()
+        if "genesis" in np_lower or np_lower.startswith("9580dc91") or np_lower == "genesis-root-seed":
+            return "Genesis Seeder"
+
+    if snap_url and any(sub in snap_url.lower() for sub in GENESIS_SEED_SUBSTRINGS):
+        return "Genesis Seeder"
+
     return "P2P Mesh"
 
 

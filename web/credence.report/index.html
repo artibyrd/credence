@@ -1354,6 +1354,7 @@
           {
             title: "Copper Sky Land Sale is No Scandal, Council Records Show",
             url: "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "78.4",
             badge: "SUSPICIOUS (COI)",
@@ -1362,6 +1363,7 @@
           {
             title: "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
             url: "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "82.0",
             badge: "DECEPTIVE (ADVERTORIAL)",
@@ -1370,6 +1372,7 @@
           {
             title: "What Landlords Discover After Managing a Rental on Their Own",
             url: "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "76.5",
             badge: "DECEPTIVE (ADVERTORIAL)",
@@ -1378,6 +1381,7 @@
           {
             title: "Bicyclist Dead After SR 347 Crash South of City",
             url: "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "42.0",
             badge: "LOW SUSPICION (POLICE PR)",
@@ -1386,6 +1390,7 @@
           {
             title: "History: When John Wayne Parkway Overpass Took Shape",
             url: "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "3.5",
             badge: "CLEAN RETROSPECTIVE",
@@ -2189,6 +2194,32 @@
       return rawTitle && !rawTitle.startsWith("Mesh Submission:") ? rawTitle : "Audited Article";
     }
 
+    function isGenesisSeedUrl(url) {
+      if (!url) return false;
+      const u = url.toLowerCase();
+      const GENESIS_SUBSTRINGS = [
+        "copper-sky-land-sale-is-no-scandal",
+        "a-new-option-for-pigmentation",
+        "what-landlords-discover",
+        "bicyclist-dead-after-sr-347",
+        "history-when-john-wayne-parkway-overpass",
+        "clean-grid-transition",
+        "supreme-court-digital-privacy",
+        "exoplanet-atmosphere",
+        "groundwater-contamination-records",
+        "rail-expansion",
+        "tandem-silicon-solar",
+        "golden-retriever-elected-mayor",
+        "nasa-giant-squeegee",
+        "zoning-sludge-crisis",
+        "breakthrough-battery-claim",
+        "senate-tax-debate",
+        "scan-now",
+        "claim-token-2026"
+      ];
+      return GENESIS_SUBSTRINGS.some(s => u.includes(s));
+    }
+
     function getSourceMeta(sourceStr) {
       const src = (sourceStr || "P2P Mesh").toLowerCase();
       if (src.includes("sentinel") || src.includes("sifter") || src.includes("feed")) {
@@ -2236,7 +2267,18 @@
       const uiScore = (isDecept ? "3.5 / 10" : "9.8 / 10");
 
       const cleanTitle = formatHumanTitle(r.title, url);
-      const sourceStr = r.source || r.source_type || (r.evaluation_method?.includes("sifter") ? "Sentinel Feed" : (r.evaluation_method?.includes("genesis") ? "Genesis Seeder" : (r.evaluation_method?.includes("cli") ? "CLI / Manual" : "P2P Mesh")));
+      let sourceStr = r.source || r.source_type;
+      if (!sourceStr || sourceStr === "P2P Mesh") {
+        if (r.evaluation_method?.includes("sifter") || r.evaluation_method?.includes("sentinel") || r.evaluation_method?.includes("rss")) {
+          sourceStr = "Sentinel Feed";
+        } else if (r.evaluation_method?.includes("genesis") || isGenesisSeedUrl(url)) {
+          sourceStr = "Genesis Seeder";
+        } else if (r.evaluation_method?.includes("cli") || r.evaluation_method?.includes("manual")) {
+          sourceStr = "CLI / Manual";
+        } else {
+          sourceStr = "P2P Mesh";
+        }
+      }
       
       return {
         title: cleanTitle,
@@ -3039,10 +3081,15 @@
               const isClean = scoreNum <= 15.0;
               const isSusp = scoreNum > 15.0 && scoreNum < 60.0;
               const cleanT = formatHumanTitle(la.title, la.url);
+              let src = la.source;
+              if (!src || src === "P2P Mesh") {
+                if (isGenesisSeedUrl(la.url)) src = "Genesis Seeder";
+                else src = "P2P Mesh";
+              }
               liveMap.set(la.url, {
                 url: la.url,
                 title: cleanT,
-                source: la.source || "P2P Mesh",
+                source: src,
                 score: typeof la.score === "string" ? la.score : scoreNum.toFixed(1),
                 badge: la.classification || (isClean ? "CLEAN" : isSusp ? "SUSPICIOUS" : "PROVEN HOAX"),
                 badgeBg: isClean ? "rgba(34, 197, 94, 0.15)" : isSusp ? "rgba(245, 158, 11, 0.15)" : "rgba(244, 63, 94, 0.15)",

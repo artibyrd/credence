@@ -382,12 +382,21 @@ async def get_publisher_analytics(
 
         source_label = "P2P Mesh"
         if a.evaluation_method:
-            if "sifter" in a.evaluation_method.lower():
+            em = a.evaluation_method.lower()
+            if "sifter" in em or "sentinel" in em or "rss" in em:
                 source_label = "Sentinel Feed"
-            elif "genesis" in a.evaluation_method.lower():
+            elif "genesis" in em:
                 source_label = "Genesis Seeder"
-            elif "cli" in a.evaluation_method.lower():
+            elif "cli" in em or "manual" in em:
                 source_label = "CLI / Manual"
+
+        if source_label == "P2P Mesh" and a.node_pubkey and ("genesis" in a.node_pubkey.lower() or a.node_pubkey.startswith("9580dc91")):
+            source_label = "Genesis Seeder"
+
+        if source_label == "P2P Mesh" and target_url:
+            genesis_subs = ("copper-sky", "pigmentation", "landlords", "bicyclist", "overpass", "clean-grid", "privacy", "exoplanet", "groundwater", "solar", "retriever", "squeegee", "sludge", "battery", "scan-now", "airdrop")
+            if any(s in target_url.lower() for s in genesis_subs):
+                source_label = "Genesis Seeder"
 
         recent_articles.append(
             {
