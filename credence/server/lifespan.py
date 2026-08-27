@@ -90,7 +90,7 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
             except Exception as e:
                 logger.warning("Auto-germination background task encountered error: %s", e)
 
-        await _run_background_germination()
+        _germination_task = asyncio.create_task(_run_background_germination())
 
         # Periodic background database backup task (every 30 minutes)
         async def _run_periodic_backups() -> None:
@@ -130,6 +130,8 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
             else:
                 yield {}
         finally:
+            if _germination_task and not _germination_task.done():
+                _germination_task.cancel()
             if _backup_task and not _backup_task.done():
                 _backup_task.cancel()
             if sifter_daemon and sifter_task:
