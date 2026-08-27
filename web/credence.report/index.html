@@ -2297,11 +2297,12 @@
         breadcrumb.innerHTML = `Sources &gt; <b>${window.currentDomain}</b> &gt; Inspector`;
       }
 
-      const reportHash = (data && (data.content_sha256 || data.sha)) ? ('#report/' + (data.content_sha256 || data.sha)) : ('#report/' + encodeURIComponent(targetUrl));
+      const articleUrl = data.url || targetUrl;
+      const reportHash = (data && (data.content_sha256 || data.sha)) ? ('#report/' + (data.content_sha256 || data.sha)) : ('#report/' + encodeURIComponent(articleUrl));
       if (pushHistory) {
-        history.pushState({ tab: 'search', url: targetUrl, domain: data.domain }, '', reportHash);
+        history.pushState({ tab: 'search', url: articleUrl, domain: data.domain }, '', reportHash);
       } else {
-        history.replaceState({ tab: 'search', url: targetUrl, domain: data.domain }, '', reportHash);
+        history.replaceState({ tab: 'search', url: articleUrl, domain: data.domain }, '', reportHash);
       }
 
       // Update Ribbon HUD dynamically
@@ -2309,18 +2310,18 @@
 
       // Update Article Snapshot DOM
       document.getElementById('insp-title').textContent = data.title;
-      document.getElementById('insp-url').textContent = targetUrl;
+      document.getElementById('insp-url').textContent = articleUrl;
       
       const domTag = document.getElementById('insp-domain-tag');
       if (domTag) domTag.textContent = `🏛️ ${data.domain || 'source'} ↗`;
 
       const standLink = document.getElementById('insp-standalone-link');
       if (standLink) {
-        standLink.href = `viewer.html?q=${encodeURIComponent(data.content_sha256 || targetUrl)}`;
+        standLink.href = `viewer.html?q=${encodeURIComponent(data.content_sha256 || articleUrl)}`;
       }
       const histLink = document.getElementById('insp-history-link');
       if (histLink) {
-        histLink.href = `history.html?url=${encodeURIComponent(targetUrl)}`;
+        histLink.href = `history.html?url=${encodeURIComponent(articleUrl)}`;
       }
 
       const scoreEl = document.getElementById('insp-score');
