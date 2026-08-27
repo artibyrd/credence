@@ -12,7 +12,7 @@ from sqlmodel import col, func, select
 from starlette.applications import Starlette
 
 from credence.db import get_async_session, init_db
-from credence.models import FeedSubscription
+from credence.models import Audit, FeedSubscription, Snapshot
 
 logger = logging.getLogger("credence.server.lifespan")
 
@@ -79,6 +79,26 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                                 )
                             except Exception as se:
                                 logger.exception("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
+
+                        # Re-evaluate all stored URLs to ensure scores reflect the latest heuristic engine
+                        try:
+                            from credence.pipeline.evaluator import audit_url
+
+                            stmt_re = (
+                                select(Snapshot.url)
+                                .join(Audit, col(Audit.snapshot_id) == col(Snapshot.id))
+                                .where(col(Snapshot.url).is_not(None))
+                                .distinct()
+                            )
+                            stored_urls = list((await session.exec(stmt_re)).all())
+                            for s_url in stored_urls:
+                                if s_url and s_url.startswith("http"):
+                                    try:
+                                        await audit_url(s_url, session=session, force_refresh=True)
+                                    except Exception as ue:
+                                        logger.debug("Background re-evaluation exception for %s: %s", s_url, ue)
+                        except Exception as re_err:
+                            logger.debug("Stored URLs re-evaluation error: %s", re_err)
 
                         # Create database backup after initial boot sifting
                         try:
