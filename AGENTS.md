@@ -2,13 +2,18 @@
 
 Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 
+> **Core Operational Heuristics**:
+> 1. *When in doubt, check the Justfile (`just --list` or `Justfile`).*
+> 2. *The ONLY scratch directory is the workspace root `/scratch/` (zero inline blobs, always output preview links).*
+> 3. *Artifacts belong in a museum: never overwrite past phases wholesale; append cumulative milestone sections.*
+
 ---
 
 ## 1. Tier 0: Universal Core Invariants (Prioritized Cognitive Hierarchy)
 
 ### Class α (Alpha): Sovereign Safety, Custody & Human Authority (P0 Non-Negotiables)
-- **`inv-mk1-eyeball` — 🌐 Human Review Gate ("Mk1 Eyeball") with Staged PRs & Live Dev Links**: Tags, PR merges, and prod deploys require human Mk1 sign-off. Zero speculative UI additions. Pre-sync version manifests; verify live Dev deployment (`deploy-dev.yml`) and validate routes with browser proof before requesting review.
-- **`inv-clean-scratch-scripts` — 🌐 Clean Workspace Scratch Scripts & Previews**: Ad-hoc scripts requiring user approval (`BypassSandbox: true`) must never use inline blobs (`python -c`, `bash -c`) or loops. Write curated scripts to workspace `/scratch/<name>.py` with Created and Modified Session ID headers. Output a clickable file link in chat before `run_command` for operator preview. Archive stale scripts to `/scratch/archive/`.
+- **`inv-mk1-eyeball` — 🌐 Human Review Gate ("Mk1 Eyeball") with Staged PRs & Live Dev Links**: Tags, PR merges, and prod deploys require human Mk1 sign-off. Zero speculative UI additions. Pre-sync version manifests; verify live Dev deployment (`deploy-dev.yml`) and validate routes with automated HTTP probes before requesting review.
+- **`inv-clean-scratch-scripts` — 🌐 Workspace Root Scratch Directory & 3-Step Script Ritual**: Zero inline blobs (`python -c`, `bash -c`). The ONLY valid scratch location is workspace root `/scratch/<name>.py`. Strictly follow the 3-step ritual: 1. Write script to `/scratch/<name>.py` with Session ID headers $\to$ 2. Output clickable markdown file link in chat $\to$ 3. Run script via `poetry run python scratch/<name>.py`. Archive stale scripts to `/scratch/archive/`.
 - **`inv-untrusted-ingestion` — 🌐 Untrusted Ingestion Boundary & Network Defense**: Block cloud metadata (`169.254.169.254`, `metadata.google.internal`), loopback, and private IPs unless `allow_local=True`. Reject `<!DOCTYPE` / `<!ENTITY>`. Wrap LLM inputs in `<untrusted_source_text>`.
 - **`inv-verbatim-anti-truncation` — 🌐 Universal Epistemic Verbatim Anti-Truncation UI**: Citations, forensic logs, and system rules must match source character-for-character with zero ellipsis (`...`) masking.
 - **`inv-verbatim-grounding` — 🔬 Whitespace-Insensitive Grounding ($G=1.00$)**: Extracted quotes match source DOM character-for-character ($G=1.00$); hallucinations incur an autonomous 50% score slash.
@@ -19,7 +24,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **`inv-cart-before-horse` — 🌐 The Cart-Before-the-Horse Order-of-Operations Invariant**: Prerequisite models and scrubbers must precede downstream APIs, UIs, and tests. Verify tests before drafting case studies.
 - **`inv-4phase-release-learning` — 🌐 4-Phase Release & Lean Learning Lifecycle**: 1. Local QA $\rightarrow$ 2. Open PR Triad & Dev Deploy $\rightarrow$ 3. **Mk1 Review (live Dev links)** $\rightarrow$ 4. Merge, Tag (`vX.Y.0`), Prod Deploy $\rightarrow$ 5. `/learn` $\rightarrow$ 6. Autonomous Lean Patch Release (`vX.Y.1`). Must execute patch deploy immediately after learning approval.
 - **`inv-commit-before-deploy` — 🌐 Commit-Before-Deploy & Push-and-Delegate CI/CD Gate**: Clean tree before tags. Never push without Mk1 sign-off. Post-push, verify GitHub Actions (`gh run watch`) instead of local deploys.
-- **`inv-incremental-commits-staging` — 🌐 Incremental Commits & Staging Topology**: Feature branches (`feat/...`) deploy to Dev (`credence-dev-495173`); `main` merges require Code Owner review (`.github/CODEOWNERS`) and deploy to Prod (`credence-prod-505902`) and Edge.
+- **`inv-incremental-commits-staging` — 🌐 Incremental Commits, Immediate Branching & Staging Topology**: Switch to feature branch (`just branch feat/...`) immediately upon plan approval before making changes. Commit incrementally (`just commit <msg>`). Open PRs (`just pr-create`), monitor CI/CD (`gh run watch`), and verify live Dev deployment before updating `walkthrough.md`. Main merges require Code Owner review (`.github/CODEOWNERS`) and deploy to Prod (`credence-prod-505902`).
 - **`inv-hermetic-unit-tests` — 🌐 Hermetic Unit Test Isolation & Zero-Browser CI**: Unit tests (`@pytest.mark.unit`) execute in-memory in <35s with zero browser runtimes or daemons.
 - **`inv-3plane-governance` — 🌐 3-Plane Deployment Governance**: 3 decoupled planes: **Edge Plane** (`web/`, `credence-docs`), **Compute Plane** (`credence-server`), and **Infra Plane** (Terraform).
 - **`inv-dual-env-least-privilege-cicd` — 🌐 Dual-Environment Least-Privilege CI/CD**: Keyless WIF with least-privilege roles. Cloudflare Pages dev deploys use `--branch=dev` (never `main`); dev proxies route to preview endpoints with zero escape to prod.
@@ -28,7 +33,8 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 ### Class γ (Gamma): Interface Symmetry, Epistemic Parity & Governance (P2 Ergonomics & Presentation)
 - **`inv-multi-interface-parity` — 🌐 Universal Multi-Interface Feature Parity**: Feature parity across **CLI**, **FastMCP 2.0**, **TUI**, and **Zero-Build Web UI** (`web/`). Vanilla HTML5/ES modules, **zero npm dependencies**, 5 invariant nav links.
 - **`inv-zero-build-standards` — 🌐 Universal Zero-Build Standards (Zero-npm Invariant)**: All public web surfaces use vanilla HTML5, CSS Custom Properties, and native ES Modules with zero npm dependencies and zero build toolchains. Workstations require universal 6px custom scrollbars (`*`, `.tab-panel`) and vertical flex scrolling (`overflow-y: auto; overflow-x: hidden;`).
-- **`inv-epistemic-lensing` — 🌐 The Epistemic Lensing & Information Pyramid Invariant**: 3-tier hierarchy: Surface Lens (Glance — zero-jargon score gauge, executive findings & cross-links), Focus Lens (Explore — grounded DOM quotes & diffs), and Deep Spectrum Lens (Forensic — cryptographic signatures, hashes & mathematical formulas).
+- **`inv-epistemic-lensing` — 🌐 The Epistemic Lensing & Information Pyramid Invariant**: 3-tier hierarchy: Surface Lens (Glance — zero-jargon score gauge, executive findings & cross-links), Focus Lens (Explore — grounded DOM quotes & diffs), and Deep Spectrum Lens (Forensic — cryptographic signatures, hashes & mathematical formulas). Enforces 5-Tier DCI (A $\ge 90$, B $80-89.9$, C $65-79.9$, D $45-64.9$, E $<45$) and monotonic verdict bands ($\le 15$ Clean, $\le 40$ Low Suspicion, $\le 70$ Suspicious, $> 70$ Deceptive).
+- **`inv-artifact-curation` — 🌐 The Artifact Archival & Anti-Wipe Invariant ("That Belongs in a Museum!")**: Artifacts (`implementation_plan.md`, `walkthrough.md`) are permanent historical records. Never overwrite earlier phases or erase previous test tables/proofs wholesale. Append chronological milestone phases (`## Milestone N`) or spawn discrete numbered artifacts (`walkthrough_v2_18_0.md`) to preserve complete session context.
 - **`inv-documentation-expansion` — 🌐 Session-Driven Documentation Expansion & Anti-Proliferation Rule**: Deepen canonical docs and blueprints over creating shallow standalone files.
 - **`inv-living-canon` — 🌐 Dynamic Invariant Canon ("The Invariant Bible")**: Reference system invariants as **The Invariant Bible** or **Living Canon of System Invariants** without hardcoded numbers.
 - **`inv-multi-model-sovereignty` — 🌐 Multi-Model Sovereignty & Token Budget**: Decoupled LLM adapters (Gemini 3.7 default 4k thinking, Claude 3.7, GPT-4o, DeepSeek R1, Ollama) with offline circuit breakers (`QUOTA_PRESERVED`) at 30% headroom.
