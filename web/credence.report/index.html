@@ -142,10 +142,11 @@
                 <!-- Publisher Tier Filter Selector -->
                 <select id="filter-tier" class="form-input" style="padding:0.4rem 0.65rem; font-size:0.8rem; margin:0; width:auto; background:var(--bg-secondary); border-color:var(--border);" onchange="applyCriteriaFilters()">
                   <option value="">All Publisher Tiers</option>
-                  <option value="TIER A">Tier A (Pristine Wire)</option>
-                  <option value="TIER B">Tier B (Monitored)</option>
-                  <option value="TIER C">Tier C (Watchlist / Fallacies)</option>
-                  <option value="TIER D">Tier D (Deceptive / Quarantine)</option>
+                  <option value="TIER A">Tier A (Pristine / High Integrity)</option>
+                  <option value="TIER B">Tier B (Reliable / Certified)</option>
+                  <option value="TIER C">Tier C (Monitored / Mixed)</option>
+                  <option value="TIER D">Tier D (Watchlist / Low Integrity)</option>
+                  <option value="TIER E">Tier E (Deceptive / Quarantine)</option>
                 </select>
 
                 <!-- Verdict Filter Selector -->
@@ -736,9 +737,10 @@
                 <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="filterDciTable('')">All</button>
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#4ade80;" onclick="filterDciTable('Tier A')">Tier A (Pristine)</button>
-                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#38bdf8;" onclick="filterDciTable('Tier B')">Tier B (Monitored)</button>
-                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f59e0b;" onclick="filterDciTable('Tier C')">Tier C (Watchlist)</button>
-                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f43f5e;" onclick="filterDciTable('Tier D')">Tier D (Deceptive)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#38bdf8;" onclick="filterDciTable('Tier B')">Tier B (Reliable)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#fbbf24;" onclick="filterDciTable('Tier C')">Tier C (Monitored)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f97316;" onclick="filterDciTable('Tier D')">Tier D (Watchlist)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f43f5e;" onclick="filterDciTable('Tier E')">Tier E (Deceptive)</button>
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#c084fc;" onclick="filterDciTable('Satire')">Satire Neutral</button>
                 </div>
               </div>
@@ -795,11 +797,11 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="inmaricopa.com" data-tier="Tier B" data-dci="76.7" data-suspicion="18.2" data-audits="52">
+                    <tr data-domain="inmaricopa.com" data-tier="Tier C" data-dci="76.7" data-suspicion="18.2" data-audits="52">
                       <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Continuous Epistemic Surveillance &bull; N=52 Audits</span></td>
-                      <td><span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">Tier B (Monitored)</span></td>
-                      <td style="font-family:var(--font-mono); color:#38bdf8; font-weight:700;">76.7 / 100</td>
-                      <td style="font-family:var(--font-mono); color:#38bdf8;">18.2 / 100</td>
+                      <td><span class="badge" style="background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid #fbbf24;">Tier C (Monitored)</span></td>
+                      <td style="font-family:var(--font-mono); color:#fbbf24; font-weight:700;">76.7 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#fbbf24;">18.2 / 100</td>
                       <td>52 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
@@ -808,11 +810,11 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="metro-sensationalist.com" data-tier="Tier C" data-dci="38.7" data-suspicion="61.3" data-audits="38">
+                    <tr data-domain="metro-sensationalist.com" data-tier="Tier D" data-dci="38.7" data-suspicion="61.3" data-audits="38">
                       <td><strong>metro-sensationalist.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Sensationalist Editorial</span></td>
-                      <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b;">Tier C (Watchlist)</span></td>
-                      <td style="font-family:var(--font-mono); color:#f59e0b; font-weight:700;">38.7 / 100</td>
-                      <td style="font-family:var(--font-mono); color:#f59e0b;">61.3 / 100</td>
+                      <td><span class="badge" style="background:rgba(249, 115, 22, 0.15); color:#f97316; border:1px solid #f97316;">Tier D (Watchlist)</span></td>
+                      <td style="font-family:var(--font-mono); color:#f97316; font-weight:700;">38.7 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#f97316;">61.3 / 100</td>
                       <td>38 Ingests</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
@@ -821,11 +823,11 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="malware-protection-alert.net" data-tier="Tier D" data-dci="7.5" data-suspicion="92.5" data-audits="19">
+                    <tr data-domain="malware-protection-alert.net" data-tier="Tier E" data-dci="7.5" data-suspicion="92.5" data-audits="19">
                       <td><strong>malware-protection-alert.net</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Deceptive Pattern Sandbox</span></td>
-                      <td><span class="badge" style="background:rgba(244, 63, 94, 0.15); color:#f43f5e;">Tier D (Deceptive)</span></td>
-                      <td style="font-family:var(--font-mono); color:#f43f5e; font-weight:700;">7.5 / 100</td>
-                      <td style="font-family:var(--font-mono); color:#f43f5e;">92.5 / 100</td>
+                      <td><span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #ef4444;">Tier E (Deceptive)</span></td>
+                      <td style="font-family:var(--font-mono); color:#ef4444; font-weight:700;">7.5 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#ef4444;">92.5 / 100</td>
                       <td>19 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
@@ -1339,16 +1341,16 @@
       "inmaricopa.com": {
         domain: "inmaricopa.com",
         title: "InMaricopa Local News (Empirical Case Study)",
-        desc: "Continuous Epistemic Surveillance • N=52 Expanded Corpus Forensics",
-        tierBadge: "TIER B (MONITORED)",
-        tierColor: "#38bdf8",
-        tierBg: "rgba(56, 189, 248, 0.15)",
+        desc: "Continuous Epistemic Surveillance • N=52 Expanded Corpus Forensics • Tier C",
+        tierBadge: "TIER C (MONITORED)",
+        tierColor: "#fbbf24",
+        tierBg: "rgba(251, 191, 36, 0.15)",
         dciScore: "76.7",
         totalAudits: "52 Verified Audits",
         groundingRate: "100% (G=1.00)",
         syndication: "● Active P2P Mesh & Feed",
         violationsCount: "14 Epistemic Violations",
-        trajectoryStat: "30d Stability: 92.4%",
+        trajectoryStat: "30d Stability: 92.4% • Tier C Monitored",
         trajectorySummary: "Publisher evaluated across N=52 live network audits (75% clean news, 15% single-source blotters, 10% advertorials/COI).",
         articles: [
           {
@@ -1401,8 +1403,8 @@
       "theverge.com": {
         domain: "theverge.com",
         title: "The Verge",
-        desc: "Technology, Science & Digital Culture Reporting • Tier B",
-        tierBadge: "TIER B (TECH REPORTING)",
+        desc: "Technology, Science & Digital Culture Reporting • Tier B Reliable",
+        tierBadge: "TIER B (RELIABLE)",
         tierColor: "#38bdf8",
         tierBg: "rgba(56, 189, 248, 0.15)",
         dciScore: "84.2",
@@ -1410,7 +1412,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (20m)",
         violationsCount: "5 Editorial Framing Queries",
-        trajectoryStat: "Tier B • Monitored Tech Media",
+        trajectoryStat: "Tier B • Reliable Tech Media",
         trajectorySummary: "Broad technology coverage with clear editorial voice; high attribution rigor on hardware benchmarks with occasional subjective review framing.",
         articles: [
           {
@@ -1426,8 +1428,8 @@
       "texasmonthly.com": {
         domain: "texasmonthly.com",
         title: "Texas Monthly",
-        desc: "Longform Regional Journalism & Cultural Narrative • Tier B",
-        tierBadge: "TIER B (REGIONAL LONGFORM)",
+        desc: "Longform Regional Journalism & Cultural Narrative • Tier B Reliable",
+        tierBadge: "TIER B (RELIABLE)",
         tierColor: "#38bdf8",
         tierBg: "rgba(56, 189, 248, 0.15)",
         dciScore: "89.0",
@@ -1435,7 +1437,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (2h)",
         violationsCount: "2 Minor Attribution Omissions",
-        trajectoryStat: "Tier B • High Integrity Regional",
+        trajectoryStat: "Tier B • Reliable Regional",
         trajectorySummary: "High-quality investigative and narrative longform journalism covering state politics, conservation, and cultural history.",
         articles: [
           {
@@ -1451,10 +1453,10 @@
       "metro-sensationalist.com": {
         domain: "metro-sensationalist.com",
         title: "Metro Sensationalist Editorial",
-        desc: "Clickbait Editorial & Sensationalist Commentary • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
+        desc: "Clickbait Editorial & Sensationalist Commentary • Tier D Watchlist",
+        tierBadge: "TIER D (WATCHLIST)",
+        tierColor: "#f97316",
+        tierBg: "rgba(249, 115, 22, 0.15)",
         dciScore: "38.7",
         totalAudits: "38 Mesh Ingests",
         groundingRate: "100% (G=1.00)",
@@ -1476,10 +1478,10 @@
       "daily-speculator.com": {
         domain: "daily-speculator.com",
         title: "Daily Speculator",
-        desc: "Unverified Tech Claims & Sensationalized Science • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
+        desc: "Unverified Tech Claims & Sensationalized Science • Tier D Watchlist",
+        tierBadge: "TIER D (WATCHLIST)",
+        tierColor: "#f97316",
+        tierBg: "rgba(249, 115, 22, 0.15)",
         dciScore: "32.4",
         totalAudits: "45 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1501,10 +1503,10 @@
       "partisan-post.com": {
         domain: "partisan-post.com",
         title: "The Partisan Post",
-        desc: "Hyperpartisan Polemics & Ad Hominem Commentary • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
+        desc: "Hyperpartisan Polemics & Ad Hominem Commentary • Tier D Watchlist",
+        tierBadge: "TIER D (WATCHLIST)",
+        tierColor: "#f97316",
+        tierBg: "rgba(249, 115, 22, 0.15)",
         dciScore: "35.1",
         totalAudits: "62 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1526,10 +1528,10 @@
       "malware-protection-alert.net": {
         domain: "malware-protection-alert.net",
         title: "Rogue Antivirus Campaign",
-        desc: "Deceptive UI Patterns & Dark Pattern Conversion Funnel • Tier D Quarantine",
-        tierBadge: "TIER D (DECEPTIVE QUARANTINE)",
-        tierColor: "#f43f5e",
-        tierBg: "rgba(244, 63, 94, 0.15)",
+        desc: "Deceptive UI Patterns & Dark Pattern Conversion Funnel • Tier E Quarantine",
+        tierBadge: "TIER E (DECEPTIVE)",
+        tierColor: "#ef4444",
+        tierBg: "rgba(239, 68, 68, 0.15)",
         dciScore: "7.5",
         totalAudits: "19 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1551,10 +1553,10 @@
       "free-airdrop-claim-now.xyz": {
         domain: "free-airdrop-claim-now.xyz",
         title: "Phishing Airdrop Portal",
-        desc: "Cryptocurrency Phishing & Deceptive Urgent Consent • Tier D Quarantine",
-        tierBadge: "TIER D (DECEPTIVE QUARANTINE)",
-        tierColor: "#f43f5e",
-        tierBg: "rgba(244, 63, 94, 0.15)",
+        desc: "Cryptocurrency Phishing & Deceptive Urgent Consent • Tier E Quarantine",
+        tierBadge: "TIER E (DECEPTIVE)",
+        tierColor: "#ef4444",
+        tierBg: "rgba(239, 68, 68, 0.15)",
         dciScore: "3.2",
         totalAudits: "31 Audits",
         groundingRate: "100% (G=1.00)",
@@ -2445,7 +2447,7 @@
 
       // Surface Glance Forensics & Vitals (Lens 1)
       const pubObj = typeof ALL_PUBLISHERS !== 'undefined' ? ALL_PUBLISHERS.find(p => p.domain === data.domain) : null;
-      const pubTier = pubObj ? pubObj.tierBadge : (data.domain === 'reuters.com' || data.domain === 'apnews.com' || data.domain === 'nature.com' || data.domain === 'propublica.org' ? 'Tier A (Pristine Wire)' : (parseFloat(data.score) < 20 ? 'Tier B (Monitored)' : 'Tier C (Watchlist)'));
+      const pubTier = pubObj ? pubObj.tierBadge : (data.domain === 'reuters.com' || data.domain === 'apnews.com' || data.domain === 'nature.com' || data.domain === 'propublica.org' ? 'Tier A (Pristine Wire)' : (parseFloat(data.score) < 15 ? 'Tier B (Reliable)' : (parseFloat(data.score) < 35 ? 'Tier C (Monitored)' : 'Tier D (Watchlist)')));
       const pubDciScore = pubObj ? pubObj.dciScore : (parseFloat(data.score) < 10 ? '98.5' : (parseFloat(data.score) < 30 ? '82.0' : '48.5'));
 
       const surfaceVerdictBadge = document.getElementById('insp-surface-verdict-badge');
@@ -3066,10 +3068,10 @@
           if (liveData.trust_band && ratingLabel) {
             const tb = liveData.trust_band;
             ratingLabel.textContent = (tb === "HIGH_INTEGRITY" || tb === "PRISTINE") ? "Tier A (Pristine)"
-              : ((tb === "MONITORED" || tb === "RELIABLE" || tb === "CLEAN") ? "Tier B (Monitored)"
-              : ((tb === "MODERATE" || tb === "WATCHLIST" || tb === "MIXED") ? "Tier C (Watchlist)"
-              : ((tb === "LOW_INTEGRITY" || tb === "SUSPICIOUS") ? "Tier D (Suspicious)"
-              : "Tier D (Deceptive)")));
+              : (tb === "RELIABLE" ? "Tier B (Reliable)"
+              : (tb === "MONITORED" ? "Tier C (Monitored)"
+              : (tb === "WATCHLIST" || tb === "MODERATE" ? "Tier D (Watchlist)"
+              : "Tier E (Deceptive)")));
           }
           if (liveData.total_audits && statAudits) {
             statAudits.textContent = `${liveData.total_audits} Verified Audit${liveData.total_audits === 1 ? '' : 's'}`;

@@ -1878,7 +1878,7 @@ ${summaryContent}
         const synthProfile = {
           domain: cleanDom,
           dci_score: Math.max(0, 100.0 - avgSusp),
-          trust_band: avgSusp <= 15 ? "HIGH_INTEGRITY" : (avgSusp <= 40 ? "RELIABLE" : (avgSusp <= 60 ? "MIXED" : "POOR")),
+          trust_band: avgSusp <= 10 ? "HIGH_INTEGRITY" : (avgSusp <= 20 ? "RELIABLE" : (avgSusp <= 35 ? "MONITORED" : (avgSusp <= 55 ? "WATCHLIST" : "DECEPTIVE"))),
           avg_suspicion: avgSusp,
           avg_violation_density: matching.reduce((acc, m) => acc + (m.suspicion_density || 0), 0) / matching.length,
           confidence_score: 0.95,

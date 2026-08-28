@@ -53,14 +53,14 @@ def compute_topic_entropy(titles: List[str]) -> float:
 
 def determine_trust_band(dci_score: float) -> str:
     """Map DCI score to standard trust classification bands."""
-    if dci_score >= 85.0:
+    if dci_score >= 90.0:
         return "HIGH_INTEGRITY"
+    if dci_score >= 80.0:
+        return "RELIABLE"
     if dci_score >= 65.0:
         return "MONITORED"
     if dci_score >= 45.0:
-        return "MODERATE"
-    if dci_score >= 25.0:
-        return "SUSPICIOUS"
+        return "WATCHLIST"
     return "DECEPTIVE"
 
 
