@@ -100,7 +100,7 @@
       "content_sha256": "sha256:f5b92f3664844085aaaba35b7d04575911dc04ab70a3c1c823b372e75a7f6802",
       "suspicion_score": 45.0,
       "score": "45.0",
-      "classification": "MONITORED",
+      "classification": "SUSPICIOUS",
       "summary": "City council candidate first-person campaign platform op-ed published under associate editor byline.",
       "audited_at": "2026-08-27T20:10:21.008338+00:00",
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
@@ -116,7 +116,7 @@
           "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 3,
           "confidence": 0.92,
-          "quote_or_element": "O\u2019Jon is a candidate for Maricopa City Council",
+          "quote_or_element": "O’Jon is a candidate for Maricopa City Council",
           "reasoning": "Campaign platform op-ed published within general civic reporting stream."
         },
         {
@@ -489,7 +489,7 @@
     },
     {
       "url": "https://inmaricopa.com/musds-chronic-absenteeism-rate-remains-below-state-average/",
-      "title": "MUSD\u2019s chronic absenteeism rate remains below state average",
+      "title": "MUSD’s chronic absenteeism rate remains below state average",
       "byline": "Karen Bartunek",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -574,7 +574,7 @@
       "content_sha256": "sha256:6a03e1a036ce24e8b5fd00670791625f1633f859f5faf0eb26643aeabb200cca",
       "suspicion_score": 42.0,
       "score": "42.0",
-      "classification": "LOW_SUSPICION",
+      "classification": "SUSPICIOUS",
       "summary": "Single-source law enforcement crash report citing DPS spokesperson without independent investigation.",
       "audited_at": "2026-08-27T20:10:21.008338+00:00",
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
@@ -623,7 +623,7 @@
       "content_sha256": "sha256:9397757c3ba9ef4ab48a5dcb99759b702bcd666970d232d029ee8ed184b3a0fa",
       "suspicion_score": 78.4,
       "score": "78.4",
-      "classification": "SUSPICIOUS",
+      "classification": "DECEPTIVE",
       "summary": "Co-owner and sitting councilmember publishing an uncritical defense of a municipal rezoning proposal without explicit conflict of interest disclosures.",
       "audited_at": "2026-08-27T20:10:21.008338+00:00",
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
@@ -676,7 +676,7 @@
     },
     {
       "url": "https://inmaricopa.com/lake-view-park-is-set-to-become-maricopas-little-league-hub/",
-      "title": "Lake View Park is set to become Maricopa\u2019s Little League hub",
+      "title": "Lake View Park is set to become Maricopa’s Little League hub",
       "byline": "Karen Bartunek",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -863,7 +863,7 @@
     },
     {
       "url": "https://inmaricopa.com/for-izzys-friends-it-was-never-just-a-softball-tournament/",
-      "title": "For Izzy\u2019s friends, it was never just a softball tournament",
+      "title": "For Izzy’s friends, it was never just a softball tournament",
       "byline": "Monica D Spencer; Associate Editor",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -881,7 +881,7 @@
     },
     {
       "url": "https://inmaricopa.com/womans-5th-alleged-walmart-shoplifting-attempt-ends-with-arrest/",
-      "title": "Woman\u2019s 5th alleged Walmart shoplifting attempt ends with arrest",
+      "title": "Woman’s 5th alleged Walmart shoplifting attempt ends with arrest",
       "byline": "Karen Bartunek",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -984,7 +984,7 @@
     },
     {
       "url": "https://inmaricopa.com/meet-5-acts-taking-the-stage-at-maricopas-got-talent-audition/",
-      "title": "Meet 5 acts taking the stage at Maricopa\u2019s Got Talent audition",
+      "title": "Meet 5 acts taking the stage at Maricopa’s Got Talent audition",
       "byline": "Karen Bartunek",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -1080,7 +1080,7 @@
     },
     {
       "url": "https://inmaricopa.com/hes-playing-pickleball-for-25-hours-to-raise-25k/",
-      "title": "He\u2019s playing pickleball for 25 hours to raise $25K",
+      "title": "He’s playing pickleball for 25 hours to raise $25K",
       "byline": "Monica D Spencer; Associate Editor",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -1098,7 +1098,7 @@
     },
     {
       "url": "https://inmaricopa.com/teeples-flock-decision-sparks-maricopa-rally/",
-      "title": "Teeple\u2019s Flock decision sparks Maricopa rally",
+      "title": "Teeple’s Flock decision sparks Maricopa rally",
       "byline": "Monica D Spencer; Associate Editor",
       "domain": "inmaricopa.com",
       "site_name": "InMaricopa",
@@ -1154,7 +1154,7 @@
       "content_sha256": "sha256:975d0a34eec18352d2e708206915f38f9973fa87d04ef4d188e3b5f5a9e7c86a",
       "suspicion_score": 52.0,
       "score": "52.0",
-      "classification": "MONITORED",
+      "classification": "SUSPICIOUS",
       "summary": "Residential real estate entry-level property listing showcase published under generic staff byline.",
       "audited_at": "2026-08-27T20:10:21.008338+00:00",
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
@@ -1222,7 +1222,7 @@
           "cluster_id": "SEEK_TRUTH_AND_REPORT",
           "severity": 3,
           "confidence": 0.9,
-          "quote_or_element": "Division President Michael Fraley said the company\u2019s focus is on attainable housing",
+          "quote_or_element": "Division President Michael Fraley said the company’s focus is on attainable housing",
           "reasoning": "Unchallenged corporate executive marketing claims presented without market data context."
         }
       ],
