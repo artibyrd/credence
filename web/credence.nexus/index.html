@@ -1040,31 +1040,30 @@
         const bored = stats.boredom_engine || {};
         const sav = stats.work_sharing_savings || {};
         const lats = stats.latencies_ms || { p50: 0.4, p95: 4.8 };
-
         const evalDuration = (proc.avg_eval_duration_ms && proc.avg_eval_duration_ms >= 10)
           ? Math.round(proc.avg_eval_duration_ms)
-          : 145;
+          : (proc.total_audits > 0 ? 145 : 0);
         if (vAudits) vAudits.textContent = `${proc.total_audits ?? 0} Audits`;
-        if (vEvalRate) vEvalRate.textContent = `~${evalDuration}ms / audit`;
-        if (vStorage) vStorage.textContent = `${stats.memory_mb ? Math.round(stats.memory_mb) : 142} MB`;
+        if (vEvalRate) vEvalRate.textContent = evalDuration > 0 ? `~${evalDuration}ms / audit` : "— / idle";
+        if (vStorage) vStorage.textContent = `${stats.memory_mb ? Math.round(stats.memory_mb) : 0} MB`;
         if (vTodayAudits) vTodayAudits.textContent = `${proc.audits_today ?? 0} Evaluated Today`;
 
         const throughput = (proc.evaluations_per_minute && proc.evaluations_per_minute > 0 && proc.evaluations_per_minute <= 5000)
           ? Math.round(proc.evaluations_per_minute)
-          : Math.round(60000 / evalDuration);
+          : (evalDuration > 0 ? Math.round(60000 / evalDuration) : 0);
         if (vThroughputRate) vThroughputRate.textContent = `${throughput} audits/min`;
         if (vAvgSuspicion) vAvgSuspicion.textContent = (proc.avg_suspicion_score ?? 0.0).toFixed(2);
 
-        if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(2) : 3.4} MB`;
-        if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 1} Archive`;
+        if (dbSizeMb) dbSizeMb.textContent = `${stor.database_size_mb ? stor.database_size_mb.toFixed(2) : "0.00"} MB`;
+        if (dbRetained) dbRetained.textContent = `${stor.retained_backups_count || 0} Archive`;
         if (dbBackend) dbBackend.textContent = "SQLite WAL";
 
         const vExcitement = document.getElementById('boredom-excitement');
         const vCadence = document.getElementById('boredom-cadence');
         const boredomBadge = document.getElementById('boredom-status-badge');
         const worksharingTokens = document.getElementById('worksharing-tokens');
-        const mode = bored.excitement_mode || bored.state || "HYPER_EXCITED";
-        const score = bored.excitement_score !== undefined ? bored.excitement_score.toFixed(2) : "0.96";
+        const mode = bored.excitement_mode || bored.state || "STANDBY";
+        const score = bored.excitement_score !== undefined ? bored.excitement_score.toFixed(2) : "0.00";
 
         if (boredomBadge) {
           boredomBadge.textContent = `Curiosity ${mode}`;
@@ -1078,7 +1077,7 @@
           else vExcitement.textContent = `🛑 PRESERVED`;
         }
         if (vCadence) vCadence.textContent = bored.burst_size ? `10m (${bored.burst_size} burst)` : "10m Heartbeat";
-        if (worksharingTokens) worksharingTokens.textContent = `${(sav.tokens_saved || 21000).toLocaleString()} ($${(sav.usd_avoided || 0.01).toFixed(2)})`;
+        if (worksharingTokens) worksharingTokens.textContent = `${(sav.tokens_saved || 0).toLocaleString()} ($${(sav.usd_avoided || 0.00).toFixed(2)})`;
 
         const vP50 = document.getElementById('v-p50-val');
         const vP95 = document.getElementById('v-p95-val');
@@ -1088,11 +1087,6 @@
       } else {
         // Peer / Remote Node Display
         if (vAudits) vAudits.textContent = `${node.audits_count || 0} Attestations`;
-        if (vEvalRate) vEvalRate.textContent = `~${node.latencies_ms?.node_1 ? node.latencies_ms.node_1 : 18.5}ms latency`;
-        if (vStorage) vStorage.textContent = `${node.memory_mb ? Math.round(node.memory_mb) : 110} MB RSS`;
-        if (vTodayAudits) vTodayAudits.textContent = `Peer Validator (${node.uptime_pct ? node.uptime_pct.toFixed(1) : 99.9}% Uptime)`;
-        if (vThroughputRate) vThroughputRate.textContent = `${node.quality_score ? (node.quality_score * 10).toFixed(2) : '10.0'}/10 Qᵢ Rank`;
-        if (vAvgSuspicion) vAvgSuspicion.textContent = '1.00 (G)';
         if (dbSizeMb) dbSizeMb.textContent = `${node.tokens_seeded ? node.tokens_seeded.toLocaleString() : 0} Seeded`;
         if (dbRetained) dbRetained.textContent = node.region || 'Remote Relay';
         if (dbBackend) dbBackend.textContent = node.ws_url ? 'WebSocket WSS' : 'Peer Relay';
@@ -1434,7 +1428,7 @@
         tier: "ROOT_ANCHOR",
         desc: "Participated in ≥25 BFT consensus rounds with 100% Ed25519 validity",
         eval: (n, merit) => {
-          const rounds = n.is_local ? (liveNodeMerit?.consensus_rounds ?? 25) : (n.consensus_rounds ?? 25);
+          const rounds = n.is_local ? (liveNodeMerit?.consensus_rounds ?? 0) : (n.consensus_rounds ?? 0);
           const isUnlocked = Boolean(merit?.unlocked_badges?.some(b => (b.badge_id || b) === "byzantine_custodian" || (b.badge_id || b) === "quorum_custodian") || (rounds >= 25));
           const progress = Math.min(100, Math.round((rounds / 25) * 100));
           return { unlocked: isUnlocked, progress, label: `${rounds} / 25 Quorum Rounds` };

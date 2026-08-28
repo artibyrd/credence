@@ -226,18 +226,28 @@ async def _compute_mesh_dynamics(session: AsyncSession, total_audits: int) -> Di
     usd_saved_estimate = round((tokens_saved_estimate / 1_000_000.0) * 0.70, 2)
 
     work_sharing_efficiency = (
-        round((adopted_from_mesh / max(1, total_queries_resolved)) * 100.0, 1) if adopted_from_mesh > 0 else 92.3
+        round((adopted_from_mesh / max(1, total_queries_resolved)) * 100.0, 1) if adopted_from_mesh > 0 else 0.0
     )
 
     seed_urls = (
-        [s.strip() for s in settings.PEER_SEEDS.split(",") if s.strip()]
-        if getattr(settings, "PEER_SEEDS", "")
-        else ["ws://127.0.0.1:9001", "ws://127.0.0.1:9002"]
+        [s.strip() for s in settings.PEER_SEEDS.split(",") if s.strip()] if getattr(settings, "PEER_SEEDS", "") else []
     )
-    connected_peers_count = max(4, len(seed_urls))
+    from credence.models import PeerMetric
+
+    stmt_peers = select(PeerMetric)
+    peer_rows = list((await session.exec(stmt_peers)).all())
+    active_peers = [p for p in peer_rows if p.traffic_class in ("FAST_LANE", "STANDARD") or p.successful_heartbeats > 0]
+    connected_peers_count = len(active_peers)
+
     from credence.mesh.hardware_guard import compute_max_mesh_peers
 
     dynamic_max, target_degree, hunger_mode = compute_max_mesh_peers()
+
+    n_count = 1 + connected_peers_count
+    max_faults = max(0, (n_count - 1) // 3)
+    safety_margin = (
+        f"3f+1 Verified (N={n_count}, f={max_faults})" if n_count >= 4 else f"Standalone Local (N={n_count}, f=0)"
+    )
 
     return {
         "connected_peers_count": connected_peers_count,
@@ -246,10 +256,10 @@ async def _compute_mesh_dynamics(session: AsyncSession, total_audits: int) -> Di
         "dynamic_max_peers": dynamic_max,
         "seeds_status": {
             "canonical_domain": "seeds.credence.nexus",
-            "is_reachable": True,
+            "is_reachable": len(seed_urls) > 0,
             "seed_nodes_count": len(seed_urls),
         },
-        "rendezvous_partition_affinity": 0.89,
+        "rendezvous_partition_affinity": 1.0 if connected_peers_count > 0 else 0.0,
         "compute_savings": {
             "total_queries_resolved": total_queries_resolved,
             "local_evaluations_count": total_audits,
@@ -258,7 +268,7 @@ async def _compute_mesh_dynamics(session: AsyncSession, total_audits: int) -> Di
             "tokens_saved_estimate": tokens_saved_estimate,
             "usd_saved_estimate": usd_saved_estimate,
         },
-        "byzantine_safety_margin": "3f+1 Verified (N=13, f=4)",
+        "byzantine_safety_margin": safety_margin,
     }
 
 

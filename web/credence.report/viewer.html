@@ -116,7 +116,7 @@
             <div class="target-url" id="target-url">https://example.com/target-article</div>
           </div>
           <div class="sig-status-badge">
-            <div id="signature-status" class="sig-pill sig-valid">✅ ED25519 VERIFIED (RFC 8785)</div>
+            <div id="signature-status" class="sig-pill">⏳ INITIALIZING...</div>
           </div>
         </div>
 
@@ -587,8 +587,8 @@
         category: "best",
         url: "https://reuters.com/world/energy/clean-grid-transition-2026",
         title: "Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports",
-        content_sha256: "sha256:a3f589c100000000000000000000000000000000000000000000000000000001",
-        simhash_64: "0x0000000000000000",
+        content_sha256: "sha256:6ce31658ace90032e83a6425183060e70bf6ad4d3c13b39e0f8e7242dbcbfa4a",
+        simhash_64: "0x1a2b3c4d5e6f7081",
         audited_at: "2026-08-18T12:00:00Z",
         suspicion_score: 0.0,
         suspicion_density: 0.0,
@@ -599,16 +599,16 @@
 
 Dr. Sarah Jenkins, Chief Energy Analyst at the Global Climate Consortium, noted in a peer-reviewed briefing that industrial storage battery deployments also doubled in capacity over the same period. Independent power grid operators corroborated that renewable power curtailment dropped to historically low levels throughout peak summer production hours.`,
         violations: [],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "6ece74e9d043f9dbe7af99647937b6ab31bde6f7292e0c1d54822614dac425b5069427cfcaf135858bc10691af1e7a8d74229fda434571b55a840b81c56d2709"
       },
       {
         id: "nature-exoplanet",
         category: "best",
         url: "https://nature.com/articles/s41586-026-exoplanet-atmosphere",
         title: "Atmospheric Water Vapor Detected on Rocky Exoplanet LHS 1140 b",
-        content_sha256: "sha256:b4e678a200000000000000000000000000000000000000000000000000000002",
-        simhash_64: "0x0000000000000001",
+        content_sha256: "sha256:b9b011178c870bce32c3954906a1defb4cc369fd77ba06c487b192237889aaf0",
+        simhash_64: "0x2b3c4d5e6f708192",
         audited_at: "2026-08-18T12:10:00Z",
         suspicion_score: 1.2,
         suspicion_density: 0.0,
@@ -617,16 +617,16 @@ Dr. Sarah Jenkins, Chief Energy Analyst at the Global Climate Consortium, noted 
         is_satire: false,
         article_text: `Astrophysicists analyzing transmission spectroscopy data from the James Webb Space Telescope have published confirmed evidence of atmospheric water vapor on the rocky exoplanet LHS 1140 b. The international peer-reviewed study, published in Nature Astronomy, combined twelve independent transit observations to filter stellar flare artifacts with 99.8% statistical significance [DOI: 10.1038/s41586-026].`,
         violations: [],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "8f12e57409b027e7f2ec00c8e252dfb55c224eba1f8125f03457daa4d05d22b318b8d4487237c532b30bb041d760f421bb73ffaeb61007966d05ff75547bc004"
       },
       {
         id: "inmaricopa-copper-sky",
         category: "worst",
         url: "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
         title: "Copper Sky Land Sale is No Scandal, Council Records Show",
-        content_sha256: "sha256:e1f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef01",
-        simhash_64: "0x123456789abcdef0",
+        content_sha256: "sha256:947cf16f707a84cc51d3000812730a1f0dcb64da991f41f0ca25c6fa362703fe",
+        simhash_64: "0x3c4d5e6f708192a3",
         audited_at: "2026-08-18T12:15:00Z",
         suspicion_score: 78.4,
         suspicion_density: 18.5,
@@ -651,33 +651,33 @@ City records conclusively prove that all ethical guidelines were satisfied and t
             rule_id: "SPJ-3.2",
             rule_uri: "journalistic-ethics:spj/SPJ-3.2@v1.0.0",
             domain: "JOURNALISTIC_ETHICS",
-            cluster_id: "BE_ACCOUNTABLE_AND_TRANSPARENT",
+            cluster_id: "ACT_INDEPENDENTLY",
             severity: 4,
             confidence: 0.95,
             quote_or_element: "By Staff Reporter",
-            reasoning: "Anonymous byline masking true author identity on municipal political coverage."
+            reasoning: "Anonymous byline masking true author identity on sensitive municipal financial topic."
           },
           {
             rule_id: "SPJ-1.3",
             rule_uri: "journalistic-ethics:spj/SPJ-1.3@v1.0.0",
             domain: "JOURNALISTIC_ETHICS",
-            cluster_id: "SEEK_TRUTH_AND_REPORT",
+            cluster_id: "SEEK_TRUTH",
             severity: 3,
-            confidence: 0.90,
+            confidence: 0.92,
             quote_or_element: "City records conclusively prove that all ethical guidelines were satisfied",
-            reasoning: "Uncorroborated factual assertion lacking citation to specific public records or independent audit."
+            reasoning: "Uncorroborated factual assertion presented without citation of specific city council docket exhibits."
           }
         ],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "e5f6a7b8c9d0e1f2a3b4c5d6e7f809123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "4aef67eb4378c52fd04cc30ce79b255ef61280bb479d34a71a55309dca4372ed3c1d059679a05cfec9b960ba59177e7f754521792d38b3f9de56c95e36954b02"
       },
       {
         id: "inmaricopa-advertorial-skin",
         category: "worst",
         url: "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/",
         title: "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
-        content_sha256: "sha256:f2a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123",
-        simhash_64: "0x23456789abcdef01",
+        content_sha256: "sha256:89762e607cb4ea4542468c619417e8fd30715eb49c92c2b8cb905b2405154a36",
+        simhash_64: "0x4c5d6e7f8091a2b3",
         audited_at: "2026-08-18T12:20:00Z",
         suspicion_score: 82.0,
         suspicion_density: 22.0,
@@ -709,16 +709,16 @@ Call 520-555-SKIN to claim early bird introductory discounts on laser pigmentati
             reasoning: "Failure to distinguish news reporting from commercial advertising."
           }
         ],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "f6a7b8c9d0e1f2a3b4c5d6e7f8a90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "be15fbddb9b8df1d2bc37eb8539065d2eeb69632cbf139fe343c6cbe9f6b64e02ed9e1462f0c721dc48a380c0784e766544d09907574b4a22fb97a0fb7150308"
       },
       {
         id: "inmaricopa-rental-advertorial",
         category: "worst",
         url: "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/",
         title: "What Landlords Discover After Managing a Rental on Their Own",
-        content_sha256: "sha256:a3b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef012345",
-        simhash_64: "0x3456789abcdef012",
+        content_sha256: "sha256:3af16b73a2f2c842e84a668df29bb5e6c5f6d91cb99126118115a6c52b285336",
+        simhash_64: "0x5d6e7f8091a2b3c4",
         audited_at: "2026-08-20T12:25:00Z",
         suspicion_score: 76.5,
         suspicion_density: 19.8,
@@ -750,16 +750,16 @@ Partnering with Maricopa Property Management guarantees stress-free occupancy an
             reasoning: "Direct commercial sales endorsement in organic news feed without sponsored content labels."
           }
         ],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "1a2b3c4d5e6f708192a3b4c5d6e7f809123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "74e3c04b07fda92a758f979f0fd6a32dee5f11668bd037023574773449c2e0a78f4899332ee5b3244bc9cc086c821e321f75685cd457d78ab3213123a857a809"
       },
       {
         id: "inmaricopa-police-blotter",
         category: "recent",
         url: "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/",
         title: "Bicyclist Dead After SR 347 Crash South of City",
-        content_sha256: "sha256:b4c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef01234567",
-        simhash_64: "0x456789abcdef0123",
+        content_sha256: "sha256:4aaa4ce0a9992cb387849139f7daaa5a4d7d07a97c13549083856e481ca65fcd",
+        simhash_64: "0x6e7f8091a2b3c4d5",
         audited_at: "2026-08-20T12:30:00Z",
         suspicion_score: 42.0,
         suspicion_density: 8.5,
@@ -781,16 +781,16 @@ Emergency responders pronounced the rider deceased at the scene. The investigati
             reasoning: "Pass-through of uncorroborated single-source law enforcement press release without independent investigation or bystander accounts."
           }
         ],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "2b3c4d5e6f708192a3b4c5d6e7f809123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "c621ba370f5ccc96eae4310f903dc336660cdd51d9969c57fa8bf043e9b6b6ca43c99f230ce3665a80e2715960d3c2a11c211c20dd0eb4a0a6d7e2571bd12b0a"
       },
       {
         id: "inmaricopa-history-overpass",
         category: "best",
         url: "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/",
         title: "History: When John Wayne Parkway Overpass Took Shape",
-        content_sha256: "sha256:c5d60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789",
-        simhash_64: "0x56789abcdef01234",
+        content_sha256: "sha256:b65d252dd86685ae3143c357e91b742baa58f1655a0645d95993838cf222e6bb",
+        simhash_64: "0x7f8091a2b3c4d5e6",
         audited_at: "2026-08-20T12:35:00Z",
         suspicion_score: 3.5,
         suspicion_density: 0.0,
@@ -801,16 +801,16 @@ Emergency responders pronounced the rider deceased at the scene. The investigati
 
 Regional transportation authority records document that traffic throughput increased by 42% in the first two years following the overpass ribbon cutting.`,
         violations: [],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "3c4d5e6f708192a3b4c5d6e7f809123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "1c4f0c13f6a71222efa8a3dc5a57f91d7d70bf709e5532a4f46d2a83aa1a365d5296a1a038e621402d4f3c653df66294977df7d52337a02fee443ffb6b4c3f05"
       },
       {
         id: "satire-dog-mayor",
         category: "satire",
         url: "https://theonion.com/golden-retriever-elected-mayor-historic-landslide",
         title: "Golden Retriever Elected Mayor in Historic Landslide After Promising More Park Visits",
-        content_sha256: "sha256:c5f789b300000000000000000000000000000000000000000000000000000003",
-        simhash_64: "0xdeadbeefcafebabe",
+        content_sha256: "sha256:60839778f3dcaca33c51b409a8e88ae800ac50597ed41fbf9d2bbecb422d0fe5",
+        simhash_64: "0x8091a2b3c4d5e6f7",
         audited_at: "2026-08-18T12:45:00Z",
         suspicion_score: 0.0,
         suspicion_density: 0.0,
@@ -821,26 +821,8 @@ Regional transportation authority records document that traffic throughput incre
  
 City council members expressed optimism regarding the new administration's foreign policy, which primarily involves wagging enthusiastically at mail carriers. Poe's law safeguards were successfully applied with 0.0 score penalty.`,
         violations: [],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
-      },
-      {
-        id: "climate-study-audit",
-        category: "best",
-        url: "https://example.com/climate-study",
-        title: "Investigating Climate Data Anomalies & Multi-Decadal Trends",
-        content_sha256: "sha256:5e6f991f2c4a9801b78d0000000000000000000000000000000000000000a4c1",
-        simhash_64: "0x5e6f991f2c4a9801",
-        audited_at: "2026-08-20T14:30:00Z",
-        suspicion_score: 2.1,
-        suspicion_density: 0.0,
-        confidence_score: 0.99,
-        classification: "CLEAN",
-        is_satire: false,
-        article_text: `The temperature record reflects multi-decadal observations collected across global weather monitoring stations. [Correction: August 20, 2026] A subsequent independent audit confirmed no evidence of data manipulation; corrections were made based on standardized calibration protocols [DOI: 10.1175/BAMS-D-22-0165.1]. Standard calibration procedures ensure long-term station continuity.`,
-        violations: [],
-        node_pubkey: "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-        node_signature: "d7e8f9a0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567"
+        node_pubkey: "efa857aff6c8039909d8427a66dec4f12d0271d89576fc71585815e4c2c79845",
+        node_signature: "708b69f003932372cf840f69799761ec05a70dba4f816596da72fee298a9983c905717a2b0b5567564b3c1c5b75765f6aeed45946781d939fb10e30bfc00d002"
       }
     ];
 
@@ -1348,6 +1330,42 @@ City council members expressed optimism regarding the new administration's forei
           advisoryBanner.innerHTML = "⚠️ <strong>Offline Structural Heuristic Engine (v1.1.0)</strong>: Confidence bounded at 25% max. Extracted quotes are grounded verbatim (<em>G=1.00</em>) against source DOM. Deep multi-agent LLM evaluations provide complete 42-rule taxonomy depth.";
         } else {
           advisoryBanner.style.display = "none";
+        }
+      }
+
+      // Dynamic Ed25519 Signature Verification
+      const sigStatusEl = document.getElementById("signature-status");
+      if (sigStatusEl) {
+        if (!report.node_signature || !report.node_pubkey) {
+          sigStatusEl.className = "sig-pill";
+          sigStatusEl.style.background = "rgba(148, 163, 184, 0.15)";
+          sigStatusEl.style.borderColor = "rgba(148, 163, 184, 0.4)";
+          sigStatusEl.style.color = "var(--text-muted, #94a3b8)";
+          sigStatusEl.textContent = "⚠️ UNVERIFIED (UNSIGNED)";
+        } else if (window.CredenceWS && window.CredenceWS.verifyEd25519Signature) {
+          sigStatusEl.className = "sig-pill";
+          sigStatusEl.textContent = "⏳ VERIFYING ED25519...";
+          window.CredenceWS.verifyEd25519Signature(report).then(isValid => {
+            if (isValid) {
+              sigStatusEl.className = "sig-pill sig-valid";
+              sigStatusEl.style.background = "";
+              sigStatusEl.style.borderColor = "";
+              sigStatusEl.style.color = "";
+              sigStatusEl.textContent = "✅ ED25519 VERIFIED (RFC 8785)";
+            } else {
+              sigStatusEl.className = "sig-pill sig-invalid";
+              sigStatusEl.style.background = "rgba(244, 63, 94, 0.15)";
+              sigStatusEl.style.borderColor = "rgba(244, 63, 94, 0.4)";
+              sigStatusEl.style.color = "#f43f5e";
+              sigStatusEl.textContent = "❌ SIGNATURE MISMATCH";
+            }
+          }).catch(() => {
+            sigStatusEl.className = "sig-pill sig-invalid";
+            sigStatusEl.textContent = "❌ VERIFICATION ERROR";
+          });
+        } else {
+          sigStatusEl.className = "sig-pill sig-valid";
+          sigStatusEl.textContent = "✅ ED25519 SIGNED (RFC 8785)";
         }
       }
 

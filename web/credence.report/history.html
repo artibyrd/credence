@@ -212,8 +212,8 @@
         diffLeftHtml: `<p style="color: #94a3b8; margin: 0 0 10px 0;">Initial observations from single transit spectrometry suggest potential spectral absorption lines consistent with H2O or methane.</p>`,
         diffRightTitle: "Nature Astronomy Published (Rev 2 · Current)",
         diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7; margin-bottom: 10px;">The international peer-reviewed study, published in Nature Astronomy, combined twelve independent transit observations to filter stellar flare artifacts with 99.8% statistical significance [DOI: 10.1038/s41586-026].</div>`,
-        parentSha: "sha256:b4e678a200000000000000000000000000000000000000000000000000000000",
-        currentSha: "sha256:b4e678a200000000000000000000000000000000000000000000000000000002",
+        parentSha: "sha256:47a28cf196238da294c7b80a1e34b9cf8019ab761234cd098765ef0123456789",
+        currentSha: "sha256:b9b011178c870bce32c3954906a1defb4cc369fd77ba06c487b192237889aaf0",
         distance: "Distance: 2 bits (0.968 Similarity)"
       },
       "https://theonion.com/golden-retriever-elected-mayor-historic-landslide": {
@@ -234,8 +234,8 @@
         diffLeftHtml: `<p style="color: #94a3b8;">Whimsical parody reporting on canine municipal leadership.</p>`,
         diffRightTitle: "Published Parody (Current)",
         diffRightHtml: `<div style="background: rgba(192, 132, 252, 0.15); border-left: 3px solid #c084fc; padding: 6px 8px; color: #e9d5ff;">In a stunning municipal election upset, Buster, a 4-year-old Golden Retriever, secured 94% of the mayoral vote after running on an aggressive platform of mandatory belly rubs.</div>`,
-        parentSha: "sha256:c5f789b300000000000000000000000000000000000000000000000000000000",
-        currentSha: "sha256:c5f789b300000000000000000000000000000000000000000000000000000003",
+        parentSha: "sha256:3a1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+        currentSha: "sha256:60839778f3dcaca33c51b409a8e88ae800ac50597ed41fbf9d2bbecb422d0fe5",
         distance: "Distance: 0 bits (1.000 Match)"
       }
     };
@@ -303,8 +303,7 @@
           diffLeftTitle: "Baseline Snapshot",
           diffLeftHtml: `<p style="color: #94a3b8;">Initial snapshot captured for ${urlParam}.</p>`,
           diffRightTitle: "Audited Version (Current)",
-          diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7;">Reconstituted DOM content cryptographically attested with Ed25519 node signature.</div>`,
-          parentSha: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          parentSha: "None (Initial Snapshot)",
           currentSha: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           distance: "Distance: 0 bits (1.000 Identity)"
         };
@@ -352,8 +351,8 @@
         diffLeftHtml: `<p style="color: #94a3b8;">Original snapshot captured at ${firstRev.date}.</p>`,
         diffRightTitle: `Revision ${revs.length} (Current)`,
         diffRightHtml: `<div style="background: rgba(16, 185, 129, 0.15); border-left: 3px solid #10b981; padding: 6px 8px; color: #6ee7b7;">Reconstituted DOM content cryptographically attested with Ed25519 signature.</div>`,
-        parentSha: traj.parent_sha256 || "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-        currentSha: traj.current_sha256 || "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        parentSha: traj.parent_sha256 || "None (Initial Snapshot)",
+        currentSha: traj.current_sha256 || (traj.content_sha256 ? traj.content_sha256 : "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
         distance: `Distance: ${traj.simhash_hamming_distance || 0} bits`
       };
 
