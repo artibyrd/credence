@@ -13,6 +13,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.ingestion.extractor import extract_root_domain
 from credence.models import Audit, FeedItem, Snapshot, Violation, utc_now
+from credence.pipeline.scoring import classify_verdict
 from credence.subjects.models import (
     BountyItem,
     CategoryWeather,
@@ -194,8 +195,8 @@ async def get_publisher_analytics(
     avg_confidence = sum(a.confidence_score for a in matched_audits) / max(1, total_audits)
 
     clean_count = sum(1 for a in matched_audits if a.suspicion_score <= 15.0 and not a.is_satire)
-    suspicious_count = sum(1 for a in matched_audits if 15.0 < a.suspicion_score < 60.0 and not a.is_satire)
-    deceptive_count = sum(1 for a in matched_audits if a.suspicion_score >= 60.0 and not a.is_satire)
+    suspicious_count = sum(1 for a in matched_audits if 15.0 < a.suspicion_score <= 70.0 and not a.is_satire)
+    deceptive_count = sum(1 for a in matched_audits if a.suspicion_score > 70.0 and not a.is_satire)
     satire_count = sum(1 for a in matched_audits if a.is_satire)
 
     # Sourcing & Byline transparency
@@ -383,20 +384,33 @@ async def get_publisher_analytics(
         source_label = "P2P Mesh"
         if a.evaluation_method:
             em = a.evaluation_method.lower()
-            if "sifter" in em or "sentinel" in em or "rss" in em:
+            if any(k in em for k in ("sifter", "sentinel", "rss")):
                 source_label = "Sentinel Feed"
             elif "genesis" in em:
                 source_label = "Genesis Seeder"
             elif "cli" in em or "manual" in em:
                 source_label = "CLI / Manual"
 
-        if source_label == "P2P Mesh" and a.node_pubkey and ("genesis" in a.node_pubkey.lower() or a.node_pubkey.startswith("9580dc91")):
+        if source_label == "P2P Mesh" and (
+            (a.node_pubkey and ("genesis" in a.node_pubkey.lower() or a.node_pubkey.startswith("9580dc91")))
+            or (
+                target_url
+                and any(
+                    s in target_url.lower()
+                    for s in (
+                        "copper-sky",
+                        "pigmentation",
+                        "landlords",
+                        "bicyclist",
+                        "overpass",
+                        "battery",
+                        "scan-now",
+                        "airdrop",
+                    )
+                )
+            )
+        ):
             source_label = "Genesis Seeder"
-
-        if source_label == "P2P Mesh" and target_url:
-            genesis_subs = ("copper-sky", "pigmentation", "landlords", "bicyclist", "overpass", "clean-grid", "privacy", "exoplanet", "groundwater", "solar", "retriever", "squeegee", "sludge", "battery", "scan-now", "airdrop")
-            if any(s in target_url.lower() for s in genesis_subs):
-                source_label = "Genesis Seeder"
 
         recent_articles.append(
             {
@@ -406,7 +420,9 @@ async def get_publisher_analytics(
                 "source": source_label,
                 "score": f"{a.suspicion_score:.1f}",
                 "suspicion_score": a.suspicion_score,
-                "classification": a.classification,
+                "classification": a.classification
+                if (a.classification and a.classification not in ("MONITORED", "AUDITED"))
+                else classify_verdict(a.suspicion_score, a.is_satire),
                 "confidence_score": a.confidence_score,
                 "date": a.audited_at.strftime("%Y-%m-%d") if a.audited_at else "2026-08-20",
                 "audited_at": a.audited_at.isoformat() if a.audited_at else "",

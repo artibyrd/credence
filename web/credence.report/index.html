@@ -1359,8 +1359,8 @@
             source: "Genesis Seeder",
             date: "2026-08-20",
             score: "78.4",
-            badge: "SUSPICIOUS (COI)",
-            badgeColor: "#f59e0b"
+            badge: "DECEPTIVE (COI)",
+            badgeColor: "#ef4444"
           },
           {
             title: "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
@@ -1663,9 +1663,9 @@
         title: "Copper Sky Land Sale is No Scandal, Council Records Show",
         domain: "inmaricopa.com",
         score: "78.4",
-        badge: "SUSPICIOUS • 3 VIOLATIONS (COI CASE STUDY)",
-        badgeColor: "#f59e0b",
-        badgeBg: "rgba(245, 158, 11, 0.15)",
+        badge: "DECEPTIVE • 3 VIOLATIONS (COI CASE STUDY)",
+        badgeColor: "#ef4444",
+        badgeBg: "rgba(239, 68, 68, 0.15)",
         summary: "Empirical case study: Editorial defense of municipal commercial rezoning published by outlet co-owned by voting councilmember without conflict of interest disclosure.",
         ethics: "3.2 / 10", logic: "4.5 / 10", ui: "9.0 / 10",
         violations: [
@@ -2962,29 +2962,37 @@
 
       // Collect all authentic matching articles from SAMPLE_DATABASE, REPORTS_CATALOG_MAP, and rawPub.articles
       const sampleMatches = Object.entries(SAMPLE_DATABASE).filter(([u, a]) => a.domain === domain || u.includes(domain));
-      let matchingArticles = sampleMatches.map(([u, a]) => ({
-        url: u,
-        title: formatHumanTitle(a.title, u),
-        source: a.source || "Genesis Seeder",
-        score: a.score,
-        badge: a.badge ? a.badge.split(' • ')[0] : 'AUDITED',
-        badgeBg: a.badgeBg || "rgba(255,255,255,0.05)",
-        badgeColor: a.badgeColor || "#38bdf8",
-        date: "2026-08-20",
-        content_sha256: a.content_sha256 || a.sha || ""
-      }));
+      let matchingArticles = sampleMatches.map(([u, a]) => {
+        const scoreNum = parseFloat(a.score || 0);
+        const color = a.badgeColor || (scoreNum <= 15.0 ? '#22c55e' : (scoreNum <= 40.0 ? '#38bdf8' : (scoreNum <= 70.0 ? '#f59e0b' : '#ef4444')));
+        const bg = a.badgeBg || (scoreNum <= 15.0 ? 'rgba(34, 197, 94, 0.15)' : (scoreNum <= 40.0 ? 'rgba(56, 189, 248, 0.15)' : (scoreNum <= 70.0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)')));
+        return {
+          url: u,
+          title: formatHumanTitle(a.title, u),
+          source: a.source || "Genesis Seeder",
+          score: a.score,
+          badge: a.badge ? a.badge.split(' • ')[0] : (scoreNum <= 15.0 ? 'CLEAN' : (scoreNum <= 40.0 ? 'LOW_SUSPICION' : (scoreNum <= 70.0 ? 'SUSPICIOUS' : 'DECEPTIVE'))),
+          badgeBg: bg,
+          badgeColor: color,
+          date: "2026-08-20",
+          content_sha256: a.content_sha256 || a.sha || ""
+        };
+      });
 
       // Also include matching articles from loaded catalog
       REPORTS_CATALOG_MAP.forEach((ca, u) => {
         if ((ca.domain === domain || u.includes(domain)) && !matchingArticles.some(m => m.url === u)) {
+          const scoreNum = parseFloat(ca.score || 0);
+          const color = ca.badgeColor || (scoreNum <= 15.0 ? '#22c55e' : (scoreNum <= 40.0 ? '#38bdf8' : (scoreNum <= 70.0 ? '#f59e0b' : '#ef4444')));
+          const bg = ca.badgeBg || (scoreNum <= 15.0 ? 'rgba(34, 197, 94, 0.15)' : (scoreNum <= 40.0 ? 'rgba(56, 189, 248, 0.15)' : (scoreNum <= 70.0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)')));
           matchingArticles.push({
             url: u,
             title: formatHumanTitle(ca.title, u),
             source: ca.source || "P2P Mesh",
             score: ca.score,
-            badge: ca.badge ? ca.badge.split(' • ')[0] : 'AUDITED',
-            badgeBg: ca.badgeBg || "rgba(255,255,255,0.05)",
-            badgeColor: ca.badgeColor || "#38bdf8",
+            badge: ca.badge ? ca.badge.split(' • ')[0] : (scoreNum <= 15.0 ? 'CLEAN' : (scoreNum <= 40.0 ? 'LOW_SUSPICION' : (scoreNum <= 70.0 ? 'SUSPICIOUS' : 'DECEPTIVE'))),
+            badgeBg: bg,
+            badgeColor: color,
             date: "2026-08-24",
             content_sha256: ca.content_sha256 || ca.sha || ""
           });
@@ -2994,14 +3002,17 @@
       if (rawPub.articles && rawPub.articles.length > 0) {
         rawPub.articles.forEach(pa => {
           if (!matchingArticles.some(m => m.url === pa.url)) {
+            const scoreNum = parseFloat(pa.score || 0);
+            const color = pa.badgeColor || (scoreNum <= 15.0 ? '#22c55e' : (scoreNum <= 40.0 ? '#38bdf8' : (scoreNum <= 70.0 ? '#f59e0b' : '#ef4444')));
+            const bg = (scoreNum <= 15.0 ? 'rgba(34, 197, 94, 0.15)' : (scoreNum <= 40.0 ? 'rgba(56, 189, 248, 0.15)' : (scoreNum <= 70.0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)')));
             matchingArticles.push({
               url: pa.url,
               title: formatHumanTitle(pa.title, pa.url),
               source: pa.source || "P2P Mesh",
               score: pa.score,
-              badge: pa.badge || "AUDITED",
-              badgeBg: "rgba(255,255,255,0.05)",
-              badgeColor: pa.badgeColor || "#38bdf8",
+              badge: pa.badge || (scoreNum <= 15.0 ? 'CLEAN' : (scoreNum <= 40.0 ? 'LOW_SUSPICION' : (scoreNum <= 70.0 ? 'SUSPICIOUS' : 'DECEPTIVE'))),
+              badgeBg: bg,
+              badgeColor: color,
               date: pa.date || "2026-08-20",
               content_sha256: pa.sha || ""
             });
@@ -3085,8 +3096,24 @@
             const liveMap = new Map();
             liveData.recent_audited_articles.forEach(la => {
               const scoreNum = parseFloat(la.score || la.suspicion_score || 0);
-              const isClean = scoreNum <= 15.0;
-              const isSusp = scoreNum > 15.0 && scoreNum < 60.0;
+              let cls = la.classification;
+              if (!cls || cls === "AUDITED" || cls === "MONITORED") {
+                cls = scoreNum <= 15.0 ? "CLEAN" : (scoreNum <= 40.0 ? "LOW_SUSPICION" : (scoreNum <= 70.0 ? "SUSPICIOUS" : "DECEPTIVE"));
+              }
+              let badgeColor, badgeBg;
+              if (cls === "CLEAN" || scoreNum <= 15.0) {
+                badgeColor = "#22c55e";
+                badgeBg = "rgba(34, 197, 94, 0.15)";
+              } else if (cls === "LOW_SUSPICION" || (scoreNum > 15.0 && scoreNum <= 40.0)) {
+                badgeColor = "#38bdf8";
+                badgeBg = "rgba(56, 189, 248, 0.15)";
+              } else if (cls === "SUSPICIOUS" || (scoreNum > 40.0 && scoreNum <= 70.0)) {
+                badgeColor = "#f59e0b";
+                badgeBg = "rgba(245, 158, 11, 0.15)";
+              } else {
+                badgeColor = "#ef4444";
+                badgeBg = "rgba(239, 68, 68, 0.15)";
+              }
               const cleanT = formatHumanTitle(la.title, la.url);
               let src = la.source;
               if (!src || src === "P2P Mesh") {
@@ -3098,9 +3125,9 @@
                 title: cleanT,
                 source: src,
                 score: typeof la.score === "string" ? la.score : scoreNum.toFixed(1),
-                badge: la.classification || (isClean ? "CLEAN" : isSusp ? "SUSPICIOUS" : "PROVEN HOAX"),
-                badgeBg: isClean ? "rgba(34, 197, 94, 0.15)" : isSusp ? "rgba(245, 158, 11, 0.15)" : "rgba(244, 63, 94, 0.15)",
-                badgeColor: isClean ? "#22c55e" : isSusp ? "#f59e0b" : "#f43f5e",
+                badge: cls,
+                badgeBg: badgeBg,
+                badgeColor: badgeColor,
                 date: la.date || (la.audited_at ? la.audited_at.split('T')[0] : "2026-08-20"),
                 content_sha256: la.content_sha256 || ""
               });

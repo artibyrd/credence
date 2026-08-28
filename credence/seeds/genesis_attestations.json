@@ -267,7 +267,7 @@
       "suspicion_score": 45.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
-      "classification": "MONITORED",
+      "classification": "SUSPICIOUS",
       "is_satire": false,
       "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
@@ -279,7 +279,7 @@
           "cluster_id": "ACT_INDEPENDENTLY",
           "severity": 3,
           "confidence": 0.92,
-          "quote_or_element": "O\u2019Jon is a candidate for Maricopa City Council",
+          "quote_or_element": "O’Jon is a candidate for Maricopa City Council",
           "reasoning": "Campaign platform op-ed published within general civic reporting stream.",
           "line_or_selector": null,
           "is_grounded": true
@@ -303,7 +303,7 @@
         "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "7b197c53b612140b0fadf6aff6a225796a82764a5620d021d69232d9663d0769a77513a0a2170e909db528bf5f24b193602131a7d102a181386ff33ff2fa0900",
+      "node_signature": "94dafb9dcfbe9ae90ffc8dfb83dae65f64d29a54c4d4bd38655a27f33acf20dd5ecef8802b151adaf60b7dcebd82688d1f616d28eb3b865fa4e3fcf593003405",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "O'Jon: We should build more than a city",
@@ -806,7 +806,7 @@
       "node_signature": "769f5888b073d5d346cee27d5733b865953f40ea811d2bba61787d0a0a3eeec36c9e802fb407e3ab5c0645501af7bb6a5839bc8d9ed52629234fe8bef29b7705",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "MUSD\u2019s chronic absenteeism rate remains below state average",
+      "title": "MUSD’s chronic absenteeism rate remains below state average",
       "byline": "Karen Bartunek"
     },
     {
@@ -892,7 +892,7 @@
       "suspicion_score": 42.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
-      "classification": "LOW_SUSPICION",
+      "classification": "SUSPICIOUS",
       "is_satire": false,
       "content_type": "POLICE_BLOTTER",
       "satire_notes": null,
@@ -916,7 +916,7 @@
         "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "c1f7f01be2b9a31a65efd3dd383f92e0eff37b0512221e48028a3c4cf713b48269863d2432982b128f8bd2d786af50df3d3b9381c201680683c0387a847ac103",
+      "node_signature": "5fd2b454a762e474120b8ff89e2a5989e2e6564f31018a4678795b5ed2de26bce770500ec81002ecde3e0e6da8012f75f9a7528edc7310da5f48ac473ba87a0e",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Bicyclist dead after SR 347 crash south of city",
@@ -955,7 +955,7 @@
       "suspicion_score": 78.4,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
-      "classification": "SUSPICIOUS",
+      "classification": "DECEPTIVE",
       "is_satire": false,
       "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
@@ -991,7 +991,7 @@
         "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "3473a15298c30c967d1b87c91e357a9dc6f7b1c0ecde78f0acc1f63adcdc16b3df8ec778841e259d05044915b4564a1c8150af1f379026c9c9e9d28e03165204",
+      "node_signature": "ab3b62cb6baadb2894f46aab9fb4bad3efd0e9a85eeeed9eb0b3d6e7c2384e01b2103e3af5ac4e7928610b95716bfc8d515ddaec109ea0bc498603aa6595b801",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Manfredi: Land sale is not a scandal, no matter how badly some want one",
@@ -1044,7 +1044,7 @@
       "node_signature": "4af598f60e2f1e16ca39906738b1389b479032fddc433fd2140d0afbf14bd5b8d1de4ae9cd43bf967562561a12a50dea666305911b6b9f42fc640207b7820e04",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "Lake View Park is set to become Maricopa\u2019s Little League hub",
+      "title": "Lake View Park is set to become Maricopa’s Little League hub",
       "byline": "Karen Bartunek"
     },
     {
@@ -1282,7 +1282,7 @@
       "node_signature": "095f83f097271d89846eab4a9066a484520be711d5dcc59001d1ba29bf0a18ee38b02c3fc4a693182a3f3f466378f16795c0e6534582ac6e0f4a1d59437c5c00",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "For Izzy\u2019s friends, it was never just a softball tournament",
+      "title": "For Izzy’s friends, it was never just a softball tournament",
       "byline": "Monica D Spencer; Associate Editor"
     },
     {
@@ -1320,7 +1320,7 @@
       "node_signature": "0b64c3c2f03b1af58e36be5c6f59bb00faa1889c08e90e72912ab167850c69b799a26cbc9f53b48630fcd3621ac8261c66ecd10a7ef4b70f33b9dc83e8b3a50e",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "Woman\u2019s 5th alleged Walmart shoplifting attempt ends with arrest",
+      "title": "Woman’s 5th alleged Walmart shoplifting attempt ends with arrest",
       "byline": "Karen Bartunek"
     },
     {
@@ -1445,7 +1445,7 @@
       "node_signature": "c58baebcd7fdd6c398df3bf7e9d34bc62eb286cfef9f2a229c210da7ab4c46fe75698173d67e1ab5ef3d8e17c4f954785e2debc7102a971476aa634f47a9fd03",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "Meet 5 acts taking the stage at Maricopa\u2019s Got Talent audition",
+      "title": "Meet 5 acts taking the stage at Maricopa’s Got Talent audition",
       "byline": "Karen Bartunek"
     },
     {
@@ -1570,7 +1570,7 @@
       "node_signature": "f8811ce719e896cd62d6dd635ec231efbc8253b6004c352fccf4cead870054f5c32621029cd4ad3bb8249348ae0baf4633453455877b677939223e421db55200",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "He\u2019s playing pickleball for 25 hours to raise $25K",
+      "title": "He’s playing pickleball for 25 hours to raise $25K",
       "byline": "Monica D Spencer; Associate Editor"
     },
     {
@@ -1595,7 +1595,7 @@
       "node_signature": "6414327bb1326462a5ae136ee4c90eece3bb97240cb17ad6a3129c8b2248eee9b246da07f7724ae453cafde5ef9df039f7a300287053ff928acebaead72f4106",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
-      "title": "Teeple\u2019s Flock decision sparks Maricopa rally",
+      "title": "Teeple’s Flock decision sparks Maricopa rally",
       "byline": "Monica D Spencer; Associate Editor"
     },
     {
@@ -1644,7 +1644,7 @@
       "suspicion_score": 52.0,
       "suspicion_density": 0.0,
       "confidence_score": 0.95,
-      "classification": "MONITORED",
+      "classification": "SUSPICIOUS",
       "is_satire": false,
       "content_type": "SPONSORED_ADVERTORIAL",
       "satire_notes": null,
@@ -1680,7 +1680,7 @@
         "deceptive-patterns:dark-patterns@v1.0.0": "sha256:399c5c7255152be35198084a44b5a3746c05d7b5f134dc248dbdc035fc8e1e79"
       },
       "node_pubkey": "9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0",
-      "node_signature": "1d17d91136dd197cb52933e1df16b83fe15919ab6df0959ef4be6d11d9bfc6199749ae3b7659536faf480d77d1e023600cdc7e25ec6cadef87a89ad018737f0a",
+      "node_signature": "ba5fdc5cce9ded5708185635a27f0dcb05ec38bfbbdf000d5cfea93bd3eb5bceaeedad093d67466aea54d65bb08b35a9188f718a84836acb94bda08491c1df02",
       "quota_preserved": false,
       "evaluation_method": "llm_multi_agent_gemini-3.7-flash",
       "title": "Curious what $200K buys in and around Maricopa?",
@@ -1718,7 +1718,7 @@
           "cluster_id": "SEEK_TRUTH_AND_REPORT",
           "severity": 3,
           "confidence": 0.9,
-          "quote_or_element": "Division President Michael Fraley said the company\u2019s focus is on attainable housing",
+          "quote_or_element": "Division President Michael Fraley said the company’s focus is on attainable housing",
           "reasoning": "Unchallenged corporate executive marketing claims presented without market data context.",
           "line_or_selector": null,
           "is_grounded": true
