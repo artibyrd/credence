@@ -420,9 +420,7 @@ async def get_publisher_analytics(
                 "source": source_label,
                 "score": f"{a.suspicion_score:.1f}",
                 "suspicion_score": a.suspicion_score,
-                "classification": a.classification
-                if (a.classification and a.classification not in ("MONITORED", "AUDITED"))
-                else classify_verdict(a.suspicion_score, a.is_satire),
+                "classification": classify_verdict(a.suspicion_score, a.is_satire),
                 "confidence_score": a.confidence_score,
                 "date": a.audited_at.strftime("%Y-%m-%d") if a.audited_at else "2026-08-20",
                 "audited_at": a.audited_at.isoformat() if a.audited_at else "",
