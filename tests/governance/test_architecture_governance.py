@@ -114,3 +114,19 @@ def test_zero_hardcoded_tenant_domains_in_core_engine() -> None:
     assert not violations, (
         f"inv-sovereign-config-decoupling violation: Core engine source files must not contain hardcoded tenant domains: {violations}"
     )
+
+
+@pytest.mark.unit
+def test_5tier_dci_and_monotonic_score_thresholds_parity() -> None:
+    """Verify inv-epistemic-lensing: classify_verdict enforces exact monotonic score bands."""
+    from credence.pipeline.scoring import classify_verdict
+
+    assert classify_verdict(0.0) == "CLEAN"
+    assert classify_verdict(15.0) == "CLEAN"
+    assert classify_verdict(15.1) == "LOW_SUSPICION"
+    assert classify_verdict(40.0) == "LOW_SUSPICION"
+    assert classify_verdict(40.1) == "SUSPICIOUS"
+    assert classify_verdict(70.0) == "SUSPICIOUS"
+    assert classify_verdict(70.1) == "DECEPTIVE"
+    assert classify_verdict(100.0) == "DECEPTIVE"
+    assert classify_verdict(50.0, is_satire=True) == "SATIRE_PARODY"

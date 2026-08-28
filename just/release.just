@@ -54,8 +54,7 @@ release version message: (auth-check "gh")
     just git-tag "{{version}}"
     just git-push
     echo -e "\033[1;32m🚀 Full Ecosystem Release v{{version}} Pushed to GitHub! Continuous deployment is being orchestrated by GitHub Actions.\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Monitor production deployment workflows ('just ci-watch').\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Trigger '/learn' to capture session insights and formulate the next lean patch.\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: 1. Monitor Prod CI/CD ('just ci-watch' / 'gh run watch') -> 2. Probe Prod endpoints with 'scratch/verify_production_release.py' -> 3. Update walkthrough.md -> 4. Trigger '/learn'.\033[0m"
 
 # Interactive agent command approval bootstrapping runner for open-source developers and forks (core tools only)
 [group('bootstrap')]

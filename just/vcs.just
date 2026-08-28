@@ -97,7 +97,8 @@ branch name:
     done
     echo -e "\033[1;32m✅ All ecosystem repositories switched to branch '{{name}}'.\033[0m"
     echo -e "\033[1;33m⚠️ GUARDRAIL: All new files must obey the 500 LOC Ceiling Law (Invariant 1).\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Make atomic edits, then run 'just commit <message>'.\033[0m"
+    echo -e "\033[1;33m⚠️ SCRATCH RITUAL: All scratch scripts must reside in '/scratch/<name>.py' with Session ID headers & chat links.\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: Make discrete edits, use workspace scratch ('/scratch/<name>.py'), commit often ('just commit <msg>'), then run 'just check' and 'just pr-create <title>'.\033[0m"
 
 # Perform incremental verified atomic commit across ecosystem repositories
 [group('vcs: gated')]
@@ -112,7 +113,7 @@ commit message:
         (cd "$r" && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "$MSG")))
     done
     echo -e "\033[1;32m✅ All ecosystem changes committed.\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Run 'just check' to verify pre-commit QA gates before opening PRs.\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: Continue discrete edits or run 'just check' then 'just pr-create <title>'.\033[0m"
 
 # Create annotated version tag across all 3 ecosystem repositories
 [group('vcs: gated')]
@@ -146,7 +147,7 @@ pr-create title: (preflight "gh") (auth-check "gh")
     set -euo pipefail
     python3 ../credence-agent/scripts/manage_pr.py "create" "{{title}}"
     echo -e "\033[1;33m⚠️ GUARDRAIL: Pre-staging version sync invariant requires all 7 manifests to match target version.\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Monitor Cloud Run Dev deployment ('just ci-watch') and probe live links ('just cloud-probe').\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: 1. Monitor CI/CD ('just ci-watch' / 'gh run watch') -> 2. Verify live Dev deployment with scratch probe -> 3. Update walkthrough.md (Museum Invariant: do NOT wipe earlier phases!) -> 4. Request Mk1 review.\033[0m"
 
 # Update description and companion links across open PR triad
 [group('vcs: gated')]
@@ -162,7 +163,7 @@ pr-merge pr_num="": (preflight "gh") (auth-check "gh")
     set -euo pipefail
     python3 ../credence-agent/scripts/manage_pr.py merge ${pr_num:+"$pr_num"}
     echo -e "\033[1;32m✅ PR triad merged into main.\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Switch to main ('just branch main'), pull changes, and run 'just sync-version <version>'.\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: Switch to main ('just branch main'), pull changes ('git pull origin main'), run 'just sync-version <version>', then 'just release <version> <msg>'.\033[0m"
 
 # Force merge Pull Request triad bypassing check gates (emergency use only)
 [group('vcs: gated')]
