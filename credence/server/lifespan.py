@@ -11,6 +11,7 @@ from typing import AsyncGenerator
 from sqlmodel import col, func, select
 from starlette.applications import Starlette
 
+from credence.config import NodeRole, settings
 from credence.db import get_async_session, init_db
 from credence.models import FeedSubscription
 
@@ -49,10 +50,70 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
                         from credence.germinate import germinate_node
 
                         await germinate_node(session=session, burst_items=3, sync_mesh=True, verbose=True)
+                    else:
+                        from credence.feeds.worker import bootstrap_preset_feeds
+
+                        await bootstrap_preset_feeds(session)
+
+                    # Synchronize node-configured sentinels from CREDENCE_SENTINEL_FEEDS environment variable
+                    from credence.feeds.sentinel import sync_env_sentinel_sources
+
+                    await sync_env_sentinel_sources(session)
+
+                    # Trigger boot sifting burst on active sentinels if enabled and role allows
+                    if not settings.CREDENCE_SENTINEL_ENABLED or settings.CREDENCE_NODE_ROLE == NodeRole.SERVING:
+                        logger.info(
+                            "ℹ️ Serving mode active (or sentinel disabled) — skipping background feed sifting and heuristic rescore sweeps"
+                        )
+                    else:
+                        stmt_s = select(FeedSubscription).where(
+                            FeedSubscription.is_sentinel == True,  # noqa: E712
+                            FeedSubscription.is_active == True,  # noqa: E712
+                        )
+                        sent_subs = (await session.exec(stmt_s)).all()
+                        if sent_subs:
+                            logger.info(
+                                "🛡️ Triggering initial sentinel sifting burst on boot for %d active sentinel sources...",
+                                len(sent_subs),
+                            )
+                            from credence.feeds.worker import sync_single_feed
+
+                            for s_sub in sent_subs:
+                                try:
+                                    await sync_single_feed(
+                                        session, s_sub, dry_run=False, evaluate_novel=True, force_refresh=True
+                                    )
+                                except Exception as se:
+                                    logger.exception("Boot sentinel sync failed for %s: %s", s_sub.feed_url, se)
+
+                            # Trigger aggressive re-scoring of heuristic audits on evaluator nodes
+                            if (
+                                settings.CREDENCE_NODE_ROLE in (NodeRole.EVALUATOR, NodeRole.HYBRID)
+                                and settings.CREDENCE_AUTO_RESCORE_HEURISTICS
+                            ):
+                                try:
+                                    from credence.pipeline.rescore import rescore_heuristic_audits
+
+                                    rescored = await rescore_heuristic_audits(session, limit=20)
+                                    if rescored:
+                                        logger.info(
+                                            "⚡ Evaluator sweep successfully rescored %d low-confidence audits with LLM pipeline",
+                                            len(rescored),
+                                        )
+                                except Exception as r_err:
+                                    logger.debug("Evaluator re-scoring sweep exception: %s", r_err)
+
+                        # Create database backup after initial boot sifting
+                        try:
+                            from credence.storage.backup import create_database_backup_async
+
+                            await create_database_backup_async(upload_cloud=True)
+                        except Exception as cbe:
+                            logger.debug("Initial boot backup upload exception: %s", cbe)
             except Exception as e:
                 logger.warning("Auto-germination background task encountered error: %s", e)
 
-        _germinate_task = asyncio.create_task(_run_background_germination())
+        _germination_task = asyncio.create_task(_run_background_germination())
 
         # Periodic background database backup task (every 30 minutes)
         async def _run_periodic_backups() -> None:
@@ -92,8 +153,8 @@ def combined_lifespan(app_instance: Starlette, enable_sifter: bool = True, enabl
             else:
                 yield {}
         finally:
-            if _germinate_task and not _germinate_task.done():
-                _germinate_task.cancel()
+            if _germination_task and not _germination_task.done():
+                _germination_task.cancel()
             if _backup_task and not _backup_task.done():
                 _backup_task.cancel()
             if sifter_daemon and sifter_task:

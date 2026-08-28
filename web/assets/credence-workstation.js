@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.17.4";
+export const CREDENCE_VERSION = "v2.18.0";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -462,6 +462,7 @@ export const INVARIANTS_REGISTRY = {
   "inv-epistemic-lensing": { legacyId: 42, class: "Class γ", scope: "universal", title: "The Epistemic Lensing & Information Pyramid Invariant" },
   "inv-web-component-isolation": { legacyId: 44, class: "Class γ", scope: "universal", title: "Web Component Isolation & Zero-Clone Safety" },
   "inv-dense-workstation-viewport": { legacyId: 45, class: "Class γ", scope: "domain", title: "Dense Workstation Viewport & Zero-Masking Invariant" },
+  "inv-sovereign-config-decoupling": { legacyId: 59, class: "Class α", scope: "universal", title: "Sovereign Multi-Tenant Decoupling & Zero Hardcoded Tenant Config" },
 };
 
 export function resolveInvariant(slugOrId) {
@@ -1659,7 +1660,7 @@ export function transformTargetUrl(href) {
   // Handle Dev Preview Subdomains (stay on dev.* across ecosystem)
   if (isDev) {
     const prodMap = {
-      'https://admin.credence.run': 'https://dev.admin.credence.run',
+      'https://admin.credence.run': 'https://dev.credence.run/admin/',
       'https://credence.run': 'https://dev.credence.run',
       'https://credence.report': 'https://dev.credence.report',
       'https://credence.nexus': 'https://dev.credence.nexus',
@@ -1690,6 +1691,8 @@ export function transformTargetUrl(href) {
       'https://credence.nexus': '/credence.nexus/',
       'https://credence.foundation': '/credence.foundation/',
       'https://dev.admin.credence.run': '/admin.credence.run/',
+      'https://dev.credence.run/admin': '/admin.credence.run/',
+      'https://dev.credence.run/admin/': '/admin.credence.run/',
       'https://dev.credence.run': '/credence.run/',
       'https://dev.credence.report': '/credence.report/',
       'https://dev.credence.nexus': '/credence.nexus/',

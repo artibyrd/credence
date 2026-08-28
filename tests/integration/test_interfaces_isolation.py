@@ -203,10 +203,9 @@ async def test_complete_4_way_feature_parity_matrix() -> None:
         web_dir / "credence.run" / "index.html",
         web_dir / "credence.report" / "index.html",
         web_dir / "credence.report" / "viewer.html",
+        web_dir / "credence.report" / "history.html",
         web_dir / "credence.nexus" / "index.html",
-        web_dir / "credence.nexus" / "dashboard.html",
-        web_dir / "credence.nexus" / "mesh.html",
-        web_dir / "credence.nexus" / "cost.html",
+        web_dir / "admin.credence.run" / "index.html",
         web_dir / "credence.foundation" / "index.html",
     ]
 

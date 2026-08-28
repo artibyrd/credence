@@ -25,13 +25,15 @@ from credence.pipeline.governor import get_token_headroom_status
 
 
 def _get_trust_band(avg_susp: float) -> str:
-    if avg_susp <= 15.0:
+    if avg_susp <= 10.0:
         return "Tier A (Pristine)"
-    if avg_susp <= 40.0:
-        return "Tier B (High Integrity)"
-    if avg_susp <= 70.0:
-        return "Tier C (Suspicious)"
-    return "Tier D (High Deception)"
+    if avg_susp <= 20.0:
+        return "Tier B (Reliable)"
+    if avg_susp <= 35.0:
+        return "Tier C (Monitored)"
+    if avg_susp <= 55.0:
+        return "Tier D (Watchlist)"
+    return "Tier E (Deceptive)"
 
 
 async def _compute_audit_aggregates(

@@ -72,6 +72,12 @@ async def get_sifter_status(session: AsyncSession) -> dict:
     stmt_subs = select(func.count(col(FeedSubscription.id))).where(FeedSubscription.is_active == True)  # noqa: E712
     active_subs = (await session.exec(stmt_subs)).first() or 0
 
+    stmt_sentinels = select(func.count(col(FeedSubscription.id))).where(
+        FeedSubscription.is_sentinel == True,  # noqa: E712
+        FeedSubscription.is_active == True,  # noqa: E712
+    )
+    active_sentinels = (await session.exec(stmt_sentinels)).first() or 0
+
     stmt_items = select(func.count(col(FeedItem.id)))
     total_items = (await session.exec(stmt_items)).first() or 0
 
@@ -87,6 +93,7 @@ async def get_sifter_status(session: AsyncSession) -> dict:
     return {
         "status": "online",
         "active_feed_subscriptions": active_subs,
+        "active_sentinel_sources": active_sentinels,
         "total_feed_items_discovered": total_items,
         "total_feed_items_audited": audited_items,
         "pending_feed_items": pending_items,

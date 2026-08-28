@@ -94,3 +94,19 @@ class AuditReport(BaseModel):
         default="llm_multi_agent",
         description="Method used for evaluation: llm_multi_agent or offline_structural_heuristic",
     )
+    evaluation_model: Optional[str] = Field(
+        default=None,
+        description="Exact cognitive model or engine used (e.g. gemini-3.7-flash, antigravity_pro, deepseek-r1:8b)",
+    )
+    taxonomy_root_hash: Optional[str] = Field(
+        default=None,
+        description="Composite SHA-256 root hash of active taxonomy suite",
+    )
+    sourcing_ratios: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Forensic sourcing ratios: R_byline, R_single, R_COI, ASI, DCI",
+    )
+    is_taxonomy_stale: bool = Field(
+        default=False,
+        description="True if audit taxonomy state is outdated relative to live registry",
+    )

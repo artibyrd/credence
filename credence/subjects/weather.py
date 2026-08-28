@@ -6,13 +6,14 @@ Architecture: Decoupled Weather & Forensic Profiling Engine (<480 LOC).
 
 import math
 from collections import Counter, defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from sqlmodel import col, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.ingestion.extractor import extract_root_domain
 from credence.models import Audit, FeedItem, Snapshot, Violation, utc_now
+from credence.pipeline.scoring import classify_verdict
 from credence.subjects.models import (
     BountyItem,
     CategoryWeather,
@@ -52,15 +53,15 @@ def compute_topic_entropy(titles: List[str]) -> float:
 
 
 def determine_trust_band(dci_score: float) -> str:
-    """Map DEI score to standard trust classification bands."""
-    if dci_score >= 85.0:
-        return "PRISTINE"
-    if dci_score >= 70.0:
-        return "CLEAN"
-    if dci_score >= 50.0:
-        return "MODERATE"
-    if dci_score >= 30.0:
-        return "SUSPICIOUS"
+    """Map DCI score to standard trust classification bands."""
+    if dci_score >= 90.0:
+        return "HIGH_INTEGRITY"
+    if dci_score >= 80.0:
+        return "RELIABLE"
+    if dci_score >= 65.0:
+        return "MONITORED"
+    if dci_score >= 45.0:
+        return "WATCHLIST"
     return "DECEPTIVE"
 
 
@@ -174,16 +175,16 @@ async def get_publisher_analytics(
     )
     rows = list((await session.exec(stmt)).all())
 
-    matched_audits: List[Audit] = []
-    matched_snapshots: List[Snapshot] = []
-
+    # Deduplicate matched audits to keep the latest canonical audit per distinct article URL
+    latest_by_url: Dict[str, Tuple[Audit, Optional[Snapshot]]] = {}
     for audit, snap in rows:
         target_url = snap.url if snap and snap.url else audit.content_sha256
         root_dom = extract_root_domain(target_url)
         if root_dom == clean_domain:
-            matched_audits.append(audit)
-            if snap:
-                matched_snapshots.append(snap)
+            latest_by_url[target_url] = (audit, snap)
+
+    matched_audits: List[Audit] = [a for a, _ in latest_by_url.values()]
+    matched_snapshots: List[Snapshot] = [s for _, s in latest_by_url.values() if s is not None]
 
     if not matched_audits:
         return None
@@ -194,8 +195,8 @@ async def get_publisher_analytics(
     avg_confidence = sum(a.confidence_score for a in matched_audits) / max(1, total_audits)
 
     clean_count = sum(1 for a in matched_audits if a.suspicion_score <= 15.0 and not a.is_satire)
-    suspicious_count = sum(1 for a in matched_audits if 15.0 < a.suspicion_score < 60.0 and not a.is_satire)
-    deceptive_count = sum(1 for a in matched_audits if a.suspicion_score >= 60.0 and not a.is_satire)
+    suspicious_count = sum(1 for a in matched_audits if 15.0 < a.suspicion_score <= 70.0 and not a.is_satire)
+    deceptive_count = sum(1 for a in matched_audits if a.suspicion_score > 70.0 and not a.is_satire)
     satire_count = sum(1 for a in matched_audits if a.is_satire)
 
     # Sourcing & Byline transparency
@@ -357,6 +358,76 @@ async def get_publisher_analytics(
     first_audit = matched_audits[0].audited_at.isoformat() if matched_audits[0].audited_at else None
     last_audit = matched_audits[-1].audited_at.isoformat() if matched_audits[-1].audited_at else None
 
+    # All matched audited articles for full public transparency
+    snap_map: Dict[int, Snapshot] = {s.id: s for s in matched_snapshots if s.id is not None}
+    recent_articles: List[Dict[str, Any]] = []
+    for a in reversed(matched_audits):
+        target_snap: Optional[Snapshot] = snap_map.get(a.snapshot_id) if a.snapshot_id is not None else None
+        target_url = target_snap.url if target_snap else a.content_sha256
+        raw_title = target_snap.title if (target_snap and target_snap.title) else ""
+        clean_title = raw_title
+        if not clean_title or clean_title.startswith("Mesh Submission:") or clean_title.startswith("http"):
+            from urllib.parse import unquote, urlparse
+
+            try:
+                slug_part = (clean_title.replace("Mesh Submission:", "").strip() if clean_title else "") or target_url
+                slug = urlparse(slug_part).path.rstrip("/").split("/")[-1]
+                if "." in slug:
+                    slug = slug.rsplit(".", 1)[0]
+                if slug and len(slug) > 2:
+                    clean_title = unquote(slug).replace("-", " ").replace("_", " ").strip().title()
+                else:
+                    clean_title = f"Article from {clean_domain}"
+            except Exception:
+                clean_title = "Audited Article"
+
+        source_label = "P2P Mesh"
+        if a.evaluation_method:
+            em = a.evaluation_method.lower()
+            if any(k in em for k in ("sifter", "sentinel", "rss")):
+                source_label = "Sentinel Feed"
+            elif "genesis" in em:
+                source_label = "Genesis Seeder"
+            elif "cli" in em or "manual" in em:
+                source_label = "CLI / Manual"
+
+        if source_label == "P2P Mesh" and (
+            (a.node_pubkey and ("genesis" in a.node_pubkey.lower() or a.node_pubkey.startswith("9580dc91")))
+            or (
+                target_url
+                and any(
+                    s in target_url.lower()
+                    for s in (
+                        "copper-sky",
+                        "pigmentation",
+                        "landlords",
+                        "bicyclist",
+                        "overpass",
+                        "battery",
+                        "scan-now",
+                        "airdrop",
+                    )
+                )
+            )
+        ):
+            source_label = "Genesis Seeder"
+
+        recent_articles.append(
+            {
+                "id": a.id,
+                "url": target_url,
+                "title": clean_title,
+                "source": source_label,
+                "score": f"{a.suspicion_score:.1f}",
+                "suspicion_score": a.suspicion_score,
+                "classification": classify_verdict(a.suspicion_score, a.is_satire),
+                "confidence_score": a.confidence_score,
+                "date": a.audited_at.strftime("%Y-%m-%d") if a.audited_at else "2026-08-20",
+                "audited_at": a.audited_at.isoformat() if a.audited_at else "",
+                "content_sha256": a.content_sha256,
+            }
+        )
+
     return PublisherAnalyticsProfile(
         domain=clean_domain,
         dci_score=dci,
@@ -378,6 +449,7 @@ async def get_publisher_analytics(
         trend_timeline=trend_timeline,
         representative_flagged_quotes=flagged_quotes,
         representative_clean_articles=clean_articles,
+        recent_audited_articles=recent_articles,
         badges=badges,
         first_audited_at=first_audit,
         last_audited_at=last_audit,

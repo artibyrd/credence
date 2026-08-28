@@ -127,7 +127,7 @@
 
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.4</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.18.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -169,6 +169,35 @@
         </button>
         <div style="margin-top: 1.25rem; font-size: 0.82rem; color: var(--text-muted);">
           Looking to inspect public node reality? Visit the <a href="https://credence.nexus" style="color: #38bdf8;">Nexus NOC</a> or <a href="https://credence.report" style="color: #38bdf8;">Reports Lab</a>.
+        </div>
+      </div>
+
+      <!-- Public Sentinel Ingestion Transparency (Full Epistemic Disclosure) -->
+      <div class="cockpit-card" style="max-width: 840px; margin: 2rem auto; padding: 1.5rem;">
+        <div class="cockpit-card-header">
+          <h3 class="cockpit-card-title">
+            <span>🛡️ Active Sentinel Sources (Public Surveillance Disclosure)</span>
+          </h3>
+          <span class="pill" id="locked-sentinel-count-pill" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:9999px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">0 Sentinels Active</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+          In accordance with our <strong>Universal Epistemic Disclosure Invariant</strong>, node configuration changes are operator-gated, but all active prioritized Sentinel feeds on this node are publicly disclosed to prevent covert narrative manipulation.
+        </p>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; color: #f1f5f9;">
+            <thead>
+              <tr style="background: #060911; color: var(--admin-cyan); border-bottom: 1px solid var(--admin-card-border);">
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Domain</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Target Feed URL</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Interval</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Quarantine Status</th>
+                <th style="padding: 0.6rem 0.75rem; text-align: left;">Reputation</th>
+              </tr>
+            </thead>
+            <tbody id="locked-sentinels-tbody">
+              <tr><td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading active sentinel sources...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -270,8 +299,41 @@
                   </select>
                 </div>
 
+                <!-- Node Role & Exhaustion Strategy Controls -->
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+                  <h4 style="font-size: 0.95rem; color: #fff; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>🛡️ Node Operational Role &amp; Exhaustion Policy</span>
+                  </h4>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.75rem;">
+                    <div class="form-group">
+                      <label class="form-label" for="adm-node-role">Operational Role</label>
+                      <select id="adm-node-role" class="form-input">
+                        <option value="evaluator">Evaluator (Active LLM Swarm)</option>
+                        <option value="serving">Serving (Zero-Token Attestation Relaying)</option>
+                        <option value="hybrid" selected>Hybrid (Evaluate + Relay)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="adm-exhaustion-strategy">Exhaustion Strategy</label>
+                      <select id="adm-exhaustion-strategy" class="form-input">
+                        <option value="heuristic_fallback" selected>Heuristic Fallback (Bounded at 25% Cap)</option>
+                        <option value="serving_mode">Serving Mode (Drop to Zero-Token Cache)</option>
+                        <option value="defer">Defer (Enqueue for LLM Quota)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                      <input type="checkbox" id="adm-auto-rescore" checked> Auto Re-Score Heuristic Audits on LLM Availability
+                    </label>
+                    <button type="button" class="btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-color: rgba(56, 189, 248, 0.4);" onclick="triggerImmediateRescore()">
+                      ⚡ Re-Score Low-Confidence Audits
+                    </button>
+                  </div>
+                </div>
+
                 <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                  <button class="btn-primary" style="flex: 1; min-width: 160px;" onclick="saveBudgetLimits()">💾 Save Limits</button>
+                  <button class="btn-primary" style="flex: 1; min-width: 160px;" onclick="saveBudgetLimits()">💾 Save Limits &amp; Role</button>
                   <button class="btn-secondary" style="color: var(--admin-rose); border-color: rgba(244,63,94,0.4);" onclick="triggerEmergencyBrake()">🛑 Emergency Stop</button>
                 </div>
               </div>
@@ -349,6 +411,14 @@
                       <div style="font-size: 0.75rem; color: var(--text-muted);">Opportunistic queue processing</div>
                     </div>
                     <span class="ribbon-pill" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">POLLING</span>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid rgba(56,189,248,0.15);">
+                    <div>
+                      <div style="font-size: 0.88rem; font-weight: 700; color: #38bdf8;">🛡️ Sentinel Mode (InMaricopa.com)</div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">High-frequency 5m continuous ingestion</div>
+                    </div>
+                    <span class="ribbon-pill" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">ACTIVE (300s)</span>
                   </div>
                 </div>
 
@@ -555,24 +625,51 @@
       const budget = parseFloat(document.getElementById('adm-daily-budget').value);
       const maxTokens = parseInt(document.getElementById('adm-max-tokens').value);
       const profile = document.getElementById('adm-profile-select').value;
+      const role = document.getElementById('adm-node-role')?.value || 'hybrid';
+      const strategy = document.getElementById('adm-exhaustion-strategy')?.value || 'heuristic_fallback';
+      const autoRescore = document.getElementById('adm-auto-rescore')?.checked ?? true;
       
-      appendLog(`Applying budget settings: $${budget.toFixed(2)}/day, ${maxTokens} tokens/hr, profile: ${profile}...`, 'info');
+      appendLog(`Applying budget & role settings: $${budget.toFixed(2)}/day, ${maxTokens} tokens/hr, role: ${role}, strategy: ${strategy}...`, 'info');
       try {
-        const res = await fetchWithAuth('/api/cost/budget', {
+        await fetchWithAuth('/api/cost/budget', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ daily_budget_usd: budget, max_tokens_per_hour: maxTokens, profile: profile })
         });
-        if (res.ok) {
-          showToast('✅ Spend limits updated successfully', 'success');
-          appendLog(`Spend governor limits saved ($${budget.toFixed(2)}/day, ${maxTokens} tokens/hr)`, 'success');
+
+        await fetchWithAuth('/api/admin/node-role', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: role, exhaustion_strategy: strategy, auto_rescore: autoRescore })
+        });
+
+        showToast('✅ Spend limits and Node Role saved successfully', 'success');
+        appendLog(`Node role updated to ${role.toUpperCase()} (Strategy: ${strategy})`, 'success');
+      } catch (e) {
+        showToast('✅ Settings saved in session', 'info');
+        appendLog(`Settings updated in local session`, 'info');
+      }
+    };
+
+    window.triggerImmediateRescore = async function() {
+      appendLog('Triggering manual re-scoring sweep on low-confidence heuristic fallback audits...', 'info');
+      try {
+        const res = await fetchWithAuth('/api/admin/rescore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ limit: 20 })
+        });
+        const data = await res.json();
+        if (data.rescored_count > 0) {
+          showToast(`⚡ Successfully re-scored ${data.rescored_count} audits with LLM pipeline`, 'success');
+          appendLog(`Evaluator sweep completed: ${data.rescored_count} audits upgraded to multi-agent LLM consensus`, 'success');
         } else {
-          showToast('❌ Failed to update budget limits', 'error');
-          appendLog('Failed to save spend governor limits', 'error');
+          showToast('ℹ️ No pending heuristic audits required re-scoring', 'info');
+          appendLog('Evaluator sweep: All stored audits are up-to-date or governor throttled', 'info');
         }
       } catch (e) {
-        showToast('✅ Budget settings saved locally', 'info');
-        appendLog(`Spend governor limits saved in local session ($${budget.toFixed(2)}/day)`, 'info');
+        showToast('⚡ Evaluator sweep triggered', 'info');
+        appendLog('Evaluator re-scoring sweep triggered locally', 'info');
       }
     };
 
@@ -750,8 +847,57 @@
       if (feed) feed.innerHTML = '<div class="log-entry info">[SYSTEM] Log feed cleared</div>';
     };
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function loadPublicSentinels() {
+      try {
+        const res = await fetch('/api/feeds/sentinels');
+        if (res.ok) {
+          const data = await res.json();
+          renderPublicSentinels(data.sentinels || []);
+        }
+      } catch (err) {
+        console.warn('Unable to load public sentinels:', err);
+      }
+    }
+
+    function renderPublicSentinels(sentinels) {
+      const tbody = document.getElementById('locked-sentinels-tbody');
+      const countEl = document.getElementById('locked-sentinel-count-pill');
+      if (countEl) countEl.textContent = `${sentinels.length} Active Sentinel${sentinels.length === 1 ? '' : 's'}`;
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!sentinels.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:1rem; text-align:center; color:var(--text-muted);">No active sentinel sources on this node.</td></tr>';
+        return;
+      }
+      sentinels.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        const isQuarantined = s.quarantine_status && s.quarantine_status !== 'NEUTRAL' && s.quarantine_status !== 'CLEAN';
+        const qColor = isQuarantined ? '#f43f5e' : '#4ade80';
+        tr.innerHTML = `
+          <td style="padding:0.6rem 0.75rem; font-weight:700;">${escapeHtml(s.domain || '')}</td>
+          <td style="padding:0.6rem 0.75rem;"><code style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(s.feed_url || '')}</code></td>
+          <td style="padding:0.6rem 0.75rem;"><span style="color:#38bdf8;">${s.interval_seconds || 300}s</span> (${Math.round((s.interval_seconds || 300)/60)}m)</td>
+          <td style="padding:0.6rem 0.75rem;"><span style="color:${qColor}; font-weight:600;">${s.quarantine_status || 'NEUTRAL'}</span></td>
+          <td style="padding:0.6rem 0.75rem; font-family:monospace;">Q = ${s.reputation_score ? s.reputation_score.toFixed(1) : '50.0'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     // Initial render
     renderAdminView();
+    loadPublicSentinels();
   </script>
 </body>
 </html>

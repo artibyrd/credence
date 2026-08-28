@@ -68,14 +68,14 @@ def compute_dci_score(avg_suspicion: float, avg_density: float) -> float:
 
 def determine_trust_band(dci_score: float) -> str:
     """Map Domain Credence Index (DCI) score to standard 5-tier Trust Bands."""
-    if dci_score >= 85.0:
-        return "PRISTINE"
-    if dci_score >= 70.0:
-        return "CLEAN"
-    if dci_score >= 50.0:
-        return "MODERATE"
-    if dci_score >= 30.0:
-        return "SUSPICIOUS"
+    if dci_score >= 90.0:
+        return "HIGH_INTEGRITY"
+    if dci_score >= 80.0:
+        return "RELIABLE"
+    if dci_score >= 65.0:
+        return "MONITORED"
+    if dci_score >= 45.0:
+        return "WATCHLIST"
     return "DECEPTIVE"
 
 

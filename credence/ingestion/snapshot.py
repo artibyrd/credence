@@ -57,12 +57,21 @@ async def capture_webpage_fastpath(
     if force_playwright or is_local_file:
         return await capture_webpage(url, output_dir=output_dir, save_artifacts=save_artifacts, timeout_ms=timeout_ms)
 
-    # 1. Fast-Path HTTP GET via Trafilatura
+    # 1. Fast-Path HTTP GET via Safe Async Client
     raw_html: Optional[str] = None
     try:
-        import trafilatura
+        from credence.ingestion.security import create_safe_async_client
 
-        raw_html = await asyncio.to_thread(trafilatura.fetch_url, clean_url)
+        async with create_safe_async_client(
+            timeout=10.0,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 (Credence/2.0)",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+        ) as client:
+            resp = await client.get(clean_url)
+            if resp.status_code == 200:
+                raw_html = resp.text
     except Exception:
         raw_html = None
 
@@ -77,7 +86,8 @@ async def capture_webpage_fastpath(
             dom_path: Optional[str] = None
             if save_artifacts:
                 storage = get_blob_storage()
-                cas_key = f"cas/sha256/{content_hash}.html"
+                clean_hex = content_hash.removeprefix("sha256:")
+                cas_key = f"cas/sha256/{clean_hex}.html"
                 dom_path = await storage.put_blob(
                     cas_key, raw_html.encode("utf-8"), content_type="text/plain; charset=utf-8"
                 )

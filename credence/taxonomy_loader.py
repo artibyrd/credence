@@ -13,7 +13,7 @@ import hashlib
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import yaml
 from pydantic import BaseModel, Field, field_validator
@@ -132,25 +132,108 @@ class TaxonomyRegistry:
 
     def get_catalog(self, catalog_id: str) -> Optional[TaxonomyCatalog]:
         """Retrieve a loaded catalog by catalog_id."""
+        if not self.catalogs:
+            self.load_all()
         return self.catalogs.get(catalog_id)
 
     def get_rule(self, rule_id_or_uri: str) -> Optional[TaxonomyRule]:
         """Lookup a rule by either its short rule_id (e.g. SPJ-1.1) or full namespaced URI."""
+        if not self.catalogs:
+            self.load_all()
         if rule_id_or_uri in self.rules_by_uri:
             return self.rules_by_uri[rule_id_or_uri]
         return self.rules_by_id.get(rule_id_or_uri)
 
     def list_catalogs(self) -> List[TaxonomyCatalog]:
         """Return list of all registered catalogs."""
+        if not self.catalogs:
+            self.load_all()
         return list(self.catalogs.values())
 
     def list_rules(self) -> List[TaxonomyRule]:
         """Return list of all registered rules."""
+        if not self.catalogs:
+            self.load_all()
         return list(self.rules_by_uri.values())
 
     def get_catalog_hashes(self) -> Dict[str, str]:
         """Return dictionary of {catalog_id: catalog_hash} for mesh attestation exchange."""
+        if not self.catalogs:
+            self.load_all()
         return {cat_id: cat.catalog_hash or "" for cat_id, cat in self.catalogs.items()}
+
+    def get_composite_catalog_hash(self) -> str:
+        """Compute deterministic SHA-256 root hash over all loaded catalogs in canonical order."""
+        if not self.catalogs:
+            self.load_all()
+        sorted_items = sorted(self.catalogs.items(), key=lambda x: x[0])
+        payload = {cat_id: cat.catalog_hash or "" for cat_id, cat in sorted_items}
+        canonical_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        hasher = hashlib.sha256(canonical_json.encode("utf-8"))
+        return f"sha256:{hasher.hexdigest()}"
+
+    def get_granular_evaluation_clusters(self, max_rules_per_cluster: int = 6) -> List[TaxonomyCluster]:
+        """Return bounded semantic clusters across all registered catalogs (<= max_rules_per_cluster)."""
+        if not self.catalogs:
+            self.load_all()
+        clusters: List[TaxonomyCluster] = []
+        for cat in sorted(self.catalogs.values(), key=lambda c: c.catalog_id):
+            for cluster in cat.clusters:
+                if len(cluster.rules) <= max_rules_per_cluster:
+                    clusters.append(cluster)
+                else:
+                    for i in range(0, len(cluster.rules), max_rules_per_cluster):
+                        sub_rules = cluster.rules[i : i + max_rules_per_cluster]
+                        sub_id = f"{cluster.cluster_id}_P{(i // max_rules_per_cluster) + 1}"
+                        sub_name = f"{cluster.name} (Part {(i // max_rules_per_cluster) + 1})"
+                        clusters.append(
+                            TaxonomyCluster(
+                                cluster_id=sub_id,
+                                name=sub_name,
+                                description=cluster.description,
+                                rules=sub_rules,
+                            )
+                        )
+        return clusters
+
+    def get_catalog_deltas(self, previous_taxonomies: Dict[str, str]) -> List[TaxonomyCluster]:
+        """Identify clusters belonging to new or modified catalogs relative to previous audit state."""
+        if not self.catalogs:
+            self.load_all()
+        delta_clusters: List[TaxonomyCluster] = []
+        for cat_id, cat in self.catalogs.items():
+            prev_hash = previous_taxonomies.get(cat_id)
+            if prev_hash != cat.catalog_hash:
+                delta_clusters.extend(cat.clusters)
+        return delta_clusters
+
+    def is_audit_stale(
+        self, audit_taxonomies: Dict[str, str], audit_root_hash: Optional[str] = None
+    ) -> Tuple[bool, List[str]]:
+        """Check if an audit was performed under an outdated taxonomy state, returning delta reasons."""
+        if not self.catalogs:
+            self.load_all()
+        reasons: List[str] = []
+        current_root = self.get_composite_catalog_hash()
+
+        if audit_root_hash and audit_root_hash != current_root:
+            audit_short = audit_root_hash[:16]
+            curr_short = current_root[:16]
+            reasons.append(f"Root hash mismatch: audit={audit_short}... vs current={curr_short}...")
+        elif not audit_root_hash:
+            reasons.append("Audit missing taxonomy root hash (legacy evaluation)")
+
+        for cat_id, cat in self.catalogs.items():
+            prev_hash = audit_taxonomies.get(cat_id)
+            if prev_hash is None:
+                reasons.append(f"New catalog added: '{cat_id}' (v{cat.version})")
+            elif prev_hash != cat.catalog_hash:
+                prev_short = prev_hash[:16]
+                curr_short = (cat.catalog_hash or "")[:16]
+                reasons.append(f"Catalog '{cat_id}' updated: was {prev_short}..., now {curr_short}...")
+
+        is_stale = len(reasons) > 0
+        return is_stale, reasons
 
     def generate_prompt_checklist(self, catalog_id: str) -> str:
         """Generate a clean, structured text checklist of rules for LLM subagent prompts."""

@@ -248,3 +248,25 @@ ignite burst="3":
 [group('core: engine')]
 experiment task="shadow-audit" *args="": (preflight "poetry")
     poetry run python -m credence.experiments.{{replace(task, "-", "_")}} {{args}}
+
+# Routinely audit InMaricopa feed articles and contribute signed attestations to remote node
+[group('core: cluster')]
+audit-inmaricopa node="https://credence-dev-865363499314.us-central1.run.app" limit="10": (preflight "poetry")
+    poetry run credence mesh audit-feed https://inmaricopa.com/feed/ --node {{node}} --limit {{limit}}
+
+# Execute forensic audit on a target URL with driver selection
+[group('core: engine')]
+audit url driver="auto" force="false": (preflight "poetry")
+    poetry run python scripts/scheduled_sentinel_audit.py {{url}} {{if force == "true" { "--force" } else { "" }}} --driver {{driver}}
+
+# Check staleness and re-audit stale articles across feeds or URLs
+[group('core: engine')]
+audit-stale *urls: (preflight "poetry")
+    poetry run python scripts/scheduled_sentinel_audit.py {{urls}}
+
+# Execute scheduled Sentinel batch audit across configured publication feeds
+[group('core: engine')]
+sentinel-audit *urls: (preflight "poetry")
+    poetry run python scripts/scheduled_sentinel_audit.py {{urls}}
+
+

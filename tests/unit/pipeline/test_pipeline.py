@@ -5,14 +5,109 @@ from pathlib import Path
 import pytest
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from credence.ingestion.extractor import ExtractedContent
 from credence.ingestion.snapshot import capture_webpage
 from credence.pipeline.evaluator import audit_url, evaluate_snapshot
+from credence.pipeline.heuristics import heuristic_evaluate_content
 from credence.pipeline.subagents import (
     parse_satire_response,
     parse_specialist_response,
     validate_grounded_quote,
 )
 from credence.taxonomy_loader import TaxonomyRegistry
+
+
+@pytest.mark.unit
+def test_heuristic_anonymous_byline_detection(test_registry: TaxonomyRegistry) -> None:
+    """Verify generic/anonymous staff bylines trigger SPJ-4.1."""
+    extracted = ExtractedContent(
+        url="https://example.com/article",
+        title="Local Road Construction Update",
+        byline="InMaricopa Staff",
+        clean_text="Road construction began on SR 347 today and will continue through Friday.",
+        word_count=50,
+    )
+    violations = heuristic_evaluate_content(extracted, "<html></html>", reg=test_registry)
+    byline_violations = [v for v in violations if v.rule_id == "SPJ-4.1"]
+    assert len(byline_violations) >= 1
+    assert "InMaricopa Staff" in byline_violations[0].quote_or_element
+
+
+@pytest.mark.unit
+def test_heuristic_advertising_byline_detection(test_registry: TaxonomyRegistry) -> None:
+    """Verify advertising/sponsored bylines trigger SPJ-3.2."""
+    extracted = ExtractedContent(
+        url="https://example.com/article",
+        title="A New Option for Laser Therapy",
+        byline="InMaricopa Advertising Staff",
+        clean_text="Advanced laser therapy is now available in town for all residents.",
+        word_count=40,
+    )
+    violations = heuristic_evaluate_content(extracted, "<html></html>", reg=test_registry)
+    ad_violations = [v for v in violations if v.rule_id == "SPJ-3.2"]
+    assert len(ad_violations) >= 1
+
+
+@pytest.mark.unit
+def test_heuristic_police_blotter_detection(test_registry: TaxonomyRegistry) -> None:
+    """Verify uncorroborated single-source police blotter reports trigger SPJ-1.3."""
+    extracted = ExtractedContent(
+        url="https://example.com/article",
+        title="Suspect Arrested in Store Collision",
+        byline="Jane Doe, Senior Reporter",
+        clean_text="A local driver was arrested after police say he told officers that substance use caused the accident.",
+        word_count=60,
+    )
+    violations = heuristic_evaluate_content(extracted, "<html></html>", reg=test_registry)
+    blotter_violations = [v for v in violations if v.rule_id == "SPJ-1.3"]
+    assert len(blotter_violations) >= 1
+    assert "police say" in blotter_violations[0].quote_or_element.lower()
+
+
+@pytest.mark.unit
+def test_heuristic_commercial_cta_detection(test_registry: TaxonomyRegistry) -> None:
+    """Verify direct embedded phone solicitations trigger SPJ-3.2."""
+    extracted = ExtractedContent(
+        url="https://example.com/article",
+        title="AC Maintenance Tips",
+        byline="Jane Doe, Senior Reporter",
+        clean_text="Homeowners needing prompt service can call 520-555-0199 to schedule service today.",
+        word_count=60,
+    )
+    violations = heuristic_evaluate_content(extracted, "<html></html>", reg=test_registry)
+    cta_violations = [v for v in violations if v.rule_id == "SPJ-3.2"]
+    assert len(cta_violations) >= 1
+    assert "520-555-0199" in cta_violations[0].quote_or_element
+
+
+@pytest.mark.unit
+def test_heuristic_native_advertorial_detection(test_registry: TaxonomyRegistry) -> None:
+    """Verify promotional advertorial cues trigger DP-1.1."""
+    extracted = ExtractedContent(
+        url="https://example.com/article",
+        title="Summer Wellness Guide",
+        byline="Jane Doe, Senior Reporter",
+        clean_text="Readers interested in special treatments can book a consultation to receive a custom plan.",
+        word_count=60,
+    )
+    violations = heuristic_evaluate_content(extracted, "<html></html>", reg=test_registry)
+    dec_violations = [v for v in violations if v.rule_id == "DP-1.1"]
+    assert len(dec_violations) >= 1
+    assert "book a consultation" in dec_violations[0].quote_or_element.lower()
+
+
+@pytest.mark.unit
+def test_heuristic_clean_article_zero_violations(test_registry: TaxonomyRegistry) -> None:
+    """Verify authentic, sourced news with proper byline generates zero spurious violations."""
+    extracted = ExtractedContent(
+        url="https://example.com/article",
+        title="City Council Approves Annual Parks Budget",
+        byline="Monica Spencer, Associate Editor",
+        clean_text="The Maricopa City Council on Tuesday unanimously approved the municipal parks operating budget following two public hearings.",
+        word_count=100,
+    )
+    violations = heuristic_evaluate_content(extracted, "<html></html>", reg=test_registry)
+    assert len(violations) == 0
 
 
 @pytest.mark.unit

@@ -107,3 +107,80 @@ async def api_cost_resume(request: Any) -> Any:
     state_store = get_state_store()
     await state_store.release_emergency_brake()
     return JSONResponse({"status": "resumed", "circuit_breaker_tripped": False})
+
+
+async def api_node_role_config(request: Any) -> Any:
+    """REST API: Query or dynamically configure node operational role and exhaustion strategy."""
+    from credence.config import ExhaustionStrategy, NodeRole, settings
+
+    if request.method == "POST":
+        if not bool(_check_admin_auth(request)):
+            return JSONResponse({"error": "Unauthorized: Administrator Bearer token required"}, status_code=401)
+
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
+
+        if "role" in body:
+            try:
+                settings.CREDENCE_NODE_ROLE = NodeRole(str(body["role"]).lower())
+            except ValueError:
+                return JSONResponse(
+                    {"error": f"Invalid role. Must be one of: {[r.value for r in NodeRole]}"}, status_code=400
+                )
+
+        if "exhaustion_strategy" in body:
+            try:
+                settings.CREDENCE_EXHAUSTION_STRATEGY = ExhaustionStrategy(str(body["exhaustion_strategy"]).lower())
+            except ValueError:
+                return JSONResponse(
+                    {"error": f"Invalid exhaustion strategy. Must be one of: {[e.value for e in ExhaustionStrategy]}"},
+                    status_code=400,
+                )
+
+        if "auto_rescore" in body:
+            settings.CREDENCE_AUTO_RESCORE_HEURISTICS = bool(body["auto_rescore"])
+
+    return JSONResponse(
+        {
+            "node_role": settings.CREDENCE_NODE_ROLE.value,
+            "exhaustion_strategy": settings.CREDENCE_EXHAUSTION_STRATEGY.value,
+            "auto_rescore_heuristics": settings.CREDENCE_AUTO_RESCORE_HEURISTICS,
+            "heuristic_engine_version": settings.HEURISTIC_ENGINE_VERSION,
+            "heuristic_max_confidence_ceiling": settings.HEURISTIC_MAX_CONFIDENCE_CEILING,
+        }
+    )
+
+
+async def api_trigger_rescore(request: Any) -> Any:
+    """REST API: Trigger an immediate manual re-scoring sweep of heuristic fallback audits."""
+    from credence.pipeline.rescore import rescore_heuristic_audits
+
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse({"error": "Unauthorized: Administrator Bearer token required"}, status_code=401)
+
+    try:
+        body = await request.json() if request.method == "POST" else {}
+    except Exception:
+        body = {}
+
+    limit = int(body.get("limit", 20))
+    await init_db()
+    async with get_async_session() as session:
+        rescored = await rescore_heuristic_audits(session, limit=limit, force=True)
+        return JSONResponse(
+            {
+                "status": "completed",
+                "rescored_count": len(rescored),
+                "reports": [
+                    {
+                        "url": r.url,
+                        "suspicion_score": r.suspicion_score,
+                        "evaluation_method": r.evaluation_method,
+                        "violations_count": len(r.violations),
+                    }
+                    for r in rescored
+                ],
+            }
+        )

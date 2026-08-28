@@ -90,6 +90,66 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
             await conn.exec_driver_sql("PRAGMA synchronous=NORMAL;")
             await conn.exec_driver_sql("PRAGMA busy_timeout=5000;")
 
+            # Ensure sentinel columns exist on feedsubscription table
+            try:
+                res_sub = await conn.exec_driver_sql("PRAGMA table_info(feedsubscription);")
+                cols_sub = [row[1] for row in res_sub.fetchall()]
+                if cols_sub:
+                    if "is_sentinel" not in cols_sub:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE feedsubscription ADD COLUMN is_sentinel BOOLEAN DEFAULT 0;"
+                        )
+                    if "sentinel_interval_seconds" not in cols_sub:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE feedsubscription ADD COLUMN sentinel_interval_seconds INTEGER DEFAULT 300;"
+                        )
+            except Exception:
+                pass
+
+            # Ensure sentinel columns exist on domainreputation table
+            try:
+                res_rep = await conn.exec_driver_sql("PRAGMA table_info(domainreputation);")
+                cols_rep = [row[1] for row in res_rep.fetchall()]
+                if cols_rep and "is_sentinel" not in cols_rep:
+                    await conn.exec_driver_sql("ALTER TABLE domainreputation ADD COLUMN is_sentinel BOOLEAN DEFAULT 0;")
+            except Exception:
+                pass
+
+            # Ensure audit table has evaluation_model, taxonomy_root_hash, and sourcing_ratios_json
+            try:
+                res_aud = await conn.exec_driver_sql("PRAGMA table_info(audit);")
+                cols_aud = [row[1] for row in res_aud.fetchall()]
+                if cols_aud:
+                    if "evaluation_model" not in cols_aud:
+                        await conn.exec_driver_sql("ALTER TABLE audit ADD COLUMN evaluation_model VARCHAR;")
+                    if "taxonomy_root_hash" not in cols_aud:
+                        await conn.exec_driver_sql("ALTER TABLE audit ADD COLUMN taxonomy_root_hash VARCHAR;")
+                    if "sourcing_ratios_json" not in cols_aud:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE audit ADD COLUMN sourcing_ratios_json VARCHAR DEFAULT '{}';"
+                        )
+            except Exception:
+                pass
+
+            # Prune duplicate legacy audit rows, retaining only the latest canonical audit per URL
+            try:
+                await conn.exec_driver_sql(
+                    """
+                    DELETE FROM audit WHERE id IN (
+                        SELECT a.id FROM audit a
+                        JOIN snapshot s ON a.snapshot_id = s.id
+                        WHERE s.url IS NOT NULL AND a.id NOT IN (
+                            SELECT MAX(a2.id) FROM audit a2
+                            JOIN snapshot s2 ON a2.snapshot_id = s2.id
+                            GROUP BY s2.url
+                        )
+                    );
+                    """
+                )
+                await conn.exec_driver_sql("DELETE FROM snapshot WHERE id NOT IN (SELECT snapshot_id FROM audit);")
+            except Exception:
+                pass
+
 
 async def init_db(engine: AsyncEngine | None = None) -> None:
     """Initialize database schemas, apply performance pragmas, and run v1->v2 migrations.

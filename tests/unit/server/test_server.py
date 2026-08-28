@@ -34,6 +34,8 @@ async def test_fastmcp_server_initialization() -> None:
     assert "credence_remove_feed_subscription" in tool_names
     assert "credence_get_feed_stats" in tool_names
     assert "credence_get_health_status" in tool_names
+    assert "credence_set_feed_sentinel_mode" in tool_names
+    assert "credence_list_sentinel_sources" in tool_names
 
     resources = await server.list_resources()
     resource_uris = [r.uri for r in resources]
@@ -439,3 +441,25 @@ async def test_fastmcp_health_tool_and_resource() -> None:
     tool_data = json.loads(tool_res.content[0].text)
     assert "status" in tool_data
     assert "uptime_seconds" in tool_data
+
+
+@pytest.mark.unit
+async def test_fastmcp_sentinel_tools() -> None:
+    """Verify FastMCP credence_set_feed_sentinel_mode and credence_list_sentinel_sources tools."""
+    server = create_mcp_server()
+
+    # 1. Enable sentinel mode via FastMCP tool
+    set_res: Any = await server.call_tool(
+        "credence_set_feed_sentinel_mode",
+        arguments={"target": "https://inmaricopa.com/feed/", "enabled": True, "interval_seconds": 300},
+    )
+    assert set_res is not None
+    set_data = json.loads(set_res.content[0].text)
+    assert set_data["is_sentinel"] is True
+    assert set_data["domain"] == "inmaricopa.com"
+
+    # 2. List sentinel sources via FastMCP tool
+    list_res: Any = await server.call_tool("credence_list_sentinel_sources", arguments={})
+    assert list_res is not None
+    list_data = json.loads(list_res.content[0].text)
+    assert any(s["domain"] == "inmaricopa.com" for s in list_data)

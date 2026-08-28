@@ -43,7 +43,7 @@
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.4</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.18.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -132,6 +132,7 @@
             </div>
             <div id="density-index" class="density-badge">Density: -- / 1,000 words</div>
             <div id="eval-method-badge" class="method-badge">Evaluated via LLM Multi-Agent Pipeline &bull; 95% Confidence</div>
+            <div id="heuristic-advisory-banner" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; font-size: 0.78rem; color: #f59e0b; line-height: 1.4;"></div>
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -1262,22 +1263,28 @@ City council members expressed optimism regarding the new administration's forei
         report.violations = report.findings;
       }
 
-      // Derive title if empty
-      const displayTitle = report.title || (function() {
-        if (report.url) {
-          const matchCorpus = dynamicCorpus.find(c => c && (c.url === report.url || c.content_sha256 === report.content_sha256));
-          if (matchCorpus && matchCorpus.title) return matchCorpus.title;
-          const matchMock = GENESIS_AUDIT_REGISTRY.find(c => c && (c.url === report.url || c.content_sha256 === report.content_sha256));
-          if (matchMock && matchMock.title) return matchMock.title;
+      // Derive title if empty or raw mesh submission
+      let rawT = report.title || "";
+      const displayTitle = (function() {
+        if (rawT && !rawT.startsWith("Mesh Submission:") && !rawT.startsWith("http://") && !rawT.startsWith("https://") && rawT !== "Epistemic Audit Report" && rawT !== "Audited Article") {
+          return rawT;
+        }
+        if (report.url || rawT) {
+          const target = (rawT && rawT.startsWith("Mesh Submission:") ? rawT.replace(/^Mesh Submission:\s*/, "") : (report.url || ""));
+          const matchCorpus = dynamicCorpus.find(c => c && (c.url === target || c.url === report.url || c.content_sha256 === report.content_sha256));
+          if (matchCorpus && matchCorpus.title && !matchCorpus.title.startsWith("Mesh Submission:")) return matchCorpus.title;
+          const matchMock = GENESIS_AUDIT_REGISTRY.find(c => c && (c.url === target || c.url === report.url || c.content_sha256 === report.content_sha256));
+          if (matchMock && matchMock.title && !matchMock.title.startsWith("Mesh Submission:")) return matchMock.title;
           try {
-            const u = new URL(report.url);
+            const u = new URL(target.startsWith("http") ? target : `https://${target}`);
             const slug = u.pathname.replace(/^\/|\/$/g, '').split('/').pop();
-            if (slug && slug.length > 3) {
-              return slug.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            if (slug && slug.length > 2) {
+              const cleanSlug = slug.replace(/\.[a-zA-Z0-9]+$/, "");
+              return decodeURIComponent(cleanSlug).replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             }
           } catch (_) {}
         }
-        return "Epistemic Audit Report";
+        return rawT && !rawT.startsWith("Mesh Submission:") ? rawT : "Epistemic Audit Report";
       })();
       report.title = displayTitle;
 
@@ -1333,6 +1340,16 @@ City council members expressed optimism regarding the new administration's forei
 
       document.getElementById("density-index").textContent = `Density: ${density.toFixed(1)} / 1k words`;
       document.getElementById("eval-method-badge").textContent = `Evaluated via ${report.evaluation_method || 'LLM Multi-Agent Pipeline'} • ${Math.round(conf * 100)}% Confidence`;
+
+      const advisoryBanner = document.getElementById("heuristic-advisory-banner");
+      if (advisoryBanner) {
+        if (report.evaluation_method && report.evaluation_method.includes("offline_structural_heuristic")) {
+          advisoryBanner.style.display = "block";
+          advisoryBanner.innerHTML = "⚠️ <strong>Offline Structural Heuristic Engine (v1.1.0)</strong>: Confidence bounded at 25% max. Extracted quotes are grounded verbatim (<em>G=1.00</em>) against source DOM. Deep multi-agent LLM evaluations provide complete 42-rule taxonomy depth.";
+        } else {
+          advisoryBanner.style.display = "none";
+        }
+      }
 
       // Executive Briefing Generation
       generateExecutiveSummary(report);
@@ -1861,7 +1878,7 @@ ${summaryContent}
         const synthProfile = {
           domain: cleanDom,
           dci_score: Math.max(0, 100.0 - avgSusp),
-          trust_band: avgSusp <= 15 ? "HIGH_INTEGRITY" : (avgSusp <= 40 ? "RELIABLE" : (avgSusp <= 60 ? "MIXED" : "POOR")),
+          trust_band: avgSusp <= 10 ? "HIGH_INTEGRITY" : (avgSusp <= 20 ? "RELIABLE" : (avgSusp <= 35 ? "MONITORED" : (avgSusp <= 55 ? "WATCHLIST" : "DECEPTIVE"))),
           avg_suspicion: avgSusp,
           avg_violation_density: matching.reduce((acc, m) => acc + (m.suspicion_density || 0), 0) / matching.length,
           confidence_score: 0.95,

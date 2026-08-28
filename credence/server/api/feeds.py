@@ -80,6 +80,7 @@ async def api_feeds_stream(request: Any) -> Any:
                     "feed_url": sub.feed_url if sub else "",
                     "subject": item.subject_id,
                     "processing_status": item.processing_status,
+                    "is_sentinel": bool(sub.is_sentinel if sub else False),
                     "published_at": item.published_at.isoformat() if item.published_at else None,
                     "discovered_at": item.discovered_at.isoformat() if item.discovered_at else None,
                 }
@@ -218,3 +219,55 @@ async def api_boredom_status(request: Any) -> Any:
             }
         )
     return JSONResponse({"status": "unavailable"}, status_code=500)
+
+
+async def api_feeds_sentinels(request: Any) -> Any:
+    """REST API: Retrieve all active Sentinel sources."""
+    from credence.feeds.sentinel import list_sentinel_sources
+
+    await init_db()
+    async with get_async_session() as session:
+        sentinels = await list_sentinel_sources(session)
+        return JSONResponse({"sentinels": sentinels, "count": len(sentinels)})
+
+
+async def api_feeds_sentinel_toggle(request: Any) -> Any:
+    """REST API: Enable or disable Sentinel Mode on a target feed (Admin Gated)."""
+    if not bool(_check_admin_auth(request)):
+        return JSONResponse(
+            {"error": "Unauthorized: Administrator authentication required to configure Sentinel Mode"},
+            status_code=401,
+        )
+
+    from credence.feeds.sentinel import set_feed_sentinel_mode
+
+    try:
+        if request.method == "POST":
+            data = await request.json()
+        else:
+            data = request.query_params
+
+        target = data.get("target") or data.get("feed_url")
+        if not target:
+            return JSONResponse({"error": "Missing required 'target' or 'feed_url' parameter"}, status_code=400)
+
+        enabled = data.get("enabled", True)
+        if isinstance(enabled, str):
+            enabled = enabled.lower() in ("true", "1", "yes")
+
+        interval = int(data.get("interval_seconds", 300))
+
+        await init_db()
+        async with get_async_session() as session:
+            result = await set_feed_sentinel_mode(
+                session=session,
+                target=target,
+                enabled=enabled,
+                interval_seconds=interval,
+            )
+            return JSONResponse(result)
+    except ValueError as err:
+        return JSONResponse({"error": str(err)}, status_code=400)
+    except Exception as err:
+        logger.error(f"Error toggling Sentinel Mode: {err}")
+        return JSONResponse({"error": f"Internal error: {err}"}, status_code=500)

@@ -25,26 +25,10 @@ def heuristic_evaluate_content(
     """Offline heuristic rule evaluator used for hermetic testing and fallback analysis."""
     active_reg = reg or registry
     violations: List[SpecialistViolationFinding] = []
-    text_lower = extracted.clean_text.lower()
+    full_text = f"{extracted.title or ''}\nBy {extracted.byline or ''}\n{extracted.clean_text}"
+    text_lower = full_text.lower()
 
-    if not extracted.byline and "antivirus" not in text_lower and "urgent" not in text_lower:
-        rule = active_reg.get_rule("SPJ-4.1")
-        if rule:
-            violations.append(
-                SpecialistViolationFinding(
-                    rule_id="SPJ-4.1",
-                    rule_uri=rule.namespaced_uri or "journalistic-ethics:be-accountable/SPJ-4.1@v1.0.0",
-                    domain="JOURNALISTIC_ETHICS",
-                    cluster_id="BE_ACCOUNTABLE_AND_TRANSPARENT",
-                    severity=rule.severity,
-                    confidence=0.9,
-                    quote_or_element=extracted.title or "Page Header",
-                    reasoning="Article completely lacks author byline or publisher identification.",
-                    is_grounded=True,
-                )
-            )
-
-    violations.extend(check_deceptive_heuristics(text_lower, raw_html, active_reg))
+    violations.extend(check_deceptive_heuristics(extracted, raw_html, active_reg))
     violations.extend(check_fallacy_heuristics(text_lower, active_reg))
     violations.extend(check_spj_heuristics(extracted, raw_html, active_reg))
 

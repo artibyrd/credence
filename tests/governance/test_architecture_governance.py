@@ -81,3 +81,36 @@ def test_workstation_viewport_vertical_bounds_invariant() -> None:
     assert "ws-scroll-pane" in report_html, "Missing .ws-scroll-pane container in credence.report/index.html"
     assert "overflow-y: auto" in report_html or "overflow-y:auto" in report_html
     assert "ws-table-container" in report_html, "Missing .ws-table-container in credence.report/index.html"
+
+
+@pytest.mark.unit
+def test_zero_hardcoded_tenant_domains_in_core_engine() -> None:
+    """Verify inv-sovereign-config-decoupling: core engine contains zero hardcoded tenant domains."""
+    core_dirs = [
+        SRC_ROOT / "db.py",
+        SRC_ROOT / "models.py",
+        SRC_ROOT / "feeds" / "sentinel.py",
+        SRC_ROOT / "server",
+        SRC_ROOT / "pipeline",
+    ]
+    # Proprietary case study / test domains that must NOT be hardcoded as core logic
+    forbidden_strings = ["inmaricopa.com", "inmaricopa"]
+    violations = []
+
+    for path in core_dirs:
+        if path.is_file():
+            files = [path]
+        elif path.is_dir():
+            files = list(path.rglob("*.py"))
+        else:
+            continue
+
+        for py_file in files:
+            content = py_file.read_text(encoding="utf-8")
+            for forbidden in forbidden_strings:
+                if forbidden in content:
+                    violations.append((str(py_file.relative_to(REPO_ROOT)), forbidden))
+
+    assert not violations, (
+        f"inv-sovereign-config-decoupling violation: Core engine source files must not contain hardcoded tenant domains: {violations}"
+    )

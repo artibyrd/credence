@@ -181,7 +181,7 @@
 <body>
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.4</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.18.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -473,6 +473,38 @@
                     <summary style="padding:0.15rem 0; user-select:none;">🔍 Raw ITLP-v1 Envelope</summary>
                     <pre style="background:var(--bg-code, #030712); border:1px solid var(--border); padding:0.4rem; border-radius:4px; margin-top:0.35rem; overflow-x:auto; max-height:120px;"><code id="telemetry-json" style="color:var(--accent-cyan); font-size:0.72rem;">{}</code></pre>
                   </details>
+                </div>
+              </div>
+
+              <!-- Card 5: Public Sentinel Surveillance Registry -->
+              <div class="deck-card" style="grid-column: 1 / -1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <h3 style="font-size:1.05rem; color:#fff; margin:0;">🛡️ Active Node Sentinel Sources (Public Surveillance Disclosure)</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('sifter')" title="Info: Sentinel Ingestion & Sifter">ℹ</button>
+                  </div>
+                  <span class="ribbon-pill ready" style="font-size:0.75rem;" id="nexus-sentinel-count-pill">0 Active Sentinels</span>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:0.75rem; line-height:1.5;">
+                  Under our <strong>Universal Epistemic Disclosure Invariant</strong>, node configuration changes are operator-gated, but all active prioritized Sentinel feeds on this node are publicly disclosed to prevent covert narrative manipulation or cherry-picking.
+                </p>
+                <div style="overflow-x:auto;">
+                  <table style="width:100%; border-collapse:collapse; font-size:0.85rem; color:#f1f5f9;">
+                    <thead>
+                      <tr style="background:#060911; color:var(--accent-cyan); border-bottom:1px solid var(--border);">
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Domain / Publisher</th>
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Target Feed URL</th>
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Tier</th>
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Polling Interval</th>
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Quarantine Status</th>
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Reputation</th>
+                        <th style="padding:0.5rem 0.75rem; text-align:left;">Last Polled</th>
+                      </tr>
+                    </thead>
+                    <tbody id="nexus-sentinels-tbody">
+                      <tr><td colspan="7" style="padding:1rem; text-align:center; color:var(--text-dim);">No active sentinel sources on this node.</td></tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1093,19 +1125,25 @@
       let meshData = null;
       let nodeStats = null;
       let meritData = null;
+      let sentinelsData = null;
 
       try {
-        const [resMesh, resStats, resMerit] = await Promise.all([
+        const [resMesh, resStats, resMerit, resSentinels] = await Promise.all([
           fetch('/api/mesh/health').catch(() => null),
           fetch('/api/node/stats').catch(() => null),
-          fetch('/api/merit').catch(() => null)
+          fetch('/api/merit').catch(() => null),
+          fetch('/api/feeds/sentinels').catch(() => null)
         ]);
         if (resMesh && resMesh.ok) meshData = await resMesh.json();
         if (resStats && resStats.ok) nodeStats = await resStats.json();
         if (resMerit && resMerit.ok) meritData = await resMerit.json();
+        if (resSentinels && resSentinels.ok) sentinelsData = await resSentinels.json();
       } catch (e) {}
 
       liveNodeMerit = meritData;
+      if (sentinelsData && sentinelsData.sentinels) {
+        renderNexusSentinels(sentinelsData.sentinels);
+      }
 
 
       if (!meshData) {
@@ -1971,6 +2009,44 @@
       updateBadgeStudioPreview();
     }
 
+
+    function renderNexusSentinels(sentinels) {
+      const tbody = document.getElementById('nexus-sentinels-tbody');
+      const countEl = document.getElementById('nexus-sentinel-count-pill');
+      if (countEl) countEl.textContent = `${sentinels.length} Active Sentinel${sentinels.length === 1 ? '' : 's'}`;
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (!sentinels.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:1rem; text-align:center; color:var(--text-dim);">No active sentinel sources on this node.</td></tr>';
+        return;
+      }
+      sentinels.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border)';
+        const isQuarantined = s.quarantine_status && s.quarantine_status !== 'NEUTRAL' && s.quarantine_status !== 'CLEAN';
+        const qColor = isQuarantined ? 'var(--accent-red, #f43f5e)' : 'var(--accent-green, #4ade80)';
+        tr.innerHTML = `
+          <td style="padding:0.5rem 0.75rem;"><strong style="color:#fff;">${escapeHtml(s.domain || '')}</strong></td>
+          <td style="padding:0.5rem 0.75rem;"><code style="font-size:0.75rem; color:var(--text-dim);">${escapeHtml(s.feed_url || '')}</code></td>
+          <td style="padding:0.5rem 0.75rem;"><span class="ribbon-pill" style="color:var(--accent-cyan);">Tier ${s.priority_tier || 1}</span></td>
+          <td style="padding:0.5rem 0.75rem;"><strong style="color:var(--accent-cyan);">${s.interval_seconds || 300}s</strong> (${Math.round((s.interval_seconds || 300)/60)}m)</td>
+          <td style="padding:0.5rem 0.75rem;"><span style="color:${qColor}; font-weight:600;">${s.quarantine_status || 'NEUTRAL'}</span></td>
+          <td style="padding:0.5rem 0.75rem; font-family:var(--font-mono);">Q = ${s.reputation_score ? s.reputation_score.toFixed(1) : '50.0'}</td>
+          <td style="padding:0.5rem 0.75rem; font-size:0.75rem; color:var(--text-dim);">${s.last_polled_at ? new Date(s.last_polled_at).toLocaleTimeString() : 'Pending'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
     function handleNexusRouting() {
       const hash = (window.location.hash || '').replace(/^#/, '').trim();

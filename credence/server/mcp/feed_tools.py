@@ -81,6 +81,8 @@ def _register_feed_management_tools(server: MCPServer) -> None:
         priority_tier: int = 2,
         subject_tag: str = "journalism.news",
         is_satire: bool = False,
+        is_sentinel: bool = False,
+        sentinel_interval_seconds: int = 300,
     ) -> str:
         from credence.models import FeedSubscription
 
@@ -92,10 +94,19 @@ def _register_feed_management_tools(server: MCPServer) -> None:
                 priority_tier=priority_tier,
                 subject_tag=subject_tag,
                 is_satire=is_satire,
+                is_sentinel=is_sentinel,
+                sentinel_interval_seconds=sentinel_interval_seconds,
             )
             session.add(sub)
             await session.commit()
-            return json.dumps({"status": "success", "feed_url": feed_url, "priority_tier": priority_tier})
+            return json.dumps(
+                {
+                    "status": "success",
+                    "feed_url": feed_url,
+                    "priority_tier": priority_tier,
+                    "is_sentinel": is_sentinel,
+                }
+            )
         return "{}"
 
     @server.tool(
@@ -120,6 +131,8 @@ def _register_feed_management_tools(server: MCPServer) -> None:
                         "subject_tag": s.subject_tag,
                         "is_active": s.is_active,
                         "is_satire": s.is_satire,
+                        "is_sentinel": s.is_sentinel,
+                        "sentinel_interval_seconds": s.sentinel_interval_seconds,
                         "etag": s.etag,
                         "last_polled_at": s.last_polled_at.isoformat() if s.last_polled_at else None,
                     }
@@ -127,6 +140,44 @@ def _register_feed_management_tools(server: MCPServer) -> None:
                 ],
                 indent=2,
             )
+        return "[]"
+
+    @server.tool(
+        name="credence_set_feed_sentinel_mode",
+        description="Enable or disable Sentinel Mode on a target feed or domain for prioritized high-frequency scanning.",
+    )
+    async def set_feed_sentinel_mode_tool(
+        target: str,
+        enabled: bool = True,
+        interval_seconds: int = 300,
+    ) -> str:
+        from credence.feeds.sentinel import set_feed_sentinel_mode
+
+        await init_db()
+        async with get_async_session() as session:
+            try:
+                res = await set_feed_sentinel_mode(
+                    session=session,
+                    target=target,
+                    enabled=enabled,
+                    interval_seconds=interval_seconds,
+                )
+                return json.dumps(res, indent=2)
+            except Exception as e:
+                return json.dumps({"error": str(e)}, indent=2)
+        return "{}"
+
+    @server.tool(
+        name="credence_list_sentinel_sources",
+        description="List all active Sentinel sources and their high-frequency polling telemetry.",
+    )
+    async def list_sentinel_sources_tool() -> str:
+        from credence.feeds.sentinel import list_sentinel_sources
+
+        await init_db()
+        async with get_async_session() as session:
+            sentinels = await list_sentinel_sources(session)
+            return json.dumps(sentinels, indent=2)
         return "[]"
 
     @server.tool(

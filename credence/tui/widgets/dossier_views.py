@@ -95,8 +95,8 @@ PUBLISHER_PRESETS: List[Dict[str, Any]] = [
         "stability": "0.684",
     },
     {
-        "domain": "inmaricopa.com",
-        "title": "InMaricopa Local News",
+        "domain": "metro-gazette-local.org",
+        "title": "Metro Gazette Local",
         "tier": "PROVEN HOAX FABRICATION",
         "color": "#f43f5e",
         "dci": "12.4",

@@ -6,7 +6,7 @@ Architecture: Modular Textual Workstation (<320 LOC).
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
@@ -26,94 +26,10 @@ from credence.config import settings
 from credence.db import init_db
 from credence.tui.screens.audit_dialog import AuditInputDialog
 from credence.tui.screens.info_modal import InfoModalScreen
-from credence.tui.widgets.audit_views import format_exec_summary, format_score_banner
+from credence.tui.widgets.audit_views import SAMPLE_AUDIT_PRESETS, format_exec_summary, format_score_banner
 from credence.tui.widgets.dossier_views import PUBLISHER_PRESETS, format_publisher_dossier
+from credence.tui.widgets.feeds_views import format_feed_sentinel_panel
 from credence.tui.widgets.taxonomy_tree import populate_subjects_tree, populate_taxonomy_tree
-
-SAMPLE_AUDIT_PRESETS: List[Dict[str, Any]] = [
-    {
-        "url": "https://reuters.com/world/energy/clean-grid-transition-2026",
-        "title": "Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports",
-        "suspicion_score": 0.0,
-        "classification": "CLEAN",
-        "confidence_score": 0.98,
-        "suspicion_density": 0.0,
-        "is_satire": False,
-        "content_sha256": "sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
-        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
-        "simhash_hex": "4a8f9c1e2b3d4f50",
-        "executive_summary": "Rigorous empirical wire reporting on international clean energy capacity additions. All statistical figures are explicitly attributed to the International Energy Agency.",
-        "violations": [],
-    },
-    {
-        "url": "https://theonion.com/science/astronomers-confirm-universe-expanding-into-neighboring-yard",
-        "title": "Astronomers Confirm Universe Expanding Entirely Into Neighboring Yard",
-        "suspicion_score": 0.0,
-        "classification": "SATIRE_PROTECTED",
-        "confidence_score": 1.0,
-        "suspicion_density": 0.0,
-        "is_satire": True,
-        "content_sha256": "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
-        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
-        "simhash_hex": "1020304050607080",
-        "executive_summary": "Legitimate hyperbolic satire. Qualifies fully for Poe's Law Safe Harbor with zero defamatory claims.",
-        "violations": [],
-    },
-    {
-        "url": "https://dailycaller.com/2026/02/14/secret-subsidies-electric-vehicles-mandate",
-        "title": "Secret Bureaucrats Funnel Subsidies to Preferred EV Firms",
-        "suspicion_score": 68.4,
-        "classification": "SUSPICIOUS",
-        "confidence_score": 0.89,
-        "suspicion_density": 3.42,
-        "is_satire": False,
-        "content_sha256": "sha256:3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c",
-        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
-        "simhash_hex": "feedfacecafebabe",
-        "executive_summary": "Elevated astroturfing and selective omission. Anonymous assertions of secret subsidies without supporting documentary links.",
-        "violations": [
-            {
-                "rule_id": "SPJ-1.3",
-                "severity": 3,
-                "reasoning": "Damaging assertions attributed to unnamed 'senior insiders' without independent corroboration.",
-                "grounded_quote": "according to senior insiders who spoke on condition of anonymity",
-            },
-            {
-                "rule_id": "IEP-2.4",
-                "severity": 4,
-                "reasoning": "Cherry-picked quarterly grant data while omitting broader competitive bidding figures.",
-                "grounded_quote": "grants were awarded to select favored manufacturers during the spring cycle",
-            },
-        ],
-    },
-    {
-        "url": "https://inmaricopa.com/breaking/miracle-supplement-cures-all-chronic-illness",
-        "title": "Local Clinic Discovers 100% Miracle Cure for Chronic Illness",
-        "suspicion_score": 96.2,
-        "classification": "PROVEN_HOAX",
-        "confidence_score": 0.99,
-        "suspicion_density": 8.15,
-        "is_satire": False,
-        "content_sha256": "sha256:9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e",
-        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
-        "simhash_hex": "deadbeefdeadbeef",
-        "executive_summary": "Critical deceptive fabrication. Fabricates medical trial data and masks commercial sales behind fake clinical breakthroughs.",
-        "violations": [
-            {
-                "rule_id": "SPJ-1.6",
-                "severity": 5,
-                "reasoning": "Malicious health disinformation claiming an unapproved compound cures all illness.",
-                "grounded_quote": "guaranteed 100% cure rate with zero clinical side effects in local patient trials",
-            },
-            {
-                "rule_id": "DEC-3.1",
-                "severity": 5,
-                "reasoning": "Fake system warnings simulating medical authority endorsements.",
-                "grounded_quote": "official health advisory: all citizens urged to claim allocation immediately",
-            },
-        ],
-    },
-]
 
 
 class CredenceApp(App):
@@ -148,6 +64,10 @@ class CredenceApp(App):
     #leaderboard_right { width: 50%; height: 1fr; }
     #leaderboard_table { height: 1fr; border: solid #1e293b; background: #111b2f; }
     #merit_panel { padding: 1; border: round #38bdf8; background: #111b2f; height: 1fr; }
+    #feeds_split { height: 1fr; }
+    #feeds_left { width: 55%; height: 1fr; margin-right: 1; }
+    #feeds_right { width: 45%; height: 1fr; }
+    #feed_sentinel_panel { padding: 1; border: round #38bdf8; background: #111b2f; height: 1fr; }
     #header_status_pill { dock: top; height: auto; padding: 0 1; background: #111b2f; border-bottom: solid #38bdf8; text-align: center; text-style: bold; color: #4ade80; }
     #ops_panel { padding: 1; border: round #38bdf8; margin: 1; background: #111b2f; }
     #mesh_panel { padding: 1; border: round #38bdf8; margin: 1; background: #111b2f; }
@@ -160,6 +80,7 @@ class CredenceApp(App):
         ("slash", "open_audit_dialog", "Audit URL"),
         ("r", "random_audit", "Surprise Me"),
         ("v", "cycle_lens_mode", "Epistemic Lens"),
+        ("t", "toggle_selected_sentinel", "Toggle Sentinel"),
         ("question_mark", "open_info_modal", "Info / Bible"),
         ("i", "open_info_modal", "Info / Bible"),
         ("1", "switch_to_inspector", "Inspector"),
@@ -184,6 +105,7 @@ class CredenceApp(App):
         self._current_item: Any = SAMPLE_AUDIT_PRESETS[0]
         self._current_violations: List[Any] = SAMPLE_AUDIT_PRESETS[0]["violations"]
         self._sample_index: int = 0
+        self._live_feeds: List[Any] = []
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -217,7 +139,13 @@ class CredenceApp(App):
                 yield Tree("Subject Consensus Registries", id="subjects_tree")
 
             with TabPane("4. Feeds", id="tab_feeds"):
-                yield DataTable(id="feeds_table")
+                with Horizontal(id="feeds_split"):
+                    with Vertical(id="feeds_left"):
+                        yield DataTable(id="feeds_table")
+                    with Vertical(id="feeds_right"):
+                        yield Static(
+                            "Select a feed to inspect or press 't' to toggle Sentinel Mode.", id="feed_sentinel_panel"
+                        )
 
             with TabPane("5. Dossiers", id="tab_leaderboard"):
                 with Horizontal(id="leaderboard_split"):
@@ -255,7 +183,8 @@ class CredenceApp(App):
         viol_table.cursor_type = "row"
 
         feeds_table = self.query_one("#feeds_table", DataTable)
-        feeds_table.add_columns("Feed URL", "Status", "Last Polled")
+        feeds_table.add_columns("Sentinel", "Feed Title / Source", "Tier", "Cadence", "Status")
+        feeds_table.cursor_type = "row"
 
         leaderboard_table = self.query_one("#leaderboard_table", DataTable)
         leaderboard_table.add_columns("Publisher", "DCI", "Trust Tier")
@@ -268,19 +197,21 @@ class CredenceApp(App):
         self._render_current_item()
 
     async def action_refresh_data(self) -> None:
-        """Refresh audit history, leaderboards, ops, and mesh vitals from live SQLite."""
+        """Refresh audit history, leaderboards, feeds, ops, and mesh vitals from live SQLite."""
         from sqlmodel import col, select
 
         from credence.db import get_async_session
         from credence.mesh.stats import compute_mesh_stats
         from credence.mesh.topology import compute_network_mesh_health
-        from credence.models import Audit, Snapshot, Violation
+        from credence.models import Audit, FeedSubscription, Snapshot, Violation
         from credence.subjects.analytics import get_domain_leaderboard
 
         hist_table = self.query_one("#history_table", DataTable)
         hist_table.clear()
         leaderboard_table = self.query_one("#leaderboard_table", DataTable)
         leaderboard_table.clear()
+        feeds_table = self.query_one("#feeds_table", DataTable)
+        feeds_table.clear()
 
         async with get_async_session() as s:
             # 1. Live Audit history
@@ -346,7 +277,37 @@ class CredenceApp(App):
                     leaderboard_table.add_row(pub["domain"], pub["dci"], pub["tier"])
                 self.query_one("#merit_panel", Static).update(format_publisher_dossier(PUBLISHER_PRESETS[0]["domain"]))
 
-            # 3. Live Mesh & Ops Health
+            # 3. Live Feeds & Sentinel Subscriptions
+            stmt_f = select(FeedSubscription).order_by(
+                col(FeedSubscription.is_sentinel).desc(), col(FeedSubscription.priority_tier).asc()
+            )
+            all_feeds = (await s.exec(stmt_f)).all()
+            self._live_feeds = list(all_feeds)
+            for f in all_feeds:
+                tag = f"🛡️ SENTINEL ({f.sentinel_interval_seconds}s)" if f.is_sentinel else "STANDARD"
+                feeds_table.add_row(
+                    tag,
+                    f.title or f.feed_url,
+                    f"T{f.priority_tier}",
+                    f"{f.sentinel_interval_seconds}s",
+                    "ACTIVE" if f.is_active else "PAUSED",
+                )
+            if all_feeds:
+                ff = all_feeds[0]
+                self.query_one("#feed_sentinel_panel", Static).update(
+                    format_feed_sentinel_panel(
+                        {
+                            "title": ff.title,
+                            "feed_url": ff.feed_url,
+                            "is_sentinel": ff.is_sentinel,
+                            "interval_seconds": ff.sentinel_interval_seconds,
+                            "priority_tier": ff.priority_tier,
+                            "last_polled_at": ff.last_polled_at.isoformat() if ff.last_polled_at else None,
+                        }
+                    )
+                )
+
+            # 4. Live Mesh & Ops Health
             mesh_health = await compute_network_mesh_health(s)
             mesh_stats = await compute_mesh_stats(s)
 
@@ -382,7 +343,7 @@ class CredenceApp(App):
             viol_table.add_row(rule_id, str(severity), reasoning[:30] + "...")
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Handle row selections in history, violations, or leaderboard tables."""
+        """Handle row selections in history, violations, leaderboard, or feeds tables."""
         if event.data_table.id == "history_table":
             idx = event.cursor_row
             if 0 <= idx < len(SAMPLE_AUDIT_PRESETS):
@@ -395,6 +356,22 @@ class CredenceApp(App):
                 self.query_one("#merit_panel", Static).update(
                     format_publisher_dossier(PUBLISHER_PRESETS[idx]["domain"])
                 )
+        elif event.data_table.id == "feeds_table":
+            idx = event.cursor_row
+            if hasattr(self, "_live_feeds") and 0 <= idx < len(self._live_feeds):
+                f = self._live_feeds[idx]
+                self.query_one("#feed_sentinel_panel", Static).update(
+                    format_feed_sentinel_panel(
+                        {
+                            "title": f.title,
+                            "feed_url": f.feed_url,
+                            "is_sentinel": f.is_sentinel,
+                            "interval_seconds": f.sentinel_interval_seconds,
+                            "priority_tier": f.priority_tier,
+                            "last_polled_at": f.last_polled_at.isoformat() if f.last_polled_at else None,
+                        }
+                    )
+                )
         elif event.data_table.id == "violations_table":
             idx = event.cursor_row
             if 0 <= idx < len(self._current_violations):
@@ -403,6 +380,37 @@ class CredenceApp(App):
                 reasoning = v.get("reasoning", "") if isinstance(v, dict) else getattr(v, "reasoning", "")
                 detail = f'[bold cyan]Reasoning:[/bold cyan] {reasoning}\n\n[bold green]Verbatim Citation (G=1.00):[/bold green]\n"{quote}"'
                 self.query_one("#detail_text", Static).update(detail)
+
+    async def action_toggle_selected_sentinel(self) -> None:
+        """Toggle Sentinel Mode on the currently highlighted feed."""
+        feeds_table = self.query_one("#feeds_table", DataTable)
+        idx = feeds_table.cursor_row
+        if hasattr(self, "_live_feeds") and 0 <= idx < len(self._live_feeds):
+            target_sub = self._live_feeds[idx]
+            new_state = not target_sub.is_sentinel
+            from credence.db import get_async_session
+            from credence.feeds.sentinel import set_feed_sentinel_mode
+
+            async with get_async_session() as s:
+                try:
+                    res = await set_feed_sentinel_mode(s, target_sub.feed_url, enabled=new_state)
+                    mode_label = "Enabled (300s cadence)" if new_state else "Disabled"
+                    self.notify(f"🛡️ Sentinel Mode {mode_label} for {res['domain']}")
+                except Exception as e:
+                    self.notify(f"Sentinel Error: {e}", severity="error")
+            await self.action_refresh_data()
+
+    async def action_trigger_sifter_pass(self) -> None:
+        """Trigger on-demand background sifter pass."""
+        from credence.db import get_async_session
+        from credence.feeds.sifter import run_sifting_cycle
+
+        async with get_async_session() as s:
+            summary = await run_sifting_cycle(s)
+            self.notify(
+                f"Sifter: Discovered {summary.new_items_discovered}, audited {summary.items_evaluated_locally}."
+            )
+        await self.action_refresh_data()
 
     def action_cycle_lens_mode(self) -> None:
         """Cycle through 3-tier epistemic lenses (1 -> 2 -> 3 -> 1)."""

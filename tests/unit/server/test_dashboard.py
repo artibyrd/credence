@@ -5,7 +5,7 @@ Covers:
 - REST API endpoint `GET /api/v1/mesh/stats` & `GET /api/mesh/stats`
 - FastMCP 2.0 tool `credence_get_mesh_stats` & resource `credence://mesh/stats`
 - CLI subcommand `credence stats` with `--breakdown` and `--json`
-- Zero-build web dashboard asset integrity (`web/credence.nexus/dashboard.html`)
+- Zero-build web dashboard asset integrity (`web/credence.nexus/index.html`)
 """
 
 from __future__ import annotations
@@ -201,24 +201,25 @@ def test_cli_stats_json_output(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_dashboard_web_asset_integrity() -> None:
-    """Test dashboard.html exists and obeys zero-npm and WCAG accessibility invariants."""
+    """Test web/credence.nexus/index.html exists and obeys zero-npm, workstation tabs, and WCAG invariants."""
     repo_root = Path(__file__).resolve().parents[3]
-    dashboard_path = repo_root / "web" / "credence.nexus" / "dashboard.html"
-    assert dashboard_path.exists(), f"dashboard.html must exist under {dashboard_path}"
+    nexus_path = repo_root / "web" / "credence.nexus" / "index.html"
+    assert nexus_path.exists(), f"index.html must exist under {nexus_path}"
 
-    content = dashboard_path.read_text(encoding="utf-8")
+    content = nexus_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in content
-    assert "My Credence Node" in content
-    assert "tab-overview" in content
-    assert "tab-sources" in content
-    assert "tab-categories" in content
-    assert "tab-mesh" in content
-    assert "tab-sre" in content
-    assert "mesh.html" in content
+    assert "Credence Nexus" in content
+    assert "tab-topology" in content
+    assert "tab-leaderboard" in content
+    assert "tab-vitals" in content
+    assert "tab-merit" in content
+    assert "tab-studio" in content
+    assert "tab-seeds" in content
+    assert "tab-gossip" in content
 
     # Zero-npm invariant check
-    assert "npm" not in content.lower() or "zero npm" in content.lower() or "zero-npm" in content.lower()
     assert "package.json" not in content
+    assert "node_modules" not in content
 
 
 @pytest.mark.asyncio
@@ -325,17 +326,15 @@ def test_cli_stats_mesh_json_output(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_mesh_html_web_asset_integrity() -> None:
-    """Test mesh.html exists and obeys zero-npm, 5-link nav, and WCAG accessibility invariants."""
+    """Test web/credence.nexus/index.html mesh topology canvas, 5-link nav, and WCAG accessibility invariants."""
     repo_root = Path(__file__).resolve().parents[3]
-    mesh_path = repo_root / "web" / "credence.nexus" / "mesh.html"
-    assert mesh_path.exists(), f"mesh.html must exist under {mesh_path}"
+    nexus_path = repo_root / "web" / "credence.nexus" / "index.html"
+    assert nexus_path.exists(), f"index.html must exist under {nexus_path}"
 
-    content = mesh_path.read_text(encoding="utf-8")
+    content = nexus_path.read_text(encoding="utf-8")
     assert "<!DOCTYPE html>" in content
-    assert "Live Swarm & Peering" in content or "Live P2P Swarm" in content
+    assert "Mesh Topology" in content or "NOC & Mesh Observatory" in content
     assert "mesh-canvas" in content
-    assert "node-inspector" in content
-    assert "btn-playground-launch" in content or "docs.credence.run#docs/playground" in content
 
     # 5 Invariant Links in Header Navbar
     assert "https://credence.run" in content

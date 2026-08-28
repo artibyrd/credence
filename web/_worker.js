@@ -211,7 +211,18 @@ export default {
       // 4. Resolve Domain-Specific Asset Prefix (stripping dev. prefix for asset mapping)
       const cleanHost = host.replace(/^dev\./, '');
       let prefix = 'credence.run';
-      if (cleanHost.startsWith('admin')) {
+      let reqPath = url.pathname;
+
+      if (isDev && (cleanHost === 'credence.run' || cleanHost === 'dev.credence.run')) {
+        if (reqPath === '/admin') {
+          return Response.redirect(`${url.origin}/admin/`, 301);
+        }
+        if (reqPath === '/admin/' || reqPath.startsWith('/admin/')) {
+          prefix = 'admin.credence.run';
+          const sub = reqPath.substring(6);
+          reqPath = sub ? `/${sub}` : '/index.html';
+        }
+      } else if (cleanHost.startsWith('admin')) {
         prefix = 'admin.credence.run';
       } else if (cleanHost.includes('nexus')) {
         prefix = 'credence.nexus';
@@ -221,7 +232,6 @@ export default {
         prefix = 'credence.report';
       }
 
-      let reqPath = url.pathname;
       if (reqPath === '' || reqPath === '/') {
         reqPath = '/index.html';
       }

@@ -268,7 +268,7 @@ async def api_publisher_analytics(request: Any) -> Any:
     domain = request.path_params.get("domain", "") or request.query_params.get("domain", "")
     if not domain:
         return JSONResponse(
-            {"error": "Publisher domain is required, e.g. /api/analytics/publisher/inmaricopa.com"}, status_code=400
+            {"error": "Publisher domain is required, e.g. /api/analytics/publisher/example.com"}, status_code=400
         )
 
     await init_db()

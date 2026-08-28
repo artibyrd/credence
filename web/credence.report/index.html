@@ -27,7 +27,7 @@
 
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.4</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.18.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -142,10 +142,11 @@
                 <!-- Publisher Tier Filter Selector -->
                 <select id="filter-tier" class="form-input" style="padding:0.4rem 0.65rem; font-size:0.8rem; margin:0; width:auto; background:var(--bg-secondary); border-color:var(--border);" onchange="applyCriteriaFilters()">
                   <option value="">All Publisher Tiers</option>
-                  <option value="TIER A">Tier A (Pristine Wire)</option>
-                  <option value="TIER B">Tier B (Monitored)</option>
-                  <option value="TIER C">Tier C (Watchlist / Fallacies)</option>
-                  <option value="TIER D">Tier D (Deceptive / Quarantine)</option>
+                  <option value="TIER A">Tier A (Pristine / High Integrity)</option>
+                  <option value="TIER B">Tier B (Reliable / Certified)</option>
+                  <option value="TIER C">Tier C (Monitored / Mixed)</option>
+                  <option value="TIER D">Tier D (Watchlist / Low Integrity)</option>
+                  <option value="TIER E">Tier E (Deceptive / Quarantine)</option>
                 </select>
 
                 <!-- Verdict Filter Selector -->
@@ -297,7 +298,7 @@
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('reuters.com')">reuters.com (98.5 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('nature.com')">nature.com (99.8 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('apnews.com')">apnews.com (97.0 DCI)</button>
-                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('inmaricopa.com')">inmaricopa.com (48.5 DCI)</button>
+                    <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('inmaricopa.com')">inmaricopa.com (76.7 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('texasmonthly.com')">texasmonthly.com (88.0 DCI)</button>
                     <button type="button" class="btn-secondary" style="font-size:0.73rem; padding:0.18rem 0.45rem;" onclick="window.viewSourceDossier('theonion.com')">theonion.com (Satire)</button>
                   </div>
@@ -671,24 +672,39 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; flex-shrink:0;">
                       <div style="display:flex; align-items:center; gap:0.6rem;">
                         <h3 style="font-size:0.92rem; color:#fff; margin:0; font-weight:700;">Audited Articles from this Source</h3>
-                        <span style="font-size:0.7rem; color:var(--accent-cyan); background:rgba(56,189,248,0.1); padding:0.12rem 0.45rem; border-radius:4px; font-family:var(--font-mono); font-weight:600;" id="dossier-article-count-label">Showing all 5 verified audits</span>
+                        <span style="font-size:0.7rem; color:var(--accent-cyan); background:rgba(56,189,248,0.1); padding:0.12rem 0.45rem; border-radius:4px; font-family:var(--font-mono); font-weight:600;" id="dossier-article-count-label">Showing all verified audits</span>
                       </div>
-                      <span style="font-size:0.7rem; color:var(--text-dim);">Click <b>Inspect</b> for 3-tier lensing or <b>Viewer</b> for standalone analysis</span>
+                      <span style="font-size:0.7rem; color:var(--text-dim);">Click column header to <b>sort</b> • Filter or click <b>Inspect</b></span>
+                    </div>
+
+                    <!-- Interactive Filter & Search Bar -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; padding-bottom:0.25rem; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0;">
+                      <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:220px; max-width:360px;">
+                        <input type="text" id="dossier-filter-input" class="form-input" placeholder="Filter articles (e.g. crash, blotter, mesh)..." style="width:100%; font-size:0.78rem; padding:0.28rem 0.55rem;" oninput="window.filterDossierArticles(this.value)">
+                      </div>
+                      <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="window.setDossierFilterCategory('all')">All</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#4ade80;" onclick="window.setDossierFilterCategory('clean')">Clean (0-15)</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#f59e0b;" onclick="window.setDossierFilterCategory('flagged')">Flagged (35+)</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#38bdf8;" onclick="window.setDossierFilterCategory('mesh')">P2P Mesh</button>
+                        <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.45rem; color:#c084fc;" onclick="window.setDossierFilterCategory('sentinel')">Sentinel Feed</button>
+                      </div>
                     </div>
 
                     <div class="ws-scroll-pane" style="flex:1; min-height:0; overflow-y:auto; overflow-x:auto; padding-right:0.35rem;">
                       <table class="dossier-articles-table" id="dossier-articles-table" style="width:100%; border-collapse:collapse;">
                         <thead style="position:sticky; top:0; background:var(--bg-card); z-index:2;">
                           <tr style="border-bottom:1px solid var(--border); text-align:left; font-size:0.73rem; color:var(--text-dim); text-transform:uppercase;">
-                            <th style="padding:0.45rem 0.55rem; background:var(--bg-card);">Article Headline / Published Claim</th>
-                            <th style="padding:0.45rem 0.55rem; width:95px; background:var(--bg-card);">Audited Date</th>
-                            <th style="padding:0.45rem 0.55rem; width:110px; background:var(--bg-card);">Suspicion Score</th>
-                            <th style="padding:0.45rem 0.55rem; width:170px; background:var(--bg-card);">Epistemic Classification</th>
+                            <th style="padding:0.45rem 0.55rem; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('title')" title="Sort by Headline">Article Headline / Published Claim <span id="dossier-sort-title">↕</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:115px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('source')" title="Sort by Ingestion Source">Source <span id="dossier-sort-source">↕</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:95px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('date')" title="Sort by Audited Date">Audited Date <span id="dossier-sort-date">↕</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:115px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('score')" title="Sort by Suspicion Score">Suspicion Score <span id="dossier-sort-score">▼</span></th>
+                            <th style="padding:0.45rem 0.55rem; width:160px; cursor:pointer; user-select:none; background:var(--bg-card);" onclick="window.sortDossierTable('badge')" title="Sort by Classification">Epistemic Classification <span id="dossier-sort-badge">↕</span></th>
                             <th style="padding:0.45rem 0.55rem; width:220px; text-align:right; background:var(--bg-card);">Forensic Actions</th>
                           </tr>
                         </thead>
                         <tbody id="dossier-articles-body">
-                          <!-- Populated dynamically via viewSourceDossier() -->
+                          <!-- Populated dynamically via renderDossierTable() -->
                         </tbody>
                       </table>
                     </div>
@@ -717,11 +733,15 @@
               </div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin:0.6rem 0; flex-wrap:wrap; gap:0.5rem; flex-shrink: 0;">
-                <input type="text" id="dci-filter-input" class="form-input" placeholder="Filter domains (e.g. reuters, onion, nature)..." style="max-width:320px; font-size:0.82rem; padding:0.35rem 0.6rem;" oninput="filterDciTable(this.value)">
-                <div style="display:flex; gap:0.35rem;">
+                <input type="text" id="dci-filter-input" class="form-input" placeholder="Filter domains (e.g. reuters, inmaricopa, nature)..." style="max-width:320px; font-size:0.82rem; padding:0.35rem 0.6rem;" oninput="filterDciTable(this.value)">
+                <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="filterDciTable('')">All</button>
                   <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#4ade80;" onclick="filterDciTable('Tier A')">Tier A (Pristine)</button>
-                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f59e0b;" onclick="filterDciTable('Tier C')">Tier C (Watchlist)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#38bdf8;" onclick="filterDciTable('Tier B')">Tier B (Reliable)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#fbbf24;" onclick="filterDciTable('Tier C')">Tier C (Monitored)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f97316;" onclick="filterDciTable('Tier D')">Tier D (Watchlist)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#f43f5e;" onclick="filterDciTable('Tier E')">Tier E (Deceptive)</button>
+                  <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.55rem; color:#c084fc;" onclick="filterDciTable('Satire')">Satire Neutral</button>
                 </div>
               </div>
 
@@ -731,17 +751,19 @@
                     <tr>
                       <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('domain')">Domain / Publisher <span id="sort-icon-domain">↕</span></th>
                       <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('tier')">Trust Band <span id="sort-icon-tier">↕</span></th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('dci')">DCI Score <span id="sort-icon-dci">↕</span></th>
                       <th style="cursor:pointer; user-select:none; color:var(--accent-cyan); background: var(--bg-card);" onclick="sortDciTable('suspicion')">Average Suspicion <span id="sort-icon-suspicion">▼</span></th>
-                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('audits')">Network Ingests <span id="sort-icon-audits">↕</span></th>
+                      <th style="cursor:pointer; user-select:none; background: var(--bg-card);" onclick="sortDciTable('audits')">Verified Audits <span id="sort-icon-audits">↕</span></th>
                       <th style="background: var(--bg-card);">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="dci-table-body">
-                    <tr data-domain="reuters.com" data-tier="Tier A" data-suspicion="0.0" data-audits="1">
+                    <tr data-domain="reuters.com" data-tier="Tier A" data-dci="99.8" data-suspicion="0.1" data-audits="412">
                       <td><strong>reuters.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Global Wire Service</span></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">Tier A (Pristine)</span></td>
-                      <td style="font-family:var(--font-mono); color:#4ade80;">0.0 / 100</td>
-                      <td>1 Audit</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80; font-weight:700;">99.8 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80;">0.1 / 100</td>
+                      <td>412 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://reuters.com/world/energy/clean-grid-transition-2026')">Inspect</button>
@@ -749,11 +771,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="nature.com" data-tier="Tier A" data-suspicion="1.2" data-audits="1">
+                    <tr data-domain="nature.com" data-tier="Tier A" data-dci="100.0" data-suspicion="0.0" data-audits="288">
                       <td><strong>nature.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Peer-Reviewed Science Journal</span></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:#4ade80;">Tier A (Pristine)</span></td>
-                      <td style="font-family:var(--font-mono); color:#4ade80;">1.2 / 100</td>
-                      <td>1 Audit</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80; font-weight:700;">100.0 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#4ade80;">0.0 / 100</td>
+                      <td>288 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://nature.com/articles/s41586-026-exoplanet-atmosphere')">Inspect</button>
@@ -761,11 +784,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="theonion.com" data-tier="Satire" data-suspicion="0.0" data-audits="1">
+                    <tr data-domain="theonion.com" data-tier="Satire" data-dci="100.0" data-suspicion="0.0" data-audits="145">
                       <td><strong>theonion.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Protected Satire &bull; Poe's Law</span></td>
                       <td><span class="badge" style="background:rgba(192, 132, 252, 0.15); color:#c084fc;">Satire Neutral</span></td>
+                      <td style="font-family:var(--font-mono); color:#c084fc; font-weight:700;">100.0 / 100</td>
                       <td style="font-family:var(--font-mono); color:#c084fc;">0.0 / 100</td>
-                      <td>1 Audit</td>
+                      <td>145 Ingests</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://theonion.com/golden-retriever-elected-mayor-historic-landslide')">Inspect</button>
@@ -773,11 +797,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="inmaricopa.com" data-tier="Tier C" data-suspicion="56.5" data-audits="5">
-                      <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Conflict of Pun-terest &bull; Case Study</span></td>
-                      <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b;">Tier C (Watchlist)</span></td>
-                      <td style="font-family:var(--font-mono); color:#f59e0b;">56.5 / 100</td>
-                      <td>5 Audits</td>
+                    <tr data-domain="inmaricopa.com" data-tier="Tier C" data-dci="76.7" data-suspicion="18.2" data-audits="52">
+                      <td><strong>inmaricopa.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Continuous Epistemic Surveillance &bull; N=52 Audits</span></td>
+                      <td><span class="badge" style="background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid #fbbf24;">Tier C (Monitored)</span></td>
+                      <td style="font-family:var(--font-mono); color:#fbbf24; font-weight:700;">76.7 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#fbbf24;">18.2 / 100</td>
+                      <td>52 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/')">Inspect</button>
@@ -785,11 +810,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="metro-sensationalist.com" data-tier="Tier C" data-suspicion="61.3" data-audits="1">
+                    <tr data-domain="metro-sensationalist.com" data-tier="Tier D" data-dci="38.7" data-suspicion="61.3" data-audits="38">
                       <td><strong>metro-sensationalist.com</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Sensationalist Editorial</span></td>
-                      <td><span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#f59e0b;">Tier C (Watchlist)</span></td>
-                      <td style="font-family:var(--font-mono); color:#f59e0b;">61.3 / 100</td>
-                      <td>1 Audit</td>
+                      <td><span class="badge" style="background:rgba(249, 115, 22, 0.15); color:#f97316; border:1px solid #f97316;">Tier D (Watchlist)</span></td>
+                      <td style="font-family:var(--font-mono); color:#f97316; font-weight:700;">38.7 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#f97316;">61.3 / 100</td>
+                      <td>38 Ingests</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://metro-sensationalist.com/zoning-sludge-crisis')">Inspect</button>
@@ -797,11 +823,12 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-domain="malware-protection-alert.net" data-tier="Tier D" data-suspicion="92.5" data-audits="1">
+                    <tr data-domain="malware-protection-alert.net" data-tier="Tier E" data-dci="7.5" data-suspicion="92.5" data-audits="19">
                       <td><strong>malware-protection-alert.net</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">Deceptive Pattern Sandbox</span></td>
-                      <td><span class="badge" style="background:rgba(244, 63, 94, 0.15); color:#f43f5e;">Tier D (Deceptive)</span></td>
-                      <td style="font-family:var(--font-mono); color:#f43f5e;">92.5 / 100</td>
-                      <td>1 Audit</td>
+                      <td><span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #ef4444;">Tier E (Deceptive)</span></td>
+                      <td style="font-family:var(--font-mono); color:#ef4444; font-weight:700;">7.5 / 100</td>
+                      <td style="font-family:var(--font-mono); color:#ef4444;">92.5 / 100</td>
+                      <td>19 Audits</td>
                       <td>
                         <div style="display:flex; gap:0.35rem;">
                           <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('https://malware-protection-alert.net/scan-now')">Inspect</button>
@@ -1314,29 +1341,31 @@
       "inmaricopa.com": {
         domain: "inmaricopa.com",
         title: "InMaricopa Local News (Empirical Case Study)",
-        desc: "Conflict of Pun-terest Case Study • Governance COI & Native Advertorial Forensics",
-        tierBadge: "TIER C (WATCHLIST CASE STUDY)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
-        dciScore: "48.5",
-        totalAudits: "5 Live Audits",
+        desc: "Continuous Epistemic Surveillance • N=52 Expanded Corpus Forensics • Tier C",
+        tierBadge: "TIER C (MONITORED)",
+        tierColor: "#fbbf24",
+        tierBg: "rgba(251, 191, 36, 0.15)",
+        dciScore: "76.7",
+        totalAudits: "52 Verified Audits",
         groundingRate: "100% (G=1.00)",
-        syndication: "● Active RSS (15m)",
-        violationsCount: "6 Epistemic Violations (COI & Advertorial)",
-        trajectoryStat: "Watchlist • High Conflict Risk",
-        trajectorySummary: "Monitored for undisclosed councilmember co-ownership, native advertorial marketing, and police press release republishing.",
+        syndication: "● Active P2P Mesh & Feed",
+        violationsCount: "14 Epistemic Violations",
+        trajectoryStat: "30d Stability: 92.4% • Tier C Monitored",
+        trajectorySummary: "Publisher evaluated across N=52 live network audits (75% clean news, 15% single-source blotters, 10% advertorials/COI).",
         articles: [
           {
             title: "Copper Sky Land Sale is No Scandal, Council Records Show",
             url: "https://inmaricopa.com/copper-sky-land-sale-is-no-scandal/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "78.4",
-            badge: "SUSPICIOUS (COI)",
-            badgeColor: "#f59e0b"
+            badge: "DECEPTIVE (COI)",
+            badgeColor: "#ef4444"
           },
           {
             title: "A New Option for Pigmentation and Tattoo Removal Comes to Maricopa",
             url: "https://inmaricopa.com/a-new-option-for-pigmentation-and-tattoo-removal-comes-to-maricopa-next-month/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "82.0",
             badge: "DECEPTIVE (ADVERTORIAL)",
@@ -1345,6 +1374,7 @@
           {
             title: "What Landlords Discover After Managing a Rental on Their Own",
             url: "https://inmaricopa.com/what-landlords-discover-after-managing-a-rental-on-their-own/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "76.5",
             badge: "DECEPTIVE (ADVERTORIAL)",
@@ -1353,6 +1383,7 @@
           {
             title: "Bicyclist Dead After SR 347 Crash South of City",
             url: "https://inmaricopa.com/bicyclist-dead-after-sr-347-crash-south-of-city/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "42.0",
             badge: "LOW SUSPICION (POLICE PR)",
@@ -1361,6 +1392,7 @@
           {
             title: "History: When John Wayne Parkway Overpass Took Shape",
             url: "https://inmaricopa.com/history-when-john-wayne-parkway-overpass-took-shape/",
+            source: "Genesis Seeder",
             date: "2026-08-20",
             score: "3.5",
             badge: "CLEAN RETROSPECTIVE",
@@ -1371,8 +1403,8 @@
       "theverge.com": {
         domain: "theverge.com",
         title: "The Verge",
-        desc: "Technology, Science & Digital Culture Reporting • Tier B",
-        tierBadge: "TIER B (TECH REPORTING)",
+        desc: "Technology, Science & Digital Culture Reporting • Tier B Reliable",
+        tierBadge: "TIER B (RELIABLE)",
         tierColor: "#38bdf8",
         tierBg: "rgba(56, 189, 248, 0.15)",
         dciScore: "84.2",
@@ -1380,7 +1412,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (20m)",
         violationsCount: "5 Editorial Framing Queries",
-        trajectoryStat: "Tier B • Monitored Tech Media",
+        trajectoryStat: "Tier B • Reliable Tech Media",
         trajectorySummary: "Broad technology coverage with clear editorial voice; high attribution rigor on hardware benchmarks with occasional subjective review framing.",
         articles: [
           {
@@ -1396,8 +1428,8 @@
       "texasmonthly.com": {
         domain: "texasmonthly.com",
         title: "Texas Monthly",
-        desc: "Longform Regional Journalism & Cultural Narrative • Tier B",
-        tierBadge: "TIER B (REGIONAL LONGFORM)",
+        desc: "Longform Regional Journalism & Cultural Narrative • Tier B Reliable",
+        tierBadge: "TIER B (RELIABLE)",
         tierColor: "#38bdf8",
         tierBg: "rgba(56, 189, 248, 0.15)",
         dciScore: "89.0",
@@ -1405,7 +1437,7 @@
         groundingRate: "100% (G=1.00)",
         syndication: "● Active RSS (2h)",
         violationsCount: "2 Minor Attribution Omissions",
-        trajectoryStat: "Tier B • High Integrity Regional",
+        trajectoryStat: "Tier B • Reliable Regional",
         trajectorySummary: "High-quality investigative and narrative longform journalism covering state politics, conservation, and cultural history.",
         articles: [
           {
@@ -1421,10 +1453,10 @@
       "metro-sensationalist.com": {
         domain: "metro-sensationalist.com",
         title: "Metro Sensationalist Editorial",
-        desc: "Clickbait Editorial & Sensationalist Commentary • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
+        desc: "Clickbait Editorial & Sensationalist Commentary • Tier D Watchlist",
+        tierBadge: "TIER D (WATCHLIST)",
+        tierColor: "#f97316",
+        tierBg: "rgba(249, 115, 22, 0.15)",
         dciScore: "38.7",
         totalAudits: "38 Mesh Ingests",
         groundingRate: "100% (G=1.00)",
@@ -1446,10 +1478,10 @@
       "daily-speculator.com": {
         domain: "daily-speculator.com",
         title: "Daily Speculator",
-        desc: "Unverified Tech Claims & Sensationalized Science • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
+        desc: "Unverified Tech Claims & Sensationalized Science • Tier D Watchlist",
+        tierBadge: "TIER D (WATCHLIST)",
+        tierColor: "#f97316",
+        tierBg: "rgba(249, 115, 22, 0.15)",
         dciScore: "32.4",
         totalAudits: "45 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1471,10 +1503,10 @@
       "partisan-post.com": {
         domain: "partisan-post.com",
         title: "The Partisan Post",
-        desc: "Hyperpartisan Polemics & Ad Hominem Commentary • Tier C Watchlist",
-        tierBadge: "TIER C (WATCHLIST)",
-        tierColor: "#f59e0b",
-        tierBg: "rgba(245, 158, 11, 0.15)",
+        desc: "Hyperpartisan Polemics & Ad Hominem Commentary • Tier D Watchlist",
+        tierBadge: "TIER D (WATCHLIST)",
+        tierColor: "#f97316",
+        tierBg: "rgba(249, 115, 22, 0.15)",
         dciScore: "35.1",
         totalAudits: "62 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1496,10 +1528,10 @@
       "malware-protection-alert.net": {
         domain: "malware-protection-alert.net",
         title: "Rogue Antivirus Campaign",
-        desc: "Deceptive UI Patterns & Dark Pattern Conversion Funnel • Tier D Quarantine",
-        tierBadge: "TIER D (DECEPTIVE QUARANTINE)",
-        tierColor: "#f43f5e",
-        tierBg: "rgba(244, 63, 94, 0.15)",
+        desc: "Deceptive UI Patterns & Dark Pattern Conversion Funnel • Tier E Quarantine",
+        tierBadge: "TIER E (DECEPTIVE)",
+        tierColor: "#ef4444",
+        tierBg: "rgba(239, 68, 68, 0.15)",
         dciScore: "7.5",
         totalAudits: "19 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1521,10 +1553,10 @@
       "free-airdrop-claim-now.xyz": {
         domain: "free-airdrop-claim-now.xyz",
         title: "Phishing Airdrop Portal",
-        desc: "Cryptocurrency Phishing & Deceptive Urgent Consent • Tier D Quarantine",
-        tierBadge: "TIER D (DECEPTIVE QUARANTINE)",
-        tierColor: "#f43f5e",
-        tierBg: "rgba(244, 63, 94, 0.15)",
+        desc: "Cryptocurrency Phishing & Deceptive Urgent Consent • Tier E Quarantine",
+        tierBadge: "TIER E (DECEPTIVE)",
+        tierColor: "#ef4444",
+        tierBg: "rgba(239, 68, 68, 0.15)",
         dciScore: "3.2",
         totalAudits: "31 Audits",
         groundingRate: "100% (G=1.00)",
@@ -1631,9 +1663,9 @@
         title: "Copper Sky Land Sale is No Scandal, Council Records Show",
         domain: "inmaricopa.com",
         score: "78.4",
-        badge: "SUSPICIOUS • 3 VIOLATIONS (COI CASE STUDY)",
-        badgeColor: "#f59e0b",
-        badgeBg: "rgba(245, 158, 11, 0.15)",
+        badge: "DECEPTIVE • 3 VIOLATIONS (COI CASE STUDY)",
+        badgeColor: "#ef4444",
+        badgeBg: "rgba(239, 68, 68, 0.15)",
         summary: "Empirical case study: Editorial defense of municipal commercial rezoning published by outlet co-owned by voting councilmember without conflict of interest disclosure.",
         ethics: "3.2 / 10", logic: "4.5 / 10", ui: "9.0 / 10",
         violations: [
@@ -2144,6 +2176,170 @@
       }
     };
 
+    // Dynamic Reports Catalog Map (populated from reports.json and live API)
+    const REPORTS_CATALOG_MAP = new Map();
+    const REPORTS_SHA_MAP = new Map();
+
+    function formatHumanTitle(rawTitle, url) {
+      if (rawTitle && !rawTitle.startsWith("Mesh Submission:") && !rawTitle.startsWith("http://") && !rawTitle.startsWith("https://") && rawTitle !== "Audited Publication Record" && rawTitle !== "Audited Article" && rawTitle !== "Epistemic Audit Report") {
+        return rawTitle;
+      }
+      let target = rawTitle && rawTitle.startsWith("Mesh Submission:") ? rawTitle.replace(/^Mesh Submission:\s*/, "") : (url || "");
+      try {
+        const parsed = new URL(target.startsWith("http") ? target : `https://${target}`);
+        let slug = parsed.pathname.replace(/\/$/, "").split("/").pop() || "";
+        slug = slug.replace(/\.[a-zA-Z0-9]+$/, "");
+        if (slug && slug.length > 2) {
+          return decodeURIComponent(slug).replace(/[-_]+/g, " ").trim().replace(/\b\w/g, c => c.toUpperCase());
+        }
+      } catch (_) {}
+      return rawTitle && !rawTitle.startsWith("Mesh Submission:") ? rawTitle : "Audited Article";
+    }
+
+    function isGenesisSeedUrl(url) {
+      if (!url) return false;
+      const u = url.toLowerCase();
+      const GENESIS_SUBSTRINGS = [
+        "copper-sky-land-sale-is-no-scandal",
+        "a-new-option-for-pigmentation",
+        "what-landlords-discover",
+        "bicyclist-dead-after-sr-347",
+        "history-when-john-wayne-parkway-overpass",
+        "clean-grid-transition",
+        "supreme-court-digital-privacy",
+        "exoplanet-atmosphere",
+        "groundwater-contamination-records",
+        "rail-expansion",
+        "tandem-silicon-solar",
+        "golden-retriever-elected-mayor",
+        "nasa-giant-squeegee",
+        "zoning-sludge-crisis",
+        "breakthrough-battery-claim",
+        "senate-tax-debate",
+        "scan-now",
+        "claim-token-2026"
+      ];
+      return GENESIS_SUBSTRINGS.some(s => u.includes(s));
+    }
+
+    function getSourceMeta(sourceStr) {
+      const src = (sourceStr || "P2P Mesh").toLowerCase();
+      if (src.includes("sentinel") || src.includes("sifter") || src.includes("feed")) {
+        return { label: "Sentinel Feed", color: "#c084fc", bg: "rgba(192, 132, 252, 0.12)", border: "rgba(192, 132, 252, 0.3)" };
+      }
+      if (src.includes("genesis") || src.includes("seed")) {
+        return { label: "Genesis Seeder", color: "#34d399", bg: "rgba(52, 211, 153, 0.12)", border: "rgba(52, 211, 153, 0.3)" };
+      }
+      if (src.includes("cli") || src.includes("manual")) {
+        return { label: "CLI / Manual", color: "#fbbf24", bg: "rgba(251, 191, 36, 0.12)", border: "rgba(251, 191, 36, 0.3)" };
+      }
+      return { label: "P2P Mesh", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.3)" };
+    }
+
+    function formatRawReportToCard(r) {
+      if (!r) return null;
+      let url = r.url || "";
+      let domain = "source";
+      try {
+        if (url.startsWith("http")) domain = new URL(url).hostname.replace(/^www\./, "");
+      } catch (_) {}
+      
+      const scoreNum = parseFloat(r.suspicion_score !== undefined ? r.suspicion_score : (r.score !== undefined ? r.score : 0.0));
+      const scoreStr = isNaN(scoreNum) ? "0.0" : scoreNum.toFixed(1);
+      const isClean = scoreNum <= 15.0;
+      const isSusp = scoreNum > 15.0 && scoreNum < 60.0;
+      const isDecept = scoreNum >= 60.0;
+      
+      const badge = r.classification || (r.is_satire ? "SATIRE PROTECTED • POE'S LAW" : (isClean ? "CLEAN • TIER A/B" : (isSusp ? "SUSPICIOUS" : "DECEPTIVE")));
+      const badgeColor = r.is_satire ? "#c084fc" : (isClean ? "#4ade80" : (isSusp ? "#f59e0b" : "#ef4444"));
+      const badgeBg = r.is_satire ? "rgba(192, 132, 252, 0.15)" : (isClean ? "rgba(74, 222, 128, 0.15)" : (isSusp ? "rgba(245, 158, 11, 0.15)" : "rgba(239, 68, 68, 0.15)"));
+      
+      const rawViols = r.violations || r.findings || [];
+      const violations = rawViols.map(v => ({
+        rule: (v.rule_id ? v.rule_id + " " : "") + (v.rule_uri || v.rule || "Policy Violation"),
+        sev: typeof v.severity === "number" ? ("Sev " + v.severity) : (v.sev || "Sev 3"),
+        quote: v.quote_or_element || v.quote || "",
+        reasoning: v.reasoning || ""
+      }));
+      
+      const quotes = rawViols.map(v => v.quote_or_element || v.quote).filter(Boolean);
+      
+      const ethicsScore = (Math.max(1.0, 10.0 - (scoreNum / 10.0))).toFixed(1) + " / 10";
+      const logicScore = (Math.max(1.0, 10.0 - (scoreNum / 15.0))).toFixed(1) + " / 10";
+      const uiScore = (isDecept ? "3.5 / 10" : "9.8 / 10");
+
+      const cleanTitle = formatHumanTitle(r.title, url);
+      let sourceStr = r.source || r.source_type;
+      if (!sourceStr || sourceStr === "P2P Mesh") {
+        if (r.evaluation_method?.includes("sifter") || r.evaluation_method?.includes("sentinel") || r.evaluation_method?.includes("rss")) {
+          sourceStr = "Sentinel Feed";
+        } else if (r.evaluation_method?.includes("genesis") || isGenesisSeedUrl(url)) {
+          sourceStr = "Genesis Seeder";
+        } else if (r.evaluation_method?.includes("cli") || r.evaluation_method?.includes("manual")) {
+          sourceStr = "CLI / Manual";
+        } else {
+          sourceStr = "P2P Mesh";
+        }
+      }
+      
+      return {
+        title: cleanTitle,
+        source: sourceStr,
+        domain: domain,
+        url: url,
+        score: scoreStr,
+        badge: badge,
+        badgeColor: badgeColor,
+        badgeBg: badgeBg,
+        summary: r.summary || (rawViols.length > 0 ? (violations[0].reasoning || "Empirical audit evaluation flagged potential epistemic violations.") : "Rigorous empirical evaluation meeting full journalistic integrity standards."),
+        ethics: ethicsScore,
+        logic: logicScore,
+        ui: uiScore,
+        violations: violations,
+        quotes: quotes,
+        content_sha256: r.content_sha256 || r.sha || "",
+        sha: r.content_sha256 || r.sha || "",
+        hasRevisions: Boolean(r.hasRevisions)
+      };
+    }
+
+    async function loadCatalogReports() {
+      try {
+        const res = await fetch('./reports.json');
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : (data.reports || []);
+          items.forEach(item => {
+            if (item && item.url) {
+              const formatted = formatRawReportToCard(item);
+              REPORTS_CATALOG_MAP.set(item.url, formatted);
+              if (item.content_sha256) {
+                REPORTS_SHA_MAP.set(item.content_sha256, formatted);
+              }
+            }
+          });
+        }
+      } catch (e) {}
+      
+      try {
+        const resLive = await fetch('/api/reports?limit=100');
+        if (resLive.ok) {
+          const liveData = await resLive.json();
+          const liveItems = Array.isArray(liveData) ? liveData : (liveData.reports || []);
+          liveItems.forEach(item => {
+            if (item && item.url) {
+              const formatted = formatRawReportToCard(item);
+              REPORTS_CATALOG_MAP.set(item.url, formatted);
+              if (item.content_sha256) {
+                REPORTS_SHA_MAP.set(item.content_sha256, formatted);
+              }
+            }
+          });
+        }
+      } catch (e) {}
+    }
+    loadCatalogReports();
+
     window.evaluateSource = function(targetUrl, pushHistory = true) {
       if (!targetUrl) return;
 
@@ -2162,16 +2358,27 @@
       const clearBtn = document.getElementById('btn-clear-search');
       if (clearBtn) clearBtn.style.display = 'block';
 
-      // 3. Match from database or synthesize domain-aware result
-      let data = SAMPLE_DATABASE[targetUrl];
+      // 3. Match from SAMPLE_DATABASE or dynamic catalog
+      let data = SAMPLE_DATABASE[targetUrl] || REPORTS_CATALOG_MAP.get(targetUrl) || REPORTS_SHA_MAP.get(targetUrl);
+      
       if (!data) {
+        const normTarget = targetUrl.replace(/\/$/, "");
         for (const [k, v] of Object.entries(SAMPLE_DATABASE)) {
-          if (targetUrl.includes(v.domain) || k.includes(targetUrl)) {
-            data = { ...v, url: targetUrl };
+          if (k.replace(/\/$/, "") === normTarget) {
+            data = v;
             break;
           }
         }
+        if (!data) {
+          for (const [k, v] of REPORTS_CATALOG_MAP.entries()) {
+            if (k.replace(/\/$/, "") === normTarget) {
+              data = v;
+              break;
+            }
+          }
+        }
       }
+
       if (!data) {
         data = synthesizeDomainAudit(targetUrl);
       }
@@ -2193,11 +2400,12 @@
         breadcrumb.innerHTML = `Sources &gt; <b>${window.currentDomain}</b> &gt; Inspector`;
       }
 
-      const reportHash = (data && (data.content_sha256 || data.sha)) ? ('#report/' + (data.content_sha256 || data.sha)) : ('#report/' + encodeURIComponent(targetUrl));
+      const articleUrl = data.url || targetUrl;
+      const reportHash = (data && (data.content_sha256 || data.sha)) ? ('#report/' + (data.content_sha256 || data.sha)) : ('#report/' + encodeURIComponent(articleUrl));
       if (pushHistory) {
-        history.pushState({ tab: 'search', url: targetUrl, domain: data.domain }, '', reportHash);
+        history.pushState({ tab: 'search', url: articleUrl, domain: data.domain }, '', reportHash);
       } else {
-        history.replaceState({ tab: 'search', url: targetUrl, domain: data.domain }, '', reportHash);
+        history.replaceState({ tab: 'search', url: articleUrl, domain: data.domain }, '', reportHash);
       }
 
       // Update Ribbon HUD dynamically
@@ -2205,18 +2413,18 @@
 
       // Update Article Snapshot DOM
       document.getElementById('insp-title').textContent = data.title;
-      document.getElementById('insp-url').textContent = targetUrl;
+      document.getElementById('insp-url').textContent = articleUrl;
       
       const domTag = document.getElementById('insp-domain-tag');
       if (domTag) domTag.textContent = `🏛️ ${data.domain || 'source'} ↗`;
 
       const standLink = document.getElementById('insp-standalone-link');
       if (standLink) {
-        standLink.href = `viewer.html?q=${encodeURIComponent(data.content_sha256 || targetUrl)}`;
+        standLink.href = `viewer.html?q=${encodeURIComponent(data.content_sha256 || articleUrl)}`;
       }
       const histLink = document.getElementById('insp-history-link');
       if (histLink) {
-        histLink.href = `history.html?url=${encodeURIComponent(targetUrl)}`;
+        histLink.href = `history.html?url=${encodeURIComponent(articleUrl)}`;
       }
 
       const scoreEl = document.getElementById('insp-score');
@@ -2239,7 +2447,7 @@
 
       // Surface Glance Forensics & Vitals (Lens 1)
       const pubObj = typeof ALL_PUBLISHERS !== 'undefined' ? ALL_PUBLISHERS.find(p => p.domain === data.domain) : null;
-      const pubTier = pubObj ? pubObj.tierBadge : (data.domain === 'reuters.com' || data.domain === 'apnews.com' || data.domain === 'nature.com' || data.domain === 'propublica.org' ? 'Tier A (Pristine Wire)' : (parseFloat(data.score) < 20 ? 'Tier B (Monitored)' : 'Tier C (Watchlist)'));
+      const pubTier = pubObj ? pubObj.tierBadge : (data.domain === 'reuters.com' || data.domain === 'apnews.com' || data.domain === 'nature.com' || data.domain === 'propublica.org' ? 'Tier A (Pristine Wire)' : (parseFloat(data.score) < 15 ? 'Tier B (Reliable)' : (parseFloat(data.score) < 35 ? 'Tier C (Monitored)' : 'Tier D (Watchlist)')));
       const pubDciScore = pubObj ? pubObj.dciScore : (parseFloat(data.score) < 10 ? '98.5' : (parseFloat(data.score) < 30 ? '82.0' : '48.5'));
 
       const surfaceVerdictBadge = document.getElementById('insp-surface-verdict-badge');
@@ -2435,13 +2643,41 @@
       tierColor: p.tierColor,
       tierBg: p.tierBg,
       dciScore: p.dciScore,
-      avgSuspicion: (p.articles && p.articles.length > 0) ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) : "0.0",
-      auditsCount: (p.articles && p.articles.length > 0) ? p.articles.length : 1,
+      avgSuspicion: p.avgSuspicion || ((p.articles && p.articles.length > 0) ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) : Math.max(0, (100.0 - parseFloat(p.dciScore || 0))).toFixed(1)),
+      auditsCount: parseInt(p.totalAudits) || ((p.articles && p.articles.length > 0) ? p.articles.length : 1),
       syndication: p.syndication || "● Active RSS",
       violationsCount: p.violationsCount || "0 Violations",
       trajectoryStat: p.trajectoryStat || "30d Stability: 100%",
       trajectorySummary: p.trajectorySummary || ""
     }));
+
+    function syncLivePublisherStats(domain) {
+      if (!domain) return;
+      fetch(`/api/analytics/publisher/${encodeURIComponent(domain)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || data.dci_score === undefined) return;
+          const dciStr = data.dci_score.toFixed(1);
+          if (PUBLISHER_DATABASE[domain]) {
+            PUBLISHER_DATABASE[domain].dciScore = dciStr;
+            if (data.total_audits) {
+              PUBLISHER_DATABASE[domain].totalAudits = `${data.total_audits} Verified Audits`;
+            }
+          }
+          const pub = ALL_PUBLISHERS.find(p => p.domain === domain);
+          if (pub) {
+            pub.dciScore = dciStr;
+            if (data.total_audits) pub.auditsCount = data.total_audits;
+            if (data.avg_suspicion !== undefined) {
+              pub.avgSuspicion = parseFloat(data.avg_suspicion).toFixed(1);
+            }
+          }
+          renderPublishersCatalog();
+          renderDciTable();
+        })
+        .catch(err => console.debug("Sync live publisher stats error:", err));
+    }
+    window.syncLivePublisherStats = syncLivePublisherStats;
 
     function switchBrowseSubview(subview) {
       const btnArticles = document.getElementById('subview-btn-articles');
@@ -2472,6 +2708,7 @@
         if (detBox) detBox.style.display = 'none';
         renderPublishersCatalog();
         renderDciTable();
+        syncLivePublisherStats('inmaricopa.com');
       }
     }
     window.switchBrowseSubview = switchBrowseSubview;
@@ -2536,6 +2773,150 @@
     }
     window.closePublisherDetail = closePublisherDetail;
 
+    // Dossier Table Interactive State (Sort & Filter)
+    window.currentDossierArticles = [];
+    window.dossierSortField = 'score';
+    window.dossierSortAsc = false;
+    window.dossierFilterQuery = '';
+    window.dossierFilterCategory = 'all';
+
+    window.sortDossierTable = function(field) {
+      if (window.dossierSortField === field) {
+        window.dossierSortAsc = !window.dossierSortAsc;
+      } else {
+        window.dossierSortField = field;
+        window.dossierSortAsc = (field === 'title' || field === 'source');
+      }
+      window.renderDossierTable();
+    };
+
+    window.filterDossierArticles = function(query) {
+      window.dossierFilterQuery = (query || '').toLowerCase().trim();
+      window.renderDossierTable();
+    };
+
+    window.setDossierFilterCategory = function(cat) {
+      window.dossierFilterCategory = cat;
+      const input = document.getElementById('dossier-filter-input');
+      if (input && cat === 'all') input.value = '';
+      window.renderDossierTable();
+    };
+
+    window.renderDossierTable = function() {
+      const tableBody = document.getElementById('dossier-articles-body');
+      const countLabel = document.getElementById('dossier-article-count-label');
+      if (!tableBody) return;
+
+      // Update sort indicators
+      ['title', 'source', 'date', 'score', 'badge'].forEach(col => {
+        const icon = document.getElementById(`dossier-sort-${col}`);
+        if (icon) {
+          if (window.dossierSortField === col) {
+            icon.textContent = window.dossierSortAsc ? '▲' : '▼';
+            icon.style.color = 'var(--accent-cyan)';
+          } else {
+            icon.textContent = '↕';
+            icon.style.color = 'var(--text-dim)';
+          }
+        }
+      });
+
+      let list = [...(window.currentDossierArticles || [])];
+
+      // Filter by category
+      if (window.dossierFilterCategory === 'clean') {
+        list = list.filter(a => parseFloat(a.score || 0) <= 15.0);
+      } else if (window.dossierFilterCategory === 'flagged') {
+        list = list.filter(a => parseFloat(a.score || 0) > 30.0);
+      } else if (window.dossierFilterCategory === 'mesh') {
+        list = list.filter(a => (a.source || '').toLowerCase().includes('mesh'));
+      } else if (window.dossierFilterCategory === 'sentinel') {
+        list = list.filter(a => (a.source || '').toLowerCase().includes('sentinel') || (a.source || '').toLowerCase().includes('feed'));
+      }
+
+      // Filter by search query
+      if (window.dossierFilterQuery) {
+        const q = window.dossierFilterQuery;
+        list = list.filter(a =>
+          (a.title && a.title.toLowerCase().includes(q)) ||
+          (a.url && a.url.toLowerCase().includes(q)) ||
+          (a.source && a.source.toLowerCase().includes(q)) ||
+          (a.badge && a.badge.toLowerCase().includes(q)) ||
+          (String(a.score).includes(q))
+        );
+      }
+
+      // Sort list
+      list.sort((a, b) => {
+        let vA, vB;
+        if (window.dossierSortField === 'score') {
+          vA = parseFloat(a.score || 0);
+          vB = parseFloat(b.score || 0);
+        } else if (window.dossierSortField === 'date') {
+          vA = a.date || '';
+          vB = b.date || '';
+        } else if (window.dossierSortField === 'source') {
+          vA = (a.source || '').toLowerCase();
+          vB = (b.source || '').toLowerCase();
+        } else if (window.dossierSortField === 'badge') {
+          vA = (a.badge || '').toLowerCase();
+          vB = (b.badge || '').toLowerCase();
+        } else {
+          vA = (a.title || '').toLowerCase();
+          vB = (b.title || '').toLowerCase();
+        }
+
+        if (vA < vB) return window.dossierSortAsc ? -1 : 1;
+        if (vA > vB) return window.dossierSortAsc ? 1 : -1;
+        return 0;
+      });
+
+      if (countLabel) {
+        const total = (window.currentDossierArticles || []).length;
+        countLabel.textContent = list.length === total
+          ? `Showing all ${total} verified audit${total === 1 ? '' : 's'}`
+          : `Showing ${list.length} of ${total} verified audit${total === 1 ? '' : 's'}`;
+      }
+
+      if (list.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
+              No articles match current filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = list.map(a => {
+        const srcMeta = getSourceMeta(a.source);
+        return `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <td style="padding:0.45rem 0.55rem;">
+              <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
+              <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
+            </td>
+            <td style="padding:0.45rem 0.55rem; white-space:nowrap;">
+              <span class="badge" style="font-size:0.65rem; padding:0.12rem 0.45rem; background:${srcMeta.bg}; color:${srcMeta.color}; border:1px solid ${srcMeta.border}; font-weight:700;">${srcMeta.label}</span>
+            </td>
+            <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
+            <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
+            <td style="padding:0.45rem 0.55rem;">
+              <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
+            </td>
+            <td style="padding:0.45rem 0.55rem; text-align:right;">
+              <div style="display:inline-flex; gap:0.35rem; align-items:center;">
+                <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-action btn-secondary" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
+                <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-action btn-secondary" title="View Temporal History & Diff">📜 History ↗</a>
+                <button type="button" class="btn-action btn-primary" onclick="evaluateSource('${a.url}', true)">🔬 Inspect</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
     window.viewSourceDossier = function(domain, pushHistory = true) {
       if (!domain) return;
       window.lastViewedDomain = domain;
@@ -2579,29 +2960,59 @@
         trajectorySummary: "Publisher evaluated across live network ingestions."
       };
 
-      // Collect all authentic matching articles from SAMPLE_DATABASE and rawPub.articles
+      // Collect all authentic matching articles from SAMPLE_DATABASE, REPORTS_CATALOG_MAP, and rawPub.articles
       const sampleMatches = Object.entries(SAMPLE_DATABASE).filter(([u, a]) => a.domain === domain || u.includes(domain));
-      let matchingArticles = sampleMatches.map(([u, a]) => ({
-        url: u,
-        title: a.title,
-        score: a.score,
-        badge: a.badge ? a.badge.split(' • ')[0] : 'AUDITED',
-        badgeBg: a.badgeBg || "rgba(255,255,255,0.05)",
-        badgeColor: a.badgeColor || "#38bdf8",
-        date: "2026-08-20",
-        content_sha256: a.content_sha256 || a.sha || ""
-      }));
+      let matchingArticles = sampleMatches.map(([u, a]) => {
+        const scoreNum = parseFloat(a.score || 0);
+        const color = a.badgeColor || (scoreNum <= 15.0 ? '#22c55e' : (scoreNum <= 40.0 ? '#38bdf8' : (scoreNum <= 70.0 ? '#f59e0b' : '#ef4444')));
+        const bg = a.badgeBg || (scoreNum <= 15.0 ? 'rgba(34, 197, 94, 0.15)' : (scoreNum <= 40.0 ? 'rgba(56, 189, 248, 0.15)' : (scoreNum <= 70.0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)')));
+        return {
+          url: u,
+          title: formatHumanTitle(a.title, u),
+          source: a.source || "Genesis Seeder",
+          score: a.score,
+          badge: a.badge ? a.badge.split(' • ')[0] : (scoreNum <= 15.0 ? 'CLEAN' : (scoreNum <= 40.0 ? 'LOW_SUSPICION' : (scoreNum <= 70.0 ? 'SUSPICIOUS' : 'DECEPTIVE'))),
+          badgeBg: bg,
+          badgeColor: color,
+          date: "2026-08-20",
+          content_sha256: a.content_sha256 || a.sha || ""
+        };
+      });
+
+      // Also include matching articles from loaded catalog
+      REPORTS_CATALOG_MAP.forEach((ca, u) => {
+        if ((ca.domain === domain || u.includes(domain)) && !matchingArticles.some(m => m.url === u)) {
+          const scoreNum = parseFloat(ca.score || 0);
+          const color = ca.badgeColor || (scoreNum <= 15.0 ? '#22c55e' : (scoreNum <= 40.0 ? '#38bdf8' : (scoreNum <= 70.0 ? '#f59e0b' : '#ef4444')));
+          const bg = ca.badgeBg || (scoreNum <= 15.0 ? 'rgba(34, 197, 94, 0.15)' : (scoreNum <= 40.0 ? 'rgba(56, 189, 248, 0.15)' : (scoreNum <= 70.0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)')));
+          matchingArticles.push({
+            url: u,
+            title: formatHumanTitle(ca.title, u),
+            source: ca.source || "P2P Mesh",
+            score: ca.score,
+            badge: ca.badge ? ca.badge.split(' • ')[0] : (scoreNum <= 15.0 ? 'CLEAN' : (scoreNum <= 40.0 ? 'LOW_SUSPICION' : (scoreNum <= 70.0 ? 'SUSPICIOUS' : 'DECEPTIVE'))),
+            badgeBg: bg,
+            badgeColor: color,
+            date: "2026-08-24",
+            content_sha256: ca.content_sha256 || ca.sha || ""
+          });
+        }
+      });
 
       if (rawPub.articles && rawPub.articles.length > 0) {
         rawPub.articles.forEach(pa => {
           if (!matchingArticles.some(m => m.url === pa.url)) {
+            const scoreNum = parseFloat(pa.score || 0);
+            const color = pa.badgeColor || (scoreNum <= 15.0 ? '#22c55e' : (scoreNum <= 40.0 ? '#38bdf8' : (scoreNum <= 70.0 ? '#f59e0b' : '#ef4444')));
+            const bg = (scoreNum <= 15.0 ? 'rgba(34, 197, 94, 0.15)' : (scoreNum <= 40.0 ? 'rgba(56, 189, 248, 0.15)' : (scoreNum <= 70.0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)')));
             matchingArticles.push({
               url: pa.url,
-              title: pa.title,
+              title: formatHumanTitle(pa.title, pa.url),
+              source: pa.source || "P2P Mesh",
               score: pa.score,
-              badge: pa.badge || "AUDITED",
-              badgeBg: "rgba(255,255,255,0.05)",
-              badgeColor: pa.badgeColor || "#38bdf8",
+              badge: pa.badge || (scoreNum <= 15.0 ? 'CLEAN' : (scoreNum <= 40.0 ? 'LOW_SUSPICION' : (scoreNum <= 70.0 ? 'SUSPICIOUS' : 'DECEPTIVE'))),
+              badgeBg: bg,
+              badgeColor: color,
               date: pa.date || "2026-08-20",
               content_sha256: pa.sha || ""
             });
@@ -2609,7 +3020,7 @@
         });
       }
 
-      const totalAuditsCount = matchingArticles.length > 0 ? matchingArticles.length : (rawPub.totalAudits || 1);
+      const initialAuditCount = parseInt(rawPub.totalAudits) || rawPub.auditsCount || (matchingArticles.length > 0 ? matchingArticles.length : 1);
 
       const titleEl = document.getElementById('dossier-domain-title');
       const descEl = document.getElementById('dossier-domain-desc');
@@ -2620,7 +3031,6 @@
       const statViol = document.getElementById('dossier-stat-violations');
       const trajStat = document.getElementById('dossier-trajectory-stat');
       const trajSummary = document.getElementById('dossier-trajectory-summary');
-      const countLabel = document.getElementById('dossier-article-count-label');
 
       if (titleEl) titleEl.textContent = rawPub.domain;
       if (descEl) descEl.textContent = `${rawPub.title} • ${rawPub.desc}`;
@@ -2639,48 +3049,104 @@
         ratingLabel.textContent = rawPub.tierBadge ? rawPub.tierBadge.replace(/^[A-Z]+\s+[A-Z]+\s+\((.*)\)$/, '$1').trim() : "Watchlist Rating";
         ratingLabel.style.color = rawPub.tierColor || "#f59e0b";
       }
-      if (statAudits) statAudits.textContent = `${totalAuditsCount} Verified Audit${totalAuditsCount === 1 ? '' : 's'}`;
+      if (statAudits) statAudits.textContent = `${initialAuditCount} Verified Audit${initialAuditCount === 1 ? '' : 's'}`;
       if (statSyn) statSyn.textContent = rawPub.syndication || "● Active Ingestion";
       if (statViol) statViol.textContent = rawPub.violationsCount || `${matchingArticles.filter(a => parseFloat(a.score) > 20).length} Epistemic Violations`;
       if (trajStat) trajStat.textContent = rawPub.trajectoryStat || "Watchlist • Monitored Source";
       if (trajSummary) trajSummary.textContent = rawPub.trajectorySummary || "Continuous monitoring across all published articles.";
-      if (countLabel) countLabel.textContent = `Showing all ${totalAuditsCount} verified audit${totalAuditsCount === 1 ? '' : 's'}`;
 
-      const tableBody = document.getElementById('dossier-articles-body');
-      if (tableBody) {
-        if (matchingArticles.length > 0) {
-          tableBody.innerHTML = matchingArticles.map(a => `
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-              <td style="padding:0.45rem 0.55rem;">
-                <b style="color:#fff; font-size:0.83rem; display:block; margin-bottom:0.15rem;">${a.title}</b>
-                <span style="font-size:0.7rem; color:var(--text-dim); font-family:var(--font-mono); word-break:break-all;">${a.url}</span>
-              </td>
-              <td style="padding:0.45rem 0.55rem; font-size:0.75rem; color:var(--text-muted); white-space:nowrap; font-family:var(--font-mono);">${a.date}</td>
-              <td style="padding:0.45rem 0.55rem; font-family:var(--font-mono); font-weight:800; font-size:0.88rem; color:${a.badgeColor};">${a.score}</td>
-              <td style="padding:0.45rem 0.55rem;">
-                <span class="badge" style="font-size:0.65rem; padding:0.15rem 0.4rem; background:${a.badgeBg}; color:${a.badgeColor}; border:1px solid ${a.badgeColor}; font-weight:700;">${a.badge}</span>
-              </td>
-              <td style="padding:0.45rem 0.55rem; text-align:right;">
-                <div style="display:inline-flex; gap:0.35rem; align-items:center;">
-                  <a href="viewer.html?q=${encodeURIComponent(a.content_sha256 || a.url)}" target="_blank" class="btn-action btn-secondary" title="Open in Standalone Report Viewer">🔗 Viewer ↗</a>
-                  <a href="history.html?url=${encodeURIComponent(a.url)}" target="_blank" class="btn-action btn-secondary" title="View Temporal History & Diff">📜 History ↗</a>
-                  <button type="button" class="btn-action btn-primary" onclick="evaluateSource('${a.url}', true)">🔬 Inspect</button>
-                </div>
-              </td>
-            </tr>
-          `).join('');
-        } else {
-          tableBody.innerHTML = `
-            <tr>
-              <td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
-                No curated articles found for ${domain}. You can inspect any article from this domain in <a href="javascript:void(0)" onclick="filterSearchByDomain('${domain}')" style="color:var(--accent-cyan);">Search & Audit</a>.
-              </td>
-            </tr>
-          `;
-        }
-      }
+      window.currentDossierArticles = matchingArticles;
+      window.renderDossierTable();
+
+      // Asynchronously augment with live server analytics and dynamic recent audits
+      fetch(`/api/analytics/publisher/${encodeURIComponent(domain)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(liveData => {
+          if (!liveData) return;
+          if (liveData.dci_score !== undefined) {
+            const dciStr = liveData.dci_score.toFixed(1);
+            if (dciScore) dciScore.textContent = dciStr;
+            if (PUBLISHER_DATABASE[domain]) {
+              PUBLISHER_DATABASE[domain].dciScore = dciStr;
+            }
+            const pubObj = ALL_PUBLISHERS.find(p => p.domain === domain);
+            if (pubObj) {
+              pubObj.dciScore = dciStr;
+              if (liveData.total_audits) pubObj.auditsCount = liveData.total_audits;
+              if (liveData.avg_suspicion !== undefined) pubObj.avgSuspicion = parseFloat(liveData.avg_suspicion).toFixed(1);
+            }
+          }
+          if (liveData.trust_band && ratingLabel) {
+            const tb = liveData.trust_band;
+            ratingLabel.textContent = (tb === "HIGH_INTEGRITY" || tb === "PRISTINE") ? "Tier A (Pristine)"
+              : (tb === "RELIABLE" ? "Tier B (Reliable)"
+              : (tb === "MONITORED" ? "Tier C (Monitored)"
+              : (tb === "WATCHLIST" || tb === "MODERATE" ? "Tier D (Watchlist)"
+              : "Tier E (Deceptive)")));
+          }
+          if (liveData.total_audits && statAudits) {
+            statAudits.textContent = `${liveData.total_audits} Verified Audit${liveData.total_audits === 1 ? '' : 's'}`;
+          }
+          if (liveData.violations_by_domain && statViol) {
+            const violTotal = Object.values(liveData.violations_by_domain).reduce((a, b) => a + b, 0);
+            statViol.textContent = `${violTotal} Epistemic Violations`;
+          }
+          if (liveData.recent_audited_articles && liveData.recent_audited_articles.length > 0) {
+            // Merge live articles with sample matches
+            const liveMap = new Map();
+            liveData.recent_audited_articles.forEach(la => {
+              const scoreNum = parseFloat(la.score || la.suspicion_score || 0);
+              let cls = la.classification;
+              if (!cls || cls === "AUDITED" || cls === "MONITORED") {
+                cls = scoreNum <= 15.0 ? "CLEAN" : (scoreNum <= 40.0 ? "LOW_SUSPICION" : (scoreNum <= 70.0 ? "SUSPICIOUS" : "DECEPTIVE"));
+              }
+              let badgeColor, badgeBg;
+              if (cls === "CLEAN" || scoreNum <= 15.0) {
+                badgeColor = "#22c55e";
+                badgeBg = "rgba(34, 197, 94, 0.15)";
+              } else if (cls === "LOW_SUSPICION" || (scoreNum > 15.0 && scoreNum <= 40.0)) {
+                badgeColor = "#38bdf8";
+                badgeBg = "rgba(56, 189, 248, 0.15)";
+              } else if (cls === "SUSPICIOUS" || (scoreNum > 40.0 && scoreNum <= 70.0)) {
+                badgeColor = "#f59e0b";
+                badgeBg = "rgba(245, 158, 11, 0.15)";
+              } else {
+                badgeColor = "#ef4444";
+                badgeBg = "rgba(239, 68, 68, 0.15)";
+              }
+              const cleanT = formatHumanTitle(la.title, la.url);
+              let src = la.source;
+              if (!src || src === "P2P Mesh") {
+                if (isGenesisSeedUrl(la.url)) src = "Genesis Seeder";
+                else src = "P2P Mesh";
+              }
+              liveMap.set(la.url, {
+                url: la.url,
+                title: cleanT,
+                source: src,
+                score: typeof la.score === "string" ? la.score : scoreNum.toFixed(1),
+                badge: cls,
+                badgeBg: badgeBg,
+                badgeColor: badgeColor,
+                date: la.date || (la.audited_at ? la.audited_at.split('T')[0] : "2026-08-20"),
+                content_sha256: la.content_sha256 || ""
+              });
+            });
+
+            // Also preserve any curated sample matches not returned by API
+            (window.currentDossierArticles || []).forEach(sa => {
+              if (!liveMap.has(sa.url)) {
+                liveMap.set(sa.url, sa);
+              }
+            });
+
+            window.currentDossierArticles = Array.from(liveMap.values());
+            if (statAudits) statAudits.textContent = `${window.currentDossierArticles.length} Verified Audit${window.currentDossierArticles.length === 1 ? '' : 's'}`;
+            window.renderDossierTable();
+          }
+        })
+        .catch(err => console.debug("Dynamic publisher analytics fetch error:", err));
     };
-
 
     window.filterSearchByDomain = function(domain) {
       if (!domain) return;
@@ -2692,28 +3158,132 @@
       showToast(`Filtered search for all audits from ${domain}`, 'info');
     };
 
-        function renderDciTable() {
+    // DCI Table Interactive State (Sort & Filter)
+    window.dciSortCol = 'suspicion';
+    window.dciSortAsc = true;
+    window.dciFilterQuery = '';
+
+    function sortDciTable(col) {
+      if (window.dciSortCol === col) {
+        window.dciSortAsc = !window.dciSortAsc;
+      } else {
+        window.dciSortCol = col;
+        window.dciSortAsc = (col === 'domain' || col === 'tier' || col === 'suspicion');
+      }
+      renderDciTable();
+    }
+    window.sortDciTable = sortDciTable;
+
+    function renderDciTable() {
       const tbody = document.getElementById('dci-table-body');
       if (!tbody) return;
-      
-      tbody.innerHTML = Object.values(PUBLISHER_DATABASE).map(p => {
+
+      // Update sort indicators in table headers
+      ['domain', 'tier', 'dci', 'suspicion', 'audits'].forEach(c => {
+        const icon = document.getElementById(`sort-icon-${c}`);
+        if (icon) {
+          if (window.dciSortCol === c) {
+            icon.textContent = window.dciSortAsc ? '▲' : '▼';
+            icon.style.color = 'var(--accent-cyan)';
+          } else {
+            icon.textContent = '↕';
+            icon.style.color = 'var(--text-dim)';
+          }
+        }
+      });
+
+      let pubs = Object.values(PUBLISHER_DATABASE).map(p => {
         const firstArt = (p.articles && p.articles[0]) ? p.articles[0] : null;
         const inspectUrl = firstArt ? firstArt.url : `https://${p.domain}`;
-        const avgSusp = (p.articles && p.articles.length > 0) 
-          ? (p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length).toFixed(1) 
-          : "0.0";
-        const auditCount = (p.articles && p.articles.length > 0) ? p.articles.length : 1;
+        const dciNum = parseFloat(p.dciScore || 0);
         
+        let auditCount = 1;
+        if (p.totalAudits) {
+          auditCount = parseInt(p.totalAudits) || 1;
+        } else if (p.auditsCount) {
+          auditCount = parseInt(p.auditsCount) || 1;
+        } else if (p.articles && p.articles.length > 0) {
+          auditCount = p.articles.length;
+        }
+
+        let avgSusp = 0.0;
+        if (p.avgSuspicion !== undefined) {
+          avgSusp = parseFloat(p.avgSuspicion);
+        } else if (p.articles && p.articles.length > 0) {
+          avgSusp = p.articles.reduce((acc, a) => acc + parseFloat(a.score || 0), 0) / p.articles.length;
+        } else {
+          avgSusp = Math.max(0, 100.0 - dciNum);
+        }
+
+        return {
+          ...p,
+          inspectUrl,
+          dciNum,
+          avgSusp: avgSusp.toFixed(1),
+          avgSuspNum: avgSusp,
+          auditCount
+        };
+      });
+
+      // Filter by query
+      if (window.dciFilterQuery) {
+        const q = window.dciFilterQuery.toLowerCase();
+        pubs = pubs.filter(p =>
+          p.domain.toLowerCase().includes(q) ||
+          p.title.toLowerCase().includes(q) ||
+          p.tierBadge.toLowerCase().includes(q)
+        );
+      }
+
+      // Sort
+      pubs.sort((a, b) => {
+        let vA, vB;
+        if (window.dciSortCol === 'dci') {
+          vA = a.dciNum;
+          vB = b.dciNum;
+        } else if (window.dciSortCol === 'suspicion') {
+          vA = a.avgSuspNum;
+          vB = b.avgSuspNum;
+        } else if (window.dciSortCol === 'audits') {
+          vA = a.auditCount;
+          vB = b.auditCount;
+        } else if (window.dciSortCol === 'tier') {
+          vA = a.tierBadge.toLowerCase();
+          vB = b.tierBadge.toLowerCase();
+        } else {
+          vA = a.domain.toLowerCase();
+          vB = b.domain.toLowerCase();
+        }
+
+        if (vA < vB) return window.dciSortAsc ? -1 : 1;
+        if (vA > vB) return window.dciSortAsc ? 1 : -1;
+        return 0;
+      });
+
+      if (pubs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-dim);">
+              No publishers match the filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = pubs.map(p => {
+        const suspColor = p.avgSuspNum <= 15.0 ? '#4ade80' : (p.avgSuspNum <= 40.0 ? '#38bdf8' : (p.avgSuspNum <= 70.0 ? '#f59e0b' : '#f43f5e'));
         return `
-          <tr data-domain="${p.domain}" data-tier="${p.tierBadge}" data-suspicion="${avgSusp}" data-audits="${auditCount}">
+          <tr data-domain="${p.domain}" data-tier="${p.tierBadge}" data-dci="${p.dciScore}" data-suspicion="${p.avgSusp}" data-audits="${p.auditCount}">
             <td><strong>${p.domain}</strong><br/><span style="font-size:0.75rem; color:var(--text-dim);">${p.title}</span></td>
             <td><span class="badge" style="background:${p.tierBg}; color:${p.tierColor}; border:1px solid ${p.tierColor}; font-size:0.7rem;">${p.tierBadge}</span></td>
-            <td style="font-family:var(--font-mono); color:${p.tierColor}; font-weight:700;">${avgSusp} / 100</td>
-            <td>${auditCount} ${auditCount === 1 ? 'Audit' : 'Audits'}</td>
+            <td style="font-family:var(--font-mono); color:${p.tierColor}; font-weight:700;">${p.dciScore} / 100</td>
+            <td style="font-family:var(--font-mono); color:${suspColor}; font-weight:600;">${p.avgSusp} / 100</td>
+            <td>${p.auditCount} ${p.auditCount === 1 ? 'Audit' : 'Audits'}</td>
             <td>
               <div style="display:flex; gap:0.35rem;">
-                <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('${inspectUrl}')">Inspect</button>
-                <button class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${p.domain}')">Dossier ↗</button>
+                <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="evaluateSource('${p.inspectUrl}')">Inspect</button>
+                <button type="button" class="btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--accent-cyan);" onclick="window.viewSourceDossier('${p.domain}')">Dossier ↗</button>
               </div>
             </td>
           </tr>
@@ -2722,14 +3292,15 @@
     }
     window.renderDciTable = renderDciTable;
 
-    window.filterDciTable = function(query) {
-      const q = (query || '').toLowerCase();
-      const rows = document.querySelectorAll('#dci-table tbody tr');
-      rows.forEach(r => {
-        const text = r.textContent.toLowerCase();
-        r.style.display = text.includes(q) ? '' : 'none';
-      });
-    };
+    function filterDciTable(query) {
+      window.dciFilterQuery = (query || '').trim();
+      const input = document.getElementById('dci-filter-input');
+      if (input && input.value !== query) {
+        input.value = query;
+      }
+      renderDciTable();
+    }
+    window.filterDciTable = filterDciTable;
 
     // -------------------------------------------------------------------------
     // Comprehensive Multi-Criteria Search, Filter & Select Engine
@@ -3203,6 +3774,7 @@
           window.updateWorkstationRibbon(dom, dossier ? `${dossier.dciScore} DCI` : '99.8 Tier A');
         } else if (tab === 'dci') {
           window.updateWorkstationRibbon('DCI Honor Roll', 'Network Rankings');
+          if (typeof renderDciTable === 'function') renderDciTable();
         } else if (tab === 'sifter') {
           window.updateWorkstationRibbon('Sifter Stream', 'Realtime Daemon');
           window.renderSifterStream();

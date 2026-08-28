@@ -128,3 +128,51 @@ def test_generate_prompt_checklist(test_registry: TaxonomyRegistry) -> None:
     assert "# Evaluation Checklist:" in checklist
     assert "SPJ-1.1" in checklist
     assert "Evidence Requirement:" in checklist
+
+
+@pytest.mark.unit
+def test_composite_catalog_root_hash(test_registry: TaxonomyRegistry) -> None:
+    """Verify composite catalog root hash is deterministic and changes upon rule additions."""
+    root_hash_1 = test_registry.get_composite_catalog_hash()
+    assert root_hash_1.startswith("sha256:")
+    assert len(root_hash_1) == 71
+
+    # Reloading yields exact same hash
+    reg2 = TaxonomyRegistry()
+    reg2.load_all()
+    assert reg2.get_composite_catalog_hash() == root_hash_1
+
+
+@pytest.mark.unit
+def test_granular_cluster_partitioning(test_registry: TaxonomyRegistry) -> None:
+    """Verify all clusters returned by get_granular_evaluation_clusters are bounded (<= 6 rules)."""
+    clusters = test_registry.get_granular_evaluation_clusters(max_rules_per_cluster=6)
+    assert len(clusters) >= 8, f"Expected at least 8 granular clusters, got {len(clusters)}"
+
+    for cluster in clusters:
+        assert len(cluster.rules) <= 6, f"Cluster {cluster.cluster_id} exceeds 6 rules limit: {len(cluster.rules)}"
+        assert len(cluster.rules) > 0
+
+
+@pytest.mark.unit
+def test_staleness_and_catalog_deltas(test_registry: TaxonomyRegistry) -> None:
+    """Verify is_audit_stale detects outdated audit taxonomy hashes and catalog deltas."""
+    current_hashes = test_registry.get_catalog_hashes()
+    current_root = test_registry.get_composite_catalog_hash()
+
+    # 1. Fresh audit is not stale
+    is_stale, reasons = test_registry.is_audit_stale(current_hashes, current_root)
+    assert is_stale is False
+    assert len(reasons) == 0
+
+    # 2. Missing a catalog triggers staleness
+    partial_hashes = {k: v for k, v in current_hashes.items() if k != "deceptive_patterns"}
+    is_stale, reasons = test_registry.is_audit_stale(partial_hashes, "sha256:outdated_root_hash")
+    assert is_stale is True
+    assert any("deceptive_patterns" in r for r in reasons)
+
+    # 3. Catalog deltas isolation
+    deltas = test_registry.get_catalog_deltas(partial_hashes)
+    assert len(deltas) >= 1
+    delta_ids = {c.cluster_id for c in deltas}
+    assert any("VISUAL" in c_id or "EMOTIONAL" in c_id or "OBSTRUCTION" in c_id for c_id in delta_ids)

@@ -2,7 +2,7 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -16,6 +16,27 @@ class CostProfile(str, Enum):
     ECONOMY = "economy"
     BALANCED = "balanced"
     ULTRA = "ultra"
+
+
+class NodeRole(str, Enum):
+    """Operational node roles in the sovereign mesh topology."""
+
+    EVALUATOR = "evaluator"  # Active LLM multi-agent auditing engine
+    SERVING = "serving"  # Zero-token static public serving node ($0.00 cloud spend)
+    HYBRID = "hybrid"  # Standard dynamic auto-switching node
+
+
+class ExhaustionStrategy(str, Enum):
+    """Behavior when LLM token governor budget or upstream quota is exhausted."""
+
+    HEURISTIC_FALLBACK = "heuristic_fallback"  # Fall back to offline structural heuristics (25% cap)
+    SERVING_MODE = "serving_mode"  # Switch to static serving mode (zero novel audits)
+    DEFER = "defer"  # Defer novel articles to pending queue
+
+
+# Versioned Offline Structural Heuristics Engine
+HEURISTIC_ENGINE_VERSION: str = "v1.1.0"
+HEURISTIC_MAX_CONFIDENCE_CEILING: float = 0.25
 
 
 class CostProfileConfig(BaseModel):
@@ -44,9 +65,9 @@ class CostProfileConfig(BaseModel):
 COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
     CostProfile.OFFLINE: CostProfileConfig(
         profile=CostProfile.OFFLINE,
-        name="Offline / Sovereign Air-Gapped",
-        description="Strict zero-cloud operation using deterministic structural heuristics and pattern matching at $0.00 cost.",
-        target_tier="Local Structural Heuristics Only (Zero Cloud)",
+        name="Offline / Sovereign Air-Gapped [EXPERIMENTAL]",
+        description="Deterministic structural heuristics and pattern matching at $0.00 cost [EXPERIMENTAL / BENCHMARK ONLY].",
+        target_tier="Local Structural Heuristics Only (Zero Cloud - Experimental)",
         primary_model="offline-heuristic",
         escalation_model="offline-heuristic",
         triage_model="offline-heuristic",
@@ -267,6 +288,36 @@ class Settings(BaseSettings):
     MAX_DAILY_BUDGET_USD: float = 0.15
     ENABLE_CIRCUIT_BREAKER: bool = True
 
+    # Sovereign Node Role & Exhaustion Strategies
+    CREDENCE_NODE_ROLE: NodeRole = Field(default=NodeRole.SERVING)
+    CREDENCE_EXHAUSTION_STRATEGY: ExhaustionStrategy = Field(default=ExhaustionStrategy.SERVING_MODE)
+    CREDENCE_SENTINEL_ENABLED: bool = Field(default=False)
+    CREDENCE_AUTO_RESCORE_HEURISTICS: bool = True
+    HEURISTIC_ENGINE_VERSION: str = HEURISTIC_ENGINE_VERSION
+    HEURISTIC_MAX_CONFIDENCE_CEILING: float = HEURISTIC_MAX_CONFIDENCE_CEILING
+
+    def model_post_init(self, __context: Any) -> None:
+        """Apply production vs development default server topologies."""
+        import os
+
+        env_val = (self.ENV or os.getenv("CREDENCE_ENV") or "").lower()
+        gcp_project = (os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT_ID") or "").lower()
+        is_prod = "prod" in gcp_project or env_val == "production"
+
+        explicit_role = os.getenv("CREDENCE_NODE_ROLE")
+        if not explicit_role:
+            self.CREDENCE_NODE_ROLE = NodeRole.SERVING if is_prod else NodeRole.HYBRID
+
+        explicit_ex = os.getenv("CREDENCE_EXHAUSTION_STRATEGY")
+        if not explicit_ex:
+            self.CREDENCE_EXHAUSTION_STRATEGY = (
+                ExhaustionStrategy.SERVING_MODE if is_prod else ExhaustionStrategy.HEURISTIC_FALLBACK
+            )
+
+        explicit_sent = os.getenv("CREDENCE_SENTINEL_ENABLED")
+        if explicit_sent is None:
+            self.CREDENCE_SENTINEL_ENABLED = not is_prod
+
     # P2P Mesh & MCP Networking
     MESH_ENABLED: bool = True
     MESH_HOST: str = "0.0.0.0"  # noqa: S104
@@ -282,6 +333,7 @@ class Settings(BaseSettings):
     CANONICAL_MCP_URL: str = "https://mcp.credence.run/sse"
     CANONICAL_TAXONOMY_URL: str = "https://taxonomies.credence.foundation"
     CANONICAL_REPORT_URL: str = "https://credence.report"
+    CREDENCE_SENTINEL_NODE_URL: str = "https://credence.run"
     TRUSTED_ROOT_PUBKEY: Optional[str] = None
     ENABLE_LOCAL_DISCOVERY: bool = True
     DISCOVERY_BEACON_PORT: int = 8766

@@ -143,3 +143,89 @@ def format_exec_summary(
         return format_focus_lens(report, violations)
     else:
         return format_deep_spectrum_lens(report, violations)
+
+
+SAMPLE_AUDIT_PRESETS: List[dict] = [
+    {
+        "url": "https://reuters.com/world/energy/clean-grid-transition-2026",
+        "title": "Global Clean Energy Investments Hit $2 Trillion Milestone, IEA Reports",
+        "suspicion_score": 0.0,
+        "classification": "CLEAN",
+        "confidence_score": 0.98,
+        "suspicion_density": 0.0,
+        "is_satire": False,
+        "content_sha256": "sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
+        "simhash_hex": "4a8f9c1e2b3d4f50",
+        "executive_summary": "Rigorous empirical wire reporting on international clean energy capacity additions. All statistical figures are explicitly attributed to the International Energy Agency.",
+        "violations": [],
+    },
+    {
+        "url": "https://theonion.com/science/astronomers-confirm-universe-expanding-into-neighboring-yard",
+        "title": "Astronomers Confirm Universe Expanding Entirely Into Neighboring Yard",
+        "suspicion_score": 0.0,
+        "classification": "SATIRE_PROTECTED",
+        "confidence_score": 1.0,
+        "suspicion_density": 0.0,
+        "is_satire": True,
+        "content_sha256": "sha256:1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
+        "simhash_hex": "1020304050607080",
+        "executive_summary": "Legitimate hyperbolic satire. Qualifies fully for Poe's Law Safe Harbor with zero defamatory claims.",
+        "violations": [],
+    },
+    {
+        "url": "https://dailycaller.com/2026/02/14/secret-subsidies-electric-vehicles-mandate",
+        "title": "Secret Bureaucrats Funnel Subsidies to Preferred EV Firms",
+        "suspicion_score": 68.4,
+        "classification": "SUSPICIOUS",
+        "confidence_score": 0.89,
+        "suspicion_density": 3.42,
+        "is_satire": False,
+        "content_sha256": "sha256:3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c",
+        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
+        "simhash_hex": "feedfacecafebabe",
+        "executive_summary": "Elevated astroturfing and selective omission. Anonymous assertions of secret subsidies without supporting documentary links.",
+        "violations": [
+            {
+                "rule_id": "SPJ-1.3",
+                "severity": 3,
+                "reasoning": "Damaging assertions attributed to unnamed 'senior insiders' without independent corroboration.",
+                "grounded_quote": "according to senior insiders who spoke on condition of anonymity",
+            },
+            {
+                "rule_id": "IEP-2.4",
+                "severity": 4,
+                "reasoning": "Cherry-picked quarterly grant data while omitting broader competitive bidding figures.",
+                "grounded_quote": "grants were awarded to select favored manufacturers during the spring cycle",
+            },
+        ],
+    },
+    {
+        "url": "https://health-news-wire.org/breaking/miracle-supplement-cures-all-chronic-illness",
+        "title": "Local Clinic Discovers 100% Miracle Cure for Chronic Illness",
+        "suspicion_score": 96.2,
+        "classification": "PROVEN_HOAX",
+        "confidence_score": 0.99,
+        "suspicion_density": 8.15,
+        "is_satire": False,
+        "content_sha256": "sha256:9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e",
+        "node_pubkey": "ed25519:e4d909c290d0fb1ca068ffaddf22cbd0",
+        "simhash_hex": "deadbeefdeadbeef",
+        "executive_summary": "Critical deceptive fabrication. Fabricates medical trial data and masks commercial sales behind fake clinical breakthroughs.",
+        "violations": [
+            {
+                "rule_id": "SPJ-1.6",
+                "severity": 5,
+                "reasoning": "Malicious health disinformation claiming an unapproved compound cures all illness.",
+                "grounded_quote": "guaranteed 100% cure rate with zero clinical side effects in local patient trials",
+            },
+            {
+                "rule_id": "DEC-3.1",
+                "severity": 5,
+                "reasoning": "Fake system warnings simulating medical authority endorsements.",
+                "grounded_quote": "official health advisory: all citizens urged to claim allocation immediately",
+            },
+        ],
+    },
+]

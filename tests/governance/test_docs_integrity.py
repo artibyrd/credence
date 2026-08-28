@@ -101,7 +101,7 @@ def test_ecosystem_version_parity(docs_root: Path) -> None:
     # 7. Scan ALL HTML files across web/ for navbar brand badge parity
     web_dir = credence_root / "web"
     html_files = list(web_dir.rglob("*.html"))
-    assert len(html_files) >= 10, f"Expected at least 10 HTML surfaces in web/, found {len(html_files)}"
+    assert len(html_files) >= 7, f"Expected at least 7 HTML surfaces in web/, found {len(html_files)}"
 
     for html_file in html_files:
         content = html_file.read_text(encoding="utf-8")

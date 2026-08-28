@@ -13,6 +13,7 @@ Welcome to the **Credence** codebase (`/home/pendragon/Projects/credence`).
 - **`inv-verbatim-anti-truncation` — 🌐 Universal Epistemic Verbatim Anti-Truncation UI**: Citations, forensic logs, and system rules must match source character-for-character with zero ellipsis (`...`) masking.
 - **`inv-verbatim-grounding` — 🔬 Whitespace-Insensitive Grounding ($G=1.00$)**: Extracted quotes match source DOM character-for-character ($G=1.00$); hallucinations incur an autonomous 50% score slash.
 - **`inv-canonical-json-ed25519` — 🔬 RFC 8785 Canonical JSON & Ed25519 Custody**: Envelopes use RFC 8785 canonical bytes with UTC timestamps; payload alterations invalidate Ed25519 verification.
+- **`inv-sovereign-config-decoupling` — 🌐 Sovereign Multi-Tenant Decoupling & Zero Hardcoded Tenant Config**: Tenant-specific domains, proprietary feeds, and organization configurations must reside strictly in environment variables (`CREDENCE_SENTINEL_FEEDS`), manifests, or admin APIs. Core engine models, database migrations, scrapers, and daemons must contain zero hardcoded third-party domain favoritism.
 
 ### Class β (Beta): Execution Topology, Lifecycle & Release Architecture (P1 Process Boundaries)
 - **`inv-cart-before-horse` — 🌐 The Cart-Before-the-Horse Order-of-Operations Invariant**: Prerequisite models and scrubbers must precede downstream APIs, UIs, and tests. Verify tests before drafting case studies.

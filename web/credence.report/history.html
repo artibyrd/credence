@@ -29,7 +29,7 @@
 
   <!-- Unified Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.17.4</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.18.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -326,8 +326,18 @@
       const firstRev = revs[0] || { score: 0.0 };
       const delta = lastRev.score - firstRev.score;
 
+      let rawTitle = (traj && traj.title) || urlParam;
+      if (rawTitle.startsWith("Mesh Submission:") || rawTitle.startsWith("http")) {
+        try {
+          const target = rawTitle.startsWith("Mesh Submission:") ? rawTitle.replace(/^Mesh Submission:\s*/, "") : rawTitle;
+          const u = new URL(target.startsWith('http') ? target : 'https://' + target);
+          const slug = u.pathname.split('/').filter(Boolean).pop() || u.hostname;
+          rawTitle = slug.replace(/\.[a-zA-Z0-9]+$/, "").replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        } catch (_) {}
+      }
+
       const data = {
-        title: traj.title || urlParam,
+        title: rawTitle,
         url: urlParam,
         statusPill: lastRev.score < 25 ? "🛡️ CLEAN" : lastRev.score < 60 ? "⚠️ MODERATE" : "🛑 SUSPICIOUS",
         statusPillColor: lastRev.score < 25 ? "#34d399" : lastRev.score < 60 ? "#f59e0b" : "#f87171",

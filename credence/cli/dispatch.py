@@ -128,7 +128,20 @@ def dispatch_command(args: argparse.Namespace) -> None:
     elif args.command == "rankings":
         asyncio.run(run_rankings_command(category=args.category))
     elif args.command in ("feeds", "feed"):
-        asyncio.run(run_feeds_list_command())
+        if args.action == "sentinel":
+            from credence.cli.commands.feeds import run_feeds_sentinel_command
+
+            act = args.subaction or "list"
+            tgt = args.target if args.target else None
+            asyncio.run(
+                run_feeds_sentinel_command(
+                    action=act,
+                    target=tgt,
+                    interval=getattr(args, "interval", 300),
+                )
+            )
+        else:
+            asyncio.run(run_feeds_list_command())
     elif args.command == "seeds":
         asyncio.run(cli_seeds(action=args.action, output_path=args.output))
     elif args.command == "audit-docs":
@@ -173,10 +186,85 @@ def dispatch_command(args: argparse.Namespace) -> None:
     elif args.command == "benchmark":
         asyncio.run(cli_benchmark())
     elif args.command == "mesh":
-        if args.action in ("peers", "health", "status"):
+        if args.action == "submit":
+            from credence.cli.commands.mesh import run_mesh_submit_command
+
+            code = asyncio.run(
+                run_mesh_submit_command(
+                    target=args.target,
+                    node=getattr(args, "node", None),
+                    batch=getattr(args, "batch", False),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+            sys.exit(code)
+        elif args.action in ("audit-feed", "feed"):
+            from credence.cli.commands.mesh import run_mesh_audit_feed_command
+
+            code = asyncio.run(
+                run_mesh_audit_feed_command(
+                    feed_or_domain=args.target,
+                    node=getattr(args, "node", None),
+                    limit=getattr(args, "limit", 10),
+                    profile=getattr(args, "profile", "balanced"),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+            sys.exit(code)
+        elif args.action in ("peers", "health", "status"):
             cli_stats(mesh=True)
         else:
             console.print(f"[bold cyan]🌐 Starting Credence Mesh Node on port {args.port}...[/bold cyan]")
+    elif args.command in ("compare", "models"):
+        from credence.cli.commands.compare import run_model_compare_command
+
+        code = asyncio.run(run_model_compare_command(url=args.url, json_output=getattr(args, "json", False)))
+        sys.exit(code)
+    elif args.command == "heuristics":
+        from credence.cli.commands.heuristics import (
+            run_heuristics_add_sample_command,
+            run_heuristics_benchmark_command,
+        )
+
+        if args.action in ("add-corpus-sample", "add-sample"):
+            code = asyncio.run(
+                run_heuristics_add_sample_command(
+                    url=args.target,
+                    json_output=getattr(args, "json", False),
+                )
+            )
+        else:
+            code = asyncio.run(
+                run_heuristics_benchmark_command(
+                    corpus=getattr(args, "corpus", None),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+        sys.exit(code)
+    elif args.command == "node":
+        from credence.cli.commands.node import (
+            run_node_rescore_command,
+            run_node_role_command,
+        )
+
+        if args.action in ("rescore", "sweep"):
+            code = asyncio.run(
+                run_node_rescore_command(
+                    limit=getattr(args, "limit", 20),
+                    force=getattr(args, "force", False),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+        else:
+            code = asyncio.run(
+                run_node_role_command(
+                    role=getattr(args, "role", None),
+                    strategy=getattr(args, "strategy", None),
+                    auto_rescore=getattr(args, "auto_rescore", None),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+        sys.exit(code)
     elif args.command in ("import", "import-pack"):
         code = asyncio.run(run_db_import_pack_command(input_source=args.source))
         sys.exit(code if isinstance(code, int) else 0)

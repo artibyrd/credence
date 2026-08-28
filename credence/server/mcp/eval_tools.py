@@ -120,12 +120,34 @@ def _register_eval_tools(server: MCPServer) -> None:
 
             return json.dumps(report.model_dump(mode="json"), indent=2)
 
-        return "{}"
+    @server.tool(
+        name="credence_compare_models",
+        description="Compare multi-model evaluation passes and score discrepancies for a given URL or article.",
+    )
+    async def compare_models(url: str) -> str:
+        from credence.storage.revisions import get_model_comparison_matrix
+
+        await init_db()
+        async with get_async_session() as session:
+            matrix = await get_model_comparison_matrix(session, url)
+            return matrix.model_dump_json(indent=2)
+
+    @server.tool(
+        name="credence_run_heuristics_benchmark",
+        description="Run Tier 2 empirical calibration benchmark against the N=100+ static anchor corpus.",
+    )
+    async def run_heuristics_benchmark(corpus_path: Optional[str] = None) -> str:
+        from pathlib import Path
+
+        from credence.pipeline.heuristics.benchmark import run_empirical_heuristic_calibration
+
+        c_path = Path(corpus_path) if corpus_path else None
+        result = run_empirical_heuristic_calibration(corpus_path=c_path)
+        return result.model_dump_json(indent=2)
 
 
 async def _execute_browse_audits(category: str = "recent", limit: int = 10, format: str = "human") -> str:
     """Helper to browse stored audit records for FastMCP tools and resources."""
-    import secrets
 
     await init_db()
     async with get_async_session() as s:
@@ -151,16 +173,22 @@ async def _execute_browse_audits(category: str = "recent", limit: int = 10, form
         else:  # "recent"
             stmt = select(Audit).order_by(col(Audit.audited_at).desc()).limit(limit)
 
-        audits = list((await s.exec(stmt)).all())
-        if cat == "random" and audits:
-            secrets.SystemRandom().shuffle(audits)
-            audits = audits[:limit]
+        res = await s.exec(stmt)
+        audits = res.all()
 
         if not audits:
-            return json.dumps({"message": f"No audit records found for category '{category}'."})
+            return f"No audit records found for category: '{category}'"
 
         fmt = format.lower()
-        if fmt == "ndjson":
+        if fmt in ("table", "grid"):
+            lines = [f"{'SCORE':6} | {'VERDICT':12} | {'SHA-256':24} | {'TIMESTAMP'}", "-" * 70]
+            for a in audits:
+                badge = "SATIRE" if a.is_satire else a.classification
+                lines.append(
+                    f"[{a.suspicion_score:4.1f}] {badge:12} | SHA: {a.content_sha256[:20]}... | {a.audited_at}"
+                )
+            return "\n".join(lines)
+        elif fmt == "ndjson":
             lines = []
             for a in audits:
                 d = a.to_dict() if hasattr(a, "to_dict") else a.model_dump()
@@ -192,5 +220,3 @@ async def _execute_browse_audits(category: str = "recent", limit: int = 10, form
         else:
             records = [a.to_dict() if hasattr(a, "to_dict") else a.model_dump() for a in audits]
             return json.dumps(records, indent=2, default=str)
-
-    return "{}"
