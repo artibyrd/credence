@@ -2515,3 +2515,27 @@ def test_cross_domain_links_and_deep_route_integrity():
     assert not violations, f"Found {len(violations)} deep-link route integrity violations:\n" + "\n".join(
         f"  - {v}" for v in violations
     )
+
+
+@pytest.mark.governance
+def test_docs_schema_and_blueprint_staleness_guard(docs_root: Path) -> None:
+    """Verify inv-documentation-expansion: assert existing blueprints and docs have zero stale mock schemas or dummy functions."""
+    deprecated_mock_patterns = [
+        ("function synthesizeDomainAudit", "Deprecated synthetic generator function implementation found in docs"),
+        ('"work_sharing_ratio": 0.923', "Stale hardcoded worksharing ratio found in blueprint schema"),
+    ]
+
+    violations = []
+    for md_file in sorted(docs_root.glob("docs/**/*.md")):
+        if md_file.name == "changelog.md":
+            continue
+        content = md_file.read_text(encoding="utf-8")
+        for pattern, reason in deprecated_mock_patterns:
+            if pattern in content:
+                violations.append(f"{md_file.relative_to(docs_root)}: {reason} ('{pattern}')")
+
+    assert not violations, (
+        "Stale documentation / blueprint schema violations found:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nPer inv-documentation-expansion, update existing blueprints when schemas and invariants change."
+    )
