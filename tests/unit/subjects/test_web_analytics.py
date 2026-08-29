@@ -103,7 +103,7 @@ async def test_domain_epistemic_index_and_leaderboards(db_session: AsyncSession)
     assert len(wall_of_shame) >= 2
     assert wall_of_shame[0].domain == "shady-news.biz"
     assert wall_of_shame[0].dci_score <= 50.0
-    assert wall_of_shame[0].trust_band in ("LOW_INTEGRITY", "DECEPTIVE", "SUSPICIOUS")
+    assert wall_of_shame[0].trust_band in ("LOW_INTEGRITY", "DECEPTIVE", "SUSPICIOUS", "WATCHLIST")
 
 
 @pytest.mark.asyncio

@@ -364,7 +364,7 @@
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 0.85rem; margin-bottom: 1.25rem;">
                   <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.25rem;">Cache State:</div>
                   <div style="font-family: monospace; font-size: 0.88rem; color: #fff;" id="germination-cache-status">
-                    13 Root Snapshots | 36 Attested Rules
+                    Querying Cache State...
                   </div>
                 </div>
 
@@ -446,7 +446,7 @@
                 <div style="margin-bottom: 1rem;">
                   <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.35rem;">Node Public Key (Ed25519)</div>
                   <div style="background: #07090e; padding: 0.6rem 0.85rem; border-radius: 6px; font-family: monospace; font-size: 0.78rem; color: #38bdf8; word-break: break-all; border: 1px solid rgba(56,189,248,0.2); cursor: pointer;" onclick="copyNodePubKey()" title="Click to copy public key" id="node-pubkey-display">
-                    9580dc91601992b33e3fd76718fcf94a69c76bf233b634221a9ae2ee59974cd0
+                    Loading Local Ed25519 Public Key...
                   </div>
                 </div>
 
@@ -607,6 +607,20 @@
         if (locked) locked.style.display = 'none';
         if (unlocked) unlocked.style.display = 'block';
         appendLog('Operator Cockpit unlocked for current session', 'success');
+
+        // Dynamic Node Identity & Cache Status Query
+        fetch('/api/mesh/status').then(r => r.ok ? r.json() : null).then(data => {
+          if (data) {
+            const pkEl = document.getElementById('node-pubkey-display');
+            if (pkEl && data.my_node && data.my_node.node_pubkey) {
+              pkEl.textContent = data.my_node.node_pubkey;
+            }
+            const cacheEl = document.getElementById('germination-cache-status');
+            if (cacheEl && data.storage_gravity) {
+              cacheEl.textContent = `${data.article_processing?.total_audits || 0} Root Snapshots | ${data.storage_gravity.database_size_mb || 0} MB SQLite Database`;
+            }
+          }
+        }).catch(() => {});
       } else {
         if (locked) locked.style.display = 'block';
         if (unlocked) unlocked.style.display = 'none';
@@ -646,8 +660,8 @@
         showToast('✅ Spend limits and Node Role saved successfully', 'success');
         appendLog(`Node role updated to ${role.toUpperCase()} (Strategy: ${strategy})`, 'success');
       } catch (e) {
-        showToast('✅ Settings saved in session', 'info');
-        appendLog(`Settings updated in local session`, 'info');
+        showToast('❌ Network error saving settings', 'error');
+        appendLog(`Error saving settings: ${e.message}`, 'error');
       }
     };
 
@@ -668,8 +682,8 @@
           appendLog('Evaluator sweep: All stored audits are up-to-date or governor throttled', 'info');
         }
       } catch (e) {
-        showToast('⚡ Evaluator sweep triggered', 'info');
-        appendLog('Evaluator re-scoring sweep triggered locally', 'info');
+        showToast('❌ Network error during evaluator sweep', 'error');
+        appendLog(`Evaluator sweep error: ${e.message}`, 'error');
       }
     };
 
@@ -683,8 +697,8 @@
         showToast('🛑 EMERGENCY STOP ACTIVATED', 'error');
         appendLog('EMERGENCY BRAKE TRIPPED: All LLM inference suspended (QUOTA_PRESERVED)', 'error');
       } catch (e) {
-        showToast('🛑 Emergency Stop tripped locally', 'error');
-        appendLog('Emergency Stop tripped locally', 'error');
+        showToast('❌ Network error tripping emergency stop', 'error');
+        appendLog(`Emergency Stop network error: ${e.message}`, 'error');
       }
     };
 
@@ -838,7 +852,8 @@
           showToast('❌ Failed to export pack', 'error');
         }
       } catch (e) {
-        showToast('📦 Attestation pack exported', 'info');
+        showToast('❌ Network error exporting attestation pack', 'error');
+        appendLog(`Export error: ${e.message}`, 'error');
       }
     };
 

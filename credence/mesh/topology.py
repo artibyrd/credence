@@ -31,8 +31,8 @@ async def compute_network_mesh_health(
 
     my_node_data = local_stats.get("my_node", {})
     my_node_audits = my_node_data.get("total_audited_lifetime", 0)
+    my_uptime_pct = 100.0 if my_node_data.get("status") == "healthy" else 0.0
     my_memory_mb = my_node_data.get("memory_mb", 128.0)
-    my_uptime_pct = 99.98
     my_tokens_saved = local_stats.get("mesh_dynamics", {}).get("compute_savings", {}).get("tokens_saved_estimate", 0)
 
     local_alias = getattr(settings, "effective_node_alias", getattr(settings, "NODE_ALIAS", "credence-local-anchor"))

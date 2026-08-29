@@ -1129,11 +1129,13 @@ clusters:
           return;
         }
       } catch (e) {
-        // Fallback simulation
+        resEl.innerHTML = `<span style="color:var(--accent-rose);">❌ Benchmark daemon unreachable (${e.message})</span>`;
+        window.CredenceWS.showToast('Benchmark daemon connection failed', 'error');
+        return;
       }
 
-      resEl.innerHTML = '<span style="color:var(--accent-green);">✅ GAUNTLET: F₁=0.94 | Golden FPR=0.00% | G=1.00 (Simulated)</span>';
-      window.CredenceWS.showToast('Standard passed synthetic gauntlet', 'success');
+      resEl.innerHTML = '<span style="color:var(--accent-rose);">❌ Benchmark execution failed</span>';
+      window.CredenceWS.showToast('Benchmark evaluation failed', 'error');
     };
   </script>
 
