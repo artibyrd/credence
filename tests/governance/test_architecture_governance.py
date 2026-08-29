@@ -130,3 +130,16 @@ def test_5tier_dci_and_monotonic_score_thresholds_parity() -> None:
     assert classify_verdict(70.1) == "DECEPTIVE"
     assert classify_verdict(100.0) == "DECEPTIVE"
     assert classify_verdict(50.0, is_satire=True) == "SATIRE_PARODY"
+
+
+@pytest.mark.unit
+def test_workspace_root_scratch_directory_isolation() -> None:
+    """Verify inv-clean-scratch-scripts: scratch directory must reside strictly at workspace root, never inside sub-repos."""
+    ecosystem_root = REPO_ROOT.parent
+    sub_repos = [REPO_ROOT, ecosystem_root / "credence-docs", ecosystem_root / "credence-agent"]
+
+    violations = [str(repo / "scratch") for repo in sub_repos if (repo / "scratch").exists()]
+    assert not violations, (
+        f"Scratch directories found inside git repositories: {violations}. "
+        f"Per inv-clean-scratch-scripts, scratch scripts MUST reside exclusively in the workspace root: {ecosystem_root / 'scratch'}"
+    )

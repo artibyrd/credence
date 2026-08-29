@@ -77,6 +77,3 @@ root_private.pem
 # Cloudflare & Node Artifacts
 node_modules/
 .wrangler/
-
-# Workspace Scratch Scripts
-scratch/
