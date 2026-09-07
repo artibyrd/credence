@@ -1841,54 +1841,54 @@ def diagram_crawler_commons() -> str:
 
 def diagram_pareto_frontier() -> str:
     """Multi-Model Empirical Pareto Frontier: Accuracy, Latency & Cost."""
-    c = SchematicCanvas(860, 280, "EMPIRICAL PARETO FRONTIER", "BENCHMARKS")
+    c = SchematicCanvas(860, 280, "EMPIRICAL PARETO FRONTIER", "14-MODEL TOURNAMENT")
     c.node(
         35,
         84,
         185,
         160,
-        "Offline & Local",
-        "Fast AST rule parser\nDeepSeek-R1 sovereign\nZero cloud expense",
+        "Offline & Edge",
+        "Deterministic AST\nGemma 27B & Jamba Mini\nAmbient feed indexing",
         "🛡️",
         "#64748b",
-        pill="$0.00 / 1k",
+        pill="$0 - $0.40 / 1k",
     )
     c.node(
         240,
         84,
         185,
         160,
-        "Gemini 3.7 Flash 4k",
-        "100% claim grounding\nPoe's Law satire shield\n98% cost savings",
+        "Calibrated Flash",
+        "Gemini 3.8 (780ms)\nGemini 3.7 Flash 4k\n100% claim grounding",
         "★",
         "#38bdf8",
-        pill="Optimal $0.34",
+        pill="Pareto Optimum",
     )
     c.node(
         445,
         84,
         185,
         160,
-        "Claude 3.7 & GPT-4o",
-        "Escalation specialist\nGeneralist baseline\nCross-validation",
+        "Sovereign Fleet",
+        "DeepSeek-R1 thinking\nLlama 3.3 & Qwen 2.5\nAir-gapped mesh nodes",
         "⚖️",
         "#a855f7",
-        pill="$2.50 - $3.00",
+        pill="$0.50 - $1.50 / 1k",
     )
     c.node(
         650,
         84,
         185,
         160,
-        "Unconstrained Pro",
-        "30x cost penalty\nParanoia hallucination\nDiminishing accuracy",
-        "❌",
-        "#ef4444",
-        pill="$18.29+ / 1k",
+        "Frontier Flagships",
+        "Claude Sonnet & Opus 4.6\nGemini 3.1 Pro flagship\nHigh-stakes escalation",
+        "🏛️",
+        "#f59e0b",
+        pill="Deliberation Tier",
     )
     c.arrow(220, 164, 240, 164, "#38bdf8", marker="url(#arrow-cyan)")
     c.arrow(425, 164, 445, 164, "#a855f7", marker="url(#arrow-purple)")
-    c.arrow(630, 164, 650, 164, "#ef4444", marker="url(#arrow-rose)")
+    c.arrow(630, 164, 650, 164, "#f59e0b", marker="url(#arrow-amber)")
     return c.render()
 
 
