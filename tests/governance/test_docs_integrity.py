@@ -2715,3 +2715,83 @@ def test_narrative_plot_fidelity_and_zero_copy_boilerplate_invariant(docs_root: 
         + "\n".join(f"  - {v}" for v in violations)
         + "\nAll articles must have bespoke conclusions, clean tables, zero pseudo-ASCII remnants, and zero legacy hash links."
     )
+
+
+@pytest.mark.governance
+def test_cross_reference_density_and_linked_invariants_invariant(docs_root: Path) -> None:
+    """Gate 14: Cross-Reference Density & Linked Invariants Invariant.
+
+    Enforces that:
+    1. Zero diagnostic verification tables contain unlinked raw monospace `inv-...` code spans; all invariants in
+       diagnostic tables must be hyperlinked (`[`inv-...`](/docs/invariants#inv-...)`).
+    2. The core empirical studies and investigative articles must not be isolated islands; each must contain
+       at least 2 companion Markdown cross-links (/blog/... or /docs/...) to other studies or protocols.
+    """
+    CORE_STUDIES = [
+        "blog/the-pareto-frontier-of-truth.md",
+        "blog/the-4000-token-trance.md",
+        "blog/case-study-the-heuristic-ceiling.md",
+        "blog/case-study-dual-tier-finops.md",
+        "blog/case-study-astroturfing-entropy.md",
+        "blog/what-credence-sees-when-an-article-changes.md",
+        "blog/conflict-of-pun-terest.md",
+    ]
+
+    violations = []
+
+    # 1. Check Diagnostic Verification tables across all markdown files
+    for md_file in sorted(docs_root.rglob("*.md")):
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        in_diagnostic_table = False
+        in_code = False
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+
+            # Detect diagnostic table header
+            if stripped.startswith("|") and ("Target Invariant" in stripped or "Verification Layer" in stripped):
+                in_diagnostic_table = True
+                continue
+            elif stripped.startswith("|") and in_diagnostic_table:
+                # Check for unlinked invariant in row
+                unlinked_match = re.search(r"(?<!\[)`(inv-[a-z0-9-]+)`(?!\()", stripped)
+                if unlinked_match:
+                    inv_found = unlinked_match.group(1)
+                    violations.append(
+                        f"{rel_path}:{idx}: Unlinked invariant `{inv_found}` in diagnostic verification table. Must be hyperlinked: [`{inv_found}`](/docs/invariants#{inv_found})"
+                    )
+            else:
+                in_diagnostic_table = False
+
+    # 2. Check Core Empirical Studies cross-reference density
+    for study_rel in CORE_STUDIES:
+        study_file = docs_root / study_rel
+        if not study_file.exists():
+            continue
+        content = study_file.read_text(encoding="utf-8")
+        # Find internal links to other blog articles or docs
+        internal_links = re.findall(r"\[([^\]]+)\]\(((?:/docs/|/blog/)[^)]+)\)", content)
+        # Filter out self-links and root links
+        study_slug = Path(study_rel).stem
+        companion_links = [
+            link_item
+            for link_item in internal_links
+            if study_slug not in link_item[1] and link_item[1] not in ("/docs/", "/blog/")
+        ]
+        if len(companion_links) < 2:
+            violations.append(
+                f"{study_rel}: Isolated article detected! Contains only {len(companion_links)} companion cross-links (expected >= 2). Must link to companion empirical studies or protocols."
+            )
+
+    assert not violations, (
+        f"Gate 14: Found {len(violations)} cross-referencing and linked invariant violations across documentation:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nAll diagnostic tables must hyperlink invariants to The Invariant Bible, and core empirical studies must cross-reference companion studies."
+    )
