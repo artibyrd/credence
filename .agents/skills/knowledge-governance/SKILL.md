@@ -49,7 +49,7 @@ When synthesizing new insights, evaluate each finding against this scalability m
   - Multi-step procedural runbooks and troubleshooting workflows (`white-label-ops`, `mesh-cluster`).
   - Complex domain simulations (`epistemic-benchmark`).
 
-### Tier 2: Shift-Left Automated Integrity Test Gates (`tests/test_docs_integrity.py` & `Justfile`)
+### Tier 2: Shift-Left Automated Integrity Test Gates (`tests/governance/test_docs_integrity.py` & `Justfile`)
 - **Loading Mode**: Execution Time (`just check` runs in <0.3s).
 - **Best For**:
   - Semantic version parity across manifests (`test_ecosystem_version_parity`).
@@ -90,12 +90,43 @@ Invariants are not immutable dogmas; they represent the **strongest validated em
 
 ### The Demotion Highway (Shift-Left Graduation)
 - **Philosophy**: *If a machine can assert it deterministically in <0.3s, never waste LLM attention tokens prompting for it.*
-- When deterministic static analysis or unit test coverage is built for a Tier 0 invariant, that rule is **demoted** out of `AGENTS.md` and converted into a permanent test gate in `tests/test_docs_integrity.py`.
+- When deterministic static analysis or unit test coverage is built for a Tier 0 invariant, that rule is **demoted** out of `AGENTS.md` and converted into a permanent test gate in `tests/governance/test_docs_integrity.py`.
 - This keeps `AGENTS.md` permanently bounded ($<800$ tokens) regardless of how many versions or invariants are discovered over years of development.
 
 ### Upward Axiomatic Consolidation Heuristic
 - When the Tier 0 token budget approaches 800 tokens, tactical invariants must be synthesized upward into higher-order principles rather than expanding the list.
 - *Example*: Consolidating SSRF IP blocking, XML entity injection, and LLM prompt framing into a single **Untrusted Ingestion Boundary & Network Defense** invariant.
+
+### Case Study: v2.19.0 Hypertext, Plot Fidelity & Docker Demotions
+- **Problem**: Monospace code-blocks (` `inv-...` `), broken local `file:///` URLs, and generic boilerplate endings proliferated across 90+ documentation files, while BuildKit caches consumed 20+ GB of host disk space.
+- **Anti-Pattern**: Adding verbose prompt rules to `AGENTS.md` to instruct the model on link formatting, anchor clearance, and Docker maintenance would consume 250+ tokens on every turn.
+- **Shift-Left Solution**:
+  1. Built deterministic test gates in `tests/governance/test_docs_integrity.py` (Gate 13 for plot fidelity, Gate 14 for cross-reference density, Gate 15 for zero `file:///` URIs) running in <7s.
+  2. Synthesized procedural standards and Docker hygiene into `architecture-governance` (Tier 1 on-demand skill) and added `just docker-clean` to the toolchain.
+  3. Kept Tier 0 strictly focused on high-order sovereign non-negotiables (`inv-narrative-plot-fidelity`).
+
+---
+
+## 2.1 The Workspace Root Scratch Invariant & Anti-Amnesia Protocol
+
+A recurring cognitive conflict occurs because default agent instructions suggest `<appDataDir>/brain/<conversation-id>/scratch/`, whereas the sovereign Credence workspace invariant (`inv-clean-scratch-scripts`) mandates `/scratch/` at the repository root.
+
+### The 3-Step Scratch Ritual
+1. **Write to Root**: Write curated scripts strictly to `/home/pendragon/Projects/credence-ecosystem/scratch/<name>.py` with `# Created Session ID: <id>` and `# Modified Session ID: <id>` headers.
+2. **Render Link First**: Output a clickable markdown file link (`[scratch/<name>.py](file:///home/pendragon/Projects/credence-ecosystem/scratch/<name>.py)`) in the chat before invoking the tool.
+3. **Execute via Python**: Run the script cleanly using `poetry run python scratch/<name>.py`.
+4. **Zero Inline Blobs**: Never execute ad-hoc inline blobs (`python -c`, `bash -c`) for inspection or migration tasks.
+
+---
+
+## 2.2 The Artifact Archival & Anti-Wipe Invariant ("That Belongs in a Museum!")
+
+Artifacts (`implementation_plan.md`, `walkthrough.md`, case studies) are permanent historical records of architectural reasoning, test proofs, and operational decisions.
+
+### Anti-Wipe / Anti-BBC Archival Rules
+1. **Zero Wholesale Overwriting**: Never overwrite or erase previous milestone phases or test tables during long sessions (avoiding the BBC lost tapes trap).
+2. **Cumulative Milestone Appending**: When executing follow-up tasks, lean patch releases, or secondary phases, append chronological milestone sections (e.g. `## Milestone 1 (vX.Y.0)`, `## Milestone 2: Lean Patch Release (vX.Y.1)`).
+3. **Discrete Numbered Artifacts**: If a plan diverges fundamentally, spawn a distinct numbered artifact (e.g. `implementation_plan_phase2.md`, `walkthrough_v2_18_0.md`) rather than wiping the existing artifact.
 
 ---
 
@@ -214,7 +245,7 @@ Every `.md` document in `docs/` and `blog/` must maintain three version provenan
 
 ### Major Release Documentation Audit Procedure
 During major release cycles:
-1. **Freshness Scan**: Run `pytest tests/test_docs_integrity.py` to assert that all documentation markdown files have valid `since_version` and `verified_version` frontmatter.
+1. **Freshness Scan**: Run `pytest tests/governance/test_docs_integrity.py` to assert that all documentation markdown files have valid `since_version` and `verified_version` frontmatter.
 2. **Obsolete Pattern Elimination**: Audit markdown bodies to eliminate legacy CLI patterns (e.g. `poetry run credence serve` &rarr; direct virtualenv execution), outdated LLM models, and deprecated cloud deployment flags.
 3. **Bump Verification Metadata**: Update `verified_version` to target release (e.g. `v1.15.0`) and `last_verified` to the current release date.
 
@@ -237,7 +268,7 @@ Before implementing major structural changes, subject the plan to the **4-Round 
 
 ### Prompt Context Budget Governance
 - **Strict `< 800-token` Hard Ceiling:** Root `AGENTS.md` must be kept under 800 tokens.
-- **Rule Pruning:** Whenever a new Tier-0 invariant is proposed, audit existing rules. If a rule can be verified mechanically (e.g. frontmatter or sitemaps), move it into `tests/test_docs_integrity.py` (Tier 2).
+- **Rule Pruning:** Whenever a new Tier-0 invariant is proposed, audit existing rules. If a rule can be verified mechanically (e.g. frontmatter or sitemaps), move it into `tests/governance/test_docs_integrity.py` (Tier 2).
 ---
 
 ## 7. Canonical Lexicon Governance & Thematic Ontology
@@ -385,15 +416,25 @@ This prevents SPA 404 fallback HTML documents from ever rendering nested navbars
 
 ---
 
-## 15. Clean Session Brain Scratch Scripts & Approval Bootstrapping Invariant (`inv-clean-scratch-scripts`)
+## 15. Clean Workspace Scratch Scripts, Provenance & Archival Invariant (`inv-clean-scratch-scripts`)
 
-### 1. Mandatory Brain Scratch Storage Location
-- **Session History Preservation**: Ad-hoc scripts requiring user approval (`BypassSandbox: true`) must strictly be written to standalone files in the active session artifact brain directory (`<appDataDir>/brain/<conversation-id>/scratch/<name>.py`), never in repository root or workspace `/scratch/`.
-- **Zero-Blob Standard**: Multi-line inline command blobs (`python -c "..."`) are prohibited for user approvals.
-- **Single-Approval Iteration**: Saving scripts as standalone files allows the human operator to grant "Always Allow" on `python3 <appDataDir>/brain/<conversation-id>/scratch/<name>.py`, enabling subsequent agent edits to the script without re-prompting.
+### 1. Curated Workspace Scratch Location & Provenance
+- **Curated Cross-Session Toolkit**: Ad-hoc scripts requiring user approval (`BypassSandbox: true`) must strictly be written to standalone files in the workspace root `/scratch/<name>.py`.
+- **Multi-Session Provenance Headers**: Every scratch script must include explicit provenance tracking in its top-level header:
 
-### 2. Workspace Approval Bootstrapping Gate
-- Fresh workspaces must execute `just bootstrap-approvals` (`scripts/bootstrap_approvals.py --execute`) to prime the IDE command approval cache across all safe, read-only command shapes before starting feature development.
+```python
+# Created Session ID: <conversation-id>
+# Modified Session IDs: [<conversation-id>, ...]
+```
+
+- **Zero-Blob Standard**: Multi-line inline command blobs (`python -c "..."`) and shell loops (`for r in ...`) are strictly prohibited.
+- **Pre-Execution Chat Links**: The agent must output a clickable Markdown file link in chat prior to invoking `run_command`.
+
+### 2. Scratch Archival & Anti-Clutter Lifecycle
+- Stale, single-purpose exploration, or superseded scripts are moved to `/scratch/archive/` to keep the active toolkit clean while retaining historical context.
+
+### 3. Workspace Approval Bootstrapping Gate
+- Fresh workspaces execute `just bootstrap-approvals` (`scripts/bootstrap_approvals.py --execute`) to prime the IDE command approval cache across safe command shapes before starting feature development.
 
 
 
