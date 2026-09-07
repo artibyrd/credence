@@ -1839,8 +1839,61 @@ def diagram_crawler_commons() -> str:
     return c.render()
 
 
+def diagram_pareto_frontier() -> str:
+    """Multi-Model Empirical Pareto Frontier: Accuracy, Latency & Cost."""
+    c = SchematicCanvas(860, 280, "EMPIRICAL PARETO FRONTIER", "BENCHMARKS")
+    c.node(
+        35,
+        84,
+        185,
+        160,
+        "Offline & Local",
+        "Fast AST rule parser\nDeepSeek-R1 sovereign\nZero cloud expense",
+        "🛡️",
+        "#64748b",
+        pill="$0.00 / 1k",
+    )
+    c.node(
+        240,
+        84,
+        185,
+        160,
+        "Gemini 3.7 Flash 4k",
+        "100% claim grounding\nPoe's Law satire shield\n98% cost savings",
+        "★",
+        "#38bdf8",
+        pill="Optimal $0.34",
+    )
+    c.node(
+        445,
+        84,
+        185,
+        160,
+        "Claude 3.7 & GPT-4o",
+        "Escalation specialist\nGeneralist baseline\nCross-validation",
+        "⚖️",
+        "#a855f7",
+        pill="$2.50 - $3.00",
+    )
+    c.node(
+        650,
+        84,
+        185,
+        160,
+        "Unconstrained Pro",
+        "30x cost penalty\nParanoia hallucination\nDiminishing accuracy",
+        "❌",
+        "#ef4444",
+        pill="$18.29+ / 1k",
+    )
+    c.arrow(220, 164, 240, 164, "#38bdf8", marker="url(#arrow-cyan)")
+    c.arrow(425, 164, 445, 164, "#a855f7", marker="url(#arrow-purple)")
+    c.arrow(630, 164, 650, 164, "#ef4444", marker="url(#arrow-rose)")
+    return c.render()
+
+
 # ==============================================================================
-# MASTER CATALOG OF ALL 42 ACTIVE ARCHITECTURAL ILLUSTRATIONS
+# MASTER CATALOG OF ALL ACTIVE ARCHITECTURAL ILLUSTRATIONS
 # ==============================================================================
 
 ACTIVE_DIAGRAMS = {
@@ -2012,6 +2065,10 @@ ACTIVE_DIAGRAMS = {
     "the-tragedy-of-the-crawler-commons.svg": (
         diagram_crawler_commons,
         "Figure 1.1: The tragedy of the crawler commons and polite P2P mesh work-sharing protocols",
+    ),
+    "the-pareto-frontier-of-truth.svg": (
+        diagram_pareto_frontier,
+        "Figure 1.1: Multi-model empirical Pareto frontier comparing audit cost, reasoning latency, and epistemic accuracy",
     ),
 }
 
