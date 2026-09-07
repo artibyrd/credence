@@ -917,7 +917,7 @@ const INFO_TOPICS = {
       Credence detects sneaky web tricks like hiding unexpected fees until the last page of checkout (<i>Drip Pricing</i>), making cancel buttons make you feel guilty (<i>Confirmshaming</i>), or displaying fake popup warnings that claim your computer is infected.
     `,
     tier1_article: {
-      title: "✍️ Case Study: Astroturfing Entropy & Dark Patterns",
+      title: "✍️ Blueprint: Astroturfing Entropy & Dark Patterns",
       desc: "How coordinated deceptive funnels trick consumers across affiliate syndication networks.",
       url: "https://blog.credence.run/case-study-astroturfing-entropy"
     },
