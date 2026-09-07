@@ -222,6 +222,25 @@ docker-build: (preflight "docker")
 docker-test: (preflight "docker")
     docker compose run --rm credence poetry run pytest tests/
 
+# Clean up dangling Docker containers, untagged images, and reclaim build cache
+[group('core: cluster')]
+docker-clean: (preflight "docker")
+    @echo "🧹 Pruning dangling Docker build cache, images, and volumes..."
+    docker builder prune -f
+    docker image prune -f
+    docker volume prune -f
+    @docker system df
+    @echo -e "\033[1;32m✅ Docker dangling artifacts and build cache cleaned.\033[0m"
+
+# Aggressively reclaim all unused Docker images, containers, and build cache
+[group('core: cluster')]
+[confirm('⚠️ This will remove ALL unused Docker images and build cache. Continue?')]
+docker-prune-all: (preflight "docker")
+    docker system prune -a -f --volumes
+    docker builder prune -a -f
+    @docker system df
+    @echo -e "\033[1;32m✅ All unused Docker artifacts pruned.\033[0m"
+
 # Bootstrap and manage operator administrative authentication credentials
 [group('core: cluster')]
 auth-bootstrap env="local":

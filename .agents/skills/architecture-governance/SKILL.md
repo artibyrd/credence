@@ -55,7 +55,7 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
 
 ### 7. Zero-Hash Clean URL Routing & Canonical Slugs Law (`inv-clean-slug-routing`)
 - **Path vs. Hash Separation**: Document paths and essay slugs must strictly reside in `window.location.pathname` (e.g. `https://blog.credence.run/the-pizza-hut-problem` and `https://docs.credence.run/protocols/scoring`). Hash fragments (`#<id>`) are reserved exclusively for in-page DOM element IDs and section headings.
-- **Zero Backwards-Compatibility Overhead**: Prohibit legacy `#blog/...` or `#docs/...` hash routing handlers. Keep canonical URLs clean, robust, and free of legacy cruft.
+- **Zero Backwards-Compatibility Overhead**: Prohibit legacy hash routing handlers (such as `#blog-route` or hash-based paths). Keep canonical URLs clean, robust, and free of legacy cruft.
 - **HTML5 History API Navigation**: Internal link navigation must use `history.pushState(null, '', nextUrl)` with active `popstate` event listeners for instant, zero-reload transitions.
 - **Cloudflare Pages SPA Architecture**: All zero-build documentation and blog sites deployed to Cloudflare Pages must include `_redirects` (`/* /index.html 200`) and a dynamic `<base>` tag initializer in `<head>` to ensure relative assets and ES module imports resolve properly across multi-level clean paths.
 
@@ -63,6 +63,36 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
 - **Mandatory Leading H1**: Every documentation file and editorial article must include a top-level `# <Title>` heading immediately following the frontmatter block.
 - **Title Concordance**: The leading `# <Title>` heading text must match the frontmatter `title:` attribute.
 - **Defensive SPA Rendering**: The client-side markdown parser (`parseMarkdown` in `app.js`) must defensively prepend `<h1>${frontmatter.title}</h1>` if a document body omits a leading H1 header, preventing any article from rendering "headless".
+
+### 9. Universal Internal Cross-Reference Density & Hyperlinked Invariants Standard
+- **Hypertext Over Code-Blocks**: Never render system invariants or companion documents as isolated monospace code-blocks (` `inv-...` `) or plain unlinked text. Always convert them into canonical, clickable markdown links: `[`inv-...`](/docs/invariants#inv-...)`.
+- **Companion Study Interconnection**: Every empirical research paper and technical blueprint must actively cross-reference related companion studies within its investigative narrative.
+- **Zero Local `file:///` URIs in Public Docs**: Public markdown documents must contain zero local `file:///` filesystem schemes. In web contexts, relative or canonical root paths (`/docs/...`, `/blog/...`) must be used.
+- **Enforcement**: Shift-Left Gate 14 (`test_cross_reference_density_and_linked_invariants_invariant`) and Gate 15 (`test_all_markdown_links_and_anchors_resolve_cleanly`) in `test_docs_integrity.py`.
+
+### 10. Zero-Reload Invariant Anchor Navigation & Dynamic Offset Standard
+- **Same-Document Route Caching**: Single Page Application (SPA) client routers must cache `currentLoadedDocId`. When navigating to anchor links (`#<id>`) on the currently rendered document, skip markdown re-fetch and DOM destruction; immediately trigger anchor scroll.
+- **Multi-Pattern Anchor Resolution**: Anchor navigators must resolve targets across multiple identifier patterns: direct ID, name attribute, `cleanId`, `inv-<slug>`, and `invariant-<slug>`.
+- **Dynamic Header Clearance**: Anchor scroll offsets must calculate combined header heights: `headerOffset = hasFilterBar ? 135px : 90px`, ensuring 15–20px clearance below both the 70px navigation bar and 45px category filter bar.
+- **Automatic Target Unhiding**: If the target card is hidden by an active category filter or collapsed inside an ancestor `<details>` element, the navigator must activate the corresponding category filter button (`.scope-btn`) and expand the `<details>` parent before scrolling.
+- **Attention Glow Pulse**: Highlight the resolved card with a 2.5s `.highlight-anchor` cyan glow pulse (`outline: 2px solid #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.45)`).
+- **CSS Scroll Margins**: Public stylesheets must specify `html { scroll-behavior: smooth; scroll-padding-top: 135px; }` and `.invariant-card, [id] { scroll-margin-top: 135px; }`.
+
+### 11. Universal Narrative Plot Fidelity & Anti-Boilerplate Standard (`inv-narrative-plot-fidelity`)
+- **4-Stage Narrative Arc**: Every published study, case study, and architectural article must strictly fulfill the promise of its title following the 4-stage arc:
+  1. *Title Promise*: State the concrete research question or engineering hypothesis.
+  2. *Grounded Investigation*: Present empirical telemetry, data tables, and methodology.
+  3. *Human Metric Demystification*: Explain mathematical scores (e.g. DCI, ASI) in clear human terms.
+  4. *Definitive Conclusion*: Directly answer the question posed in the title.
+- **Zero Copy-Paste Boilerplate**: Never terminate articles with repeated generic boilerplate conclusions ("Decouple Heuristics...").
+- **Enforcement**: Shift-Left Gate 13 (`test_narrative_plot_fidelity_and_zero_copy_boilerplate_invariant`).
+
+### 12. Docker Artifact & Build Cache Hygiene Standard
+- **Reclaim Build Cache Proactively**: Iterative containerized builds and test gauntlets (`just test-docker`, `just mesh-up`, `docker compose build`) accumulate tens of gigabytes of BuildKit caches and dangling layer cruft over time.
+- **Dedicated Cleanup Recipes**:
+  - `just docker-clean`: Safely reclaims dangling build cache, untagged images, and dangling volumes (`docker builder prune -f && docker image prune -f && docker volume prune -f`) without stopping running containers or removing named project images.
+  - `just docker-prune-all`: Gated interactive deep prune for periodic operator disk recovery (`docker system prune -a -f --volumes`).
+- **Telemetry Verification**: Validate local disk status using `docker system df` before and after heavy container operations.
 
 ---
 
@@ -82,7 +112,7 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
   - `just cloud-probe` $\to$ Verifies `/health` reports `vX.Y.Z` before Mk1 review
   - Mk1 Eyeball Review $\to$ Human sign-off on PRs and live Dev endpoints
   - `just pr-merge` $\to$ Merges PR triad into `main`
-  - `just release <version> <msg>` $\to$ Tags and releases on production
+  - `just --yes release <version> <msg>` $\to$ Tags and releases on production (uses `--yes` to auto-confirm in non-interactive workflows)
 
 ### 3. Conventional PR Title & Scope Taxonomy
 - **Strict Scope Taxonomy**: The CI gate strictly enforces conventional PR scopes. Scopes MUST strictly be one of:
@@ -257,6 +287,50 @@ When designing compact navigation controls, plane switchers, and sidebar toggles
 3. **Cache-Busted Static Asset References**:
    - All static CSS and JS script tags must include `?v=${VERSION}` query parameters to ensure instant cache invalidation upon releases.
 
+---
 
+## 13. Workstation Viewport & Epistemic Lensing Architecture (`inv-zero-build-standards`, `inv-epistemic-lensing`)
 
+1. **Vertical Flex Scrolling**:
+   - `.tab-panel.active` must declare `display: flex !important; flex-direction: column; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden;`.
+   - Multi-card views (`#tab-search`, `#tab-browse`, `#tab-dci`, `#tab-sifter`) must never clip content with `overflow: hidden`.
 
+2. **Universal Custom Scrollbar Styling**:
+   - Custom 6px cyan scrollbars must be applied universally across `*`, `html`, `body`, `.tab-panel`, `.tab-panel.active`, `#tab-search`, `#search-results-list`, `.ws-scroll-pane`, `.ws-table-container`, `#sifter-stream-container`, and modals.
+
+3. **Epistemic Lensing Content Separation**:
+   - **Lens 1 (Surface Glance)**: Strictly human-readable executive verdicts, qualitative bullet points, pillar scores, and contextual cross-links (publisher dossiers, related audits from same domain, history diffs, standalone certificates). Zero formula notation ($G=1.00$, $\Delta St$) or cryptographic hashes.
+   - **Lens 2 (Focus Evidence)**: Verbatim DOM quotes, claim evaluations, inline temporal diffs.
+   - **Lens 3 (Deep Forensic)**: Mathematical proofs, RFC 8785 canonical bytes, Ed25519 signatures, topic entropy formulas.
+
+4. **Dynamic Count & Viewport Maximization**:
+   - Filter chips and category badges must always derive counts dynamically from the active dataset (`updateCategoryCounts()`), never hardcoded in HTML.
+   - Data tables (DCI Honor Roll, Sifter Stream) must consume 100% of available viewport height with sticky table headers (`position: sticky; top: 0; z-index: 2;`).
+   - Publisher Dossier headers place the primary credibility hero score in the top-right corner with stacked action buttons directly below.
+
+---
+
+## 14. Git Hygiene, Immediate Branching & The Justfile Highway
+
+### 1. Immediate Feature Branching upon Plan Approval
+- Never write implementation edits directly on `main` and branch retroactively.
+- Immediately run `just branch feat/<name>` upon plan approval *before* modifying code.
+
+### 2. Frequent Incremental Commits
+- Commit small, discrete, verified changes with `just commit <msg>` for every logical milestone.
+
+### 3. Canonical Execution Sequence
+$$\text{Plan Approval} \longrightarrow \mathbf{just\ branch} \longrightarrow \text{Code/Test} \longrightarrow \mathbf{just\ pr\text{-}create} \longrightarrow \mathbf{Monitor\ CI/CD} \longrightarrow \mathbf{Live\ Dev\ Probe} \longrightarrow \mathbf{Update\ Walkthrough} \longrightarrow \mathbf{Mk1\ Review}$$
+
+### 4. Operational Compass Heuristic
+- When in doubt, check the Justfile (`just --list` or `Justfile`).
+
+---
+
+## 15. UI Anti-Layout Jump & Single-Source-of-Truth Aggregation
+
+### 1. UI Zero-Flash Catalog Pre-Initialization
+- Single-page application views (e.g. publisher dossiers) must initialize counts and status headers directly from pre-loaded data catalogs or initial DOM templates before async API fetches resolve, eliminating jarring layout shifts and count flashes (e.g. "5 verified audits" $\to$ "52 verified audits").
+
+### 2. Single-Source-of-Truth Score Parity
+- Domain scores displayed across browse, dossier, and DCI tables must compute from identical aggregate mathematical formulas ($DCI = 100 - \bar{S}$) and synchronized catalogs to prevent score divergence between views.
