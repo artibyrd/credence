@@ -2539,3 +2539,59 @@ def test_docs_schema_and_blueprint_staleness_guard(docs_root: Path) -> None:
         + "\n".join(f"  - {v}" for v in violations)
         + "\nPer inv-documentation-expansion, update existing blueprints when schemas and invariants change."
     )
+
+
+@pytest.mark.governance
+def test_docs_test_paths_and_k_filters_validity(docs_root: Path) -> None:
+    """Gate 11: Verify all documented pytest commands, test file paths, and -k filters exist and collect real tests.
+
+    Enforces that zero hallucinated test paths or phantom -k filter expressions are documented.
+    """
+    repo_root = docs_root.parent / "credence"
+    tests_root = repo_root / "tests"
+
+    # Extract all test function, class names, and stems statically
+    known_test_tokens = set()
+    for tf in tests_root.rglob("*.py"):
+        known_test_tokens.add(tf.stem)
+        content = tf.read_text(encoding="utf-8", errors="ignore")
+        for fn in re.findall(r"def\s+(test_\w+)", content):
+            known_test_tokens.add(fn)
+        for cls in re.findall(r"class\s+(Test\w+)", content):
+            known_test_tokens.add(cls)
+
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    violations = []
+
+    k_pattern = re.compile(r'pytest\s+([^\n`]*?)-k\s+["\']?([^"\'\s]+)["\']?')
+
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8", errors="ignore")
+
+        # 1. Check all documented test file paths
+        for match in re.finditer(r"pytest\s+([^\n`]+)", content):
+            tokens = match.group(1).split()
+            for token in tokens:
+                if token.startswith("tests/"):
+                    clean_path = token.rstrip(",;:.)'\"")
+                    if clean_path in ("tests/", "tests"):
+                        continue
+                    if not (repo_root / clean_path).exists():
+                        violations.append(
+                            f"{md_file.relative_to(docs_root)}: Documented test path '{clean_path}' does not exist on disk."
+                        )
+
+        # 2. Check all documented -k filters
+        for match in k_pattern.finditer(content):
+            k_filter = match.group(2).strip("\"'")
+            matched = any(k_filter.lower() in token.lower() for token in known_test_tokens)
+            if not matched:
+                violations.append(
+                    f"{md_file.relative_to(docs_root)}: Documented -k filter '{k_filter}' matches zero tests in the test suite."
+                )
+
+    assert not violations, (
+        f"Gate 11: Found {len(violations)} documented test path or -k filter violations:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nAll documented test commands must point to real existing test files and valid -k filter expressions."
+    )
