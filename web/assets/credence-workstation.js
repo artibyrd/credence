@@ -464,6 +464,7 @@ export const INVARIANTS_REGISTRY = {
   "inv-dense-workstation-viewport": { legacyId: 45, class: "Class γ", scope: "domain", title: "Dense Workstation Viewport & Zero-Masking Invariant" },
   "inv-sovereign-config-decoupling": { legacyId: 59, class: "Class α", scope: "universal", title: "Sovereign Multi-Tenant Decoupling & Zero Hardcoded Tenant Config" },
   "inv-artifact-curation": { legacyId: 60, class: "Class γ", scope: "universal", title: "The Artifact Archival & Anti-Wipe Invariant (\"That Belongs in a Museum!\")" },
+  "inv-narrative-plot-fidelity": { legacyId: 61, class: "Class γ", scope: "universal", title: "Universal Narrative Plot Fidelity & Anti-Boilerplate Invariant (\"Never Lose the Plot\")" },
 };
 
 export function resolveInvariant(slugOrId) {

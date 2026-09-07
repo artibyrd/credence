@@ -788,11 +788,18 @@ def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None
                     broken_links.append((rel_doc, label, target, "Invalid URL syntax"))
                 continue
 
-            # 2. App Route links (#docs/... or #blog/...)
-            if target.startswith("#docs/") or target.startswith("#blog/"):
-                route_id = target.lstrip("#").split("#")[0].split(":")[0]
-                if route_id not in registered_ids:
-                    broken_links.append((rel_doc, label, target, f"Route ID '{route_id}' not found in DOCS_REGISTRY"))
+            # 2. App Route links (/docs/..., /blog/..., #docs/..., #blog/...)
+            if (
+                target.startswith("/docs/")
+                or target.startswith("/blog/")
+                or target.startswith("#docs/")
+                or target.startswith("#blog/")
+            ):
+                route_id = target.lstrip("#/").split("#")[0].split(":")[0]
+                if route_id not in registered_ids and not (docs_root / f"{route_id}.md").exists():
+                    broken_links.append(
+                        (rel_doc, label, target, f"Route ID '{route_id}' not found in DOCS_REGISTRY or disk")
+                    )
                 continue
 
             # 3. Same-file section anchor (#anchor)
@@ -866,13 +873,13 @@ def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
     # 3. Verify The Invariant Bible is covered
     assert "The Invariant Bible" in sitemap_text
 
-    # 4. Extract all hash links (#docs/..., #blog/...) and ensure their backing files exist
-    hash_links = re.findall(r"\(#(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)
-    assert len(hash_links) >= 30, f"Expected >= 30 doc/blog links in sitemap, found {len(hash_links)}"
+    # 4. Extract all doc and blog links and ensure their backing files exist
+    doc_links = re.findall(r"\((?:#|/)(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)
+    assert len(doc_links) >= 30, f"Expected >= 30 doc/blog links in sitemap, found {len(doc_links)}"
 
-    for link in hash_links:
+    for link in doc_links:
         md_file = docs_root / f"{link}.md"
-        assert md_file.exists(), f"Sitemap link '#{link}' maps to non-existent file: {md_file}"
+        assert md_file.exists(), f"Sitemap link '{link}' maps to non-existent file: {md_file}"
 
     # 5. Check app.js DOCS_REGISTRY includes docs/sitemap
     app_js_path = docs_root / "app.js"
@@ -2622,4 +2629,89 @@ def test_all_markdown_docs_are_registered_in_app_js_docs_registry(docs_root: Pat
         f"Gate 12: Found {len(unregistered)} markdown documents not registered in app.js DOCS_REGISTRY:\n"
         + "\n".join(f"  - {p}" for p in unregistered)
         + "\nAll markdown files must be registered in DOCS_REGISTRY so they resolve and render properly in the web client."
+    )
+
+
+@pytest.mark.governance
+def test_narrative_plot_fidelity_and_zero_copy_boilerplate_invariant(docs_root: Path) -> None:
+    """Gate 13: Universal Narrative Plot Fidelity & Anti-Boilerplate Invariant (inv-narrative-plot-fidelity).
+
+    Enforces that:
+    1. Zero markdown files contain generic copy-pasted boilerplate conclusions ('Decouple Heuristics from Probabilistic Inference').
+    2. Zero markdown files contain pseudo-ASCII line chart remnants ('●', 'Thinking Token Budget' in prose).
+    3. Zero table headers contain raw unrendered math delimiters ('Grounding ($G$)', '$\\mu', '\\mathcal{F}').
+    4. Zero documents contain literal '\\n' escape strings in visible body text.
+    5. Zero markdown documents contain legacy '#blog/...' hash links.
+    """
+    GENERIC_BOILERPLATE = "Decouple Heuristics from Probabilistic Inference"
+    violations = []
+
+    for md_file in sorted(docs_root.rglob("*.md")):
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        # 1. Check for copy-paste boilerplate
+        if GENERIC_BOILERPLATE in content:
+            violations.append(
+                f"{rel_path}: Contains generic copy-paste boilerplate conclusion ('{GENERIC_BOILERPLATE}')"
+            )
+
+        # 2. Check for literal '\n'
+        for idx, line in enumerate(lines, 1):
+            if "docs/changelog.md" in str(rel_path):
+                continue
+            if (
+                re.search(r"\\n(?![a-zA-Z])", line)
+                and not line.strip().startswith("```")
+                and not line.strip().startswith("$")
+                and "printf" not in line
+                and "echo" not in line
+            ):
+                violations.append(f"{rel_path}:{idx}: Literal '\\n' found in visible body text")
+
+        # 3. Check for legacy hash links (#blog/...)
+        for idx, line in enumerate(lines, 1):
+            if "#blog/" in line and "docs/changelog.md" not in str(rel_path):
+                violations.append(f"{rel_path}:{idx}: Legacy hash link '#blog/...' found")
+
+        # 4. Check tables for risky math in headers
+        in_code = False
+        in_table = False
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+
+            if stripped.startswith("|") and stripped.endswith("|"):
+                cells = [c.strip() for c in stripped[1:-1].split("|")]
+                if not in_table:
+                    in_table = True
+                    for h in cells:
+                        if "$\\mu" in h or "\\mathcal" in h or "($G$)" in h:
+                            violations.append(f"{rel_path}:{idx}: Unrendered or risky math in table header '{h}'")
+                elif stripped.startswith("| :") or stripped.startswith("|:"):
+                    pass
+            else:
+                in_table = False
+
+        # 5. Check pseudo-ASCII remnants
+        in_code = False
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+            if "●" in stripped or ("100% +" in stripped and "svg" not in stripped):
+                violations.append(f"{rel_path}:{idx}: Pseudo-ASCII line chart remnant detected")
+
+    assert not violations, (
+        f"Gate 13: Found {len(violations)} inv-narrative-plot-fidelity violations across documentation:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nAll articles must have bespoke conclusions, clean tables, zero pseudo-ASCII remnants, and zero legacy hash links."
     )
