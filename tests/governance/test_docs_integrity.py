@@ -2595,3 +2595,31 @@ def test_docs_test_paths_and_k_filters_validity(docs_root: Path) -> None:
         + "\n".join(f"  - {v}" for v in violations)
         + "\nAll documented test commands must point to real existing test files and valid -k filter expressions."
     )
+
+
+@pytest.mark.governance
+def test_all_markdown_docs_are_registered_in_app_js_docs_registry(docs_root: Path) -> None:
+    """Gate 12: Verify 100% bidirectional parity between markdown files on disk and app.js DOCS_REGISTRY.
+
+    Guarantees that every markdown document in docs/ and blog/ is registered in DOCS_REGISTRY,
+    preventing route fallback redirects and ensuring all published articles are searchable and viewable.
+    """
+    app_js_path = docs_root / "app.js"
+    assert app_js_path.exists(), "app.js must exist in docs_root"
+    content = app_js_path.read_text(encoding="utf-8")
+
+    registered_paths = set(re.findall(r'path:\s*["\']([^"\']+)["\']', content))
+    registered_ids = set(re.findall(r'id:\s*["\']([^"\']+)["\']', content))
+
+    unregistered = []
+    for md_file in sorted(list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))):
+        rel_path = str(md_file.relative_to(docs_root))
+        rel_id = rel_path.replace(".md", "")
+        if rel_path not in registered_paths and rel_id not in registered_ids and md_file.stem not in registered_ids:
+            unregistered.append(rel_path)
+
+    assert not unregistered, (
+        f"Gate 12: Found {len(unregistered)} markdown documents not registered in app.js DOCS_REGISTRY:\n"
+        + "\n".join(f"  - {p}" for p in unregistered)
+        + "\nAll markdown files must be registered in DOCS_REGISTRY so they resolve and render properly in the web client."
+    )
