@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.18.3";
+export const CREDENCE_VERSION = "v2.19.0";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -464,6 +464,7 @@ export const INVARIANTS_REGISTRY = {
   "inv-dense-workstation-viewport": { legacyId: 45, class: "Class γ", scope: "domain", title: "Dense Workstation Viewport & Zero-Masking Invariant" },
   "inv-sovereign-config-decoupling": { legacyId: 59, class: "Class α", scope: "universal", title: "Sovereign Multi-Tenant Decoupling & Zero Hardcoded Tenant Config" },
   "inv-artifact-curation": { legacyId: 60, class: "Class γ", scope: "universal", title: "The Artifact Archival & Anti-Wipe Invariant (\"That Belongs in a Museum!\")" },
+  "inv-narrative-plot-fidelity": { legacyId: 61, class: "Class γ", scope: "universal", title: "Universal Narrative Plot Fidelity & Anti-Boilerplate Invariant (\"Never Lose the Plot\")" },
 };
 
 export function resolveInvariant(slugOrId) {
@@ -917,7 +918,7 @@ const INFO_TOPICS = {
       Credence detects sneaky web tricks like hiding unexpected fees until the last page of checkout (<i>Drip Pricing</i>), making cancel buttons make you feel guilty (<i>Confirmshaming</i>), or displaying fake popup warnings that claim your computer is infected.
     `,
     tier1_article: {
-      title: "✍️ Case Study: Astroturfing Entropy & Dark Patterns",
+      title: "✍️ Blueprint: Astroturfing Entropy & Dark Patterns",
       desc: "How coordinated deceptive funnels trick consumers across affiliate syndication networks.",
       url: "https://blog.credence.run/case-study-astroturfing-entropy"
     },

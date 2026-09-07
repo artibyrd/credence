@@ -771,13 +771,18 @@ def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None
 
         for label, target in links:
             target = target.strip()
-            if (
-                not target
-                or target.startswith("javascript:")
-                or target.startswith("mailto:")
-                or target.startswith("file://")
-                or target.startswith("conversation://")
-            ):
+            if not target or target.startswith("javascript:") or target.startswith("mailto:"):
+                continue
+
+            if target.startswith("file://") or target.startswith("conversation://"):
+                broken_links.append(
+                    (
+                        rel_doc,
+                        label,
+                        target,
+                        "Forbidden local scheme: file:// and conversation:// URIs are prohibited in public web documentation",
+                    )
+                )
                 continue
 
             # 1. External URL syntax validation (hermetic, zero-network)
@@ -788,11 +793,18 @@ def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None
                     broken_links.append((rel_doc, label, target, "Invalid URL syntax"))
                 continue
 
-            # 2. App Route links (#docs/... or #blog/...)
-            if target.startswith("#docs/") or target.startswith("#blog/"):
-                route_id = target.lstrip("#").split("#")[0].split(":")[0]
-                if route_id not in registered_ids:
-                    broken_links.append((rel_doc, label, target, f"Route ID '{route_id}' not found in DOCS_REGISTRY"))
+            # 2. App Route links (/docs/..., /blog/..., #docs/..., #blog/...)
+            if (
+                target.startswith("/docs/")
+                or target.startswith("/blog/")
+                or target.startswith("#docs/")
+                or target.startswith("#blog/")
+            ):
+                route_id = target.lstrip("#/").split("#")[0].split(":")[0]
+                if route_id not in registered_ids and not (docs_root / f"{route_id}.md").exists():
+                    broken_links.append(
+                        (rel_doc, label, target, f"Route ID '{route_id}' not found in DOCS_REGISTRY or disk")
+                    )
                 continue
 
             # 3. Same-file section anchor (#anchor)
@@ -866,13 +878,13 @@ def test_sitemap_integrity_and_route_coverage(docs_root: Path) -> None:
     # 3. Verify The Invariant Bible is covered
     assert "The Invariant Bible" in sitemap_text
 
-    # 4. Extract all hash links (#docs/..., #blog/...) and ensure their backing files exist
-    hash_links = re.findall(r"\(#(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)
-    assert len(hash_links) >= 30, f"Expected >= 30 doc/blog links in sitemap, found {len(hash_links)}"
+    # 4. Extract all doc and blog links and ensure their backing files exist
+    doc_links = re.findall(r"\((?:#|/)(docs/[^)#\s]+|blog/[^)#\s]+)\)", sitemap_text)
+    assert len(doc_links) >= 30, f"Expected >= 30 doc/blog links in sitemap, found {len(doc_links)}"
 
-    for link in hash_links:
+    for link in doc_links:
         md_file = docs_root / f"{link}.md"
-        assert md_file.exists(), f"Sitemap link '#{link}' maps to non-existent file: {md_file}"
+        assert md_file.exists(), f"Sitemap link '{link}' maps to non-existent file: {md_file}"
 
     # 5. Check app.js DOCS_REGISTRY includes docs/sitemap
     app_js_path = docs_root / "app.js"
@@ -2538,4 +2550,253 @@ def test_docs_schema_and_blueprint_staleness_guard(docs_root: Path) -> None:
         "Stale documentation / blueprint schema violations found:\n"
         + "\n".join(f"  - {v}" for v in violations)
         + "\nPer inv-documentation-expansion, update existing blueprints when schemas and invariants change."
+    )
+
+
+@pytest.mark.governance
+def test_docs_test_paths_and_k_filters_validity(docs_root: Path) -> None:
+    """Gate 11: Verify all documented pytest commands, test file paths, and -k filters exist and collect real tests.
+
+    Enforces that zero hallucinated test paths or phantom -k filter expressions are documented.
+    """
+    repo_root = docs_root.parent / "credence"
+    tests_root = repo_root / "tests"
+
+    # Extract all test function, class names, and stems statically
+    known_test_tokens = set()
+    for tf in tests_root.rglob("*.py"):
+        known_test_tokens.add(tf.stem)
+        content = tf.read_text(encoding="utf-8", errors="ignore")
+        for fn in re.findall(r"def\s+(test_\w+)", content):
+            known_test_tokens.add(fn)
+        for cls in re.findall(r"class\s+(Test\w+)", content):
+            known_test_tokens.add(cls)
+
+    md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
+    violations = []
+
+    k_pattern = re.compile(r'pytest\s+([^\n`]*?)-k\s+["\']?([^"\'\s]+)["\']?')
+
+    for md_file in md_files:
+        content = md_file.read_text(encoding="utf-8", errors="ignore")
+
+        # 1. Check all documented test file paths
+        for match in re.finditer(r"pytest\s+([^\n`]+)", content):
+            tokens = match.group(1).split()
+            for token in tokens:
+                if token.startswith("tests/"):
+                    clean_path = token.rstrip(",;:.)'\"")
+                    if clean_path in ("tests/", "tests"):
+                        continue
+                    if not (repo_root / clean_path).exists():
+                        violations.append(
+                            f"{md_file.relative_to(docs_root)}: Documented test path '{clean_path}' does not exist on disk."
+                        )
+
+        # 2. Check all documented -k filters
+        for match in k_pattern.finditer(content):
+            k_filter = match.group(2).strip("\"'")
+            matched = any(k_filter.lower() in token.lower() for token in known_test_tokens)
+            if not matched:
+                violations.append(
+                    f"{md_file.relative_to(docs_root)}: Documented -k filter '{k_filter}' matches zero tests in the test suite."
+                )
+
+    assert not violations, (
+        f"Gate 11: Found {len(violations)} documented test path or -k filter violations:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nAll documented test commands must point to real existing test files and valid -k filter expressions."
+    )
+
+
+@pytest.mark.governance
+def test_all_markdown_docs_are_registered_in_app_js_docs_registry(docs_root: Path) -> None:
+    """Gate 12: Verify 100% bidirectional parity between markdown files on disk and app.js DOCS_REGISTRY.
+
+    Guarantees that every markdown document in docs/ and blog/ is registered in DOCS_REGISTRY,
+    preventing route fallback redirects and ensuring all published articles are searchable and viewable.
+    """
+    app_js_path = docs_root / "app.js"
+    assert app_js_path.exists(), "app.js must exist in docs_root"
+    content = app_js_path.read_text(encoding="utf-8")
+
+    registered_paths = set(re.findall(r'path:\s*["\']([^"\']+)["\']', content))
+    registered_ids = set(re.findall(r'id:\s*["\']([^"\']+)["\']', content))
+
+    unregistered = []
+    for md_file in sorted(list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))):
+        rel_path = str(md_file.relative_to(docs_root))
+        rel_id = rel_path.replace(".md", "")
+        if rel_path not in registered_paths and rel_id not in registered_ids and md_file.stem not in registered_ids:
+            unregistered.append(rel_path)
+
+    assert not unregistered, (
+        f"Gate 12: Found {len(unregistered)} markdown documents not registered in app.js DOCS_REGISTRY:\n"
+        + "\n".join(f"  - {p}" for p in unregistered)
+        + "\nAll markdown files must be registered in DOCS_REGISTRY so they resolve and render properly in the web client."
+    )
+
+
+@pytest.mark.governance
+def test_narrative_plot_fidelity_and_zero_copy_boilerplate_invariant(docs_root: Path) -> None:
+    """Gate 13: Universal Narrative Plot Fidelity & Anti-Boilerplate Invariant (inv-narrative-plot-fidelity).
+
+    Enforces that:
+    1. Zero markdown files contain generic copy-pasted boilerplate conclusions ('Decouple Heuristics from Probabilistic Inference').
+    2. Zero markdown files contain pseudo-ASCII line chart remnants ('●', 'Thinking Token Budget' in prose).
+    3. Zero table headers contain raw unrendered math delimiters ('Grounding ($G$)', '$\\mu', '\\mathcal{F}').
+    4. Zero documents contain literal '\\n' escape strings in visible body text.
+    5. Zero markdown documents contain legacy '#blog/...' hash links.
+    """
+    GENERIC_BOILERPLATE = "Decouple Heuristics from Probabilistic Inference"
+    violations = []
+
+    for md_file in sorted(docs_root.rglob("*.md")):
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        # 1. Check for copy-paste boilerplate
+        if GENERIC_BOILERPLATE in content:
+            violations.append(
+                f"{rel_path}: Contains generic copy-paste boilerplate conclusion ('{GENERIC_BOILERPLATE}')"
+            )
+
+        # 2. Check for literal '\n'
+        for idx, line in enumerate(lines, 1):
+            if "docs/changelog.md" in str(rel_path):
+                continue
+            if (
+                re.search(r"\\n(?![a-zA-Z])", line)
+                and not line.strip().startswith("```")
+                and not line.strip().startswith("$")
+                and "printf" not in line
+                and "echo" not in line
+            ):
+                violations.append(f"{rel_path}:{idx}: Literal '\\n' found in visible body text")
+
+        # 3. Check for legacy hash links (#blog/...)
+        for idx, line in enumerate(lines, 1):
+            if "#blog/" in line and "docs/changelog.md" not in str(rel_path):
+                violations.append(f"{rel_path}:{idx}: Legacy hash link '#blog/...' found")
+
+        # 4. Check tables for risky math in headers
+        in_code = False
+        in_table = False
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+
+            if stripped.startswith("|") and stripped.endswith("|"):
+                cells = [c.strip() for c in stripped[1:-1].split("|")]
+                if not in_table:
+                    in_table = True
+                    for h in cells:
+                        if "$\\mu" in h or "\\mathcal" in h or "($G$)" in h:
+                            violations.append(f"{rel_path}:{idx}: Unrendered or risky math in table header '{h}'")
+                elif stripped.startswith("| :") or stripped.startswith("|:"):
+                    pass
+            else:
+                in_table = False
+
+        # 5. Check pseudo-ASCII remnants
+        in_code = False
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+            if "●" in stripped or ("100% +" in stripped and "svg" not in stripped):
+                violations.append(f"{rel_path}:{idx}: Pseudo-ASCII line chart remnant detected")
+
+    assert not violations, (
+        f"Gate 13: Found {len(violations)} inv-narrative-plot-fidelity violations across documentation:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nAll articles must have bespoke conclusions, clean tables, zero pseudo-ASCII remnants, and zero legacy hash links."
+    )
+
+
+@pytest.mark.governance
+def test_cross_reference_density_and_linked_invariants_invariant(docs_root: Path) -> None:
+    """Gate 14: Cross-Reference Density & Linked Invariants Invariant.
+
+    Enforces that:
+    1. Zero diagnostic verification tables contain unlinked raw monospace `inv-...` code spans; all invariants in
+       diagnostic tables must be hyperlinked (`[`inv-...`](/docs/invariants#inv-...)`).
+    2. The core empirical studies and investigative articles must not be isolated islands; each must contain
+       at least 2 companion Markdown cross-links (/blog/... or /docs/...) to other studies or protocols.
+    """
+    CORE_STUDIES = [
+        "blog/the-pareto-frontier-of-truth.md",
+        "blog/the-4000-token-trance.md",
+        "blog/case-study-the-heuristic-ceiling.md",
+        "blog/case-study-dual-tier-finops.md",
+        "blog/case-study-astroturfing-entropy.md",
+        "blog/what-credence-sees-when-an-article-changes.md",
+        "blog/conflict-of-pun-terest.md",
+    ]
+
+    violations = []
+
+    # 1. Check Diagnostic Verification tables across all markdown files
+    for md_file in sorted(docs_root.rglob("*.md")):
+        rel_path = md_file.relative_to(docs_root)
+        content = md_file.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        in_diagnostic_table = False
+        in_code = False
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+
+            # Detect diagnostic table header
+            if stripped.startswith("|") and ("Target Invariant" in stripped or "Verification Layer" in stripped):
+                in_diagnostic_table = True
+                continue
+            elif stripped.startswith("|") and in_diagnostic_table:
+                # Check for unlinked invariant in row
+                unlinked_match = re.search(r"(?<!\[)`(inv-[a-z0-9-]+)`(?!\()", stripped)
+                if unlinked_match:
+                    inv_found = unlinked_match.group(1)
+                    violations.append(
+                        f"{rel_path}:{idx}: Unlinked invariant `{inv_found}` in diagnostic verification table. Must be hyperlinked: [`{inv_found}`](/docs/invariants#{inv_found})"
+                    )
+            else:
+                in_diagnostic_table = False
+
+    # 2. Check Core Empirical Studies cross-reference density
+    for study_rel in CORE_STUDIES:
+        study_file = docs_root / study_rel
+        if not study_file.exists():
+            continue
+        content = study_file.read_text(encoding="utf-8")
+        # Find internal links to other blog articles or docs
+        internal_links = re.findall(r"\[([^\]]+)\]\(((?:/docs/|/blog/)[^)]+)\)", content)
+        # Filter out self-links and root links
+        study_slug = Path(study_rel).stem
+        companion_links = [
+            link_item
+            for link_item in internal_links
+            if study_slug not in link_item[1] and link_item[1] not in ("/docs/", "/blog/")
+        ]
+        if len(companion_links) < 2:
+            violations.append(
+                f"{study_rel}: Isolated article detected! Contains only {len(companion_links)} companion cross-links (expected >= 2). Must link to companion empirical studies or protocols."
+            )
+
+    assert not violations, (
+        f"Gate 14: Found {len(violations)} cross-referencing and linked invariant violations across documentation:\n"
+        + "\n".join(f"  - {v}" for v in violations)
+        + "\nAll diagnostic tables must hyperlink invariants to The Invariant Bible, and core empirical studies must cross-reference companion studies."
     )

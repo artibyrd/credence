@@ -119,7 +119,7 @@ async def test_multi_catalog_instant_export(temp_node_dir: Path, monkeypatch):
 
     async with AsyncSession(engine) as session:
         snap = Snapshot(
-            url="https://example.com/catalog_item",
+            url="https://verified-news.org/catalog_item",
             content_sha256="sha256:6666666666666666666666666666666666666666666666666666666666666666",
             simhash_64="0x6666666666666666",
             title="Catalog Item Title",

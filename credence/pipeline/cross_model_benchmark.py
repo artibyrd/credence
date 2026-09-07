@@ -1,10 +1,10 @@
 """Cross-Model Epistemic & Economic Pareto Benchmark for Credence.
 
 Compares multiple LLM families and thinking token budgets on identical content fixtures using httpx:
-1. gemini-3.7-flash (1k thinking budget)
+1. gemini-3.8-flash (1k thinking budget)
 2. gemini-3.7-flash (4k thinking budget)
-3. gemini-3.5-flash-lite (fast triage / low cost)
-4. gemini-pro-latest (flagship high-parameter reasoning)
+3. gemini-3.6-flash (fast triage / generational baseline)
+4. gemini-3.1-pro (flagship high-parameter reasoning)
 5. offline_structural_heuristic ($0.00 baseline)
 """
 
@@ -34,10 +34,10 @@ console = Console()
 
 # Pricing constants per 1M tokens (USD)
 MODEL_PRICING = {
-    "gemini-3.7-flash-1k": {"input": 0.075, "output": 0.30, "thinking": 0.30},
+    "gemini-3.8-flash": {"input": 0.075, "output": 0.30, "thinking": 0.30},
     "gemini-3.7-flash-4k": {"input": 0.075, "output": 0.30, "thinking": 0.30},
-    "gemini-3.5-flash-lite": {"input": 0.0375, "output": 0.15, "thinking": 0.00},
-    "gemini-pro-latest": {"input": 1.25, "output": 5.00, "thinking": 5.00},
+    "gemini-3.6-flash": {"input": 0.05, "output": 0.20, "thinking": 0.00},
+    "gemini-3.1-pro": {"input": 1.25, "output": 5.00, "thinking": 5.00},
     "offline-heuristic": {"input": 0.00, "output": 0.00, "thinking": 0.00},
 }
 
@@ -108,10 +108,10 @@ async def run_model_benchmark_fixture(
     results: List[ModelEvaluationMetric] = []
 
     configs = [
-        ("gemini-3.7-flash", 1024, "gemini-3.7-flash-1k"),
+        ("gemini-3.8-flash", 1024, "gemini-3.8-flash"),
         ("gemini-3.7-flash", 4096, "gemini-3.7-flash-4k"),
-        ("gemini-3.5-flash-lite", 0, "gemini-3.5-flash-lite"),
-        ("gemini-pro-latest", 0, "gemini-pro-latest"),
+        ("gemini-3.6-flash", 0, "gemini-3.6-flash"),
+        ("gemini-3.1-pro", 2048, "gemini-3.1-pro"),
     ]
 
     prompt_spj = build_specialist_prompt("spj_ethics", extracted, reg=registry)

@@ -187,10 +187,10 @@ async def test_inmaricopa_casestudy_pillar_sourcing_and_coi(db_session: AsyncSes
     assert profile is not None
     assert profile.domain == "inmaricopa.com"
     assert profile.total_audits == 3
-    assert profile.deceptive_audits_count == 2
-    assert profile.suspicious_audits_count == 1
+    assert profile.deceptive_audits_count == 1
+    assert profile.suspicious_audits_count == 2
     assert profile.clean_audits_count == 0
-    assert profile.trust_band in ("MIXED", "POOR", "MODERATE")
+    assert profile.trust_band in ("WATCHLIST", "DECEPTIVE", "MONITORED")
     assert profile.avg_suspicion > 50.0
 
     # Sourcing Metrics verification

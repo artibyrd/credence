@@ -263,9 +263,18 @@ async def run_germination_sifting_burst(
     return audited_count
 
 
+SYNTHETIC_FIXTURE_PATTERNS = (
+    "example.com",
+    "deceptive-news.fake",
+    "text://",
+    "file://",
+)
+
+
 async def export_catalog_to_disk(
     session: AsyncSession,
     output_dir: Optional[Path] = None,
+    exclude_fixtures: bool = True,
 ) -> Path:
     """Export local database reports to static reports.json and genesis_attestations.json for instant Web UI parity."""
     if output_dir is None:
@@ -282,7 +291,18 @@ async def export_catalog_to_disk(
     results = list((await session.exec(stmt)).all())
 
     catalog_items = []
+    seen_urls: set[str] = set()
+
     for audit, snap in results:
+        snap_url = (snap.url if snap and snap.url else "").strip()
+        if exclude_fixtures and any(pattern in snap_url for pattern in SYNTHETIC_FIXTURE_PATTERNS):
+            continue
+
+        if snap_url and snap_url in seen_urls:
+            continue
+        if snap_url:
+            seen_urls.add(snap_url)
+
         stmt_v = select(Violation).where(Violation.audit_id == audit.id)
         violations = list((await session.exec(stmt_v)).all())
 
@@ -290,6 +310,11 @@ async def export_catalog_to_disk(
             "satire"
             if audit.is_satire
             else ("best" if audit.suspicion_score <= 15.0 else ("worst" if audit.suspicion_score >= 60.0 else "recent"))
+        )
+
+        eval_method = audit.evaluation_method or "llm_multi_agent"
+        eval_model = audit.evaluation_model or (
+            "gemini-3.7-flash" if "llm" in eval_method else "offline-heuristics-v1.1"
         )
 
         catalog_items.append(
@@ -306,6 +331,8 @@ async def export_catalog_to_disk(
                 "confidence_score": audit.confidence_score,
                 "classification": audit.classification,
                 "is_satire": audit.is_satire,
+                "evaluation_method": eval_method,
+                "evaluation_model": eval_model,
                 "audited_at": audit.audited_at.isoformat() if audit.audited_at else None,
                 "article_text": "",
                 "violations": [
