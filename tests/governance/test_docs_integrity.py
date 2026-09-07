@@ -771,13 +771,18 @@ def test_all_markdown_links_and_anchors_resolve_cleanly(docs_root: Path) -> None
 
         for label, target in links:
             target = target.strip()
-            if (
-                not target
-                or target.startswith("javascript:")
-                or target.startswith("mailto:")
-                or target.startswith("file://")
-                or target.startswith("conversation://")
-            ):
+            if not target or target.startswith("javascript:") or target.startswith("mailto:"):
+                continue
+
+            if target.startswith("file://") or target.startswith("conversation://"):
+                broken_links.append(
+                    (
+                        rel_doc,
+                        label,
+                        target,
+                        "Forbidden local scheme: file:// and conversation:// URIs are prohibited in public web documentation",
+                    )
+                )
                 continue
 
             # 1. External URL syntax validation (hermetic, zero-network)

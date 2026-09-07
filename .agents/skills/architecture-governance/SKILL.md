@@ -196,7 +196,7 @@ To prevent compact workstation layout locks from freezing natural document scrol
 ## 9. Unified Checkmark Shield Brand & Favicon Suite
 
 ### 1. Canonical Vector Asset
-- All web surfaces, navigation headers, and modal footers must reference the official Cyan Gradient Glow Checkmark Shield ([`assets/logo.svg`](file:///home/pendragon/Projects/credence-ecosystem/credence/web/assets/logo.svg)).
+- All web surfaces, navigation headers, and modal footers must reference the official Cyan Gradient Glow Checkmark Shield (`assets/logo.svg`).
 
 ### 2. Universal Favicon Suite
 - All HTML templates must include standard favicons:
