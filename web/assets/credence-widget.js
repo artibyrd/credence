@@ -30,7 +30,7 @@ class CredenceBadge extends HTMLElement {
       activeLens: 'surface',
       url: '',
       pubkey: '',
-      version: 'v2.19.1',
+      version: 'v2.20.0',
       violationsCount: 0,
       groundingPct: 100.0,
       auditsCount: 1,
@@ -409,6 +409,9 @@ class CredenceBadge extends HTMLElement {
   }
 }
 
+// INVARIANT GUARD: inv-web-component-isolation
+// Web components must never invoke cloneNode(true) on host trees containing
+// custom element instances. Enforced mechanically by test_web_component_zero_clone_and_defensive_events.
 if (!customElements.get('credence-badge')) {
   customElements.define('credence-badge', CredenceBadge);
 }

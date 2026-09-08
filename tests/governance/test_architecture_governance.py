@@ -143,3 +143,52 @@ def test_workspace_root_scratch_directory_isolation() -> None:
         f"Scratch directories found inside git repositories: {violations}. "
         f"Per inv-clean-scratch-scripts, scratch scripts MUST reside exclusively in the workspace root: {ecosystem_root / 'scratch'}"
     )
+
+
+TOKENS_PER_WORD = 1.33
+MAX_AGENTS_MD_TOKENS = 800
+
+
+@pytest.mark.unit
+def test_agents_md_token_budget_ceiling() -> None:
+    """Verify all AGENTS.md files strictly adhere to the < 800 token hard budget ceiling."""
+    ecosystem_root = REPO_ROOT.parent
+    agents_files = [
+        REPO_ROOT / "AGENTS.md",
+        ecosystem_root / "AGENTS.md",
+        ecosystem_root / "credence-docs" / "AGENTS.md",
+        ecosystem_root / "credence-agent" / "AGENTS.md",
+    ]
+    for af in agents_files:
+        if not af.exists():
+            continue
+        content = af.read_text(encoding="utf-8")
+        word_count = len(content.split())
+        est_tokens = int(word_count * TOKENS_PER_WORD)
+        assert est_tokens <= MAX_AGENTS_MD_TOKENS, (
+            f"{af.name} is ~{est_tokens} tokens ({word_count} words), exceeding the "
+            f"{MAX_AGENTS_MD_TOKENS} token ceiling. Demote test-covered invariants to Tier 2."
+        )
+
+
+@pytest.mark.unit
+def test_tier0_invariants_demotion_redundancy() -> None:
+    """Verify that Tier 0 in AGENTS.md does not contain invariants already 100% covered by test gates."""
+    agents_file = REPO_ROOT / "AGENTS.md"
+    content = agents_file.read_text(encoding="utf-8")
+
+    # Demoted invariants that must NOT re-accumulate in Tier 0 prompt context
+    demoted_to_test_gates = {
+        "inv-living-canon": "test_zero_hardcoded_invariant_counts_in_docs",
+        "inv-article-h1-header": "test_all_articles_and_docs_have_leading_h1_title_headers",
+        "inv-web-component-isolation": "test_web_component_zero_clone_and_defensive_events",
+        "inv-hermetic-unit-tests": "test_hermetic_unit_test_markers_invariant",
+        "inv-clean-slug-routing": "test_workstation_and_docs_routing_regression_safeguards",
+        "inv-production-telemetry-boundary": "test_zero_mock_production_boundary",
+    }
+
+    found_redundant = [slug for slug in demoted_to_test_gates if slug in content]
+    assert not found_redundant, (
+        f"Redundant test-enforced invariants found in Tier 0: {found_redundant}. "
+        f"These rules have 100% mechanical coverage and belong exclusively in Tier 2."
+    )

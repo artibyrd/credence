@@ -1,5 +1,9 @@
 """FastMCP 2.0 Governance & Standards RFC Tools for Credence (Phase 2).
 
+Governed by:
+- inv-fastmcp-datetime-serialization: Standalone text audits persist entities to SQLite
+  and serialize datetime objects to ISO-8601 strings in .to_dict() / JSON envelopes.
+
 Provides agentic MCP tools:
 - credence_list_rfcs
 - credence_get_rfc

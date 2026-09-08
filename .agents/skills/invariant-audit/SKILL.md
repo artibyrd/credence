@@ -95,8 +95,22 @@ This skill enforces the **3-Tier Invariant Scalability Architecture** across fiv
 - **CAS Pinning**: Ratified standards are pinned using RFC 8785 canonical JSON bytes and SHA-256 CAS hashes with dynamic hot-reload into `TaxonomyRegistry`.
 
 ### 11. Zero-Mock Telemetry Boundary Audit (`inv-production-telemetry-boundary`)
-- **Real Node Reality**: Asserts that production operator dashboards (`credence.nexus`, `credence.report`, `admin.credence.run`, `credence.foundation`) never fall back to fake simulated datasets (`getDemoData()`, zeroed hashes, fake `setTimeout`).
+- **4 Shift-Left Automated Gates (`tests/governance/test_production_telemetry_boundary.py`)**:
+  1. *Gate 1 (Zero Synthetic Generators)*: AST scan prohibiting synthetic audit generators (e.g. `synthesizeDomainAudit()`) or non-deterministic Math.random loops in web workstations.
+  2. *Gate 2 (Authentic WebCrypto Verification)*: Verifies that cryptographic verification flows execute native `SubtleCrypto.digest` and `verifyEd25519Signature` over RFC 8785 canonical bytes, banning `setTimeout` fake spinners.
+  3. *Gate 3 (Error Masking Prohibition)*: Asserts that workstation `catch` blocks emit authentic error toasts/banners rather than disguised "saved locally" success indicators.
+  4. *Gate 4 (Standalone Telemetry Reality)*: Asserts standalone unpeered nodes report $0.0\%$ worksharing efficiency and exact database peer counts with zero artificial safety floors.
 - **Genesis State**: Fresh, unpeered nodes report authentic `STANDALONE (UNPEERED)` status ($N=1, f=0$) with authentic receipts or an explicit disconnected state.
+
+### 12. Triad Completeness & Bidirectional Documentation Maintenance (`inv-documentation-expansion`)
+- **Bidirectional Documentation Review**: Whenever core data models, fallback heuristics, or invariant behaviors change:
+  1. *Review Existing Docs*: Audit existing blueprints (`docs/blueprints/`), architecture specs, and invariant definitions for stale schemas or deprecated mock values (`test_docs_schema_and_blueprint_staleness_guard`).
+  2. *Expand Docs*: Author case studies (`blog/`) and blueprints to document new architectural guarantees.
+- **Triad Lockstep PRs**: Prohibit single-repo PR dropouts on cross-plane features. Changes must be synchronized across `credence`, `credence-docs`, and `credence-agent`.
+
+### 13. Workspace Root Scratch Directory Topology (`inv-clean-scratch-scripts`)
+- **Strict Root Placement**: Scratch scripts belong exclusively in the workspace root `/scratch/<name>.py` outside all git repositories.
+- **Zero Sub-repo Scratch Folders**: Sub-repos must never contain a `scratch/` folder. Verified by `test_workspace_root_scratch_directory_isolation`.
 
 ---
 
