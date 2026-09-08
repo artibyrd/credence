@@ -11,19 +11,55 @@ export const CREDENCE_VERSION = "v2.21.0";
  */
 
 
-// Re-export authentication subsystem
+// Import subsystems for local invocation and window.CredenceWS binding
+import {
+  authState,
+  getApiBaseUrl,
+  checkAuthStatus,
+  loginWithKey,
+  clearStoredToken,
+  getStoredToken,
+  setStoredToken,
+  fetchWithAuth,
+} from './workstation-auth.js';
+
+import {
+  injectOperatorModal,
+  openOperatorModal,
+  closeOperatorModal,
+  switchModalTab,
+  togglePasswordVisibility,
+  submitKeyLogin,
+  loginOAuth,
+  injectShortcutsModal,
+  openShortcutsModal,
+  closeShortcutsModal,
+  toggleShortcutsModal,
+  switchModalLens,
+  openInfoModal,
+  closeInfoModal,
+  showToast,
+} from './workstation-modals.js';
+
+import {
+  verifyEd25519Signature,
+} from './workstation-crypto.js';
+
+import {
+  initTuiMode,
+  toggleTuiMode,
+  normalizeLocalLinks,
+} from './workstation-nav.js';
+
+import {
+  INFO_TOPICS,
+} from './workstation-topics.js';
+
+// Re-export all subsystems for ES module consumers
 export * from './workstation-auth.js';
-
-// Re-export modals, toasts & epistemic information pyramid
 export * from './workstation-modals.js';
-
-// Re-export WebCrypto Ed25519 verification
 export * from './workstation-crypto.js';
-
-// Re-export navigation & TUI helpers
 export * from './workstation-nav.js';
-
-// Re-export info topics
 export * from './workstation-topics.js';
 
 export const INVARIANTS_REGISTRY = {

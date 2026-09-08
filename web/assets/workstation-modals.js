@@ -3,7 +3,7 @@
  * Zero-npm native ES module.
  */
 
-import { authState, setStoredToken, checkAuthStatus, updateRibbonAuthBadge } from './workstation-auth.js';
+import { authState, setStoredToken, checkAuthStatus, updateRibbonAuthBadge, loginWithKey } from './workstation-auth.js';
 import { INFO_TOPICS } from './workstation-topics.js';
 import { resolveInvariant } from './credence-workstation.js';
 import { normalizeLocalLinks } from './workstation-nav.js';
