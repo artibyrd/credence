@@ -192,10 +192,11 @@ def test_social_sharing_open_graph_parity(docs_root: Path) -> None:
         )
         assert "twitter:" not in content, f"Found forbidden proprietary twitter card meta tag in {html_file.name}"
 
-    # 3. Verify app.js dynamic social meta updater is exported
-    app_js_content = (docs_root / "app.js").read_text(encoding="utf-8")
-    assert "export function updateSocialMetadata" in app_js_content, (
-        "app.js must export updateSocialMetadata for dynamic client-side article embeds"
+    # 3. Verify docs engine dynamic social meta updater is exported
+    app_js_files = [docs_root / "app.js"] + list((docs_root / "modules").glob("**/*.js"))
+    all_js_content = "\n".join(f.read_text(encoding="utf-8") for f in app_js_files)
+    assert "export function updateSocialMetadata" in all_js_content, (
+        "docs engine must export updateSocialMetadata for dynamic client-side article embeds"
     )
 
 
@@ -276,8 +277,8 @@ def test_interactive_playground_contract(docs_root: Path) -> None:
     assert playground_file.exists(), "playground.md must exist"
     p_content = playground_file.read_text(encoding="utf-8")
 
-    app_js = docs_root / "app.js"
-    js_content = app_js.read_text(encoding="utf-8")
+    app_js_files = [docs_root / "app.js"] + list((docs_root / "modules").glob("**/*.js"))
+    js_content = "\n".join(f.read_text(encoding="utf-8") for f in app_js_files)
 
     # Widget containers in markdown (all 12 widgets)
     container_ids = [
@@ -1193,9 +1194,8 @@ def test_full_docs_markdown_rendering_pipeline(docs_root: Path) -> None:
 @pytest.mark.governance
 def test_app_js_directive_and_alert_resilience(docs_root: Path) -> None:
     """Verify that app.js contains dual-engine support for both GFM callouts and container directives."""
-    app_js = docs_root / "app.js"
-    assert app_js.exists(), "credence-docs/app.js must exist"
-    content = app_js.read_text(encoding="utf-8")
+    app_js_files = [docs_root / "app.js"] + list((docs_root / "modules").glob("**/*.js"))
+    content = "\n".join(f.read_text(encoding="utf-8") for f in app_js_files)
 
     # 1. Verify GFM alert regex
     assert "alertMatch" in content, "app.js must support GFM alertCallouts"
@@ -1899,9 +1899,8 @@ def test_workstation_and_docs_routing_regression_safeguards(docs_root: Path) -> 
     assert "blog.credence.run" in worker_text, "_worker.js must define blog.credence.run domain routing"
 
     # 3. Verify app.js rejects HTML payloads for markdown and exports clean routing functions
-    app_js_path = docs_root / "app.js"
-    assert app_js_path.exists()
-    app_js_text = app_js_path.read_text(encoding="utf-8")
+    app_js_files = [docs_root / "app.js"] + list((docs_root / "modules").glob("**/*.js"))
+    app_js_text = "\n".join(f.read_text(encoding="utf-8") for f in app_js_files)
     assert "<!DOCTYPE html>" in app_js_text, "app.js must reject <!DOCTYPE html> responses in loadDocument"
     assert "getDomainContext" in app_js_text, "app.js must export getDomainContext"
     assert "resolveDocument" in app_js_text, "app.js must export resolveDocument"
@@ -1987,8 +1986,8 @@ def test_docs_attestation_and_manifest_version_parity(docs_root: Path) -> None:
 @pytest.mark.unit
 def test_all_registered_playgrounds_have_active_dom_mounts(docs_root: Path) -> None:
     """Gate 2: Assert all registered playground pages have DOM containers and active app.js mount handlers."""
-    app_js = docs_root / "app.js"
-    app_js_text = app_js.read_text(encoding="utf-8")
+    app_js_files = [docs_root / "app.js"] + list((docs_root / "modules").glob("**/*.js"))
+    app_js_text = "\n".join(f.read_text(encoding="utf-8") for f in app_js_files)
 
     # Verify mount handler calls in loadDocument() and handleRoute()
     interactive_handlers = [
