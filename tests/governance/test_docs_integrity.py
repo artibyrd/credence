@@ -1332,7 +1332,11 @@ def test_dashboard_info_modals_and_docs_linkage_parity(docs_root: Path) -> None:
     workstation_js = credence_root / "web" / "assets" / "credence-workstation.js"
     assert workstation_js.exists(), "credence-workstation.js must exist"
 
-    content = workstation_js.read_text(encoding="utf-8")
+    topics_dir = credence_root / "web" / "assets" / "topics"
+    if topics_dir.exists():
+        content = "\n".join(f.read_text(encoding="utf-8") for f in sorted(topics_dir.glob("*.js")))
+    else:
+        content = workstation_js.read_text(encoding="utf-8")
 
     # 1. Parse all topic keys from INFO_TOPICS
     topic_keys = set(re.findall(r"^\s{2}([a-z0-9_]+):\s*\{", content, re.MULTILINE))
@@ -1812,15 +1816,18 @@ def test_info_modals_integrity_and_sync(docs_root: Path) -> None:
     ws_js_path = credence_root / "web" / "assets" / "credence-workstation.js"
     assert ws_js_path.exists(), "credence-workstation.js must exist"
 
-    ws_content = ws_js_path.read_text(encoding="utf-8")
-    start = ws_content.find("const INFO_TOPICS = {")
-    end = ws_content.find(
-        "};\n\n// -----------------------------------------------------------------------------", start
-    )
-    if end == -1:
-        end = ws_content.find("};\n\n//", start)
-
-    block = ws_content[start:end]
+    topics_dir = credence_root / "web" / "assets" / "topics"
+    if topics_dir.exists():
+        block = "\n".join(f.read_text(encoding="utf-8") for f in sorted(topics_dir.glob("*.js")))
+    else:
+        ws_content = ws_js_path.read_text(encoding="utf-8")
+        start = ws_content.find("const INFO_TOPICS = {")
+        end = ws_content.find(
+            "};\n\n// -----------------------------------------------------------------------------", start
+        )
+        if end == -1:
+            end = ws_content.find("};\n\n//", start)
+        block = ws_content[start:end]
     ws_topics = set(re.findall(r"^\s{2}([a-z0-9_]+):\s*\{", block, re.MULTILINE))
     assert len(ws_topics) >= 30, f"Expected at least 30 info topics in workstation.js, found {len(ws_topics)}"
 
