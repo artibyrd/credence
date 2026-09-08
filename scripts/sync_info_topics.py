@@ -26,15 +26,19 @@ def sync_topics() -> int:
         print(f"❌ Error: Could not find {docs_topic_index_path}", file=sys.stderr)
         return 1
 
-    ws_content = ws_js_path.read_text(encoding="utf-8")
-    start = ws_content.find("const INFO_TOPICS = {")
-    end = ws_content.find(
-        "};\n\n// -----------------------------------------------------------------------------", start
-    )
-    if end == -1:
-        end = ws_content.find("};\n\n//", start)
+    topics_dir = repo_root / "web" / "assets" / "topics"
+    if topics_dir.exists():
+        block = "\n".join(f.read_text(encoding="utf-8") for f in sorted(topics_dir.glob("*.js")))
+    else:
+        ws_content = ws_js_path.read_text(encoding="utf-8")
+        start = ws_content.find("const INFO_TOPICS = {")
+        end = ws_content.find(
+            "};\n\n// -----------------------------------------------------------------------------", start
+        )
+        if end == -1:
+            end = ws_content.find("};\n\n//", start)
+        block = ws_content[start:end]
 
-    block = ws_content[start:end]
     topic_matches = re.findall(r"^\s{2}([a-z0-9_]+):\s*\{([^}]+(?:\{[^}]+\}[^}]+)*)\},?", block, re.MULTILINE)
 
     if not topic_matches:

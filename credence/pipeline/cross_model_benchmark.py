@@ -1,11 +1,14 @@
 """Cross-Model Epistemic & Economic Pareto Benchmark for Credence.
 
-Compares multiple LLM families and thinking token budgets on identical content fixtures using httpx:
+Compares multiple LLM families and thinking token budgets on identical content fixtures:
 1. gemini-3.8-flash (1k thinking budget)
 2. gemini-3.7-flash (4k thinking budget)
 3. gemini-3.6-flash (fast triage / generational baseline)
 4. gemini-3.1-pro (flagship high-parameter reasoning)
 5. offline_structural_heuristic ($0.00 baseline)
+
+Note: This standalone sweep utility utilizes GeminiProvider from credence.pipeline.adapters.
+The complete 14-model hybrid tournament is evaluated in tests/integration/test_cross_model_benchmark.py.
 """
 
 from __future__ import annotations
@@ -15,13 +18,14 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import List, Optional, Tuple
 
 import httpx
 from rich.console import Console
 from rich.table import Table
 
 from credence.ingestion.extractor import extract_clean_content
+from credence.pipeline.adapters import GeminiProvider
 from credence.pipeline.evaluator import heuristic_evaluate_content
 from credence.pipeline.subagents import (
     build_specialist_prompt,
@@ -60,38 +64,20 @@ class ModelEvaluationMetric:
 
 
 async def call_gemini_rest_api(
-    client: httpx.AsyncClient,
+    client: Optional[httpx.AsyncClient],
     api_key: str,
     model_name: str,
     thinking_budget: int,
     prompt: str,
 ) -> Tuple[str, int, int, int]:
-    """Call Google Gemini v1beta REST API."""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-
-    gen_config: Dict[str, Any] = {"temperature": 0.1, "responseMimeType": "application/json"}
-    if thinking_budget > 0:
-        gen_config["thinkingConfig"] = {"thinkingBudget": thinking_budget}
-
-    payload: Dict[str, Any] = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": gen_config}
-
-    resp = await client.post(url, json=payload, timeout=45.0)
-    if resp.status_code != 200:
-        raise ValueError(f"Gemini API {resp.status_code}: {resp.text[:120]}")
-
-    data = resp.json()
-    candidates = data.get("candidates", [])
-    text = ""
-    if candidates and "content" in candidates[0]:
-        parts = candidates[0]["content"].get("parts", [])
-        text = "".join(p.get("text", "") for p in parts)
-
-    usage = data.get("usageMetadata", {})
-    in_tok = usage.get("promptTokenCount", len(prompt) // 4)
-    out_tok = usage.get("candidatesTokenCount", len(text) // 4)
-    think_tok = usage.get("thoughtsTokenCount", 0)
-
-    return text, in_tok, out_tok, think_tok
+    """Call Google Gemini via unified GeminiProvider adapter."""
+    provider = GeminiProvider(api_key=api_key, model_name=model_name)
+    response = await provider.generate(
+        prompt=prompt,
+        thinking_budget=thinking_budget,
+        temperature=0.1,
+    )
+    return response.text, response.prompt_tokens, response.completion_tokens, response.thinking_tokens
 
 
 async def run_model_benchmark_fixture(

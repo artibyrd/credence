@@ -30,7 +30,7 @@ class CredenceBadge extends HTMLElement {
       activeLens: 'surface',
       url: '',
       pubkey: '',
-      version: 'v2.20.0',
+      version: 'v2.21.0',
       violationsCount: 0,
       groundingPct: 100.0,
       auditsCount: 1,

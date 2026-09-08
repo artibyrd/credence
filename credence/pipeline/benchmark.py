@@ -2,7 +2,7 @@
 
 Executes the Golden 12 benchmark fixtures across FREE, BALANCED, and ULTRA
 profiles, computing cross-profile score deltas, confidence differentials, and
-Bayesian consensus convergence.
+Bayesian consensus convergence (distinct from the N=104 calibration corpus).
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ class BenchmarkSuiteResult(BaseModel):
 
 
 # Golden 12 metadata index
-GOLDEN_12_METADATA = {
+GOLDEN_12_FIXTURES_METADATA = {
     "clean_article.html": ("Ground Truth News", "Balanced investigative report with citations"),
     "satire_article.html": ("Overt Satire", "Parody news with unmistakable humor tropes"),
     "deceptive_page.html": ("Deceptive UI / Dark Patterns", "Urgency countdowns and forced actions"),
@@ -88,6 +88,9 @@ GOLDEN_12_METADATA = {
         "Relative vs absolute risk conflation",
     ),
 }
+
+# Backward compatibility alias
+GOLDEN_12_METADATA = GOLDEN_12_FIXTURES_METADATA
 
 
 async def run_single_fixture_benchmark(
@@ -144,12 +147,26 @@ async def run_single_fixture_benchmark(
     )
 
 
+def resolve_benchmark_fixtures_dir(fixtures_dir: Optional[Path] = None) -> Path:
+    """Resolve fixtures directory with fallback relative to module root."""
+    if fixtures_dir and fixtures_dir.exists():
+        return fixtures_dir
+    candidates = [
+        Path("tests/fixtures/html"),
+        Path(__file__).resolve().parent.parent.parent / "tests" / "fixtures" / "html",
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    return Path("tests/fixtures/html")
+
+
 async def run_epistemic_benchmark(
     fixtures_dir: Optional[Path] = None,
     session: Optional[AsyncSession] = None,
 ) -> BenchmarkSuiteResult:
     """Execute the complete Golden 12 benchmark suite and compute comparative metrics."""
-    base_dir = fixtures_dir or Path("tests/fixtures/html")
+    base_dir = resolve_benchmark_fixtures_dir(fixtures_dir)
     fixture_files = sorted([f for f in base_dir.glob("*.html") if f.name in GOLDEN_12_METADATA])
 
     results: List[BenchmarkItemResult] = []
@@ -210,6 +227,10 @@ def render_benchmark_table(suite: BenchmarkSuiteResult) -> None:
     )
 
 
-async def run_benchmark(*args: Any, **kwargs: Any) -> int:
-    return 0
+async def run_benchmark(
+    fixtures_dir: Optional[Path] = None, session: Optional[AsyncSession] = None, *args: Any, **kwargs: Any
+) -> int:
+    """Execute the Golden 12 benchmark suite and display the Rich comparative matrix."""
+    suite = await run_epistemic_benchmark(fixtures_dir=fixtures_dir, session=session)
+    render_benchmark_table(suite)
     return 0
