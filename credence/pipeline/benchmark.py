@@ -227,7 +227,9 @@ def render_benchmark_table(suite: BenchmarkSuiteResult) -> None:
     )
 
 
-async def run_benchmark(fixtures_dir: Optional[Path] = None, session: Optional[AsyncSession] = None, *args: Any, **kwargs: Any) -> int:
+async def run_benchmark(
+    fixtures_dir: Optional[Path] = None, session: Optional[AsyncSession] = None, *args: Any, **kwargs: Any
+) -> int:
     """Execute the Golden 12 benchmark suite and display the Rich comparative matrix."""
     suite = await run_epistemic_benchmark(fixtures_dir=fixtures_dir, session=session)
     render_benchmark_table(suite)
