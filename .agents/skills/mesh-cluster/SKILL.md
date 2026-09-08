@@ -30,6 +30,12 @@ Use this skill when orchestrating, monitoring, or testing the decentralized P2P 
 - **Resource Constraints**: Hard `mem_limit: 128m` Docker cgroups per container; hardware guard throttles on $<2\text{GB}$ RAM hosts.
 - **Pathological Scenarios**: Linear Daisy Chain TTL exhaustion, Barbell Netsplit partition recovery, Sybil Eclipse attack isolation, and Star topology flood control.
 
+## Core Invariants & Mathematical Specifications
+- **`inv-5factor-node-quality` — 5-Factor Node Quality ($Q_i$)**: Node reputation evaluates 5 composite factors:
+  $$Q_i = 0.25 U_i + 0.30 C_i + 0.25 G_i + 0.10 T_i + 0.10 K_i$$
+  where $U_i$ is historical uptime, $C_i$ is consensus alignment, $G_i$ is DOM grounding precision, $T_i$ is timely submission latency, and $K_i$ is key tenure longevity. Bootstrap seeds (`peers.json`) require root Ed25519 verification.
+- **`inv-canonical-json-ed25519` — RFC 8785 Canonical JSON & Ed25519 Custody**: Envelopes use RFC 8785 canonical bytes with UTC timestamps; payload alterations invalidate Ed25519 verification. All mesh gossip attestations and attestation envelopes serialize deterministically prior to signature generation.
+
 ## Concurrent Swarm Testing Best Practices
 - **Session Isolation**: When executing concurrent node tasks (`asyncio.gather(*tasks)`), always provision independent `AsyncSession` instances per node using `async_sessionmaker(bind=engine)` to prevent session flush race conditions.
 - **Rendezvous Verification**: Verify that concurrent swarm nodes prioritize distinct feeds by asserting non-overlapping feed polling sequences across heterogeneous node pubkeys (`compute_feed_affinity(node_pubkey, feed_url)`).

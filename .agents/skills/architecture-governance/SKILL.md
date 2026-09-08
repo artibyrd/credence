@@ -334,3 +334,11 @@ $$\text{Plan Approval} \longrightarrow \mathbf{just\ branch} \longrightarrow \te
 
 ### 2. Single-Source-of-Truth Score Parity
 - Domain scores displayed across browse, dossier, and DCI tables must compute from identical aggregate mathematical formulas ($DCI = 100 - \bar{S}$) and synchronized catalogs to prevent score divergence between views.
+
+---
+
+## 16. Multi-Model Sovereignty & Token Governance (`inv-multi-model-sovereignty`)
+
+- **Decoupled LLM Adapters**: The engine supports pluggable model adapters (Gemini 3.7 default 4k thinking, Claude 3.7, GPT-4o, DeepSeek R1, Ollama).
+- **Quota Headroom & Circuit Breakers**: Whenever model quota headroom falls below 30%, operations trip offline circuit breakers (`QUOTA_PRESERVED`) to preserve interactive capacity.
+- **Pareto Thinking Invariant**: Reasoning tokens are strictly capped and budgeted according to audit depth (Free: zero reasoning, Balanced: 2k, Ultra: 4k).

@@ -28,6 +28,15 @@ All Cloud Run operations are managed via the canonical parameterized `just gcp [
 
 ---
 
+## 1.1 Core Invariant: 3-Plane Governance (`inv-3plane-governance`)
+Credence enforces strict decoupling across 3 operational planes:
+1. **Edge Plane**: Static assets, zero-build Web UI (`web/`), and documentation (`credence-docs`) deployed to Cloudflare Pages edge network.
+2. **Compute Plane**: Python FastAPI server, sifter daemons, and P2P mesh relay running on Google Cloud Run (`credence-server`).
+3. **Infra Plane**: Multi-cloud provisioning managed strictly through Terraform (`terraform/`).
+Zero crossover: Edge surfaces never access private database ports; Compute surfaces never package npm build bundles.
+
+---
+
 ## 2. Infrastructure & Compute Sizing Baseline
 
 - **Resource Limits**:
