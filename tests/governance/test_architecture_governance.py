@@ -21,19 +21,42 @@ SRC_ROOT = REPO_ROOT / "credence"
 
 @pytest.mark.unit
 def test_500_loc_ceiling_invariant() -> None:
-    """Verify that no Python source file in the credence/ package exceeds 500 lines of code."""
+    """Verify that no Python or JavaScript source file across the ecosystem exceeds 500 lines of code."""
     violating_files = []
 
     # Exclude auto-generated or external data assets
-    excluded_rel_paths = {"data"}
+    excluded_rel_parts = {"data", ".venv", "node_modules", ".git"}
 
+    # 1. Python source files in credence/
     for py_file in SRC_ROOT.rglob("*.py"):
         rel = py_file.relative_to(SRC_ROOT)
-        if any(part in excluded_rel_paths for part in rel.parts):
+        if any(part in excluded_rel_parts for part in rel.parts):
             continue
         line_count = len(py_file.read_text(encoding="utf-8").splitlines())
         if line_count > 500:
-            violating_files.append((str(rel), line_count))
+            violating_files.append((f"credence/{rel}", line_count))
+
+    # 2. JavaScript source files in web/
+    web_dir = REPO_ROOT / "web"
+    if web_dir.exists():
+        for js_file in web_dir.rglob("*.js"):
+            rel = js_file.relative_to(web_dir)
+            if any(part in excluded_rel_parts for part in rel.parts):
+                continue
+            line_count = len(js_file.read_text(encoding="utf-8").splitlines())
+            if line_count > 500:
+                violating_files.append((f"web/{rel}", line_count))
+
+    # 3. JavaScript source files in credence-docs/
+    docs_dir = REPO_ROOT.parent / "credence-docs"
+    if docs_dir.exists():
+        for js_file in docs_dir.rglob("*.js"):
+            rel = js_file.relative_to(docs_dir)
+            if any(part in excluded_rel_parts for part in rel.parts):
+                continue
+            line_count = len(js_file.read_text(encoding="utf-8").splitlines())
+            if line_count > 500:
+                violating_files.append((f"credence-docs/{rel}", line_count))
 
     assert not violating_files, f"Files exceeding 500 LOC ceiling: {violating_files}"
 
