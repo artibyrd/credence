@@ -94,6 +94,26 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
   - `just docker-prune-all`: Gated interactive deep prune for periodic operator disk recovery (`docker system prune -a -f --volumes`).
 - **Telemetry Verification**: Validate local disk status using `docker system df` before and after heavy container operations.
 
+### 13. ES Module Submodule Decomposition & Explicit Import Binding Law
+- **Local Scope Binding Invariant**: In zero-build native JavaScript environments, `export * from './submodule.js'` exposes symbols to outside importers, but **does not bind those identifiers in the declaring module's local execution scope**.
+- **Explicit Imports Mandatory**: Any decomposed module or facade file (`app.js`, `credence-workstation.js`) that invokes, references, or registers symbols onto `window` or local dispatchers must explicitly import each symbol (`import { foo, bar } from './submodule.js'`).
+- **Shift-Left Cross-Module Static Scanner**: When refactoring or decomposing native ES modules, execute an automated scanner cross-referencing all exported identifiers against unimported occurrences across all `.js` files before committing. Disallow any unresolved references.
+
+### 14. Automated Browser Verification Gate (`inv-playwright-rendering-tests`)
+- **HTTP 200 Insufficiency**: Pure HTTP status checks (`curl`, `httpx`) verify static file delivery and reverse proxy routing, but cannot detect client-side JavaScript syntax errors, missing module imports, or DOM runtime crashes (`ReferenceError`, `TypeError`).
+- **Headless Playwright Validation Protocol**: All UI, documentation engine, and workstation script modifications must be validated in an actual browser environment:
+  1. `page.on("pageerror")`: Assert zero uncaught JavaScript exceptions across all navigated paths.
+  2. `#doc-content` / DOM Mount Verification: Query content selectors to verify substantive rendered text ($>100$ characters) rather than empty placeholders or loading states.
+  3. Interactive Route & Hash Navigation: Verify transitions across deep-links and playground widgets.
+- **Order-of-Operations Invariant**: Playwright browser verification against the live Dev preview deployment (`https://dev.credence.run/docs/`, `https://dev.credence.run/`) must pass cleanly **before** presenting the walkthrough and requesting human Mk1 Eyeball review (`inv-mk1-eyeball`).
+
+### 15. Non-Interactive Command Execution Invariant
+- **Prevent Autonomous Hangs**: Background task execution in agent environments stalls if child processes block on interactive terminal input (`Ok to proceed? (y)`, `Are you sure? [y/N]`).
+- **Explicit Non-Interactive Tool Flags**:
+  - `just`: Always invoke gated or confirmation recipes with `just --yes <recipe>` (or `yes | just <recipe>`).
+  - `npx`: Always pass the `-y` / `--yes` flag to bypass package installation prompts (`npx -y wrangler ...`).
+  - Package Managers & Terminals: Set `CI=true` and `DEBIAN_FRONTEND=noninteractive` when invoking system package or build tools.
+
 ---
 
 ## 2. Shift-Left Intelligent Guidance & Workflow Chaining
@@ -109,7 +129,7 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
   - `just sync-version <version>` $\to$ Synchronizes all 7 version manifests prior to PR staging
   - `just pr-create '<title>'` $\to$ Creates staged PR triad with `[vX.Y.Z]` title prefix
   - `just ci-watch` $\to$ Monitors `deploy-dev.yml` deploying container reporting `vX.Y.Z`
-  - `just cloud-probe` $\to$ Verifies `/health` reports `vX.Y.Z` before Mk1 review
+  - Playwright probe & `just cloud-probe` $\to$ Verifies live Dev browser DOM rendering and `/health` before Mk1 review
   - Mk1 Eyeball Review $\to$ Human sign-off on PRs and live Dev endpoints
   - `just pr-merge` $\to$ Merges PR triad into `main`
   - `just --yes release <version> <msg>` $\to$ Tags and releases on production (uses `--yes` to auto-confirm in non-interactive workflows)
