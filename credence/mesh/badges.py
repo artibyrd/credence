@@ -49,15 +49,15 @@ BADGE_ACCENTS: Dict[str, Tuple[str, str, str]] = {
 def _get_badge_palette(badge_id: str) -> Tuple[str, str, str]:
     """Resolve accent start, accent end, and border glow for a given badge or tier identifier."""
     b_id = badge_id.lower()
-    if any(k in b_id for k in ("century", "root", "seed", "sybil", "pristine")):
+    if any(k in b_id for k in ("century", "root", "seed", "sybil", "pristine", "legend", "iron")):
         return BADGE_ACCENTS["emerald"]
-    if any(k in b_id for k in ("galileo", "specialist", "astroturf")):
+    if any(k in b_id for k in ("galileo", "specialist", "astroturf", "diversity", "pioneer", "hunter")):
         return BADGE_ACCENTS["violet"]
-    if any(k in b_id for k in ("relay", "philanthropic", "cadence", "moderate", "attention")):
+    if any(k in b_id for k in ("relay", "philanthropic", "cadence", "moderate", "attention", "bounty")):
         return BADGE_ACCENTS["amber"]
     if any(k in b_id for k in ("flagged", "deceptive", "modified")):
         return BADGE_ACCENTS["rose"]
-    if any(k in b_id for k in ("sprout", "neutral")):
+    if any(k in b_id for k in ("sprout", "neutral", "night", "weekend")):
         return BADGE_ACCENTS["slate"]
     return BADGE_ACCENTS["cyan"]
 

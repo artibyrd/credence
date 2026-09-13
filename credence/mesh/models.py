@@ -117,9 +117,83 @@ BADGE_REGISTRY: Dict[str, BadgeInfo] = {
         icon="🛡️",
         description="Maintained Byzantine consensus participation during 3f+1 peer quorum rounds.",
     ),
+    # Worker Contributor Achievement Badges
+    "first_bounty": BadgeInfo(
+        badge_id="first_bounty",
+        name="First Bounty",
+        tier=EpistemicTier.SPROUT,
+        icon="🎯",
+        description="Successfully fulfilled first mempool audit job.",
+    ),
+    "speed_demon": BadgeInfo(
+        badge_id="speed_demon",
+        name="Speed Demon",
+        tier=EpistemicTier.SIFTER,
+        icon="⚡",
+        description="Completed and submitted an audit in under 15 seconds.",
+    ),
+    "bounty_hunter": BadgeInfo(
+        badge_id="bounty_hunter",
+        name="Bounty Hunter",
+        tier=EpistemicTier.SIFTER,
+        icon="🏹",
+        description="Completed 25+ distributed audit bounties.",
+    ),
+    "bounty_legend": BadgeInfo(
+        badge_id="bounty_legend",
+        name="Bounty Legend",
+        tier=EpistemicTier.AUDITOR,
+        icon="👑",
+        description="Completed 100+ distributed audit bounties.",
+    ),
+    "diversity_champion": BadgeInfo(
+        badge_id="diversity_champion",
+        name="Diversity Champion",
+        tier=EpistemicTier.AUDITOR,
+        icon="🌈",
+        description="Contributed audits across 3+ distinct model namespaces.",
+    ),
+    "model_pioneer": BadgeInfo(
+        badge_id="model_pioneer",
+        name="Model Pioneer",
+        tier=EpistemicTier.AUDITOR,
+        icon="🧪",
+        description="First worker to introduce and anchor a new model family in the network.",
+    ),
+    "night_owl": BadgeInfo(
+        badge_id="night_owl",
+        name="Night Owl",
+        tier=EpistemicTier.SPROUT,
+        icon="🦉",
+        description="Submitted audits during off-peak network hours (00:00 - 06:00 UTC).",
+    ),
+    "weekend_warrior": BadgeInfo(
+        badge_id="weekend_warrior",
+        name="Weekend Warrior",
+        tier=EpistemicTier.SPROUT,
+        icon="⚔️",
+        description="Contributed 10+ audits during weekend hours.",
+    ),
+    "precision_striker": BadgeInfo(
+        badge_id="precision_striker",
+        name="Precision Striker",
+        tier=EpistemicTier.SPECIALIST,
+        icon="🎯",
+        description="Maintained 100% verbatim grounding exactness across 50+ citations.",
+    ),
+    "iron_worker": BadgeInfo(
+        badge_id="iron_worker",
+        name="Iron Worker",
+        tier=EpistemicTier.ROOT_ANCHOR,
+        icon="🛡️",
+        description="Completed 500+ audits with zero grounding rejections or lease timeouts.",
+    ),
 }
 
 # Add alias mappings for seamless backward & forward naming compatibility
 BADGE_REGISTRY["sprout_genesis"] = BADGE_REGISTRY["sprout_node"]
 BADGE_REGISTRY["sifter_century"] = BADGE_REGISTRY["sifter_pioneer"]
 BADGE_REGISTRY["sybil_sentinel"] = BADGE_REGISTRY["sybil_shield"]
+BADGE_REGISTRY["consensus_anchor"] = BADGE_REGISTRY["first_bounty"]
+BADGE_REGISTRY["model_diversity"] = BADGE_REGISTRY["diversity_champion"]
+
