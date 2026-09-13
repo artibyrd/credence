@@ -3,13 +3,43 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.7
-last_verified: '2026-08-20'
+verified_version: v2.22.0
+last_verified: 2026-09-13
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [2.22.0] - 2026-09-13
+
+### Added
+- **FastMCP 2.0 Epistemic Brake & In-Chat Verification**:
+  - Implemented 25-second adaptive wait window in `credence_check_url` to pause agent execution while distributed worker pool resolves audit requests.
+  - Added in-chat tool `credence_verify_and_anchor` enabling Claude Desktop, Cursor, and Antigravity agents to evaluate raw text, verify $G=1.00$ grounding, and mint cryptographic consensus receipts.
+  - Added consensus report formatting presenting multi-model agreement bands, Jaccard similarity indices, and Galileo override alerts.
+- **Open Epistemic Mempool & Saturated Queue Escalation Valves**:
+  - Implemented `/api/queue/enqueue`, `/api/queue/claim`, `/api/queue/submit`, and `/api/queue/stats` Starlette REST endpoints.
+  - Added atomic 180-second soft lease state machine with automatic dead-letter lease reclamation.
+  - Added 15-second adaptive lease slicing for Priority 1 interactive FastMCP queries.
+  - Added concurrent multi-model lease granting allowing disparate model families to concurrently evaluate the same `AuditJob`.
+- **Distributed Volunteer Worker Daemon (`uvx credence worker`)**:
+  - Implemented lightweight, standalone worker daemon in `credence/worker/daemon.py` with zero heavy dependencies.
+  - Supported universal model slugs and dynamic family resolution (`<namespace>/<model_id>`).
+  - Added universal `OpenAICompatibleProvider` with `--api-base` and `--api-key` for vLLM, LM Studio, Ollama, OpenRouter, Groq, Together, and custom endpoints.
+  - Added Self-Serve Affinity mode (`--affinity <client_id>`) for instant sub-3s local paired agent query acceleration.
+  - Added live terminal telemetry odometer displaying bounties cleared, tokens donated, consensus participation, and streak milestones.
+- **Multi-Model Bayesian Consensus Quorum (`BayesianConsensusAggregator`)**:
+  - Implemented dynamic consensus resolution across $M \ge 3$ distinct model families.
+  - Codified the Galileo Rule override preserving verbatim-grounded minority discoveries ($G=1.00$) against ungrounded Sybil cartels.
+- **Contributor Telemetry & Leaderboards (`credence.nexus`)**:
+  - Added Worker Leaderboard tab to `credence.nexus` with search, model family filters, and token savings metrics.
+  - Implemented interactive Worker Detail Dossier modal (`#worker/{pubkey}`) displaying full audit history, cryptographic receipts, and 1-click embed codes.
+  - Added the 4th Badge Modality: Worker Contributor Merit dynamic vector SVG (`/api/badge/worker/{pubkey}`).
+  - Added 10 Worker Achievement Badges (`first_bounty`, `speed_demon`, `bounty_hunter`, `bounty_legend`, `diversity_champion`, `model_pioneer`, `night_owl`, `weekend_warrior`, `precision_striker`, `iron_worker`).
+- **Identity Key Custody & Migration CLI**:
+  - Added `credence key show`, `credence key export`, `credence key import`, and `credence key generate` commands.
+  - Supported `CREDENCE_NODE_KEY_PEM` environment variable injection for headless Docker and Cloud Run deployments.
 
 ## [2.17.4] - 2026-08-26
 
