@@ -98,3 +98,60 @@ def test_tamper_detection(sample_audit_report: AuditReport, tmp_path: Path) -> N
     signed_report.suspicion_score = 26.0
     signed_report.url = "https://tampered.example.org"
     assert verify_audit_signature(signed_report) is False
+
+
+@pytest.mark.unit
+def test_key_export_import_roundtrip(tmp_path: Path) -> None:
+    """Verify private key PEM export and import preserve Ed25519 identity."""
+    from credence.identity import export_private_key_pem, import_private_key_pem
+
+    key_file = tmp_path / "original.key"
+    identity1 = load_or_create_node_identity(key_file)
+
+    pem_str = export_private_key_pem(identity1)
+    assert "-----BEGIN PRIVATE KEY-----" in pem_str
+
+    imported_file = tmp_path / "imported.key"
+    identity2 = import_private_key_pem(pem_str, imported_file)
+
+    assert identity1.public_key_hex == identity2.public_key_hex
+    assert imported_file.exists()
+
+
+@pytest.mark.unit
+def test_generate_new_keypair_at_path(tmp_path: Path) -> None:
+    """Verify generate_new_keypair_at_path creates new key and respects overwrite guard."""
+    from credence.identity import generate_new_keypair_at_path
+
+    key_file = tmp_path / "fresh.key"
+    ident1 = generate_new_keypair_at_path(key_file)
+    assert key_file.exists()
+    assert len(ident1.public_key_hex) == 64
+
+    # Second call without overwrite should raise FileExistsError
+    with pytest.raises(FileExistsError):
+        generate_new_keypair_at_path(key_file, overwrite=False)
+
+    # With overwrite should succeed and generate a new key
+    ident2 = generate_new_keypair_at_path(key_file, overwrite=True)
+    assert ident1.public_key_hex != ident2.public_key_hex
+
+
+@pytest.mark.unit
+def test_credence_node_key_pem_env_injection(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Verify CREDENCE_NODE_KEY_PEM environment variable initializes node identity."""
+    from credence.identity import export_private_key_pem, generate_new_keypair_at_path
+
+    temp_ident = generate_new_keypair_at_path(tmp_path / "temp.key")
+    pem_str = export_private_key_pem(temp_ident)
+
+    monkeypatch.setenv("CREDENCE_NODE_KEY_PEM", pem_str)
+    env_ident = load_or_create_node_identity()
+
+    assert env_ident.public_key_hex == temp_ident.public_key_hex
+
+    # Test invalid / non-Ed25519 PEM throws ValueError (Vector 14)
+    monkeypatch.setenv("CREDENCE_NODE_KEY_PEM", "GARBAGE_PEM_DATA")
+    with pytest.raises(ValueError, match="Failed to load Ed25519 key"):
+        load_or_create_node_identity()
+

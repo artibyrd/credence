@@ -71,14 +71,46 @@ def generate_node_keypair() -> ed25519.Ed25519PrivateKey:
 
 
 def load_or_create_node_identity(key_path: Path | None = None) -> NodeIdentity:
-    """Load existing Ed25519 key from disk or generate and persist a new one."""
+    """Load existing Ed25519 key from environment or disk, or generate and persist a new one."""
+    import os
+
+    # 1. Environment variable injection (for headless Docker, Cloud Run, or CI/CD)
+    env_pem = os.environ.get("CREDENCE_NODE_KEY_PEM")
+    if env_pem and env_pem.strip():
+        try:
+            private_key = serialization.load_pem_private_key(env_pem.encode("utf-8"), password=None)
+            if not isinstance(private_key, ed25519.Ed25519PrivateKey):
+                raise ValueError("Key provided via CREDENCE_NODE_KEY_PEM is not an Ed25519 private key.")
+        except Exception as e:
+            if isinstance(e, ValueError) and "Ed25519" in str(e):
+                raise
+            raise ValueError(f"Failed to load Ed25519 key from CREDENCE_NODE_KEY_PEM: {e}") from e
+
+        public_key = private_key.public_key()
+        pub_raw_bytes = public_key.public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        )
+        return NodeIdentity(
+            private_key=private_key,
+            public_key=public_key,
+            public_key_hex=pub_raw_bytes.hex(),
+            key_path=Path(":memory:env:CREDENCE_NODE_KEY_PEM"),
+        )
+
+    # 2. File-based persistence
     target_path = key_path or settings.NODE_KEY_PATH
 
     if target_path.exists():
         pem_data = target_path.read_bytes()
-        private_key = serialization.load_pem_private_key(pem_data, password=None)
-        if not isinstance(private_key, ed25519.Ed25519PrivateKey):
-            raise ValueError(f"Key at {target_path} is not an Ed25519 key.")
+        try:
+            private_key = serialization.load_pem_private_key(pem_data, password=None)
+            if not isinstance(private_key, ed25519.Ed25519PrivateKey):
+                raise ValueError(f"Key at {target_path} is not an Ed25519 key.")
+        except Exception as e:
+            if isinstance(e, ValueError) and "Ed25519" in str(e):
+                raise
+            raise ValueError(f"Corrupted or invalid key at {target_path}: {e}") from e
     else:
         target_path.parent.mkdir(parents=True, exist_ok=True)
         private_key = generate_node_keypair()
@@ -105,6 +137,81 @@ def load_or_create_node_identity(key_path: Path | None = None) -> NodeIdentity:
         private_key=private_key,
         public_key=public_key,
         public_key_hex=public_key_hex,
+        key_path=target_path,
+    )
+
+
+def export_private_key_pem(identity: NodeIdentity) -> str:
+    """Export the NodeIdentity private key as a PKCS8 PEM string."""
+    pem_bytes = identity.private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    return pem_bytes.decode("utf-8")
+
+
+def import_private_key_pem(pem_data: str | bytes, key_path: Path | None = None) -> NodeIdentity:
+    """Validate and persist an Ed25519 private key from PEM format."""
+    raw_bytes = pem_data.encode("utf-8") if isinstance(pem_data, str) else pem_data
+    try:
+        private_key = serialization.load_pem_private_key(raw_bytes, password=None)
+        if not isinstance(private_key, ed25519.Ed25519PrivateKey):
+            raise ValueError("Provided PEM does not contain a valid Ed25519 private key.")
+    except Exception as e:
+        if isinstance(e, ValueError) and "Ed25519" in str(e):
+            raise
+        raise ValueError(f"Corrupted or unsupported private key PEM: {e}") from e
+
+    target_path = key_path or settings.NODE_KEY_PATH
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.write_bytes(raw_bytes)
+    try:
+        target_path.chmod(0o600)
+    except OSError:
+        pass
+
+    public_key = private_key.public_key()
+    pub_raw_bytes = public_key.public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    return NodeIdentity(
+        private_key=private_key,
+        public_key=public_key,
+        public_key_hex=pub_raw_bytes.hex(),
+        key_path=target_path,
+    )
+
+
+def generate_new_keypair_at_path(key_path: Path | None = None, overwrite: bool = False) -> NodeIdentity:
+    """Generate a fresh Ed25519 keypair and persist it to the specified path."""
+    target_path = key_path or settings.NODE_KEY_PATH
+    if target_path.exists() and not overwrite:
+        raise FileExistsError(f"Key file already exists at {target_path}. Use overwrite=True or --force to replace.")
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    private_key = generate_node_keypair()
+    pem_data = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    target_path.write_bytes(pem_data)
+    try:
+        target_path.chmod(0o600)
+    except OSError:
+        pass
+
+    public_key = private_key.public_key()
+    pub_raw_bytes = public_key.public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    return NodeIdentity(
+        private_key=private_key,
+        public_key=public_key,
+        public_key_hex=pub_raw_bytes.hex(),
         key_path=target_path,
     )
 
