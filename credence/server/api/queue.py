@@ -417,10 +417,15 @@ async def api_queue_submit(request: Request) -> JSONResponse:
             # Compile audits for consensus verdict
             all_audits_stmt = select(Audit).where(Audit.snapshot_id == snapshot.id)
             all_audits_res = await session.exec(all_audits_stmt)
-            audits_list = [
-                {"suspicion_score": a.suspicion_score, "violations": [v.model_dump() for v in a.violations]}
-                for a in all_audits_res.all()
-            ]
+            all_audits = all_audits_res.all()
+            audits_list = []
+            for a in all_audits:
+                v_stmt = select(Violation).where(Violation.audit_id == a.id)
+                v_res = await session.exec(v_stmt)
+                audits_list.append({
+                    "suspicion_score": a.suspicion_score,
+                    "violations": [v.model_dump() for v in v_res.all()],
+                })
             job.consensus_verdict_json = json.dumps(compute_consensus_verdict(audits_list))
 
         session.add(job)

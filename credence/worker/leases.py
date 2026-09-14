@@ -1,0 +1,141 @@
+"""Local Lease Tracking and Model Family Resolution for Credence Volunteer Workers.
+
+Governed by Theme 1: Botanical Network & Lifecycle & Theme 4: Sovereign Governance.
+Ensures local lease validity before computation and handles exponential backoff.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+import logging
+import re
+from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
+
+
+def utc_now() -> datetime:
+    """Return current timezone-aware UTC datetime."""
+    return datetime.now(timezone.utc)
+
+
+def resolve_model_family(model_slug: str) -> str:
+    """Resolve canonical model family identifier from model slug or URI.
+    
+    Supports well-known families (Google Gemini, Anthropic Claude, OpenAI GPT,
+    Meta Llama, DeepSeek, Mistral, Qwen, Microsoft Phi) as well as custom/local
+    and open-weights models.
+    """
+    clean = model_slug.strip().lower()
+
+    if "/" in clean:
+        parts = clean.split("/", 1)
+        vendor, model_part = parts[0], parts[1]
+        # Check if model_part contains recognized sub-family
+        for sub in ("gemini", "gemma", "claude", "gpt", "llama", "deepseek", "mistral", "mixtral", "qwen", "phi"):
+            if sub in model_part:
+                return f"{vendor}/{sub}"
+        # Fallback to vendor / first segment of model part
+        base = re.split(r"[-_.]", model_part)[0]
+        return f"{vendor}/{base}"
+
+    # No slash: detect by keyword
+    if "gemini" in clean:
+        return "google/gemini"
+    if "gemma" in clean:
+        return "google/gemma"
+    if "claude" in clean:
+        return "anthropic/claude"
+    if any(k in clean for k in ("gpt", "o1", "o3", "chatgpt")):
+        return "openai/gpt"
+    if "llama" in clean:
+        return "meta/llama"
+    if "deepseek" in clean:
+        return "deepseek/deepseek"
+    if "mistral" in clean or "mixtral" in clean:
+        return "mistral/mistral"
+    if "qwen" in clean:
+        return "qwen/qwen"
+    if "phi" in clean:
+        return "microsoft/phi"
+
+    # Default custom prefix
+    base = re.split(r"[-_.]", clean)[0] if clean else "custom"
+    return f"custom/{base}"
+
+
+def compute_backoff_delay(
+    consecutive_idle: int,
+    base_delay: float = 2.0,
+    max_delay: float = 30.0,
+) -> float:
+    """Compute exponential backoff delay when queue is empty or after errors."""
+    if consecutive_idle <= 0:
+        return base_delay
+    factor = 1.5 ** min(consecutive_idle, 8)
+    delay = min(max_delay, base_delay * factor)
+    return round(delay, 2)
+
+
+@dataclass
+class ActiveLease:
+    """Represents a currently claimed job lease held by the local worker."""
+
+    lease_id: str
+    job_id: str
+    url: str
+    acquired_at: datetime
+    expires_at: datetime
+    lease_seconds: int
+
+
+class LocalLeaseTracker:
+    """Tracks active leases locally to prevent unfulfilled claims and premature submission."""
+
+    def __init__(self, max_concurrency: int = 3) -> None:
+        self.max_concurrency = max_concurrency
+        self._leases: Dict[str, ActiveLease] = {}
+
+    def track_lease(self, lease_id: str, job_id: str, url: str, lease_seconds: int) -> ActiveLease:
+        """Register a newly acquired job lease."""
+        now = utc_now()
+        lease = ActiveLease(
+            lease_id=lease_id,
+            job_id=job_id,
+            url=url,
+            acquired_at=now,
+            expires_at=now + timedelta(seconds=lease_seconds),
+            lease_seconds=lease_seconds,
+        )
+        self._leases[lease_id] = lease
+        return lease
+
+    def is_lease_valid(self, lease_id: str) -> bool:
+        """Check if lease exists and has not expired."""
+        lease = self._leases.get(lease_id)
+        if not lease:
+            return False
+        return utc_now() < lease.expires_at
+
+    def release_lease(self, lease_id: str) -> Optional[ActiveLease]:
+        """Remove a fulfilled or abandoned lease from tracking."""
+        return self._leases.pop(lease_id, None)
+
+    def active_lease_count(self) -> int:
+        """Return number of unexpired leases currently active."""
+        now = utc_now()
+        active = [l for l in self._leases.values() if l.expires_at > now]
+        return len(active)
+
+    def prune_expired(self) -> List[str]:
+        """Prune any expired leases and return their IDs."""
+        now = utc_now()
+        expired = [lid for lid, l in self._leases.items() if l.expires_at <= now]
+        for lid in expired:
+            self._leases.pop(lid, None)
+        return expired
+
+    def can_claim_more(self) -> bool:
+        """Verify worker has capacity to claim additional concurrent jobs."""
+        return self.active_lease_count() < self.max_concurrency

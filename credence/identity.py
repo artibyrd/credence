@@ -70,7 +70,7 @@ def generate_node_keypair() -> ed25519.Ed25519PrivateKey:
     return ed25519.Ed25519PrivateKey.generate()
 
 
-def load_or_create_node_identity(key_path: Path | None = None) -> NodeIdentity:
+def load_or_create_node_identity(key_path: Path | str | None = None) -> NodeIdentity:
     """Load existing Ed25519 key from environment or disk, or generate and persist a new one."""
     import os
 
@@ -99,7 +99,7 @@ def load_or_create_node_identity(key_path: Path | None = None) -> NodeIdentity:
         )
 
     # 2. File-based persistence
-    target_path = key_path or settings.NODE_KEY_PATH
+    target_path = Path(key_path) if key_path else settings.NODE_KEY_PATH
 
     if target_path.exists():
         pem_data = target_path.read_bytes()
