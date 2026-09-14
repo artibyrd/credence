@@ -12,51 +12,53 @@ Every evaluation produces a cryptographically signed receipt (Ed25519) that can 
 
 ---
 
-## ⚡ 60-Second Quickstart
+## ⚡ The Credence Graduation Path
 
-Get started immediately with the CLI or Docker:
+Get started with Credence at the layer that matches your needs:
 
-### 1. Install
-
-```bash
-# Automated install (Linux & macOS)
-curl -fsSL https://credence.run/install.sh | bash
-
-# Or clone and install with Poetry
-git clone https://github.com/artibyrd/credence.git
-cd credence
-poetry install
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                              THE CREDENCE GRADUATION PATH                              │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  1. CONSUME: FastMCP 2.0 Client (<60s)  ──► Connect Claude / Cursor (0 infrastructure)│
+│  2. CONTRIBUTE: Volunteer Worker (<2m)  ──► uvx credence worker (Earn merit badges)    │
+│  3. HOST & COORDINATE: Node (<5m)       ──► just ignite (Private mempool & Admin Deck) │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-*(Or run via Docker: `docker run -d -p 8000:8000 ghcr.io/artibyrd/credence:latest`)*
-
-### 2. Configure API Key & Operator Security (Optional)
-
-```bash
-# Multi-agent reasoning (Gemini 3.7 Flash)
-export CREDENCE_GEMINI_API_KEY="your-gemini-api-key"
-
-# Bootstrap local operator admin key for web command deck (https://credence.nexus#admin)
-just auth-bootstrap local
+### 1. FastMCP 2.0 AI Assistant (<60s) — Connect Claude & Cursor
+Give Claude Desktop, Cursor, or AI swarms the in-editor Epistemic Brake with zero setup:
+```json
+{
+  "mcpServers": {
+    "credence": {
+      "command": "uvx",
+      "args": ["credence", "serve", "--mcp"]
+    }
+  }
+}
 ```
+*(Or connect directly to public remote SSE: `https://credence.run/sse`)* &bull; 📖 **[FastMCP Quickstart Guide](docs/quickstart-mcp.md)**
 
-> 💡 **Zero-Cost / Offline Mode**: If no API key is provided, Credence runs in **100% offline heuristic mode** ($0.00 cost) using structural rules.
+### 2. Volunteer Worker Daemon (<2m) — Donate Compute to the Mempool
+Not getting audits fast enough? Earn cryptographic merit badges and climb the public leaderboard:
+```bash
+# Launch volunteer worker with zero permanent install via uvx
+uvx credence worker --node https://credence.run --model google/gemini-3.8-flash
 
-### 3. Run Your First Audit & Launch Workstation
+# Or run 100% offline with local Ollama ($0.00 spend)
+uvx credence worker --node https://credence.run --model ollama/llama3.3:70b
+```
+📖 **[Volunteer Worker Quickstart Guide](docs/quickstart-worker.md)**
 
+### 3. Sovereign Node & Coordinator (<5m) — Full-Stack Hosting
+Have a team running lots of audits? Host a sovereign coordinator node with local mempool and web Admin Deck:
 ```bash
 # 1-Command ignite: setup, preflight, bootstrap admin key, germinate, and verify
+curl -fsSL https://credence.run/install.sh | bash
 just ignite
-
-# Audit any URL directly from your terminal
-credence audit https://example.com/news-story
-
-# Launch the interactive full-screen terminal dashboard
-credence tui
-
-# Print a 24-hour morning epistemic news briefing
-credence digest
 ```
+*(Or run via Docker: `docker run -d -p 8000:8000 ghcr.io/artibyrd/credence:latest`)* &bull; 📖 **[Sovereign Node Quickstart Guide](docs/quickstart-node.md)**
 
 ---
 
@@ -66,7 +68,7 @@ credence digest
 
 | Topic Category | Direct Jump Links |
 | :--- | :--- |
-| **🚀 Getting Started** | [POSIX Install](docs/quickstart.md#1-quick-installation) &bull; [Docker Setup](docs/quickstart.md#1-quick-installation) &bull; [API Key Config](docs/quickstart.md#2-api-key-configuration) &bull; [Node Germination](docs/protocols/node-germination-lifecycle.md) |
+| **🚀 Getting Started** | [Graduation Path](docs/quickstart.md) &bull; [FastMCP Quickstart](docs/quickstart-mcp.md) &bull; [Worker Quickstart](docs/quickstart-worker.md) &bull; [Node Quickstart](docs/quickstart-node.md) &bull; [Node Germination](docs/protocols/node-germination-lifecycle.md) |
 | **💻 CLI & Workstation** | [`audit`](docs/walkthroughs/01-auditing-webpages-and-text.md) &bull; [`tui`](docs/integrations/tui-workstation.md) &bull; [`digest`](docs/walkthroughs/04-morning-digest-briefings.md) &bull; [`sifter`](docs/walkthroughs/02-zero-trust-feed-sifting.md) &bull; [`quota`](docs/protocols/token-governor.md) &bull; [`rank`](docs/protocols/epistemic-merit-and-leaderboards.md) |
 | **🤖 AI & FastMCP 2.0** | [Claude Desktop Config](docs/tutorials/03-claude-cursor-fastmcp.md) &bull; [Cursor Setup](docs/tutorials/03-claude-cursor-fastmcp.md) &bull; [Antigravity SDK](docs/agentic/01-antigravity-pair-programming-paradigm.md) &bull; [Epistemic Brake](docs/cookbooks/agentic-epistemic-brake.md) |
 | **💰 Cost & Tokens** | [`FREE` ($0.00)](docs/protocols/token-governor.md) &bull; [`BALANCED` (Default)](docs/portability/gemini-economic-rationale.md) &bull; [`ULTRA` (Investigative)](docs/cookbooks/financial-disclosures.md) &bull; [Headroom Breaker](docs/protocols/token-governor.md) |
@@ -86,12 +88,12 @@ Credence maintains 100% synchronous feature parity across 4 distinct interfaces:
 ### 1. 🖥️ Terminal Command Line (CLI)
 Run fast audits, filter JSON streams with `jq`, and enforce quality gates in GitHub Actions:
 ```bash
-credence audit https://arstechnica.com/tech-policy/...
+credence audit https://arstechnica.com/tech-policy/2026/08/ai-copyright-settlement
 credence audit https://example.com/claim --json | jq .suspicion_score
 ```
 
 ### 2. ⚡ AI Assistant Integration (FastMCP 2.0)
-Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims:
+Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims, backed by a 25-second adaptive Epistemic Brake window and in-chat verification (`credence_verify_and_anchor`):
 ```json
 {
   "mcpServers": {

@@ -312,3 +312,55 @@ class EpistemicTier(str, Enum):
     AUDITOR = "AUDITOR"
     SPECIALIST = "SPECIALIST"
     ROOT_ANCHOR = "ROOT_ANCHOR"
+
+
+class AuditJob(SQLModel, table=True):
+    """Represents an audit job in the Open Epistemic Mempool queue."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    job_id: str = Field(index=True, unique=True, description="UUID string identifying the queued job")
+    url: str = Field(index=True, description="Target canonical URL")
+    content_sha256: str = Field(index=True, description="Normalized text SHA-256 hash")
+    normalized_text: str = Field(default="", description="Normalized prose or cleaned text content for evaluation")
+    priority: int = Field(
+        default=2, index=True, description="Job priority: 1=Interactive/FastMCP, 2=Default, 3=Feed/Batch"
+    )
+    client_affinity: Optional[str] = Field(
+        default=None, index=True, description="Client ID for self-serve affinity filtering"
+    )
+    target_quorum: int = Field(default=1, description="Target quorum of distinct model family evaluations")
+    status: str = Field(default="pending", index=True, description="Status: pending, claimed, completed, failed")
+    active_leases_json: str = Field(
+        default="[]",
+        description="JSON list of active leases: [{lease_id, worker_pubkey, model_family, expires_at}]",
+    )
+    completed_models_json: str = Field(
+        default="[]", description="JSON list of completed model families: [family1, family2, ...]"
+    )
+    is_consensus_ready: bool = Field(
+        default=False, index=True, description="True when target quorum or required passes have converged"
+    )
+    consensus_verdict_json: Optional[str] = Field(default=None, description="Serialized ConsensusVerdict JSON if ready")
+    created_at: datetime = Field(default_factory=utc_now, index=True, description="UTC creation timestamp")
+    completed_at: Optional[datetime] = Field(default=None, description="UTC completion timestamp")
+
+
+class WorkerRecord(SQLModel, table=True):
+    """Represents a volunteer compute worker contributing to the epistemic mempool."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    worker_pubkey: str = Field(index=True, unique=True, description="Ed25519 public key hex of the worker")
+    worker_alias: str = Field(default="volunteer-worker", description="Human-readable worker label")
+    model_family: str = Field(default="general", index=True, description="Declared or observed base model family")
+    model_slug: str = Field(default="google/gemini-3.8-flash", description="Most recent model URI / slug")
+    total_completed: int = Field(default=0, description="Total audits completed by worker")
+    tokens_donated: int = Field(default=0, description="Estimated total tokens donated")
+    bounties_cleared: int = Field(default=0, description="Number of mempool bounties fulfilled")
+    consensus_anchors_count: int = Field(default=0, description="Audits that successfully served as consensus anchors")
+    grounded_violations_count: int = Field(default=0, description="Total verbatim-grounded violations cited")
+    quality_score: float = Field(default=0.50, description="Calculated worker quality score (0.0 to 1.0)")
+    first_seen: datetime = Field(default_factory=utc_now, description="First recorded active timestamp")
+    last_seen: datetime = Field(
+        default_factory=utc_now, index=True, description="Most recent heartbeat/claim/submit timestamp"
+    )
+    badges_unlocked_json: str = Field(default="[]", description="JSON list of earned badge IDs")
