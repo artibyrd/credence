@@ -268,7 +268,7 @@ class CredenceBadge extends HTMLElement {
         <div style="font-size: 11px; color: #cbd5e1; line-height: 1.5;">
           <div style="font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Forensic Claim Breakdown</div>
           • Active Policy Violations: <strong>${violationsCount}</strong><br/>
-          • Verbatim Grounding ($G=1.00$): <strong>${status === 'VERIFIED' ? '100%' : 'Pending'}</strong><br/>
+          • Verbatim Grounding (G=1.00): <strong>${status === 'VERIFIED' ? '100%' : 'Pending'}</strong><br/>
           • Bait-and-Switch Defense: <strong>${isHashMatch ? '✓ Verified Unaltered' : '⚠️ Content Altered Post-Audit'}</strong>
         </div>
       `;

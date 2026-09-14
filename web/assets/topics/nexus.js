@@ -314,7 +314,7 @@ export const NEXUS_TOPICS = {
       <br><br>
       Anyone can run a volunteer worker daemon using spare compute across any major cloud LLM or local runtime — including <b>Google Gemini, Anthropic Claude, OpenAI GPT, DeepSeek, Meta Llama, Mistral, Qwen</b>, or any custom open-weights model via local <b>Ollama, vLLM, or LM Studio</b>.
       <br><br>
-      <b>What is Q_w?</b> $Q_w$ is the <i>Worker Quality &amp; Accuracy Score</i>. It measures how reliably a volunteer worker delivers accurate, hallucination-free evaluations. Displayed on a <b>0.0 to 10.0</b> scale, it combines baseline reliability, completed bounty volume, character-for-character citation grounding ($G=1.00$), and sustained node longevity.
+      <b>What is Q_w?</b> <i>Q_w</i> is the <i>Worker Quality &amp; Accuracy Score</i>. It measures how reliably a volunteer worker delivers accurate, hallucination-free evaluations. Displayed on a <b>0.0 to 10.0</b> scale, it combines baseline reliability, completed bounty volume, character-for-character citation grounding (G=1.00), and sustained node longevity.
     `,
     tier1_article: {
       title: "📘 Volunteer Compute & Worker Guide",
