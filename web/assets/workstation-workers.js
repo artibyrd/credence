@@ -54,34 +54,16 @@ export async function fetchWorkerLeaderboard(search = '', family = 'all') {
     cachedWorkers = [
       {
         worker_pubkey: "4f8a19b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abc",
-        worker_alias: "arbiter-alpha",
-        model_family: "google/gemini",
-        model_slug: "google/gemini-3.7-flash",
-        total_completed: 142,
-        bounties_cleared: 142,
-        tokens_donated: 213000,
-        tokens_saved_usd: 0.0724,
-        quality_score: 0.98,
-        badges: [
-          { badge_id: "bounty_hunter", name: "Bounty Hunter", icon: "🏹", description: "Cleared 50+ bounties" },
-          { badge_id: "precision_striker", name: "Precision Striker", icon: "🎯", description: "Perfect G=1.00 grounding" }
-        ],
+        worker_alias: "arbiter-alpha", model_family: "google/gemini", model_slug: "google/gemini-3.8-flash",
+        total_completed: 142, bounties_cleared: 142, tokens_donated: 213000, tokens_saved_usd: 0.0724, quality_score: 0.98,
+        badges: [{ badge_id: "bounty_hunter", name: "Bounty Hunter", icon: "🏹", description: "Cleared 50+ bounties" }, { badge_id: "precision_striker", name: "Precision Striker", icon: "🎯", description: "Perfect G=1.00 grounding" }],
         last_seen: new Date().toISOString()
       },
       {
         worker_pubkey: "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
-        worker_alias: "deepseek-runner",
-        model_family: "deepseek/deepseek",
-        model_slug: "deepseek/deepseek-r1",
-        total_completed: 88,
-        bounties_cleared: 88,
-        tokens_donated: 132000,
-        tokens_saved_usd: 0.0449,
-        quality_score: 0.92,
-        badges: [
-          { badge_id: "first_bounty", name: "First Bounty", icon: "🌱", description: "Fulfilled first audit" },
-          { badge_id: "speed_demon", name: "Speed Demon", icon: "⚡", description: "Sub-5s turnaround" }
-        ],
+        worker_alias: "deepseek-runner", model_family: "deepseek/deepseek", model_slug: "deepseek/deepseek-r1",
+        total_completed: 88, bounties_cleared: 88, tokens_donated: 132000, tokens_saved_usd: 0.0449, quality_score: 0.92,
+        badges: [{ badge_id: "first_bounty", name: "First Bounty", icon: "🌱", description: "Fulfilled first audit" }, { badge_id: "speed_demon", name: "Speed Demon", icon: "⚡", description: "Sub-5s turnaround" }],
         last_seen: new Date().toISOString()
       }
     ];
@@ -180,6 +162,8 @@ export async function openWorkerDossier(pubkey) {
   document.getElementById('wd-tokens').textContent = '--';
   document.getElementById('wd-savings').textContent = '--';
   document.getElementById('wd-badges-gallery').innerHTML = '<p style="color:var(--text-dim);">Loading badges...</p>';
+  const aCountInit = document.getElementById('wd-audits-count');
+  if (aCountInit) aCountInit.textContent = 'Loading...';
   document.getElementById('wd-audits-body').innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-dim);">Loading audit history...</td></tr>';
 
   // SVG badge preview URL
@@ -227,11 +211,16 @@ export async function openWorkerDossier(pubkey) {
         }
       }
 
-      // Render Audits Table
+      // Render Audits Table and Reconciled Bounty Count
       const aBody = document.getElementById('wd-audits-body');
+      const aCount = document.getElementById('wd-audits-count');
+      const audits = data.recent_audits || [];
+      if (aCount) {
+        aCount.textContent = `Showing ${audits.length} of ${data.bounties_cleared || audits.length} completed bounties`;
+      }
       if (aBody) {
-        if (!data.recent_audits || data.recent_audits.length === 0) {
-          aBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-dim); padding:1rem;">No recent audits recorded.</td></tr>';
+        if (audits.length === 0) {
+          aBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-dim); padding:1rem;">No verified mempool audits recorded yet.</td></tr>';
         } else {
           aBody.innerHTML = data.recent_audits.map(a => `
             <tr>
@@ -321,21 +310,25 @@ function injectWorkerDossierModal() {
 
           <!-- 4-Metric Grid -->
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.75rem; margin-bottom:1.25rem;">
-            <div class="metric-card" style="padding:0.85rem;">
-              <div class="metric-label">Quality (Q_w)</div>
+            <div class="metric-card" style="padding:0.85rem;" title="Worker Quality & Accuracy Score (Q_w). Scaled 0.0 to 10.0 based on volume, G=1.00 grounding, and longevity.">
+              <div class="metric-label">Quality Score (Q_w)</div>
               <div class="metric-val" id="wd-qscore" style="color:var(--accent-green); font-size:1.35rem;">--</div>
+              <div style="font-size:0.7rem; color:var(--text-dim); margin-top:2px;">Reliability (0-10)</div>
             </div>
-            <div class="metric-card" style="padding:0.85rem;">
+            <div class="metric-card" style="padding:0.85rem;" title="Total mempool bounties claimed and verified with cryptographic attestation.">
               <div class="metric-label">Bounties Cleared</div>
               <div class="metric-val" id="wd-bounties" style="color:var(--accent-cyan); font-size:1.35rem;">--</div>
+              <div style="font-size:0.7rem; color:var(--text-dim); margin-top:2px;">Verified Mempool Audits</div>
             </div>
-            <div class="metric-card" style="padding:0.85rem;">
+            <div class="metric-card" style="padding:0.85rem;" title="Estimated total LLM tokens donated to open research.">
               <div class="metric-label">Tokens Donated</div>
               <div class="metric-val" id="wd-tokens" style="font-size:1.35rem;">--</div>
+              <div style="font-size:0.7rem; color:var(--text-dim); margin-top:2px;">LLM Compute Volume</div>
             </div>
-            <div class="metric-card" style="padding:0.85rem;">
-              <div class="metric-label">Estimated Value ($)</div>
+            <div class="metric-card" style="padding:0.85rem;" title="Estimated economic value contributed based on commercial API rates.">
+              <div class="metric-label">Value Saved ($)</div>
               <div class="metric-val" id="wd-savings" style="color:var(--accent-amber); font-size:1.35rem;">--</div>
+              <div style="font-size:0.7rem; color:var(--text-dim); margin-top:2px;">Public Benefit ($)</div>
             </div>
           </div>
 
@@ -374,16 +367,20 @@ function injectWorkerDossierModal() {
 
           <!-- Recent Audits Table -->
           <div>
-            <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:0.5rem;">📜 Recent Fulfilled Audits</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+              <div style="font-size:0.85rem; font-weight:700; color:#fff;">📜 Fulfilled Bounties &amp; Signed Audits</div>
+              <span id="wd-audits-count" style="font-size:0.75rem; color:var(--accent-cyan); font-family:var(--font-mono);">--</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-dim); margin:0 0 0.5rem;">Each cleared mempool bounty produces a character-grounded (G=1.00) cryptographic audit signed with this worker's Ed25519 key.</p>
             <div class="ws-table-container" style="max-height:220px; overflow-y:auto;">
               <table class="ws-table" style="font-size:0.78rem;">
                 <thead>
                   <tr>
                     <th style="width:130px;">Audited At</th>
-                    <th>URL</th>
+                    <th>Target Source URL</th>
                     <th style="width:70px;">Score</th>
                     <th style="width:90px;">Verdict</th>
-                    <th style="width:110px;">Signature</th>
+                    <th style="width:110px;">Ed25519 Sig</th>
                   </tr>
                 </thead>
                 <tbody id="wd-audits-body">
@@ -419,17 +416,24 @@ function injectWorkerStartModal() {
         <div class="operator-modal-body" style="padding:1.25rem; font-size:0.85rem;">
           <p style="color:var(--text-muted); margin-bottom:1rem;">
             Contribute spare compute to the decentralized mempool. Fulfill peer audit requests, climb the contributor leaderboard, and earn cryptographic achievement badges.
+            <br><b style="color:var(--accent-cyan);">Universal Model Support:</b> Run any cloud LLM or local open-weights engine (Gemini, Claude, GPT, DeepSeek, Llama, Mistral, Qwen, or custom fine-tunes via Ollama, vLLM, or LM Studio).
           </p>
 
-          <h4 style="color:#fff; margin:1rem 0 0.5rem;">1. One-Command Quickstart (Zero Installation)</h4>
-          <pre style="background:var(--bg-code); padding:0.75rem 1rem; border-radius:6px; font-family:var(--font-mono); font-size:0.8rem; overflow-x:auto; border:1px solid var(--border);"><code># Start worker with Google Gemini (default)
-uvx credence worker --model google/gemini-3.7-flash
+          <h4 style="color:#fff; margin:1rem 0 0.5rem;">1. One-Command Quickstart (Universal Inference)</h4>
+          <pre style="background:var(--bg-code); padding:0.75rem 1rem; border-radius:6px; font-family:var(--font-mono); font-size:0.8rem; overflow-x:auto; border:1px solid var(--border);"><code># Google Gemini (Default)
+export GEMINI_API_KEY="AIzaSy..."
+uvx credence worker --model google/gemini-3.8-flash
 
-# Or with Anthropic Claude
-export ANTHROPIC_API_KEY="sk-..."
+# Anthropic Claude
+export ANTHROPIC_API_KEY="sk-ant-..."
 uvx credence worker --model anthropic/claude-3-7-sonnet
 
-# Or with Local Ollama / vLLM (100% offline & open-weights)
+# OpenAI GPT or DeepSeek
+export OPENAI_API_KEY="sk-..."
+uvx credence worker --model openai/gpt-4o-mini
+# Or DeepSeek: uvx credence worker --model deepseek/deepseek-chat --api-base https://api.deepseek.com/v1
+
+# Local Open-Weights (Ollama / vLLM / LM Studio — 100% Private &amp; Zero-Cost)
 uvx credence worker --model deepseek-r1:70b --api-base http://localhost:11434/v1</code></pre>
 
           <h4 style="color:#fff; margin:1.25rem 0 0.5rem;">2. Key Custody: Maintain Your Rank Across Machines</h4>

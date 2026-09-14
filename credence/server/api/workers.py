@@ -121,13 +121,27 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
             worker.total_completed, worker.bounties_cleared, worker.grounded_violations_count, worker.first_seen
         )
 
-        # Retrieve recent audits completed by this worker
+        # Retrieve recent audits completed by this worker (prioritize mempool bounties)
         audit_stmt = (
-            select(Audit).where(Audit.node_pubkey == worker.worker_pubkey).order_by(desc(Audit.audited_at)).limit(10)
+            select(Audit)
+            .where(Audit.node_pubkey == worker.worker_pubkey, Audit.evaluation_method == "worker_volunteer_mempool")
+            .order_by(desc(Audit.audited_at))
+            .limit(10)
         )
         audit_res = await session.exec(audit_stmt)
+        audits_raw = audit_res.all()
+
+        if not audits_raw and worker.bounties_cleared == 0:
+            fallback_stmt = (
+                select(Audit)
+                .where(Audit.node_pubkey == worker.worker_pubkey)
+                .order_by(desc(Audit.audited_at))
+                .limit(10)
+            )
+            audits_raw = (await session.exec(fallback_stmt)).all()
+
         recent_audits = []
-        for a in audit_res.all():
+        for a in audits_raw:
             snap_stmt = select(Snapshot).where(Snapshot.id == a.snapshot_id)
             snap = (await session.exec(snap_stmt)).first()
             recent_audits.append(

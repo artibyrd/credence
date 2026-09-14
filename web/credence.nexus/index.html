@@ -359,11 +359,11 @@
               <div class="deck-card-header">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Volunteer Worker Fleet Leaderboard (Q_w)</h3>
-                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('qw_scoring')" title="Info: Volunteer Worker Fleet Quality (Q_w)">ℹ</button>
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Volunteer Worker Fleet Leaderboard — Quality &amp; Reliability (Q_w)</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('qw_scoring')" title="Info: Volunteer Worker Fleet Quality Score (Q_w)">ℹ</button>
                   </div>
                   <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">
-                    <span style="font-family:var(--font-mono); font-weight:600; color:var(--accent-amber);">Q_w = 0.50 + 0.25·Vol + 0.15·Ground + 0.10·Age</span> &bull; Decentralized Blind Compute Contributors
+                    <span style="font-family:var(--font-mono); font-weight:600; color:var(--accent-amber);" title="Worker Reliability Score: 0.50 Base + up to 0.25 Volume + 0.15 Verbatim Grounding + up to 0.10 Longevity">Quality Score: Q_w = 0.50 (Base) + 0.25·Vol + 0.15·Ground + 0.10·Age</span> &bull; <span>Scale 0.0 &ndash; 10.0</span> &bull; Decentralized Blind Compute Fleet
                   </p>
                 </div>
                 <div style="display:flex; gap:0.5rem; align-items:center;">
@@ -381,11 +381,11 @@
                       <th style="width: 48px; text-align: center;">Rank</th>
                       <th style="min-width: 180px;">Contributor &amp; Pubkey</th>
                       <th style="width: 140px;">Model Family</th>
-                      <th style="width: 95px;">Quality (Q_w)</th>
-                      <th style="width: 85px;">Bounties</th>
-                      <th style="width: 100px;">Tokens</th>
-                      <th style="width: 95px;">Saved ($)</th>
-                      <th style="width: 110px;">Badges</th>
+                      <th style="width: 105px;" title="Worker Quality & Accuracy Score (Q_w) on a 0.0 to 10.0 scale">Quality (Q_w) ℹ</th>
+                      <th style="width: 100px;" title="Total verified mempool audit bounties claimed & fulfilled">Bounties Cleared</th>
+                      <th style="width: 100px;" title="Total prompt and completion tokens contributed">Tokens</th>
+                      <th style="width: 95px;" title="Estimated commercial compute savings donated to public research">Saved ($)</th>
+                      <th style="width: 110px;" title="Cryptographic merit badges unlocked">Badges</th>
                       <th style="width: 85px; text-align: center;">Dossier</th>
                     </tr>
                   </thead>
