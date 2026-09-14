@@ -118,12 +118,12 @@ export function renderWorkerLeaderboard(workers) {
       <tr style="cursor:pointer;" onclick="window.CredenceWS.openWorkerDossier('${w.worker_pubkey}')" title="Click to inspect contributor dossier">
         <td style="text-align:center;"><b style="color:var(--accent-amber);">#${idx + 1}</b></td>
         <td>
-          <b style="color:#fff;">${w.worker_alias || 'volunteer'}</b><br>
+          <b style="color:#fff; display:block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${w.worker_alias || 'volunteer'}</b>
           <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">${shortPub}</span>
         </td>
         <td>
           <span class="ribbon-pill ready" style="font-size:0.72rem;">${w.model_family}</span><br>
-          <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">${w.model_slug || ''}</span>
+          <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); display:block; max-width:115px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${w.model_slug || ''}">${w.model_slug || ''}</span>
         </td>
         <td><b style="color:var(--accent-green); font-family:var(--font-mono);">${(w.quality_score * 10).toFixed(1)} / 10</b></td>
         <td><b style="color:var(--accent-cyan); font-family:var(--font-mono);">${w.bounties_cleared}</b></td>
@@ -287,7 +287,7 @@ function injectWorkerDossierModal() {
   const html = `
     <div id="worker-dossier-modal" class="operator-modal-backdrop" style="display:none; z-index:10000;">
       <div class="operator-modal" style="max-width:780px; max-height:90vh; overflow-y:auto;">
-        <div class="operator-modal-header" style="position:sticky; top:0; background:var(--bg-card); z-index:10;">
+        <div class="operator-modal-header" style="position:sticky; top:0; background:var(--bg-secondary); z-index:10;">
           <div style="display:flex; align-items:center; gap:0.5rem;">
             <span style="font-size:1.3rem;">🐝</span>
             <div>
@@ -300,7 +300,7 @@ function injectWorkerDossierModal() {
 
         <div class="operator-modal-body" style="padding:1.25rem;">
           <!-- Pubkey Bar -->
-          <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:0.6rem 0.85rem; border-radius:6px; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+          <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:0.6rem 0.85rem; border-radius:var(--radius-sm); margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
             <div style="overflow:hidden; text-overflow:ellipsis;">
               <span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Ed25519 Public Key:</span><br>
               <code id="wd-pubkey" style="font-family:var(--font-mono); font-size:0.78rem; color:#fff; word-break:break-all;">--</code>
