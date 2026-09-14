@@ -351,6 +351,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_worker.add_argument("--affinity", default=None, help="Self-serve client affinity filter")
     p_worker.add_argument("--concurrency", type=int, default=1, help="Evaluation concurrency")
     p_worker.add_argument("--continuous", action="store_true", default=True, help="Poll continuously")
+    p_worker.add_argument("--max-jobs", type=int, default=None, help="Maximum jobs to complete before stopping")
 
     return parser
 

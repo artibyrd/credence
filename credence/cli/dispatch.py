@@ -121,6 +121,7 @@ def dispatch_command(args: argparse.Namespace) -> None:
                 affinity=args.affinity,
                 concurrency=args.concurrency,
                 continuous=args.continuous,
+                max_jobs=getattr(args, "max_jobs", None),
             )
         )
     elif args.command in ("serve", "server"):
