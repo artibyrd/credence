@@ -29,7 +29,13 @@ export async function fetchWorkerLeaderboard(search = '', family = 'all') {
     if (family && family !== 'all') params.append('family', family);
     params.append('limit', '50');
 
-    const res = await fetch(`${base}/api/workers/leaderboard?${params.toString()}`);
+    let res = await fetch(`${base}/api/workers/leaderboard?${params.toString()}`);
+    if ((!res.ok || res.status === 404) && !base) {
+      try {
+        const devRes = await fetch(`https://credence-dev-865363499314.us-central1.run.app/api/workers/leaderboard?${params.toString()}`);
+        if (devRes.ok) res = devRes;
+      } catch (_) {}
+    }
     if (res.ok) {
       const data = await res.json();
       cachedWorkers = data.workers || [];
@@ -177,7 +183,8 @@ export async function openWorkerDossier(pubkey) {
   document.getElementById('wd-audits-body').innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-dim);">Loading audit history...</td></tr>';
 
   // SVG badge preview URL
-  const badgeUrl = `${base}/api/badge/worker/${pubkey}.svg`;
+  const badgeBase = base || (window.location.hostname.includes('credence.nexus') ? 'https://credence-dev-865363499314.us-central1.run.app' : '');
+  const badgeUrl = `${badgeBase}/api/badge/worker/${pubkey}.svg`;
   const badgeImg = document.getElementById('wd-badge-img');
   if (badgeImg) badgeImg.src = badgeUrl;
 
@@ -186,7 +193,13 @@ export async function openWorkerDossier(pubkey) {
   if (snippetInput) snippetInput.value = mdSnippet;
 
   try {
-    const res = await fetch(`${base}/api/worker/${pubkey}`);
+    let res = await fetch(`${base}/api/worker/${pubkey}`);
+    if ((!res.ok || res.status === 404) && !base) {
+      try {
+        const devRes = await fetch(`https://credence-dev-865363499314.us-central1.run.app/api/worker/${pubkey}`);
+        if (devRes.ok) res = devRes;
+      } catch (_) {}
+    }
     if (res.ok) {
       const data = await res.json();
       document.getElementById('wd-alias').textContent = data.worker_alias || 'Volunteer Contributor';
