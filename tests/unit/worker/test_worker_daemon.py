@@ -1,15 +1,14 @@
 """Unit tests for the Volunteer Worker daemon and lease management."""
 
-import asyncio
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from credence.identity import load_or_create_node_identity
-from credence.pipeline.adapters import LLMResponse, OpenAICompatibleProvider
+from credence.pipeline.adapters import OpenAICompatibleProvider
 from credence.server.app import app
-from credence.worker.daemon import init_worker_provider, run_worker_daemon
+from credence.worker.daemon import run_worker_daemon
 from credence.worker.leases import LocalLeaseTracker, compute_backoff_delay, resolve_model_family
 
 
@@ -41,12 +40,12 @@ def test_local_lease_tracker():
     assert tracker.can_claim_more() is True
 
     # Track 1s lease
-    l1 = tracker.track_lease("l-1", "job-1", "https://example.com/1", 1)
+    tracker.track_lease("l-1", "job-1", "https://example.com/1", 1)
     assert tracker.is_lease_valid("l-1") is True
     assert tracker.active_lease_count() == 1
 
     # Track 10s lease
-    l2 = tracker.track_lease("l-2", "job-2", "https://example.com/2", 10)
+    tracker.track_lease("l-2", "job-2", "https://example.com/2", 10)
     assert tracker.can_claim_more() is False
 
     tracker.release_lease("l-2")
@@ -70,13 +69,14 @@ def test_openai_compatible_provider_config():
 async def test_worker_daemon_single_job_lifecycle(tmp_path: Path, monkeypatch):
     """Verify worker daemon claims, evaluates with dummy response, and submits."""
     from sqlmodel import delete
+
     from credence.db import get_async_session, init_db
     from credence.models import AuditJob, WorkerRecord
 
     await init_db()
     async with get_async_session() as session:
-        await session.exec(delete(AuditJob))
-        await session.exec(delete(WorkerRecord))
+        await session.exec(delete(AuditJob))  # type: ignore[call-overload]
+        await session.exec(delete(WorkerRecord))  # type: ignore[call-overload]
         await session.commit()
 
     key_file = str(tmp_path / "worker.key")
@@ -95,7 +95,7 @@ async def test_worker_daemon_single_job_lifecycle(tmp_path: Path, monkeypatch):
             },
         )
         assert res_enq.status_code == 200
-        job_id = res_enq.json()["job_id"]
+        assert "job_id" in res_enq.json()
 
         # Run worker daemon for max_jobs=1
         await run_worker_daemon(

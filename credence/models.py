@@ -340,9 +340,7 @@ class AuditJob(SQLModel, table=True):
     is_consensus_ready: bool = Field(
         default=False, index=True, description="True when target quorum or required passes have converged"
     )
-    consensus_verdict_json: Optional[str] = Field(
-        default=None, description="Serialized ConsensusVerdict JSON if ready"
-    )
+    consensus_verdict_json: Optional[str] = Field(default=None, description="Serialized ConsensusVerdict JSON if ready")
     created_at: datetime = Field(default_factory=utc_now, index=True, description="UTC creation timestamp")
     completed_at: Optional[datetime] = Field(default=None, description="UTC completion timestamp")
 
@@ -366,4 +364,3 @@ class WorkerRecord(SQLModel, table=True):
         default_factory=utc_now, index=True, description="Most recent heartbeat/claim/submit timestamp"
     )
     badges_unlocked_json: str = Field(default="[]", description="JSON list of earned badge IDs")
-

@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlmodel import delete, select
@@ -57,7 +58,9 @@ def cluster_identities(tmp_path: Path):
     }
 
 
-def make_cluster_report(url: str, prose: str, identity, score: float = 20.0, violation_quote: str | None = None) -> AuditReport:
+def make_cluster_report(
+    url: str, prose: str, identity, score: float = 20.0, violation_quote: str | None = None
+) -> AuditReport:
     """Helper to construct signed AuditReport for cluster nodes."""
     violations = []
     if violation_quote:
@@ -183,12 +186,16 @@ async def test_scenario_04_soft_lease_expiration_and_reclamation(cluster_identit
         async with get_async_session() as session:
             job = (await session.exec(select(AuditJob))).first()
             expired_time = (datetime.now(timezone.utc) - timedelta(seconds=300)).isoformat()
-            job.active_leases_json = json.dumps([{
-                "lease_id": "expired_lease",
-                "worker_pubkey": cluster_identities["alpha"].public_key_hex,
-                "model_family": "google/gemini",
-                "expires_at": expired_time,
-            }])
+            job.active_leases_json = json.dumps(
+                [
+                    {
+                        "lease_id": "expired_lease",
+                        "worker_pubkey": cluster_identities["alpha"].public_key_hex,
+                        "model_family": "google/gemini",
+                        "expires_at": expired_time,
+                    }
+                ]
+            )
             session.add(job)
             await session.commit()
 
@@ -232,6 +239,7 @@ async def test_scenario_05_fast_provisional_unblocking(cluster_identities):
         data = sub.json()
         assert data["status"] == "accepted"
         from credence.server.api.queue import get_completed_report
+
         assert get_completed_report("https://example.com/scen5") is not None
 
 

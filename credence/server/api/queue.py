@@ -10,15 +10,15 @@ import asyncio
 import json
 import re
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from sqlmodel import select
+from sqlmodel import col, select
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from credence.db import get_async_session
-from credence.identity import canonical_json_bytes, verify_audit_signature
+from credence.identity import verify_audit_signature
 from credence.mesh.worker_badges import evaluate_worker_badges
 from credence.models import Audit, AuditJob, Snapshot, Violation, WorkerRecord, utc_now
 from credence.pipeline.schemas import AuditReport
@@ -109,21 +109,20 @@ async def api_queue_enqueue(request: Request) -> JSONResponse:
 
     async with get_async_session() as session:
         # Single-flight deduplication: check if pending or claimed job already exists
-        statement = select(AuditJob).where(
-            AuditJob.url == url,
-            AuditJob.status.in_(["pending", "claimed"])
-        )
+        statement = select(AuditJob).where(AuditJob.url == url, col(AuditJob.status).in_(["pending", "claimed"]))
         result = await session.exec(statement)
         existing_job = result.first()
 
         if existing_job:
-            return JSONResponse({
-                "status": "already_queued",
-                "job_id": existing_job.job_id,
-                "url": existing_job.url,
-                "priority": existing_job.priority,
-                "target_quorum": existing_job.target_quorum,
-            })
+            return JSONResponse(
+                {
+                    "status": "already_queued",
+                    "job_id": existing_job.job_id,
+                    "url": existing_job.url,
+                    "priority": existing_job.priority,
+                    "target_quorum": existing_job.target_quorum,
+                }
+            )
 
         job_id = str(uuid.uuid4())
         job = AuditJob(
@@ -142,13 +141,15 @@ async def api_queue_enqueue(request: Request) -> JSONResponse:
         # Register event for listeners
         register_completion_listener(url)
 
-        return JSONResponse({
-            "status": "queued",
-            "job_id": job.job_id,
-            "url": job.url,
-            "priority": job.priority,
-            "target_quorum": job.target_quorum,
-        })
+        return JSONResponse(
+            {
+                "status": "queued",
+                "job_id": job.job_id,
+                "url": job.url,
+                "priority": job.priority,
+                "target_quorum": job.target_quorum,
+            }
+        )
 
 
 async def api_queue_claim(request: Request) -> JSONResponse:
@@ -180,9 +181,9 @@ async def api_queue_claim(request: Request) -> JSONResponse:
         now = utc_now()
         for cj in all_claimed:
             leases = json.loads(cj.active_leases_json or "[]")
-            for l in leases:
-                if l.get("worker_pubkey") == worker_pubkey:
-                    exp = datetime.fromisoformat(l["expires_at"])
+            for entry in leases:
+                if entry.get("worker_pubkey") == worker_pubkey:
+                    exp = datetime.fromisoformat(entry["expires_at"])
                     if exp.tzinfo is None:
                         exp = exp.replace(tzinfo=timezone.utc)
                     if exp > now:
@@ -196,12 +197,12 @@ async def api_queue_claim(request: Request) -> JSONResponse:
             leases = json.loads(cj.active_leases_json or "[]")
             valid_leases = []
             expired_found = False
-            for l in leases:
-                exp = datetime.fromisoformat(l["expires_at"])
+            for entry in leases:
+                exp = datetime.fromisoformat(entry["expires_at"])
                 if exp.tzinfo is None:
                     exp = exp.replace(tzinfo=timezone.utc)
                 if exp > now:
-                    valid_leases.append(l)
+                    valid_leases.append(entry)
                 else:
                     expired_found = True
             if expired_found:
@@ -212,7 +213,7 @@ async def api_queue_claim(request: Request) -> JSONResponse:
         await session.commit()
 
         # Query eligible jobs
-        statement = select(AuditJob).where(AuditJob.status.in_(["pending", "claimed"]))
+        statement = select(AuditJob).where(col(AuditJob.status).in_(["pending", "claimed"]))
         result = await session.exec(statement)
         candidates = result.all()
 
@@ -225,7 +226,7 @@ async def api_queue_claim(request: Request) -> JSONResponse:
             # Check if this model family has already completed or is actively claimed
             if model_family in completed:
                 continue
-            if any(l.get("model_family") == model_family for l in leases):
+            if any(entry.get("model_family") == model_family for entry in leases):
                 continue
             if len(completed) >= job.target_quorum:
                 continue
@@ -251,28 +252,32 @@ async def api_queue_claim(request: Request) -> JSONResponse:
         lease_id = str(uuid.uuid4())
 
         existing_leases = json.loads(selected_job.active_leases_json or "[]")
-        existing_leases.append({
-            "lease_id": lease_id,
-            "worker_pubkey": worker_pubkey,
-            "model_family": model_family,
-            "expires_at": expires_at.isoformat(),
-        })
+        existing_leases.append(
+            {
+                "lease_id": lease_id,
+                "worker_pubkey": worker_pubkey,
+                "model_family": model_family,
+                "expires_at": expires_at.isoformat(),
+            }
+        )
         selected_job.active_leases_json = json.dumps(existing_leases)
         selected_job.status = "claimed"
         session.add(selected_job)
         await session.commit()
 
-        return JSONResponse({
-            "job": {
-                "job_id": selected_job.job_id,
-                "url": selected_job.url,
-                "content_sha256": selected_job.content_sha256,
-                "normalized_text": selected_job.normalized_text,
-                "priority": selected_job.priority,
-                "lease_id": lease_id,
-                "lease_seconds": lease_seconds,
+        return JSONResponse(
+            {
+                "job": {
+                    "job_id": selected_job.job_id,
+                    "url": selected_job.url,
+                    "content_sha256": selected_job.content_sha256,
+                    "normalized_text": selected_job.normalized_text,
+                    "priority": selected_job.priority,
+                    "lease_id": lease_id,
+                    "lease_seconds": lease_seconds,
+                }
             }
-        })
+        )
 
 
 async def api_queue_submit(request: Request) -> JSONResponse:
@@ -318,13 +323,16 @@ async def api_queue_submit(request: Request) -> JSONResponse:
         if job.normalized_text and report_obj.violations:
             for v in report_obj.violations:
                 if v.quote_or_element and v.quote_or_element not in job.normalized_text:
-                    return JSONResponse({
-                        "error": f"Grounding precision G < 1.00: Quote '{v.quote_or_element[:40]}...' not found in source text"
-                    }, status_code=422)
+                    return JSONResponse(
+                        {
+                            "error": f"Grounding precision G < 1.00: Quote '{v.quote_or_element[:40]}...' not found in source text"
+                        },
+                        status_code=422,
+                    )
 
         # Update leases and completed models
         leases = json.loads(job.active_leases_json or "[]")
-        valid_leases = [l for l in leases if l.get("worker_pubkey") != worker_pubkey]
+        valid_leases = [entry for entry in leases if entry.get("worker_pubkey") != worker_pubkey]
         job.active_leases_json = json.dumps(valid_leases)
 
         completed_models = json.loads(job.completed_models_json or "[]")
@@ -422,10 +430,12 @@ async def api_queue_submit(request: Request) -> JSONResponse:
             for a in all_audits:
                 v_stmt = select(Violation).where(Violation.audit_id == a.id)
                 v_res = await session.exec(v_stmt)
-                audits_list.append({
-                    "suspicion_score": a.suspicion_score,
-                    "violations": [v.model_dump() for v in v_res.all()],
-                })
+                audits_list.append(
+                    {
+                        "suspicion_score": a.suspicion_score,
+                        "violations": [v.model_dump() for v in v_res.all()],
+                    }
+                )
             job.consensus_verdict_json = json.dumps(compute_consensus_verdict(audits_list))
 
         session.add(job)
@@ -436,13 +446,15 @@ async def api_queue_submit(request: Request) -> JSONResponse:
         if job.url in _COMPLETION_EVENTS:
             _COMPLETION_EVENTS[job.url].set()
 
-        return JSONResponse({
-            "status": "accepted",
-            "job_id": job.job_id,
-            "is_consensus_ready": job.is_consensus_ready,
-            "bounties_cleared": worker.bounties_cleared,
-            "badges_awarded": [a.badge_id for a in awards],
-        })
+        return JSONResponse(
+            {
+                "status": "accepted",
+                "job_id": job.job_id,
+                "is_consensus_ready": job.is_consensus_ready,
+                "bounties_cleared": worker.bounties_cleared,
+                "badges_awarded": [a.badge_id for a in awards],
+            }
+        )
 
 
 async def api_queue_stats(request: Request) -> JSONResponse:
@@ -459,9 +471,11 @@ async def api_queue_stats(request: Request) -> JSONResponse:
 
         wait_sec = compute_estimated_queue_wait(pending, workers)
 
-        return JSONResponse({
-            "depth": pending,
-            "active_leases": claimed,
-            "registered_workers": workers,
-            "estimated_wait_seconds": wait_sec,
-        })
+        return JSONResponse(
+            {
+                "depth": pending,
+                "active_leases": claimed,
+                "registered_workers": workers,
+                "estimated_wait_seconds": wait_sec,
+            }
+        )

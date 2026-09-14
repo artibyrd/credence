@@ -7,9 +7,7 @@ Executes blind evaluations, Ed25519 signs audit reports, and submits quorums to 
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
 import logging
-import os
 import sys
 from typing import Any, Dict, Optional
 
@@ -29,7 +27,6 @@ from credence.pipeline.adapters import (
     get_llm_provider,
 )
 from credence.pipeline.evaluator import evaluate_snapshot
-from credence.pipeline.schemas import AuditReport
 from credence.worker.leases import LocalLeaseTracker, compute_backoff_delay, resolve_model_family
 
 logger = logging.getLogger("credence.worker")
@@ -185,7 +182,7 @@ async def run_worker_daemon(
             lease_id = job_payload["lease_id"]
             lease_seconds = job_payload.get("lease_seconds", 180)
 
-            lease = lease_tracker.track_lease(lease_id, job_id, url, lease_seconds)
+            lease_tracker.track_lease(lease_id, job_id, url, lease_seconds)
             logger.info("Claimed bounty %s for URL: %s (lease: %ds)", job_id[:8], url, lease_seconds)
 
             # 2. Prepare Snapshot for Evaluation
@@ -194,13 +191,15 @@ async def run_worker_daemon(
                     sha256 = compute_content_sha256(normalized_text)
                     simhash = compute_simhash(normalized_text)
                     extracted = ExtractedContent(
-                        text=normalized_text,
-                        markdown=normalized_text,
+                        url=url,
+                        clean_text=normalized_text,
+                        clean_markdown=normalized_text,
                         title="",
-                        author="",
+                        byline="",
                         date=None,
-                        domain="",
+                        site_name="",
                         word_count=len(normalized_text.split()),
+                        char_count=len(normalized_text),
                     )
                     snapshot = DualCaptureResult(
                         url=url,

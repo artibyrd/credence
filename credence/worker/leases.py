@@ -6,11 +6,11 @@ Ensures local lease validity before computation and handles exponential backoff.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def utc_now() -> datetime:
 
 def resolve_model_family(model_slug: str) -> str:
     """Resolve canonical model family identifier from model slug or URI.
-    
+
     Supports well-known families (Google Gemini, Anthropic Claude, OpenAI GPT,
     Meta Llama, DeepSeek, Mistral, Qwen, Microsoft Phi) as well as custom/local
     and open-weights models.
@@ -37,13 +37,13 @@ def resolve_model_family(model_slug: str) -> str:
     if any(k in clean for k in ("gpt-", "gpt", "o1", "o3", "openai")):
         return "openai/gpt"
     if any(k in clean for k in ("deepseek", "r1")):
-        return "deepseek/reasoner"
+        return "deepseek/deepseek"
     if any(k in clean for k in ("llama", "meta-llama")):
         return "meta/llama"
     if any(k in clean for k in ("qwen", "qwq")):
-        return "alibaba/qwen"
+        return "qwen/qwen"
     if any(k in clean for k in ("mistral", "mixtral", "codestral")):
-        return "mistral/mixtral"
+        return "mistral/mistral"
     if any(k in clean for k in ("phi", "microsoft/phi")):
         return "microsoft/phi"
     if any(k in clean for k in ("grok", "xai")):
@@ -121,13 +121,13 @@ class LocalLeaseTracker:
     def active_lease_count(self) -> int:
         """Return number of unexpired leases currently active."""
         now = utc_now()
-        active = [l for l in self._leases.values() if l.expires_at > now]
+        active = [lease for lease in self._leases.values() if lease.expires_at > now]
         return len(active)
 
     def prune_expired(self) -> List[str]:
         """Prune any expired leases and return their IDs."""
         now = utc_now()
-        expired = [lid for lid, l in self._leases.items() if l.expires_at <= now]
+        expired = [lid for lid, lease in self._leases.items() if lease.expires_at <= now]
         for lid in expired:
             self._leases.pop(lid, None)
         return expired

@@ -1,6 +1,7 @@
 """Unit tests for 'credence key' CLI commands."""
 
 from pathlib import Path
+
 import pytest
 
 from credence.cli.commands.identity import (

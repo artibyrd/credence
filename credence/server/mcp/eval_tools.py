@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Optional
@@ -17,8 +18,6 @@ from credence.pipeline.evaluator import evaluate_snapshot
 logger = logging.getLogger("credence.server.mcp")
 
 
-import asyncio
-
 def _register_eval_tools(server: MCPServer) -> None:
     """Register evaluation tools."""
 
@@ -27,9 +26,9 @@ def _register_eval_tools(server: MCPServer) -> None:
         description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies with adaptive 25s mempool consensus wait.",
     )
     async def check_url(url: str, force: bool = False, profile: Optional[str] = None) -> str:
+        from credence.models import AuditJob
         from credence.pipeline.evaluator import audit_url
         from credence.server.api.queue import get_completed_report, register_completion_listener
-        from credence.models import AuditJob
 
         # If not force, check if already completed
         if not force:
@@ -39,18 +38,21 @@ def _register_eval_tools(server: MCPServer) -> None:
                 res = await s.exec(stmt)
                 existing = res.first()
                 if existing and existing.consensus_verdict_json:
-                    return json.dumps({
-                        "url": url,
-                        "status": "completed",
-                        "consensus": json.loads(existing.consensus_verdict_json),
-                    }, indent=2)
+                    return json.dumps(
+                        {
+                            "url": url,
+                            "status": "completed",
+                            "consensus": json.loads(existing.consensus_verdict_json),
+                        },
+                        indent=2,
+                    )
 
         # Enqueue with priority 1 for IDE FastMCP session and register completion event
         event = register_completion_listener(url)
         try:
             await init_db()
             async with get_async_session() as s:
-                enq_stmt = select(AuditJob).where(AuditJob.url == url, AuditJob.status.in_(["pending", "claimed"]))
+                enq_stmt = select(AuditJob).where(AuditJob.url == url, col(AuditJob.status).in_(["pending", "claimed"]))
                 enq_res = await s.exec(enq_stmt)
                 if not enq_res.first():
                     job = AuditJob(
@@ -98,10 +100,13 @@ def _register_eval_tools(server: MCPServer) -> None:
         for v in violations:
             quote = v.get("quote_or_element", "")
             if quote and quote not in normalized_text:
-                return json.dumps({
-                    "error": f"Grounding precision G < 1.00: Quote '{quote[:40]}...' not found in source text",
-                    "status": "rejected",
-                }, indent=2)
+                return json.dumps(
+                    {
+                        "error": f"Grounding precision G < 1.00: Quote '{quote[:40]}...' not found in source text",
+                        "status": "rejected",
+                    },
+                    indent=2,
+                )
             validated_violations.append(
                 SpecialistViolationFinding(
                     rule_id=v.get("rule_id", "GENERAL-1.0"),
@@ -185,16 +190,19 @@ def _register_eval_tools(server: MCPServer) -> None:
                 s.add(vr)
             await s.commit()
 
-        return json.dumps({
-            "status": "anchored",
-            "url": url,
-            "content_sha256": sha256,
-            "node_pubkey": signed.node_pubkey,
-            "node_signature": signed.node_signature,
-            "violations_anchored": len(validated_violations),
-            "classification": signed.classification,
-            "suspicion_score": signed.suspicion_score,
-        }, indent=2)
+        return json.dumps(
+            {
+                "status": "anchored",
+                "url": url,
+                "content_sha256": sha256,
+                "node_pubkey": signed.node_pubkey,
+                "node_signature": signed.node_signature,
+                "violations_anchored": len(validated_violations),
+                "classification": signed.classification,
+                "suspicion_score": signed.suspicion_score,
+            },
+            indent=2,
+        )
 
     @server.tool(
         name="credence_evaluate_text",

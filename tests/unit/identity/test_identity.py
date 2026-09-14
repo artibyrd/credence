@@ -154,4 +154,3 @@ def test_credence_node_key_pem_env_injection(monkeypatch: pytest.MonkeyPatch, tm
     monkeypatch.setenv("CREDENCE_NODE_KEY_PEM", "GARBAGE_PEM_DATA")
     with pytest.raises(ValueError, match="Failed to load Ed25519 key"):
         load_or_create_node_identity()
-

@@ -31,9 +31,13 @@ def evaluate_worker_badges(worker_record: WorkerRecord) -> List[BadgeAward]:
                         awards.append(
                             BadgeAward(
                                 badge_id=item["badge_id"],
-                                name=item.get("name", BADGE_REGISTRY.get(item["badge_id"], BADGE_REGISTRY["first_bounty"]).name),
+                                name=item.get(
+                                    "name", BADGE_REGISTRY.get(item["badge_id"], BADGE_REGISTRY["first_bounty"]).name
+                                ),
                                 tier=item.get("tier", "SPROUT"),
-                                icon=item.get("icon", BADGE_REGISTRY.get(item["badge_id"], BADGE_REGISTRY["first_bounty"]).icon),
+                                icon=item.get(
+                                    "icon", BADGE_REGISTRY.get(item["badge_id"], BADGE_REGISTRY["first_bounty"]).icon
+                                ),
                                 description=item.get("description", ""),
                                 unlocked_at=item.get("unlocked_at", now_iso),
                             )
@@ -56,7 +60,9 @@ def evaluate_worker_badges(worker_record: WorkerRecord) -> List[BadgeAward]:
             pass
 
     # Milestone 1: first_bounty
-    if (worker_record.total_completed >= 1 or worker_record.bounties_cleared >= 1) and "first_bounty" not in unlocked_ids:
+    if (
+        worker_record.total_completed >= 1 or worker_record.bounties_cleared >= 1
+    ) and "first_bounty" not in unlocked_ids:
         info = BADGE_REGISTRY["first_bounty"]
         awards.append(
             BadgeAward(

@@ -252,15 +252,10 @@ class OpenAICompatibleProvider(OpenAIProvider):
             or "http://localhost:8000/v1"
         )
         target_key = (
-            api_key
-            or os.environ.get("OPENAI_COMPATIBLE_API_KEY")
-            or os.environ.get("OPENAI_API_KEY")
-            or "none"
+            api_key or os.environ.get("OPENAI_COMPATIBLE_API_KEY") or os.environ.get("OPENAI_API_KEY") or "none"
         )
         target_model = (
-            model_name
-            if model_name != "custom-model"
-            else (os.environ.get("OPENAI_COMPATIBLE_MODEL") or model_name)
+            model_name if model_name != "custom-model" else (os.environ.get("OPENAI_COMPATIBLE_MODEL") or model_name)
         )
         super().__init__(
             api_key=target_key,

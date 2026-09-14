@@ -1,7 +1,7 @@
 """Unit tests for FastMCP Epistemic Brake and in-chat verification tools."""
 
-import asyncio
 import json
+
 import pytest
 from mcp.server.mcpserver import MCPServer
 from sqlmodel import delete
@@ -33,12 +33,14 @@ async def test_fastmcp_verify_and_anchor_grounding_rejection():
 
     # Source text does NOT contain the quote
     source = "Clean factual reporting about a new solar energy facility."
-    violations = [{
-        "rule_id": "SPJ-1.1",
-        "quote_or_element": "Fabricated allegation of embezzlement",
-        "severity": 4,
-        "reasoning": "Ungrounded claim",
-    }]
+    violations = [
+        {
+            "rule_id": "SPJ-1.1",
+            "quote_or_element": "Fabricated allegation of embezzlement",
+            "severity": 4,
+            "reasoning": "Ungrounded claim",
+        }
+    ]
 
     res_str = await verify_fn(
         url="https://example.com/solar",
@@ -61,12 +63,14 @@ async def test_fastmcp_verify_and_anchor_success():
     verify_fn = server._tool_manager._tools["credence_verify_and_anchor"].fn
 
     source = "The spokesperson claimed that the moon was made of green cheese yesterday."
-    violations = [{
-        "rule_id": "SPJ-1.1",
-        "quote_or_element": "the moon was made of green cheese",
-        "severity": 4,
-        "reasoning": "Absurd unverified claim",
-    }]
+    violations = [
+        {
+            "rule_id": "SPJ-1.1",
+            "quote_or_element": "the moon was made of green cheese",
+            "severity": 4,
+            "reasoning": "Absurd unverified claim",
+        }
+    ]
 
     res_str = await verify_fn(
         url="https://example.com/moon-cheese",
@@ -85,6 +89,7 @@ async def test_fastmcp_verify_and_anchor_success():
     # Check persistence in database
     async with get_async_session() as s:
         from sqlmodel import select
+
         audits = (await s.exec(select(Audit))).all()
         assert len(audits) == 1
         assert audits[0].node_signature == res["node_signature"]

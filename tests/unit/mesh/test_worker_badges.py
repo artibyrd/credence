@@ -1,6 +1,7 @@
 """Unit tests for worker achievement badges and SVG generation."""
 
 import pytest
+
 from credence.mesh.worker_badges import evaluate_worker_badges, generate_worker_profile_badge_svg
 from credence.models import WorkerRecord
 

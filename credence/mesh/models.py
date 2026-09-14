@@ -196,4 +196,3 @@ BADGE_REGISTRY["sifter_century"] = BADGE_REGISTRY["sifter_pioneer"]
 BADGE_REGISTRY["sybil_sentinel"] = BADGE_REGISTRY["sybil_shield"]
 BADGE_REGISTRY["consensus_anchor"] = BADGE_REGISTRY["first_bounty"]
 BADGE_REGISTRY["model_diversity"] = BADGE_REGISTRY["diversity_champion"]
-

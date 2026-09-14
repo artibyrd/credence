@@ -1,15 +1,13 @@
 """Unit tests for the Open Epistemic Mempool Queue and Volunteer Worker endpoints."""
 
-import asyncio
-import json
 from pathlib import Path
+
 import pytest
 from httpx import ASGITransport, AsyncClient
-
 from sqlmodel import delete
 
 from credence.db import get_async_session, init_db
-from credence.identity import generate_node_keypair, load_or_create_node_identity, sign_audit_report
+from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.models import AuditJob, WorkerRecord
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
 from credence.server.app import app
@@ -137,7 +135,7 @@ async def test_enqueue_claim_and_submit_lifecycle(sample_signed_report: AuditRep
         assert "first_bounty" in data_sub1["badges_awarded"]
 
         # 6. Verify Queue Stats
-        res_stats = await client.post("/api/queue/claim", json={"worker_pubkey": "probe", "model_family": "probe"})
+        await client.post("/api/queue/claim", json={"worker_pubkey": "probe", "model_family": "probe"})
         res_qstats = await client.get("/api/queue/stats")
         assert res_qstats.status_code == 200
         stats = res_qstats.json()
@@ -167,8 +165,6 @@ async def test_grounding_rejection_and_xss_protection(sample_signed_report: Audi
         bad_report.url = "https://example.com/grounding-test"
         bad_report.violations[0].quote_or_element = "Hallucinated quote about fraud"
         # Re-sign the bad report
-        from credence.identity import NodeIdentity
-        raw_key = bytes.fromhex(sample_signed_report.node_pubkey)
         # Note: We need a valid signature over the bad report
         # We'll use a fresh identity to properly sign it
         fresh_ident = load_or_create_node_identity()

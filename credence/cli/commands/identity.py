@@ -61,6 +61,7 @@ def run_key_export_command(out_file: str | None = None, key_file: str | None = N
 def run_key_import_command(in_file: str | None = None, key_file: str | None = None) -> int:
     """CLI handler for 'credence key import'."""
     import sys
+
     from credence.identity import import_private_key_pem
 
     if in_file:
@@ -117,4 +118,3 @@ def run_key_generate_command(force: bool = False, key_file: str | None = None) -
     except Exception as e:
         console.print(f"[bold red]❌ Key Generation Error:[/bold red] {e}")
         return 1
-

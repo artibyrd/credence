@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
 
-from sqlmodel import select, desc
+from sqlmodel import desc, select
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -57,7 +56,9 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
     offset = max(0, int(params.get("offset", 0)))
 
     async with get_async_session() as session:
-        statement = select(WorkerRecord).order_by(desc(WorkerRecord.tokens_donated), desc(WorkerRecord.bounties_cleared))
+        statement = select(WorkerRecord).order_by(
+            desc(WorkerRecord.tokens_donated), desc(WorkerRecord.bounties_cleared)
+        )
         result = await session.exec(statement)
         workers = result.all()
 
@@ -72,29 +73,33 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
             q_score = compute_worker_quality_score(
                 w.total_completed, w.bounties_cleared, w.grounded_violations_count, w.first_seen
             )
-            filtered.append({
-                "worker_pubkey": w.worker_pubkey,
-                "worker_alias": w.worker_alias,
-                "model_family": w.model_family,
-                "model_slug": w.model_slug,
-                "total_completed": w.total_completed,
-                "bounties_cleared": w.bounties_cleared,
-                "tokens_donated": w.tokens_donated,
-                "tokens_saved_usd": compute_token_savings(w.tokens_donated),
-                "quality_score": q_score,
-                "badges_count": len(badges_list),
-                "badges": badges_list,
-                "last_seen": w.last_seen.isoformat(),
-                "first_seen": w.first_seen.isoformat(),
-            })
+            filtered.append(
+                {
+                    "worker_pubkey": w.worker_pubkey,
+                    "worker_alias": w.worker_alias,
+                    "model_family": w.model_family,
+                    "model_slug": w.model_slug,
+                    "total_completed": w.total_completed,
+                    "bounties_cleared": w.bounties_cleared,
+                    "tokens_donated": w.tokens_donated,
+                    "tokens_saved_usd": compute_token_savings(w.tokens_donated),
+                    "quality_score": q_score,
+                    "badges_count": len(badges_list),
+                    "badges": badges_list,
+                    "last_seen": w.last_seen.isoformat(),
+                    "first_seen": w.first_seen.isoformat(),
+                }
+            )
 
         paginated = filtered[offset : offset + limit]
-        return JSONResponse({
-            "total_workers": len(filtered),
-            "limit": limit,
-            "offset": offset,
-            "workers": paginated,
-        })
+        return JSONResponse(
+            {
+                "total_workers": len(filtered),
+                "limit": limit,
+                "offset": offset,
+                "workers": paginated,
+            }
+        )
 
 
 async def api_worker_dossier(request: Request) -> JSONResponse:
@@ -117,37 +122,43 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
         )
 
         # Retrieve recent audits completed by this worker
-        audit_stmt = select(Audit).where(Audit.node_pubkey == worker.worker_pubkey).order_by(desc(Audit.audited_at)).limit(10)
+        audit_stmt = (
+            select(Audit).where(Audit.node_pubkey == worker.worker_pubkey).order_by(desc(Audit.audited_at)).limit(10)
+        )
         audit_res = await session.exec(audit_stmt)
         recent_audits = []
         for a in audit_res.all():
             snap_stmt = select(Snapshot).where(Snapshot.id == a.snapshot_id)
             snap = (await session.exec(snap_stmt)).first()
-            recent_audits.append({
-                "url": snap.url if snap else "unknown",
-                "content_sha256": a.content_sha256,
-                "suspicion_score": a.suspicion_score,
-                "classification": a.classification,
-                "audited_at": a.audited_at.isoformat(),
-                "node_signature": a.node_signature,
-            })
+            recent_audits.append(
+                {
+                    "url": snap.url if snap else "unknown",
+                    "content_sha256": a.content_sha256,
+                    "suspicion_score": a.suspicion_score,
+                    "classification": a.classification,
+                    "audited_at": a.audited_at.isoformat(),
+                    "node_signature": a.node_signature,
+                }
+            )
 
-        return JSONResponse({
-            "worker_pubkey": worker.worker_pubkey,
-            "worker_alias": worker.worker_alias,
-            "model_family": worker.model_family,
-            "model_slug": worker.model_slug,
-            "total_completed": worker.total_completed,
-            "bounties_cleared": worker.bounties_cleared,
-            "tokens_donated": worker.tokens_donated,
-            "tokens_saved_usd": compute_token_savings(worker.tokens_donated),
-            "quality_score": q_score,
-            "badges": badges_list,
-            "first_seen": worker.first_seen.isoformat(),
-            "last_seen": worker.last_seen.isoformat(),
-            "recent_audits": recent_audits,
-            "embed_badge_url": f"/api/badge/worker/{worker.worker_pubkey}.svg",
-        })
+        return JSONResponse(
+            {
+                "worker_pubkey": worker.worker_pubkey,
+                "worker_alias": worker.worker_alias,
+                "model_family": worker.model_family,
+                "model_slug": worker.model_slug,
+                "total_completed": worker.total_completed,
+                "bounties_cleared": worker.bounties_cleared,
+                "tokens_donated": worker.tokens_donated,
+                "tokens_saved_usd": compute_token_savings(worker.tokens_donated),
+                "quality_score": q_score,
+                "badges": badges_list,
+                "first_seen": worker.first_seen.isoformat(),
+                "last_seen": worker.last_seen.isoformat(),
+                "recent_audits": recent_audits,
+                "embed_badge_url": f"/api/badge/worker/{worker.worker_pubkey}.svg",
+            }
+        )
 
 
 async def api_worker_badge_svg(request: Request) -> Response:

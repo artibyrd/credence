@@ -9,13 +9,13 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlmodel import delete, select
 
 from credence.db import get_async_session, init_db
 from credence.identity import (
-    generate_node_keypair,
     import_private_key_pem,
     load_or_create_node_identity,
     sign_audit_report,
@@ -233,12 +233,16 @@ async def test_vector7_mempool_starvation_and_expired_lease_reclamation(test_ide
         async with get_async_session() as session:
             job = (await session.exec(select(AuditJob))).first()
             expired_time = (datetime.now(timezone.utc) - timedelta(seconds=200)).isoformat()
-            job.active_leases_json = json.dumps([{
-                "lease_id": "expired_lease_id",
-                "worker_pubkey": "worker_one_pubkey",
-                "model_family": "google/gemini",
-                "expires_at": expired_time,
-            }])
+            job.active_leases_json = json.dumps(
+                [
+                    {
+                        "lease_id": "expired_lease_id",
+                        "worker_pubkey": "worker_one_pubkey",
+                        "model_family": "google/gemini",
+                        "expires_at": expired_time,
+                    }
+                ]
+            )
             session.add(job)
             await session.commit()
 
@@ -292,7 +296,7 @@ def test_vector10_model_lineage_sybil_family_resolution():
     assert resolve_model_family("claude-3.5-haiku") == "anthropic/claude"
     assert resolve_model_family("gemini-2.5-pro-preview-03-05") == "google/gemini"
     assert resolve_model_family("meta-llama/Llama-3.3-70B-Instruct") == "meta/llama"
-    assert resolve_model_family("qwen2.5:32b-instruct-q4_K_M") == "alibaba/qwen"
+    assert resolve_model_family("qwen2.5:32b-instruct-q4_K_M") == "qwen/qwen"
 
 
 @pytest.mark.asyncio
@@ -394,7 +398,7 @@ async def test_vector13_identity_alias_xss_sanitized(test_identity):
 
 def test_vector14_corrupted_pem_injection_rejected(tmp_path: Path):
     """Vector 14: Corrupted or non-Ed25519 PEM strings raise a clean ValueError."""
-    corrupted_inputs = [
+    corrupted_inputs: list[str | bytes] = [
         "NOT_A_PEM_DATA",
         "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
         "-----BEGIN PRIVATE KEY-----\ncorrupted_base64_payload\n-----END PRIVATE KEY-----",
