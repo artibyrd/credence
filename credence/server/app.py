@@ -214,6 +214,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         # Volunteer Worker Endpoints
         Route("/api/workers/leaderboard", endpoint=api_workers_leaderboard, methods=["GET", "OPTIONS"]),
         Route("/api/worker/{pubkey:path}", endpoint=api_worker_dossier, methods=["GET", "OPTIONS"]),
+        Route("/api/workers/{pubkey:path}", endpoint=api_worker_dossier, methods=["GET", "OPTIONS"]),
         Route("/api/badge/worker/{pubkey:path}", endpoint=api_worker_badge_svg, methods=["GET", "OPTIONS"]),
     ]
 

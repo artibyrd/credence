@@ -29,38 +29,34 @@ def resolve_model_family(model_slug: str) -> str:
     """
     clean = model_slug.strip().lower()
 
+    # 1. Standard Frontier / Known Open-Weight Roots
+    if any(k in clean for k in ("gemini", "gemma")):
+        return "google/gemini"
+    if any(k in clean for k in ("claude", "anthropic")):
+        return "anthropic/claude"
+    if any(k in clean for k in ("gpt-", "gpt", "o1", "o3", "openai")):
+        return "openai/gpt"
+    if any(k in clean for k in ("deepseek", "r1")):
+        return "deepseek/reasoner"
+    if any(k in clean for k in ("llama", "meta-llama")):
+        return "meta/llama"
+    if any(k in clean for k in ("qwen", "qwq")):
+        return "alibaba/qwen"
+    if any(k in clean for k in ("mistral", "mixtral", "codestral")):
+        return "mistral/mixtral"
+    if any(k in clean for k in ("phi", "microsoft/phi")):
+        return "microsoft/phi"
+    if any(k in clean for k in ("grok", "xai")):
+        return "xai/grok"
+
+    # 2. Dynamic Namespace Extraction for Novel/Custom Providers
     if "/" in clean:
         parts = clean.split("/", 1)
         vendor, model_part = parts[0], parts[1]
-        # Check if model_part contains recognized sub-family
-        for sub in ("gemini", "gemma", "claude", "gpt", "llama", "deepseek", "mistral", "mixtral", "qwen", "phi"):
-            if sub in model_part:
-                return f"{vendor}/{sub}"
-        # Fallback to vendor / first segment of model part
         base = re.split(r"[-_.]", model_part)[0]
         return f"{vendor}/{base}"
 
-    # No slash: detect by keyword
-    if "gemini" in clean:
-        return "google/gemini"
-    if "gemma" in clean:
-        return "google/gemma"
-    if "claude" in clean:
-        return "anthropic/claude"
-    if any(k in clean for k in ("gpt", "o1", "o3", "chatgpt")):
-        return "openai/gpt"
-    if "llama" in clean:
-        return "meta/llama"
-    if "deepseek" in clean:
-        return "deepseek/deepseek"
-    if "mistral" in clean or "mixtral" in clean:
-        return "mistral/mistral"
-    if "qwen" in clean:
-        return "qwen/qwen"
-    if "phi" in clean:
-        return "microsoft/phi"
-
-    # Default custom prefix
+    # 3. Fallback for unnamespaced custom models
     base = re.split(r"[-_.]", clean)[0] if clean else "custom"
     return f"custom/{base}"
 

@@ -28,7 +28,7 @@ _COMPLETION_EVENTS: Dict[str, asyncio.Event] = {}
 _COMPLETED_REPORTS: Dict[str, Dict[str, Any]] = {}
 
 # Strict ASCII regex for model slugs (Vector 9 Defense: prevent traversal, confusables, and SQLi)
-MODEL_SLUG_REGEX = re.compile(r"^[a-zA-Z0-9_\-\.\/]{1,64}(?::[a-zA-Z0-9_\-\.]{1,32})?$")
+MODEL_SLUG_REGEX = re.compile(r"^(?!.*\.\.)[a-zA-Z0-9_\-\.\/]{1,64}(?::[a-zA-Z0-9_\-\.]{1,32})?$")
 
 
 def compute_estimated_queue_wait(queue_depth: int, active_workers_count: int) -> float:
