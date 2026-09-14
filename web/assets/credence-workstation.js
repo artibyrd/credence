@@ -55,12 +55,25 @@ import {
   INFO_TOPICS,
 } from './workstation-topics.js';
 
+import {
+  fetchWorkerLeaderboard,
+  filterWorkerLeaderboard,
+  renderWorkerLeaderboard,
+  openWorkerDossier,
+  closeWorkerDossier,
+  openWorkerStartModal,
+  closeWorkerStartModal,
+  copyToClipboard,
+  handleWorkerHashRoute,
+} from './workstation-workers.js';
+
 // Re-export all subsystems for ES module consumers
 export * from './workstation-auth.js';
 export * from './workstation-modals.js';
 export * from './workstation-crypto.js';
 export * from './workstation-nav.js';
 export * from './workstation-topics.js';
+export * from './workstation-workers.js';
 
 export const INVARIANTS_REGISTRY = {
   "inv-workspace-isolation": { legacyId: 1, class: "Class β", scope: "universal", title: "Project & Workspace Isolation" },
@@ -328,4 +341,13 @@ Object.assign(window.CredenceWS, {
   fetchWithAuth,
   verifyEd25519Signature,
   INFO_TOPICS,
+  fetchWorkerLeaderboard,
+  filterWorkerLeaderboard,
+  renderWorkerLeaderboard,
+  openWorkerDossier,
+  closeWorkerDossier,
+  openWorkerStartModal,
+  closeWorkerStartModal,
+  copyToClipboard,
+  handleWorkerHashRoute,
 });

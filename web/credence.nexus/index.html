@@ -289,7 +289,34 @@
 
           <!-- TAB 2: LEADERBOARD & MERIT -->
           <div id="tab-leaderboard" class="tab-panel">
-            <div class="deck-card" style="margin-bottom:1.5rem;">
+            <!-- Sub-deck Toggle: Primary Nodes vs Volunteer Workers -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+              <div style="display:flex; gap:0.5rem; background:var(--bg-secondary); padding:0.35rem; border-radius:6px; border:1px solid var(--border);">
+                <button id="btn-subtab-nodes" class="btn-primary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="switchLeaderboardSubtab('nodes')">
+                  🖥️ Primary Mesh Nodes (Qᵢ)
+                </button>
+                <button id="btn-subtab-workers" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="switchLeaderboardSubtab('workers')">
+                  🐝 Volunteer Worker Fleet (Q_w)
+                </button>
+              </div>
+              <div id="worker-filters" style="display:none; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <input type="text" id="worker-search-input" placeholder="Search by pubkey or alias..." class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; min-width:220px; background:var(--bg-card); color:#fff; border:1px solid var(--border);" oninput="window.CredenceWS.filterWorkerLeaderboard()">
+                <select id="worker-family-select" class="form-input" style="padding:0.35rem 0.75rem; font-size:0.82rem; background:var(--bg-card); color:#fff; border:1px solid var(--border);" onchange="window.CredenceWS.filterWorkerLeaderboard()">
+                  <option value="all">All Model Families</option>
+                  <option value="gemini">Google Gemini</option>
+                  <option value="claude">Anthropic Claude</option>
+                  <option value="gpt">OpenAI GPT</option>
+                  <option value="llama">Meta Llama</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="mistral">Mistral</option>
+                  <option value="qwen">Qwen</option>
+                  <option value="custom">Custom / Open-Weights</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- View 1: Mesh Nodes Leaderboard -->
+            <div id="view-nodes-leaderboard" class="deck-card" style="margin-bottom:1.5rem;">
               <div class="deck-card-header">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -319,6 +346,48 @@
                   </thead>
                   <tbody id="leaderboard-body">
                     <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- View 2: Volunteer Worker Fleet Leaderboard -->
+            <div id="view-workers-leaderboard" class="deck-card" style="margin-bottom:1.5rem; display:none;">
+              <div class="deck-card-header">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <h3 style="font-size:1.15rem; color:#fff; margin:0;">Volunteer Worker Fleet Leaderboard (Q_w)</h3>
+                    <button class="info-btn" onclick="window.CredenceWS.openInfoModal('qw_scoring')" title="Info: Volunteer Worker Fleet Quality (Q_w)">ℹ</button>
+                  </div>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">
+                    <span style="font-family:var(--font-mono); font-weight:600; color:var(--accent-amber);">Q_w = 0.50 + 0.25·Vol + 0.15·Ground + 0.10·Age</span> &bull; Decentralized Blind Compute Contributors
+                  </p>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                  <span class="ribbon-pill ready" id="worker-count-pill">0 Active Workers</span>
+                  <button type="button" class="btn-primary" style="font-size:0.75rem; padding:0.3rem 0.6rem;" onclick="window.CredenceWS.openWorkerStartModal()">
+                    🚀 Join Fleet
+                  </button>
+                </div>
+              </div>
+
+              <div class="ws-table-container">
+                <table class="ws-table" id="worker-leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 48px; text-align: center;">Rank</th>
+                      <th style="min-width: 180px;">Contributor &amp; Pubkey</th>
+                      <th style="width: 140px;">Model Family</th>
+                      <th style="width: 95px;">Quality (Q_w)</th>
+                      <th style="width: 85px;">Bounties</th>
+                      <th style="width: 100px;">Tokens</th>
+                      <th style="width: 95px;">Saved ($)</th>
+                      <th style="width: 110px;">Badges</th>
+                      <th style="width: 85px; text-align: center;">Dossier</th>
+                    </tr>
+                  </thead>
+                  <tbody id="worker-leaderboard-body">
+                    <!-- Populated dynamically via /api/workers/leaderboard -->
                   </tbody>
                 </table>
               </div>
@@ -2042,8 +2111,44 @@
         .replace(/'/g, '&#039;');
     }
 
+    window.switchLeaderboardSubtab = function(subtab) {
+      const btnNodes = document.getElementById('btn-subtab-nodes');
+      const btnWorkers = document.getElementById('btn-subtab-workers');
+      const vNodes = document.getElementById('view-nodes-leaderboard');
+      const vWorkers = document.getElementById('view-workers-leaderboard');
+      const filters = document.getElementById('worker-filters');
+
+      if (subtab === 'workers') {
+        if (btnNodes) { btnNodes.className = 'btn-secondary'; }
+        if (btnWorkers) { btnWorkers.className = 'btn-primary'; }
+        if (vNodes) vNodes.style.display = 'none';
+        if (vWorkers) vWorkers.style.display = 'block';
+        if (filters) filters.style.display = 'flex';
+        if (window.CredenceWS && window.CredenceWS.fetchWorkerLeaderboard) {
+          window.CredenceWS.fetchWorkerLeaderboard();
+        }
+      } else {
+        if (btnNodes) { btnNodes.className = 'btn-primary'; }
+        if (btnWorkers) { btnWorkers.className = 'btn-secondary'; }
+        if (vNodes) vNodes.style.display = 'block';
+        if (vWorkers) vWorkers.style.display = 'none';
+        if (filters) filters.style.display = 'none';
+      }
+    };
+
     function handleNexusRouting() {
       const hash = (window.location.hash || '').replace(/^#/, '').trim();
+      if (hash.startsWith('worker/')) {
+        const pubkey = hash.replace('worker/', '').trim();
+        if (wsController && wsController.switchTab) {
+          wsController.switchTab('leaderboard');
+        }
+        window.switchLeaderboardSubtab('workers');
+        if (pubkey && window.CredenceWS && window.CredenceWS.openWorkerDossier) {
+          window.CredenceWS.openWorkerDossier(pubkey);
+        }
+        return;
+      }
       const tabMap = {
         merit: 'merit',
         badges: 'merit',
@@ -2052,9 +2157,14 @@
         nodes: 'nodes',
         mesh: 'topology',
         topology: 'topology',
+        leaderboard: 'leaderboard',
+        workers: 'leaderboard',
       };
       if (hash && tabMap[hash] && wsController && wsController.switchTab) {
         wsController.switchTab(tabMap[hash]);
+        if (hash === 'workers') {
+          window.switchLeaderboardSubtab('workers');
+        }
       }
     }
 
@@ -2066,6 +2176,11 @@
           if (tab === 'admin') renderAdminView();
           if (tab === 'merit' || tab === 'badges') renderMeritGrid(liveTopologyData);
           if (tab === 'studio') updateBadgeStudioPreview();
+          if (tab === 'leaderboard') {
+            if (window.CredenceWS && window.CredenceWS.fetchWorkerLeaderboard) {
+              window.CredenceWS.fetchWorkerLeaderboard();
+            }
+          }
         }
       });
 

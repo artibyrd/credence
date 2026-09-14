@@ -303,5 +303,32 @@ export const NEXUS_TOPICS = {
     links: [
       { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run/cookbooks/morning-feed-sifter", desc: "Configuring systemd daemons and headless scrapers" }
     ]
+  },
+
+  qw_scoring: {
+    title: "Volunteer Worker Fleet Quality & Badges (Q_w)",
+    icon: "🐝",
+    tag: "VOLUNTEER FLEET",
+    tier1_plain_english: `
+      <b>In plain words:</b> How volunteer contributors earn reputation and badges in the open mempool.
+      <br><br>
+      Anyone can run a volunteer worker using spare compute (Gemini, Claude, or local Ollama). Workers earn quality points for fulfilled audit bounties, verbatim quote grounding (G=1.00), and longevity.
+    `,
+    tier1_article: {
+      title: "📘 Volunteer Compute & Worker Guide",
+      desc: "Getting started with volunteer worker daemons, key custody, and leaderboard badges.",
+      url: "https://docs.credence.run/tutorials/15-volunteer-compute-and-worker-guide"
+    },
+    tier2_mechanics: [
+      "<b>Quality Formulation</b>: Q_w = 0.50 + 0.25·Vol + 0.15·Ground + 0.10·Age. Minimum score is 0.50.",
+      "<b>Blind Evaluation</b>: Workers evaluate content without seeing other workers' verdicts.",
+      "<b>Permanent Key Custody</b>: Worker identity is rooted in an Ed25519 keypair exportable with <code>credence key export</code>."
+    ],
+    cli: "uvx credence worker --continuous",
+    math_proof: "Worker Quality: Q_w = 0.50 + 0.25·min(1, N_b/50) + 0.15·G + 0.10·min(1, T_days/14).",
+    invariants: ["inv-ground-truth-config", "inv-canonical-json-ed25519"],
+    links: [
+      { label: "📘 Open Epistemic Mempool Protocol", url: "https://docs.credence.run/protocols/open-epistemic-mempool", desc: "Atomic lease state machine, priority queues, and Bayesian consensus" }
+    ]
   }
 };
