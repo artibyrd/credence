@@ -406,6 +406,8 @@ async def api_queue_submit(request: Request) -> JSONResponse:
             await session.commit()
             await session.refresh(worker)
 
+        worker.model_slug = model_slug
+        worker.model_family = model_family
         worker.total_completed += 1
         worker.bounties_cleared += 1
         worker.tokens_donated += int(body.get("tokens_donated", 1500))

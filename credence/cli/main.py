@@ -345,7 +345,7 @@ def build_parser() -> argparse.ArgumentParser:
     # worker
     p_worker = subparsers.add_parser("worker", help="Launch distributed volunteer worker daemon")
     p_worker.add_argument("--node", default="https://credence.run", help="Target coordinator node URL")
-    p_worker.add_argument("--model", default="google/gemini-3.7-flash", help="Model slug or URI")
+    p_worker.add_argument("--model", default="google/gemini-3.8-flash", help="Model slug or URI")
     p_worker.add_argument("--api-base", default=None, help="Custom API base URL for OpenAI-compatible models")
     p_worker.add_argument("--api-key", default=None, help="Custom API key")
     p_worker.add_argument("--affinity", default=None, help="Self-serve client affinity filter")

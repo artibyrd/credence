@@ -99,7 +99,7 @@ def print_worker_banner(
 
 async def run_worker_daemon(
     node_url: str = "https://credence.run",
-    model: str = "google/gemini-3.7-flash",
+    model: str = "google/gemini-3.8-flash",
     api_base: Optional[str] = None,
     api_key: Optional[str] = None,
     affinity: Optional[str] = None,

@@ -352,7 +352,7 @@ class WorkerRecord(SQLModel, table=True):
     worker_pubkey: str = Field(index=True, unique=True, description="Ed25519 public key hex of the worker")
     worker_alias: str = Field(default="volunteer-worker", description="Human-readable worker label")
     model_family: str = Field(default="general", index=True, description="Declared or observed base model family")
-    model_slug: str = Field(default="google/gemini-3.7-flash", description="Most recent model URI / slug")
+    model_slug: str = Field(default="google/gemini-3.8-flash", description="Most recent model URI / slug")
     total_completed: int = Field(default=0, description="Total audits completed by worker")
     tokens_donated: int = Field(default=0, description="Estimated total tokens donated")
     bounties_cleared: int = Field(default=0, description="Number of mempool bounties fulfilled")
