@@ -1054,15 +1054,16 @@ footer.footer {
 
 /* Uniform Deck Module / Card Containers */
 .deck-card {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
   max-width: 100%;
+  box-shadow: var(--shadow-card);
 }
 
 .deck-card-header {
@@ -1074,6 +1075,187 @@ footer.footer {
   margin-bottom: 0.25rem;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+/* Metric Summary Grid & Metric Cards */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  box-shadow: var(--shadow-card);
+}
+
+.metric-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: var(--bg-secondary);
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.metric-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+/* Canvas / Interactive Visualizer Containers */
+.canvas-container {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  position: relative;
+  margin-bottom: 0;
+  flex: 1;
+  min-height: 280px;
+  height: calc(100vh - 310px);
+  max-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#mesh-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.badge-preview-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Badge Studio Modular Cards */
+.studio-modality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.studio-modality-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+}
+
+.studio-modality-card:hover {
+  background: var(--bg-secondary);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+}
+
+.studio-modality-card.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.studio-modality-card .modality-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.studio-modality-card.active .modality-title {
+  color: #38bdf8;
+}
+
+.studio-modality-card .modality-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.studio-columns-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+  overflow: visible;
+}
+
+.studio-config-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+
+.studio-preview-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-card);
+  overflow: visible;
+}
+
+.studio-stage-frame {
+  background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.14) 0%, rgba(3, 7, 18, 0.9) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: visible;
+  z-index: 20;
+}
+
+.studio-embed-box {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
 }
 
 /* Backward-compatible Workstation Tabs Navigation Bar */
@@ -1120,7 +1302,6 @@ footer.footer {
 /* Workstation Content Tab Panels */
 .tab-panel {
   display: none;
-  animation: fadeIn 0.15s ease;
 }
 
 .tab-panel.active {
@@ -1130,11 +1311,6 @@ footer.footer {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0.7; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Split Workspace (TUI Tab 1 Emulation) */

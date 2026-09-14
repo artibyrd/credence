@@ -112,18 +112,18 @@ export function renderWorkerLeaderboard(workers) {
       `<span title="${b.name}: ${b.description}" style="cursor:help; font-size:1.1rem; margin-right:2px;">${b.icon || '🏅'}</span>`
     ).join('');
 
-    const shortPub = `${w.worker_pubkey.slice(0, 8)}...${w.worker_pubkey.slice(-6)}`;
+    const shortPub = w.worker_pubkey.slice(0, 16);
 
     return `
       <tr style="cursor:pointer;" onclick="window.CredenceWS.openWorkerDossier('${w.worker_pubkey}')" title="Click to inspect contributor dossier">
         <td style="text-align:center;"><b style="color:var(--accent-amber);">#${idx + 1}</b></td>
         <td>
-          <b style="color:#fff; display:block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${w.worker_alias || 'volunteer'}</b>
-          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">${shortPub}</span>
+          <b style="color:#fff;">${w.worker_alias || 'volunteer'}</b><br>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim); word-break:break-all;">${shortPub}</span>
         </td>
         <td>
           <span class="ribbon-pill ready" style="font-size:0.72rem;">${w.model_family}</span><br>
-          <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); display:block; max-width:115px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${w.model_slug || ''}">${w.model_slug || ''}</span>
+          <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); word-break:break-all;" title="${w.model_slug || ''}">${w.model_slug || ''}</span>
         </td>
         <td><b style="color:var(--accent-green); font-family:var(--font-mono);">${(w.quality_score * 10).toFixed(1)} / 10</b></td>
         <td><b style="color:var(--accent-cyan); font-family:var(--font-mono);">${w.bounties_cleared}</b></td>
@@ -155,16 +155,16 @@ export async function openWorkerDossier(pubkey) {
 
   // Populate basic info while loading
   document.getElementById('wd-pubkey').textContent = pubkey;
-  document.getElementById('wd-alias').textContent = 'Loading...';
-  document.getElementById('wd-family').textContent = 'Loading...';
+  document.getElementById('wd-alias').textContent = 'Loading';
+  document.getElementById('wd-family').textContent = 'Loading';
   document.getElementById('wd-qscore').textContent = '--';
   document.getElementById('wd-bounties').textContent = '--';
   document.getElementById('wd-tokens').textContent = '--';
   document.getElementById('wd-savings').textContent = '--';
-  document.getElementById('wd-badges-gallery').innerHTML = '<p style="color:var(--text-dim);">Loading badges...</p>';
+  document.getElementById('wd-badges-gallery').innerHTML = '<p style="color:var(--text-dim);">Loading badges</p>';
   const aCountInit = document.getElementById('wd-audits-count');
-  if (aCountInit) aCountInit.textContent = 'Loading...';
-  document.getElementById('wd-audits-body').innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-dim);">Loading audit history...</td></tr>';
+  if (aCountInit) aCountInit.textContent = 'Loading';
+  document.getElementById('wd-audits-body').innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-dim);">Loading audit history</td></tr>';
 
   // SVG badge preview URL
   const badgeBase = base || (window.location.hostname.includes('credence.nexus') ? 'https://credence-dev-865363499314.us-central1.run.app' : '');
@@ -225,12 +225,12 @@ export async function openWorkerDossier(pubkey) {
           aBody.innerHTML = data.recent_audits.map(a => `
             <tr>
               <td style="font-size:0.78rem; font-family:var(--font-mono);">${a.audited_at.slice(0, 19).replace('T', ' ')}</td>
-              <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <td style="max-width:240px; word-break:break-all;">
                 <a href="${a.url}" target="_blank" rel="noopener" style="color:var(--accent-cyan); text-decoration:none;">${a.url}</a>
               </td>
               <td><b style="font-family:var(--font-mono); color:${a.suspicion_score > 50 ? 'var(--accent-red)' : 'var(--accent-green)'}">${a.suspicion_score.toFixed(1)}</b></td>
               <td><span class="ribbon-pill ready" style="font-size:0.7rem;">${a.classification}</span></td>
-              <td style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);">${a.node_signature ? a.node_signature.slice(0, 12) + '...' : '--'}</td>
+              <td style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);">${a.node_signature ? a.node_signature.slice(0, 16) : '--'}</td>
             </tr>
           `).join('');
         }
@@ -301,7 +301,7 @@ function injectWorkerDossierModal() {
         <div class="operator-modal-body" style="padding:1.25rem;">
           <!-- Pubkey Bar -->
           <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:0.6rem 0.85rem; border-radius:var(--radius-sm); margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-            <div style="overflow:hidden; text-overflow:ellipsis;">
+            <div style="min-width:0; flex:1;">
               <span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Ed25519 Public Key:</span><br>
               <code id="wd-pubkey" style="font-family:var(--font-mono); font-size:0.78rem; color:#fff; word-break:break-all;">--</code>
             </div>
@@ -421,15 +421,15 @@ function injectWorkerStartModal() {
 
           <h4 style="color:#fff; margin:1rem 0 0.5rem;">1. One-Command Quickstart (Universal Inference)</h4>
           <pre style="background:var(--bg-code); padding:0.75rem 1rem; border-radius:6px; font-family:var(--font-mono); font-size:0.8rem; overflow-x:auto; border:1px solid var(--border);"><code># Google Gemini (Default)
-export GEMINI_API_KEY="AIzaSy..."
+export GEMINI_API_KEY="AIzaSyYourGeminiApiKeyHere"
 uvx credence worker --model google/gemini-3.8-flash
 
 # Anthropic Claude
-export ANTHROPIC_API_KEY="sk-ant-..."
+export ANTHROPIC_API_KEY="sk-ant-api03-YourAnthropicKeyHere"
 uvx credence worker --model anthropic/claude-3-7-sonnet
 
 # OpenAI GPT or DeepSeek
-export OPENAI_API_KEY="sk-..."
+export OPENAI_API_KEY="sk-proj-YourOpenAiKeyHere"
 uvx credence worker --model openai/gpt-4o-mini
 # Or DeepSeek: uvx credence worker --model deepseek/deepseek-chat --api-base https://api.deepseek.com/v1
 

@@ -22,10 +22,10 @@ fi
 
 # Prefer pipx if available, fallback to pip --user
 if command -v pipx >/dev/null 2>&1; then
-  echo "Installing via pipx..."
+  echo "Installing via pipx"
   pipx install credence || pipx upgrade credence
 elif python3 -m pip --version >/dev/null 2>&1; then
-  echo "Installing via pip --user..."
+  echo "Installing via pip --user"
   python3 -m pip install --user --upgrade credence
 else
   echo "Error: Neither pipx nor pip found. Please install pip or pipx." >&2

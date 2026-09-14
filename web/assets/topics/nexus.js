@@ -189,7 +189,7 @@ export const NEXUS_TOPICS = {
       "<b>Custom Organizations</b>: News organizations can host private badge registries using <code>credence init-org</code>."
     ],
     cli: "credence badge generate --domain reuters.com",
-    math_proof: "SVG Signature: Anti-tamper digest embedded directly in SVG DOM comment metadata: <!-- credence-sig: 0x... -->.",
+    math_proof: "SVG Signature: Anti-tamper digest embedded directly in SVG DOM comment metadata: <!-- credence-sig: 0x<hex> -->.",
     invariants: ["inv-web-component-zero-clone", "inv-verbatim-grounding"],
     links: [
       { label: "📘 Embeddable Badges & Anti-Tamper Blueprint", url: "https://docs.credence.run/blueprints/embeddable-attestation-badges-and-anti-tamper", desc: "Embeddable HTML5 custom elements and CSP-compliant badges" }

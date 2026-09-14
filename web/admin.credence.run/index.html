@@ -28,8 +28,8 @@
       --admin-cyan: #38bdf8;
       --admin-emerald: #4ade80;
       --admin-rose: #f43f5e;
-      --admin-card-bg: #0e1526;
-      --admin-card-border: rgba(56, 189, 248, 0.15);
+      --admin-card-bg: var(--bg-card);
+      --admin-card-border: var(--border);
     }
     .cockpit-grid {
       display: grid;
@@ -195,7 +195,7 @@
               </tr>
             </thead>
             <tbody id="locked-sentinels-tbody">
-              <tr><td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading active sentinel sources...</td></tr>
+              <tr><td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading active sentinel sources</td></tr>
             </tbody>
           </table>
         </div>
@@ -364,7 +364,7 @@
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 0.85rem; margin-bottom: 1.25rem;">
                   <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.25rem;">Cache State:</div>
                   <div style="font-family: monospace; font-size: 0.88rem; color: #fff;" id="germination-cache-status">
-                    Querying Cache State...
+                    Querying Cache State
                   </div>
                 </div>
 
@@ -446,7 +446,7 @@
                 <div style="margin-bottom: 1rem;">
                   <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.35rem;">Node Public Key (Ed25519)</div>
                   <div style="background: #07090e; padding: 0.6rem 0.85rem; border-radius: 6px; font-family: monospace; font-size: 0.78rem; color: #38bdf8; word-break: break-all; border: 1px solid rgba(56,189,248,0.2); cursor: pointer;" onclick="copyNodePubKey()" title="Click to copy public key" id="node-pubkey-display">
-                    Loading Local Ed25519 Public Key...
+                    Loading Local Ed25519 Public Key
                   </div>
                 </div>
 
@@ -585,7 +585,7 @@
       showToast
     } from '../assets/credence-workstation.js';
 
-    initWorkstation('admin');
+    initWorkstation('budget');
 
     function appendLog(msg, type = 'info') {
       const feed = document.getElementById('operator-telemetry-feed');
@@ -643,7 +643,7 @@
       const strategy = document.getElementById('adm-exhaustion-strategy')?.value || 'heuristic_fallback';
       const autoRescore = document.getElementById('adm-auto-rescore')?.checked ?? true;
       
-      appendLog(`Applying budget & role settings: $${budget.toFixed(2)}/day, ${maxTokens} tokens/hr, role: ${role}, strategy: ${strategy}...`, 'info');
+      appendLog(`Applying budget & role settings: $${budget.toFixed(2)}/day, ${maxTokens} tokens/hr, role: ${role}, strategy: ${strategy}`, 'info');
       try {
         await fetchWithAuth('/api/cost/budget', {
           method: 'POST',
@@ -666,7 +666,7 @@
     };
 
     window.triggerImmediateRescore = async function() {
-      appendLog('Triggering manual re-scoring sweep on low-confidence heuristic fallback audits...', 'info');
+      appendLog('Triggering manual re-scoring sweep on low-confidence heuristic fallback audits', 'info');
       try {
         const res = await fetchWithAuth('/api/admin/rescore', {
           method: 'POST',
@@ -691,7 +691,7 @@
       if (!confirm('🛑 WARNING: Are you sure you want to trigger the EMERGENCY STOP? All external model inference will be halted immediately.')) {
         return;
       }
-      appendLog('TRIPPING EMERGENCY BRAKE...', 'error');
+      appendLog('TRIPPING EMERGENCY BRAKE', 'error');
       try {
         const res = await fetchWithAuth('/api/cost/emergency-stop', { method: 'POST' });
         showToast('🛑 EMERGENCY STOP ACTIVATED', 'error');
@@ -706,8 +706,8 @@
       const burstSize = parseInt(document.getElementById('adm-burst-count').value) || 5;
       const btn = document.getElementById('btn-exec-germination');
       btn.disabled = true;
-      btn.textContent = '⏳ Germinating SeedTests...';
-      appendLog(`Starting Miracle-Gro seed germination burst (size=${burstSize})...`, 'info');
+      btn.textContent = '⏳ Germinating SeedTests';
+      appendLog(`Starting Miracle-Gro seed germination burst (size=${burstSize})`, 'info');
 
       try {
         const res = await fetchWithAuth('/api/germinate', {
@@ -733,7 +733,7 @@
     };
 
     window.triggerSifterLoop = async function() {
-      appendLog('Triggering Sifter RSS feed ingestion loop...', 'info');
+      appendLog('Triggering Sifter RSS feed ingestion loop', 'info');
       try {
         const res = await fetchWithAuth('/api/sifter/cycle', { method: 'POST' });
         if (res.ok) {
@@ -751,7 +751,7 @@
     };
 
     window.triggerBoredomLoop = async function() {
-      appendLog('Triggering Boredom opportunistic audit pass...', 'info');
+      appendLog('Triggering Boredom opportunistic audit pass', 'info');
       try {
         const res = await fetchWithAuth('/api/boredom/cycle', { method: 'POST' });
         if (res.ok) {
@@ -779,8 +779,8 @@
     window.executeDatabaseBackup = async function() {
       const btn = document.getElementById('btn-exec-backup');
       btn.disabled = true;
-      btn.textContent = '⏳ Backing up...';
-      appendLog('Creating atomic database snapshot and compressing with gzip...', 'info');
+      btn.textContent = '⏳ Backing up';
+      appendLog('Creating atomic database snapshot and compressing with gzip', 'info');
 
       try {
         const res = await fetchWithAuth('/api/db/backup', {
@@ -791,7 +791,7 @@
         if (res.ok) {
           const data = await res.json();
           showToast('💾 Database backup created successfully', 'success');
-          appendLog(`Backup created: ${data.backup?.file_name} (sha256: ${data.backup?.sha256_hash?.slice(0, 16)}...)`, 'success');
+          appendLog(`Backup created: ${data.backup?.file_name} (sha256: ${data.backup?.sha256_hash})`, 'success');
         } else {
           showToast('❌ Backup failed', 'error');
           appendLog('Backup failed', 'error');
@@ -809,8 +809,8 @@
       if (!confirm('🔄 Restore database from latest backup? Active state will be refreshed.')) return;
       const btn = document.getElementById('btn-exec-restore');
       btn.disabled = true;
-      btn.textContent = '⏳ Restoring...';
-      appendLog('Restoring database from latest verified archive...', 'info');
+      btn.textContent = '⏳ Restoring';
+      appendLog('Restoring database from latest verified archive', 'info');
 
       try {
         const res = await fetchWithAuth('/api/db/restore', {
@@ -835,7 +835,7 @@
     };
 
     window.exportAttestationPack = async function() {
-      appendLog('Exporting signed RFC 8785 attestation bundle...', 'info');
+      appendLog('Exporting signed RFC 8785 attestation bundle', 'info');
       try {
         const res = await fetchWithAuth('/api/db/export-pack');
         if (res.ok) {

@@ -192,7 +192,7 @@ class CredenceBadge extends HTMLElement {
         </div>
       `;
     } else {
-      const pubkeyDisplay = pubkey ? `${pubkey.substring(0, 24)}...` : 'None Provided (Local Standalone)';
+      const pubkeyDisplay = pubkey || 'None Provided (Local Standalone)';
       return `
         <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">ED25519 NODE PUBLIC KEY:</div>
         <div class="forensic-code">${pubkeyDisplay}</div>
@@ -273,9 +273,9 @@ class CredenceBadge extends HTMLElement {
         </div>
       `;
     } else {
-      const pubkeyDisplay = pubkey ? `${pubkey.substring(0, 24)}...` : 'Unspecified Signer';
-      const receiptHashDisplay = receiptHash ? `${receiptHash.substring(0, 32)}...` : 'No Receipt Hash';
-      const liveHashDisplay = liveDomHash ? `${liveDomHash.substring(0, 32)}...` : 'Not Computed / Standalone';
+      const pubkeyDisplay = pubkey || 'Unspecified Signer';
+      const receiptHashDisplay = receiptHash || 'No Receipt Hash';
+      const liveHashDisplay = liveDomHash || 'Not Computed / Standalone';
 
       return `
         <div style="font-size: 10px; color: #94a3b8; margin-bottom: 3px;">AUDITOR ED25519 KEY:</div>

@@ -221,7 +221,11 @@ export function initWorkstation(config = {}) {
   const initialHash = window.location.hash.replace(/^#/, '');
   let initialTab = defaultTab;
   if (initialHash) {
-    if (initialHash.startsWith('analytics/') || initialHash.startsWith('dossier/') || initialHash.startsWith('publisher/') || initialHash.startsWith('browse')) {
+    const rawTab = initialHash.split('/')[0];
+    const exactPanel = document.getElementById(`tab-${rawTab}`) || document.querySelector(`[data-tab="${rawTab}"]`);
+    if (exactPanel) {
+      initialTab = rawTab;
+    } else if (initialHash.startsWith('analytics/') || initialHash.startsWith('dossier/') || initialHash.startsWith('publisher/') || initialHash.startsWith('browse')) {
       initialTab = 'browse';
     } else if (initialHash.startsWith('report/') || initialHash.startsWith('inspect/') || initialHash.startsWith('audit/') || initialHash.startsWith('search')) {
       initialTab = 'search';
@@ -232,7 +236,7 @@ export function initWorkstation(config = {}) {
     } else if (initialHash.startsWith('governance') || initialHash.startsWith('taxonomies') || initialHash.startsWith('custody') || initialHash.startsWith('invariants')) {
       initialTab = 'governance';
     } else {
-      initialTab = initialHash.split('/')[0] || defaultTab;
+      initialTab = rawTab || defaultTab;
     }
   }
   if (initialTab) {

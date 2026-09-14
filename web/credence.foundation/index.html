@@ -818,7 +818,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="verify-sig">Ed25519 Signature (Hex)</label>
-                  <input type="text" id="verify-sig" class="form-input" placeholder="e.g. 1111111111111111111111111111111111111111111111111111111111111111...">
+                  <input type="text" id="verify-sig" class="form-input" placeholder="e.g. 1111111111111111111111111111111111111111111111111111111111111111">
                 </div>
               </div>
 
@@ -906,7 +906,7 @@
                       <td><code>JOURNALISTIC_ETHICS</code></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.72rem;">RATIFIED</span></td>
                       <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-green);">100.0% (13/13)</td>
-                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:5e2c...74d</code></td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:c55447731e9ed47d</code></td>
                     </tr>
                     <tr>
                       <td class="wrap-cell">
@@ -917,7 +917,7 @@
                       <td><code>LOGICAL_FALLACY</code></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.72rem;">RATIFIED</span></td>
                       <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-green);">92.3% (12/13)</td>
-                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:2d18...a10</code></td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:623c6242ff3e8b6f</code></td>
                     </tr>
                     <tr>
                       <td class="wrap-cell">
@@ -928,7 +928,7 @@
                       <td><code>DECEPTIVE_PATTERN</code></td>
                       <td><span class="badge" style="background:rgba(74, 222, 128, 0.15); color:var(--accent-green); border:1px solid var(--accent-green); font-size:0.72rem;">RATIFIED</span></td>
                       <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent-green);">84.6% (11/13)</td>
-                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:e049...fc2</code></td>
+                      <td><code style="font-size:0.75rem; color:var(--accent-cyan);">sha256:327d6b2cf627e8ff</code></td>
                     </tr>
                   </tbody>
                 </table>
@@ -992,7 +992,7 @@
                 </p>
 
                 <div class="form-group" style="margin-bottom:0.75rem;">
-                  <textarea id="sandbox-yaml-input" class="form-input" rows="8" style="font-family:var(--font-mono); font-size:0.8rem;" placeholder="catalog_id: my_standard&#10;domain: FINANCIAL_DISCLOSURES&#10;name: Financial Disclosure Standard&#10;version: 1.0.0&#10;description: Standard auditing GAAP statements.&#10;clusters: ..."></textarea>
+                  <textarea id="sandbox-yaml-input" class="form-input" rows="8" style="font-family:var(--font-mono); font-size:0.8rem;" placeholder="catalog_id: my_standard&#10;domain: FINANCIAL_DISCLOSURES&#10;name: Financial Disclosure Standard&#10;version: 1.0.0&#10;description: Standard auditing GAAP statements.&#10;clusters: []"></textarea>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
@@ -1067,7 +1067,7 @@ clusters:
         return;
       }
 
-      resEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Validating AST schema...</span>';
+      resEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Validating AST schema</span>';
 
       try {
         const resp = await fetch('/api/rfcs/validate', {
@@ -1078,7 +1078,7 @@ clusters:
         if (resp.ok) {
           const data = await resp.json();
           if (data.valid) {
-            resEl.innerHTML = `<span style="color:var(--accent-green);">✅ AST SCHEMA VALID (${data.rules_count} rules &bull; ${data.catalog_hash?.slice(0, 16)}...)</span>`;
+            resEl.innerHTML = `<span style="color:var(--accent-green);">✅ AST SCHEMA VALID (${data.rules_count} rules &bull; ${data.catalog_hash?.slice(0, 16)})</span>`;
             window.CredenceWS.showToast('Catalog passed schema validation', 'success');
             return;
           } else {
@@ -1112,7 +1112,7 @@ clusters:
         return;
       }
 
-      resEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Running Synthetic Gauntlet &amp; Golden Baseline Defense...</span>';
+      resEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Running Synthetic Gauntlet &amp; Golden Baseline Defense</span>';
 
       try {
         const resp = await fetch('/api/rfcs/benchmark', {
@@ -1233,7 +1233,7 @@ clusters:
         return;
       }
 
-      resultEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Verifying WebCrypto signature...</span>';
+      resultEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Verifying WebCrypto signature</span>';
       const result = await verifyEd25519Signature(payload, sig, pubkey);
 
       if (result.valid) {

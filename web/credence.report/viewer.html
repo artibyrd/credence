@@ -76,7 +76,7 @@
 
       <!-- Top Audit Search Bar -->
       <form class="top-audit-bar" onsubmit="event.preventDefault(); inspectAuditFromInput();">
-        <input type="text" id="header-query" placeholder="Enter URL or content SHA-256 (e.g. sha256:abc123...)" required>
+        <input type="text" id="header-query" placeholder="Enter URL or content SHA-256 (e.g. sha256:abc123)" required>
         <button type="submit" class="btn-primary">Inspect Audit</button>
       </form>
 
@@ -116,7 +116,7 @@
             <div class="target-url" id="target-url">https://example.com/target-article</div>
           </div>
           <div class="sig-status-badge">
-            <div id="signature-status" class="sig-pill">⏳ INITIALIZING...</div>
+            <div id="signature-status" class="sig-pill">⏳ INITIALIZING</div>
           </div>
         </div>
 
@@ -128,7 +128,7 @@
 
           <div class="verdict-box">
             <div>
-              <span id="classification-badge" class="verdict-tag suspicious">AUDITING...</span>
+              <span id="classification-badge" class="verdict-tag suspicious">AUDITING</span>
             </div>
             <div id="density-index" class="density-badge">Density: -- / 1,000 words</div>
             <div id="eval-method-badge" class="method-badge">Evaluated via LLM Multi-Agent Pipeline &bull; 95% Confidence</div>
@@ -147,7 +147,7 @@
             <span>🧠 Executive Briefing &amp; Human Takeaway</span>
           </div>
           <p id="exec-summary-text" class="exec-prose">
-            Analyzing epistemic health signals...
+            Analyzing epistemic health signals
           </p>
           <div id="trust-signals-container" class="trust-signals">
             <!-- Dynamic signal badges injected here -->
@@ -272,7 +272,7 @@
               <button class="filter-chip" onclick="filterFindings('DECEPTIVE', this)">Deceptive Patterns</button>
               <button class="filter-chip" onclick="filterFindings('CRITICAL', this)">Critical Only (&ge;4)</button>
             </div>
-            <input type="text" id="findings-search" class="filter-search" placeholder="Search findings..." oninput="searchFindings(this.value)">
+            <input type="text" id="findings-search" class="filter-search" placeholder="Search findings" oninput="searchFindings(this.value)">
           </div>
 
           <ul id="violations-container" class="violations-list">
@@ -462,7 +462,7 @@
                 </div>
                 <button class="btn-primary" onclick="copyMarkdownSummary()">Copy Markdown</button>
               </div>
-              <div id="export-md-preview" class="code-preview">Loading Markdown preview...</div>
+              <div id="export-md-preview" class="code-preview">Loading Markdown preview</div>
             </div>
 
             <!-- 2. Signed JSON Attestation -->
@@ -474,7 +474,7 @@
                 </div>
                 <button class="btn-secondary" onclick="copyJsonAttestation()">Copy JSON Attestation</button>
               </div>
-              <div id="export-json-preview" class="code-preview">Loading JSON preview...</div>
+              <div id="export-json-preview" class="code-preview">Loading JSON preview</div>
             </div>
 
             <!-- 3. Web Verification Badge -->
@@ -486,7 +486,7 @@
                 </div>
                 <button class="btn-secondary" onclick="copyBadgeSnippet()">Copy HTML Badge</button>
               </div>
-              <div id="export-badge-preview" class="code-preview">&lt;a href="https://credence.report/viewer.html?q=..." target="_blank"&gt;&lt;img src="https://credence.report/badge.svg" alt="Credence Epistemic Audit" /&gt;&lt;/a&gt;</div>
+              <div id="export-badge-preview" class="code-preview">&lt;a href="https://credence.report/viewer.html?q=&lt;sha256&gt;" target="_blank"&gt;&lt;img src="https://credence.report/badge.svg" alt="Credence Epistemic Audit" /&gt;&lt;/a&gt;</div>
             </div>
           </div>
         </div>
@@ -518,7 +518,7 @@
       </div>
 
       <div style="margin-bottom: 0.75rem; font-size: 0.9rem; color: #cbd5e1;" id="compact-exec-text">
-        Human summary briefing...
+        Human summary briefing
       </div>
 
       <table class="compact-table">
@@ -554,7 +554,7 @@
 
       <!-- Quick cURL Integration Box -->
       <div class="api-curl-box">
-        <div class="api-curl-text" id="api-curl-snippet">curl -s https://credence.report/viewer.html?q=... | jq .</div>
+        <div class="api-curl-text" id="api-curl-snippet">curl -s https://credence.report/viewer.html?q=&lt;sha256&gt; | jq .</div>
         <button class="btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="copyCurlSnippet()">Copy cURL</button>
       </div>
 
@@ -1017,7 +1017,7 @@ City council members expressed optimism regarding the new administration's forei
       const chosen = dynamicCorpus[idx];
       const sha = chosen.content_sha256 || chosen.id;
       loadReportByHash(sha);
-      showToast(`Loaded random audit: ${(chosen.title || sha).slice(0, 35)}...`);
+      showToast(`Loaded random audit: ${chosen.title || sha}`);
     };
 
     window.loadReportByHash = async function(hash) {
@@ -1129,7 +1129,7 @@ City council members expressed optimism regarding the new administration's forei
         }
 
         // Trigger on-demand live audit
-        showToast("🔍 Triggering on-demand live epistemic audit...");
+        showToast("🔍 Triggering on-demand live epistemic audit");
         const apiBase = getApiBaseUrl();
         try {
           const res = await fetch(`${apiBase}/api/audit?url=${encodeURIComponent(q)}`, { method: "POST" });
@@ -1344,7 +1344,7 @@ City council members expressed optimism regarding the new administration's forei
           sigStatusEl.textContent = "⚠️ UNVERIFIED (UNSIGNED)";
         } else if (window.CredenceWS && window.CredenceWS.verifyEd25519Signature) {
           sigStatusEl.className = "sig-pill";
-          sigStatusEl.textContent = "⏳ VERIFYING ED25519...";
+          sigStatusEl.textContent = "⏳ VERIFYING ED25519";
           window.CredenceWS.verifyEd25519Signature(report).then(isValid => {
             if (isValid) {
               sigStatusEl.className = "sig-pill sig-valid";
@@ -1378,7 +1378,7 @@ City council members expressed optimism regarding the new administration's forei
       // Provenance Meta
       document.getElementById("meta-sha256").textContent = sha;
       document.getElementById("meta-simhash").textContent = simhash;
-      document.getElementById("meta-node-pubkey").textContent = report.node_pubkey ? `${report.node_pubkey.slice(0, 16)}...${report.node_pubkey.slice(-8)}` : "--";
+      document.getElementById("meta-node-pubkey").textContent = report.node_pubkey || "--";
       document.getElementById("meta-timestamp").textContent = report.audited_at || new Date().toISOString();
 
       document.getElementById("crypto-pubkey").textContent = report.node_pubkey || "Not Signed";
@@ -1399,7 +1399,7 @@ City council members expressed optimism regarding the new administration's forei
       document.getElementById("compact-score").textContent = `${suspScore.toFixed(1)} / 100.0`;
       document.getElementById("compact-density").textContent = `${density.toFixed(1)} / 1k words`;
       document.getElementById("compact-conf").textContent = `${Math.round(conf * 100)}%`;
-      document.getElementById("compact-sha").textContent = sha.length > 28 ? sha.slice(0, 24) + "..." : sha;
+      document.getElementById("compact-sha").textContent = sha;
       document.getElementById("compact-exec-text").textContent = document.getElementById("exec-summary-text").textContent;
 
       const compactBody = document.getElementById("compact-findings-body");
@@ -1866,7 +1866,7 @@ ${summaryContent}
       if (!cleanDom) return;
       document.getElementById("pub-domain-input").value = cleanDom;
 
-      showToast(`Loading analytics for ${cleanDom}...`);
+      showToast(`Loading analytics for ${cleanDom}`);
       const apiBase = getApiBaseUrl();
       try {
         const res = await fetch(`${apiBase}/api/analytics/publisher/${encodeURIComponent(cleanDom)}`);
