@@ -2478,7 +2478,7 @@ def test_cross_domain_links_and_deep_route_integrity():
         "#search",
         "#data=",
     )
-    valid_nexus_hashes = ("#merit", "#badges", "#nodes", "#topology", "#mesh", "#studio", "#admin")
+    valid_nexus_hashes = ("#merit", "#badges", "#nodes", "#topology", "#mesh", "#studio", "#admin", "#leaderboard", "#worker/", "#workers")
     valid_foundation_hashes = ("#governance", "#taxonomies", "#custody", "#sandbox", "#invariants", "#charter")
 
     violations = []

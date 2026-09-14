@@ -58,6 +58,15 @@ credence tui
 credence digest
 ```
 
+### 4. Contribute as a Volunteer Worker (Open Epistemic Mempool)
+
+Earn merit badges and donate compute to the decentralized network commons with zero configuration:
+
+```bash
+# Launch volunteer worker daemon connecting to public node
+uvx credence worker --node https://credence.run
+```
+
 ---
 
 ## 🧭 Topic Index: Finding What You Need
@@ -91,7 +100,7 @@ credence audit https://example.com/claim --json | jq .suspicion_score
 ```
 
 ### 2. ⚡ AI Assistant Integration (FastMCP 2.0)
-Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims:
+Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims, backed by a 25-second adaptive Epistemic Brake window and in-chat verification (`credence_verify_and_anchor`):
 ```json
 {
   "mcpServers": {
