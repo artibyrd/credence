@@ -175,9 +175,17 @@ class ClaudeProvider(BaseLLMProvider):
 class OpenAIProvider(BaseLLMProvider):
     """OpenAI Chat Completions API Provider."""
 
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gpt-4o"):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: str = "gpt-4o",
+        base_url: str = "https://api.openai.com/v1",
+        provider_name: str = "openai",
+    ):
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
         self.model_name = model_name
+        self.base_url = (os.environ.get("OPENAI_BASE_URL") or base_url).rstrip("/")
+        self.provider_name = provider_name
 
     async def generate(
         self,
@@ -186,12 +194,12 @@ class OpenAIProvider(BaseLLMProvider):
         thinking_budget: int = 0,
         temperature: float = 0.1,
     ) -> LLMResponse:
-        if not self.api_key:
+        if not self.api_key and "localhost" not in self.base_url and "127.0.0.1" not in self.base_url:
             raise ValueError("OpenAI API key is required for OpenAIProvider.")
 
-        url = "https://api.openai.com/v1/chat/completions"
+        url = f"{self.base_url}/chat/completions"
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.api_key or 'none'}",
             "Content-Type": "application/json",
         }
         messages = []
@@ -209,7 +217,7 @@ class OpenAIProvider(BaseLLMProvider):
         async with httpx.AsyncClient(timeout=45.0) as client:
             resp = await client.post(url, headers=headers, json=payload)
             if resp.status_code != 200:
-                raise RuntimeError(f"OpenAI API error ({resp.status_code}): {resp.text[:200]}")
+                raise RuntimeError(f"{self.provider_name} API error ({resp.status_code}): {resp.text[:200]}")
 
             data = resp.json()
             choices = data.get("choices", [])
@@ -223,9 +231,38 @@ class OpenAIProvider(BaseLLMProvider):
                 prompt_tokens=in_tok,
                 completion_tokens=out_tok,
                 thinking_tokens=0,
-                provider_name="openai",
+                provider_name=self.provider_name,
                 model_name=self.model_name,
             )
+
+
+class OpenAICompatibleProvider(OpenAIProvider):
+    """Universal OpenAI-compatible API provider for custom, local, and open-weights endpoints."""
+
+    def __init__(
+        self,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model_name: str = "custom-model",
+    ):
+        target_base = (
+            base_url
+            or os.environ.get("OPENAI_COMPATIBLE_BASE_URL")
+            or os.environ.get("OPENAI_BASE_URL")
+            or "http://localhost:8000/v1"
+        )
+        target_key = (
+            api_key or os.environ.get("OPENAI_COMPATIBLE_API_KEY") or os.environ.get("OPENAI_API_KEY") or "none"
+        )
+        target_model = (
+            model_name if model_name != "custom-model" else (os.environ.get("OPENAI_COMPATIBLE_MODEL") or model_name)
+        )
+        super().__init__(
+            api_key=target_key,
+            model_name=target_model,
+            base_url=target_base,
+            provider_name="openai_compatible",
+        )
 
 
 class OllamaProvider(BaseLLMProvider):
@@ -398,7 +435,9 @@ def get_llm_provider(provider_override: Optional[str] = None) -> Optional[BaseLL
     """Resolve and return the appropriate LLM provider based on environment keys and settings."""
     target = provider_override or os.environ.get("CREDENCE_LLM_PROVIDER")
 
-    if target == "vertex" or os.environ.get("VERTEX_BEARER_TOKEN"):
+    if target in ("openai_compatible", "custom") or (not target and os.environ.get("OPENAI_COMPATIBLE_BASE_URL")):
+        return OpenAICompatibleProvider()
+    elif target == "vertex" or os.environ.get("VERTEX_BEARER_TOKEN"):
         return VertexModelGardenProvider()
     elif target == "anthropic" or (not target and os.environ.get("ANTHROPIC_API_KEY")):
         return ClaudeProvider()

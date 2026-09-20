@@ -1,4 +1,4 @@
-export const CREDENCE_VERSION = "v2.21.1";
+export const CREDENCE_VERSION = "v2.22.0";
 /**
  * Credence Workstation Engine & Shared Zero-Build Controller (credence-workstation.js)
  * 
@@ -55,12 +55,25 @@ import {
   INFO_TOPICS,
 } from './workstation-topics.js';
 
+import {
+  fetchWorkerLeaderboard,
+  filterWorkerLeaderboard,
+  renderWorkerLeaderboard,
+  openWorkerDossier,
+  closeWorkerDossier,
+  openWorkerStartModal,
+  closeWorkerStartModal,
+  copyToClipboard,
+  handleWorkerHashRoute,
+} from './workstation-workers.js';
+
 // Re-export all subsystems for ES module consumers
 export * from './workstation-auth.js';
 export * from './workstation-modals.js';
 export * from './workstation-crypto.js';
 export * from './workstation-nav.js';
 export * from './workstation-topics.js';
+export * from './workstation-workers.js';
 
 export const INVARIANTS_REGISTRY = {
   "inv-workspace-isolation": { legacyId: 1, class: "Class β", scope: "universal", title: "Project & Workspace Isolation" },
@@ -208,7 +221,11 @@ export function initWorkstation(config = {}) {
   const initialHash = window.location.hash.replace(/^#/, '');
   let initialTab = defaultTab;
   if (initialHash) {
-    if (initialHash.startsWith('analytics/') || initialHash.startsWith('dossier/') || initialHash.startsWith('publisher/') || initialHash.startsWith('browse')) {
+    const rawTab = initialHash.split('/')[0];
+    const exactPanel = document.getElementById(`tab-${rawTab}`) || document.querySelector(`[data-tab="${rawTab}"]`);
+    if (exactPanel) {
+      initialTab = rawTab;
+    } else if (initialHash.startsWith('analytics/') || initialHash.startsWith('dossier/') || initialHash.startsWith('publisher/') || initialHash.startsWith('browse')) {
       initialTab = 'browse';
     } else if (initialHash.startsWith('report/') || initialHash.startsWith('inspect/') || initialHash.startsWith('audit/') || initialHash.startsWith('search')) {
       initialTab = 'search';
@@ -219,7 +236,7 @@ export function initWorkstation(config = {}) {
     } else if (initialHash.startsWith('governance') || initialHash.startsWith('taxonomies') || initialHash.startsWith('custody') || initialHash.startsWith('invariants')) {
       initialTab = 'governance';
     } else {
-      initialTab = initialHash.split('/')[0] || defaultTab;
+      initialTab = rawTab || defaultTab;
     }
   }
   if (initialTab) {
@@ -328,4 +345,13 @@ Object.assign(window.CredenceWS, {
   fetchWithAuth,
   verifyEd25519Signature,
   INFO_TOPICS,
+  fetchWorkerLeaderboard,
+  filterWorkerLeaderboard,
+  renderWorkerLeaderboard,
+  openWorkerDossier,
+  closeWorkerDossier,
+  openWorkerStartModal,
+  closeWorkerStartModal,
+  copyToClipboard,
+  handleWorkerHashRoute,
 });

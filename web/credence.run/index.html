@@ -21,13 +21,14 @@
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <link rel="alternate icon" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="../assets/credence-ui.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <!-- Ecosystem Navigation Bar -->
   <nav class="credence-nav">
-    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.21.1</span></a>
+    <a href="https://credence.run" class="brand"><img src="/assets/logo.svg" alt="Credence Shield" class="brand-logo"> Credence <span class="badge">v2.22.0</span></a>
     <ul class="nav-links">
       <li><a href="https://credence.run" class="active">Home</a></li>
       <li><a href="https://docs.credence.run">Docs</a></li>
@@ -40,7 +41,7 @@
   <!-- Welcoming Hero Section -->
   <header class="hero">
     <div class="container">
-      <span class="badge-pill">🛡️ v2.21.1 Stable &bull; Verifiable Truth &bull; FastMCP 2.0</span>
+      <span class="badge-pill">🛡️ v2.22.0 Stable &bull; Verifiable Truth &bull; FastMCP 2.0</span>
 
       <h1 class="hero-title">The Trust Engine for AI &amp; the Web</h1>
       <p class="hero-subtitle">
@@ -77,6 +78,10 @@
           <div class="command-line">
             <code>credence serve --mcp # Connect instantly to Claude &amp; Cursor</code>
             <button class="copy-btn" onclick="navigator.clipboard.writeText('credence serve --mcp')">Copy</button>
+          </div>
+          <div class="command-line">
+            <code>uvx credence worker # Contribute spare compute &amp; climb the leaderboard</code>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('uvx credence worker')">Copy</button>
           </div>
         </div>
       </div>

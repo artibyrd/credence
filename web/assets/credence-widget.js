@@ -30,7 +30,7 @@ class CredenceBadge extends HTMLElement {
       activeLens: 'surface',
       url: '',
       pubkey: '',
-      version: 'v2.21.1',
+      version: 'v2.22.0',
       violationsCount: 0,
       groundingPct: 100.0,
       auditsCount: 1,
@@ -192,7 +192,7 @@ class CredenceBadge extends HTMLElement {
         </div>
       `;
     } else {
-      const pubkeyDisplay = pubkey ? `${pubkey.substring(0, 24)}...` : 'None Provided (Local Standalone)';
+      const pubkeyDisplay = pubkey || 'None Provided (Local Standalone)';
       return `
         <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">ED25519 NODE PUBLIC KEY:</div>
         <div class="forensic-code">${pubkeyDisplay}</div>
@@ -268,14 +268,14 @@ class CredenceBadge extends HTMLElement {
         <div style="font-size: 11px; color: #cbd5e1; line-height: 1.5;">
           <div style="font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Forensic Claim Breakdown</div>
           • Active Policy Violations: <strong>${violationsCount}</strong><br/>
-          • Verbatim Grounding ($G=1.00$): <strong>${status === 'VERIFIED' ? '100%' : 'Pending'}</strong><br/>
+          • Verbatim Grounding (G=1.00): <strong>${status === 'VERIFIED' ? '100%' : 'Pending'}</strong><br/>
           • Bait-and-Switch Defense: <strong>${isHashMatch ? '✓ Verified Unaltered' : '⚠️ Content Altered Post-Audit'}</strong>
         </div>
       `;
     } else {
-      const pubkeyDisplay = pubkey ? `${pubkey.substring(0, 24)}...` : 'Unspecified Signer';
-      const receiptHashDisplay = receiptHash ? `${receiptHash.substring(0, 32)}...` : 'No Receipt Hash';
-      const liveHashDisplay = liveDomHash ? `${liveDomHash.substring(0, 32)}...` : 'Not Computed / Standalone';
+      const pubkeyDisplay = pubkey || 'Unspecified Signer';
+      const receiptHashDisplay = receiptHash || 'No Receipt Hash';
+      const liveHashDisplay = liveDomHash || 'Not Computed / Standalone';
 
       return `
         <div style="font-size: 10px; color: #94a3b8; margin-bottom: 3px;">AUDITOR ED25519 KEY:</div>

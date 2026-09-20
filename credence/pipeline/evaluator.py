@@ -29,7 +29,7 @@ from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.ingestion.extractor import ExtractedContent
 from credence.ingestion.snapshot import DualCaptureResult, capture_webpage_fastpath
 from credence.models import Audit, Snapshot, Violation
-from credence.pipeline.adapters import LLMResponse, get_llm_provider
+from credence.pipeline.adapters import BaseLLMProvider, LLMResponse, get_llm_provider
 from credence.pipeline.governor import (
     check_budget_before_call,
     get_active_api_key,
@@ -68,6 +68,7 @@ async def evaluate_snapshot(
     session: Optional[AsyncSession] = None,
     sign_result: bool = True,
     profile_override: Optional[CostProfileConfig] = None,
+    provider: Optional[BaseLLMProvider] = None,
 ) -> AuditReport:
     """Execute the granular cluster-swarm evaluation pipeline against a captured snapshot."""
     active_reg = reg or registry
@@ -109,7 +110,7 @@ async def evaluate_snapshot(
     used_llm = False
     model_name: Optional[str] = None
 
-    provider = get_llm_provider()
+    provider = provider or get_llm_provider()
     if provider is not None and not quota_preserved:
         try:
             model_name = provider.model_name

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Optional
@@ -22,14 +23,186 @@ def _register_eval_tools(server: MCPServer) -> None:
 
     @server.tool(
         name="credence_check_url",
-        description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies.",
+        description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies with adaptive 25s mempool consensus wait.",
     )
     async def check_url(url: str, force: bool = False, profile: Optional[str] = None) -> str:
+        from credence.models import AuditJob
         from credence.pipeline.evaluator import audit_url
+        from credence.server.api.queue import get_completed_report, register_completion_listener
+
+        # If not force, check if already completed
+        if not force:
+            await init_db()
+            async with get_async_session() as s:
+                stmt = select(AuditJob).where(AuditJob.url == url, AuditJob.status == "completed")
+                res = await s.exec(stmt)
+                existing = res.first()
+                if existing and existing.consensus_verdict_json:
+                    return json.dumps(
+                        {
+                            "url": url,
+                            "status": "completed",
+                            "consensus": json.loads(existing.consensus_verdict_json),
+                        },
+                        indent=2,
+                    )
+
+        # Enqueue with priority 1 for IDE FastMCP session and register completion event
+        event = register_completion_listener(url)
+        try:
+            await init_db()
+            async with get_async_session() as s:
+                enq_stmt = select(AuditJob).where(AuditJob.url == url, col(AuditJob.status).in_(["pending", "claimed"]))
+                enq_res = await s.exec(enq_stmt)
+                if not enq_res.first():
+                    job = AuditJob(
+                        url=url,
+                        priority=1,
+                        client_affinity="fastmcp-ide-session",
+                        target_quorum=1,
+                        status="pending",
+                    )
+                    s.add(job)
+                    await s.commit()
+
+            # Adaptive wait window (25s epistemic brake)
+            await asyncio.wait_for(event.wait(), timeout=25.0)
+            completed = get_completed_report(url)
+            if completed:
+                return json.dumps(completed, indent=2)
+        except asyncio.TimeoutError:
+            logger.info("FastMCP 25s adaptive wait window expired; proceeding with local pipeline.")
+        except Exception as e:
+            logger.debug("FastMCP queue listener fallback: %s", e)
 
         prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
         report = await audit_url(url, force_refresh=force, profile_override=prof_cfg)
         return json.dumps(report.model_dump(mode="json"), indent=2)
+
+    @server.tool(
+        name="credence_verify_and_anchor",
+        description="Verify and anchor in-chat evaluated findings with verbatim grounding (G=1.00) and Ed25519 cryptographic attestation.",
+    )
+    async def verify_and_anchor(
+        url: str,
+        normalized_text: str,
+        suspicion_score: float,
+        classification: str,
+        violations: list[dict],
+        model_name: str = "anthropic/claude-3-7-sonnet",
+    ) -> str:
+        from credence.identity import load_or_create_node_identity, sign_audit_report
+        from credence.ingestion.hasher import compute_content_sha256, compute_simhash
+        from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
+
+        # 1. Grounding check: G=1.00 assertion
+        validated_violations = []
+        for v in violations:
+            quote = v.get("quote_or_element", "")
+            if quote and quote not in normalized_text:
+                return json.dumps(
+                    {
+                        "error": f"Grounding precision G < 1.00: Quote '{quote[:40]}...' not found in source text",
+                        "status": "rejected",
+                    },
+                    indent=2,
+                )
+            validated_violations.append(
+                SpecialistViolationFinding(
+                    rule_id=v.get("rule_id", "GENERAL-1.0"),
+                    rule_uri=v.get("rule_uri", f"general:{v.get('rule_id', '1.0')}@v1.0.0"),
+                    domain=v.get("domain", "GENERAL"),
+                    cluster_id=v.get("cluster_id", "GENERAL"),
+                    severity=int(v.get("severity", 2)),
+                    confidence=float(v.get("confidence", 0.95)),
+                    quote_or_element=quote,
+                    reasoning=v.get("reasoning", "In-chat evaluation finding"),
+                )
+            )
+
+        # 2. Construct and sign AuditReport
+        ident = load_or_create_node_identity()
+        sha256 = compute_content_sha256(normalized_text)
+        simhash = compute_simhash(normalized_text)
+        word_count = len(normalized_text.split())
+        density = round((len(validated_violations) / max(1, word_count)) * 1000, 2)
+        report = AuditReport(
+            url=url,
+            content_sha256=sha256,
+            simhash_64=simhash,
+            suspicion_score=suspicion_score,
+            suspicion_density=density,
+            confidence_score=0.95,
+            classification=classification.upper(),
+            is_satire=False,
+            content_type="NEWS_ARTICLE",
+            violations=validated_violations,
+            evaluation_method="fastmcp_in_chat_verified",
+            evaluation_model=model_name,
+        )
+        signed = sign_audit_report(report, ident)
+
+        # 3. Persist Snapshot and Audit
+        await init_db()
+        async with get_async_session() as s:
+            snap_stmt = select(Snapshot).where(Snapshot.url == url)
+            snap = (await s.exec(snap_stmt)).first()
+            if not snap:
+                snap = Snapshot(
+                    url=url,
+                    content_sha256=sha256,
+                    simhash_64=simhash,
+                    clean_text_length=len(normalized_text),
+                    word_count=word_count,
+                )
+                s.add(snap)
+                await s.commit()
+                await s.refresh(snap)
+
+            audit_rec = Audit(
+                snapshot_id=snap.id,
+                content_sha256=sha256,
+                suspicion_score=suspicion_score,
+                suspicion_density=signed.suspicion_density,
+                confidence_score=signed.confidence_score,
+                classification=signed.classification,
+                node_pubkey=signed.node_pubkey,
+                node_signature=signed.node_signature,
+                evaluation_method="fastmcp_in_chat_verified",
+                evaluation_model=model_name,
+            )
+            s.add(audit_rec)
+            await s.commit()
+            await s.refresh(audit_rec)
+
+            for vf in validated_violations:
+                vr = Violation(
+                    audit_id=audit_rec.id,
+                    rule_id=vf.rule_id,
+                    rule_uri=vf.rule_uri,
+                    domain=vf.domain,
+                    cluster_id=vf.cluster_id,
+                    severity=vf.severity,
+                    confidence=vf.confidence,
+                    quote_or_element=vf.quote_or_element,
+                    reasoning=vf.reasoning,
+                )
+                s.add(vr)
+            await s.commit()
+
+        return json.dumps(
+            {
+                "status": "anchored",
+                "url": url,
+                "content_sha256": sha256,
+                "node_pubkey": signed.node_pubkey,
+                "node_signature": signed.node_signature,
+                "violations_anchored": len(validated_violations),
+                "classification": signed.classification,
+                "suspicion_score": signed.suspicion_score,
+            },
+            indent=2,
+        )
 
     @server.tool(
         name="credence_evaluate_text",

@@ -10,6 +10,9 @@ export function getApiBaseUrl() {
   if (host === 'localhost' || host === '127.0.0.1') {
     return (window.location.port && window.location.port !== '8000') ? `http://${host}:8000` : '';
   }
+  if (!host || window.location.protocol === 'file:') {
+    return 'https://credence-dev-865363499314.us-central1.run.app';
+  }
   return '';
 }
 

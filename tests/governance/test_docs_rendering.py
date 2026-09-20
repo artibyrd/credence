@@ -433,7 +433,7 @@ async def test_invariant_deep_linking_and_scrolling(page: Page, docs_server: str
 async def test_tui_vector_svg_rendering(page: Page, docs_server: str) -> None:
     """Verify all embedded TUI vector SVGs render with valid geometry and natural dimensions."""
     test_pages = [
-        "docs/quickstart",
+        "docs/quickstart-node",
         "docs/integrations/tui-workstation",
         "docs/walkthroughs/01-auditing-webpages-and-text",
         "docs/feature-parity",

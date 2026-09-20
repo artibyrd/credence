@@ -76,6 +76,12 @@ from credence.server.api.mesh import (
     api_mesh_submit_attestation,
     api_mesh_submit_batch,
 )
+from credence.server.api.queue import (
+    api_queue_claim,
+    api_queue_enqueue,
+    api_queue_stats,
+    api_queue_submit,
+)
 from credence.server.api.system import (
     api_auth_config,
     api_auth_verify,
@@ -89,6 +95,11 @@ from credence.server.api.system import (
     api_set_operational_profile,
 )
 from credence.server.api.widget import api_get_badge_data, api_get_history
+from credence.server.api.workers import (
+    api_worker_badge_svg,
+    api_worker_dossier,
+    api_workers_leaderboard,
+)
 from credence.server.lifespan import combined_lifespan
 from credence.server.mcp.server import create_mcp_server
 from credence.server.middleware.rate_limit import ServerRateLimiter
@@ -180,6 +191,7 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route(
             "/api/badge/attestation/{identifier:path}", endpoint=api_get_attestation_badge, methods=["GET", "OPTIONS"]
         ),
+        Route("/api/badge/worker/{pubkey:path}", endpoint=api_worker_badge_svg, methods=["GET", "OPTIONS"]),
         Route("/api/badge/{badge_id:path}", endpoint=api_get_badge_svg, methods=["GET", "OPTIONS"]),
         Route("/api/rankings/domains", endpoint=api_rankings_domains, methods=["GET", "OPTIONS"]),
         Route("/api/rankings/rules", endpoint=api_rankings_rules, methods=["GET", "OPTIONS"]),
@@ -195,6 +207,15 @@ def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -
         Route("/api/mesh/submit-attestation", endpoint=api_mesh_submit_attestation, methods=["POST", "OPTIONS"]),
         Route("/api/mesh/submit-batch", endpoint=api_mesh_submit_batch, methods=["POST", "OPTIONS"]),
         Route("/api/mesh/submit", endpoint=api_mesh_submit_attestation, methods=["POST", "OPTIONS"]),
+        # Open Epistemic Mempool Queue Endpoints
+        Route("/api/queue/enqueue", endpoint=api_queue_enqueue, methods=["POST", "OPTIONS"]),
+        Route("/api/queue/claim", endpoint=api_queue_claim, methods=["POST", "OPTIONS"]),
+        Route("/api/queue/submit", endpoint=api_queue_submit, methods=["POST", "OPTIONS"]),
+        Route("/api/queue/stats", endpoint=api_queue_stats, methods=["GET", "OPTIONS"]),
+        # Volunteer Worker Endpoints
+        Route("/api/workers/leaderboard", endpoint=api_workers_leaderboard, methods=["GET", "OPTIONS"]),
+        Route("/api/worker/{pubkey:path}", endpoint=api_worker_dossier, methods=["GET", "OPTIONS"]),
+        Route("/api/workers/{pubkey:path}", endpoint=api_worker_dossier, methods=["GET", "OPTIONS"]),
     ]
 
     for r in reversed(rest_routes):
