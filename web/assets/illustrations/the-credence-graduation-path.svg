@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+  <rect width="860" height="280" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1.0" />
+  <text x="32" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.1em">PROGRESSIVE ADOPTION</text>
+  <text x="32" y="49" fill="#ffffff" font-size="14" font-family="sans-serif" font-weight="bold">THE CREDENCE GRADUATION PATH</text>
+  
+  <rect x="35" y="84" width="225" height="160" rx="8" fill="#111827" stroke="#38bdf8" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="35" y="84" width="225" height="3" rx="1.5" fill="#38bdf8" stroke="none" />
+  <text x="47" y="106" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">CONSUME</text>
+  <text x="47" y="125" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold">FastMCP 2.0 Client</text>
+  <text x="47" y="146" fill="#cbd5e1" font-size="10" font-family="sans-serif">In-Editor Epistemic Brake</text>
+  <text x="47" y="162" fill="#cbd5e1" font-size="10" font-family="sans-serif">Claude, Cursor, Antigravity</text>
+  <rect x="45" y="214" width="205" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8" />
+  <text x="147" y="227" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;60s Setup</text>
+  
+  <rect x="317" y="84" width="225" height="160" rx="8" fill="#111827" stroke="#22c55e" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="317" y="84" width="225" height="3" rx="1.5" fill="#22c55e" stroke="none" />
+  <text x="329" y="106" fill="#22c55e" font-size="10" font-family="monospace" font-weight="bold">CONTRIBUTE</text>
+  <text x="329" y="125" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold">Volunteer Worker</text>
+  <text x="329" y="146" fill="#cbd5e1" font-size="10" font-family="sans-serif">Solve Mempool Bounties</text>
+  <text x="329" y="162" fill="#cbd5e1" font-size="10" font-family="sans-serif">Earn Merit Badges &amp; Rank</text>
+  <rect x="327" y="214" width="205" height="18" rx="3" fill="#1e293b" stroke="#22c55e" stroke-width="0.8" />
+  <text x="429" y="227" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;2m Setup</text>
+  
+  <rect x="600" y="84" width="225" height="160" rx="8" fill="#111827" stroke="#a855f7" stroke-width="1.2" filter="url(#card-shadow)" />
+  <rect x="600" y="84" width="225" height="3" rx="1.5" fill="#a855f7" stroke="none" />
+  <text x="612" y="106" fill="#a855f7" font-size="10" font-family="monospace" font-weight="bold">HOST &amp; COORDINATE</text>
+  <text x="612" y="125" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold">Sovereign Node</text>
+  <text x="612" y="146" fill="#cbd5e1" font-size="10" font-family="sans-serif">Private Mempools &amp; Mesh</text>
+  <text x="612" y="162" fill="#cbd5e1" font-size="10" font-family="sans-serif">Browser Admin Command Deck</text>
+  <rect x="610" y="214" width="205" height="18" rx="3" fill="#1e293b" stroke="#a855f7" stroke-width="0.8" />
+  <text x="712" y="227" fill="#a855f7" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">&lt;5m Setup</text>
+  
+  <line x1="260" y1="164" x2="317" y2="164" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow-emerald)" />
+  <text x="288" y="156" fill="#22c55e" font-size="8" font-family="monospace" text-anchor="middle">Accelerate</text>
+  
+  <line x1="542" y1="164" x2="600" y2="164" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrow-purple)" />
+  <text x="571" y="156" fill="#a855f7" font-size="8" font-family="monospace" text-anchor="middle">Federate</text>
+</svg>
