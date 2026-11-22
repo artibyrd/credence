@@ -11,7 +11,7 @@ export function getApiBaseUrl() {
     return (window.location.port && window.location.port !== '8000') ? `http://${host}:8000` : '';
   }
   if (!host || window.location.protocol === 'file:') {
-    return 'https://credence-dev-865363499314.us-central1.run.app';
+    return 'http://localhost:8000';
   }
   return '';
 }
@@ -161,7 +161,7 @@ export function updateRibbonAuthBadge() {
   if (!badge) return;
   if (authState.authenticated) {
     badge.className = 'ribbon-pill operator-active';
-    badge.innerHTML = `🔓 OPERATOR: ${authState.identity || 'ACTIVE'}`;
+    badge.textContent = `🔓 OPERATOR: ${authState.identity || 'ACTIVE'}`;
     badge.title = 'Operator session active. Click to lock / manage.';
     badge.onclick = () => {
       if (confirm('Lock operator session and clear stored tokens?')) {
@@ -171,7 +171,7 @@ export function updateRibbonAuthBadge() {
     };
   } else {
     badge.className = 'ribbon-pill operator-locked';
-    badge.innerHTML = '🔒 OPERATOR LOGIN';
+    badge.textContent = '🔒 OPERATOR LOGIN';
     badge.title = 'Click to authenticate as node operator';
     badge.onclick = () => openOperatorModal();
   }

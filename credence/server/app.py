@@ -128,8 +128,12 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
 
 def create_server_app(enable_sifter: bool = True, enable_boredom: bool = True) -> Starlette:
     """Instantiate and assemble the full Credence FastMCP + REST Starlette application."""
-    mcp = create_mcp_server()
-    app = mcp.streamable_http_app()
+    mcp = create_mcp_server(transport_mode="http")
+    app = mcp.streamable_http_app(host="0.0.0.0")  # noqa: S104
+    # Also mount legacy SSE transport (/sse + /messages/) alongside Streamable HTTP (/mcp)
+    sse_subapp = mcp.sse_app(host="0.0.0.0")  # noqa: S104
+    for sse_route in sse_subapp.router.routes:
+        app.router.routes.append(sse_route)
 
     rest_routes = [
         Route("/", endpoint=api_root_index, methods=["GET", "OPTIONS"]),

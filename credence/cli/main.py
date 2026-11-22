@@ -101,6 +101,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # serve (alias: server)
     p_serve = subparsers.add_parser("serve", aliases=["server"], help="Launch FastAPI + FastMCP 2.0 server")
+    p_serve.add_argument("--mcp", action="store_true", help="Launch FastMCP 2.0 server over stdio transport")
     p_serve.add_argument("--transport", default="sse", choices=["sse", "stdio", "web"], help="Transport mode")
     p_serve.add_argument("--port", type=int, default=8000, help="Server bind port")
     p_serve.add_argument("--host", default="0.0.0.0", help="Server bind host")  # noqa: S104
@@ -337,6 +338,7 @@ def build_parser() -> argparse.ArgumentParser:
     # key
     p_key = subparsers.add_parser("key", help="Manage Ed25519 identity keys, backup, export, and custody")
     p_key.add_argument("action", default="show", nargs="?", choices=["show", "export", "import", "generate"])
+    p_key.add_argument("file", nargs="?", default=None, help="Optional positional PEM file path for import/export")
     p_key.add_argument("--key-file", dest="key_file", default=None, help="Target key file path")
     p_key.add_argument("--out", "-o", default=None, help="Output file for key export")
     p_key.add_argument("--in", "-i", dest="in_file", default=None, help="Input file for key import")
@@ -348,9 +350,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_worker.add_argument("--model", default="google/gemini-3.8-flash", help="Model slug or URI")
     p_worker.add_argument("--api-base", default=None, help="Custom API base URL for OpenAI-compatible models")
     p_worker.add_argument("--api-key", default=None, help="Custom API key")
+    p_worker.add_argument("--key-file", dest="key_file", default=None, help="Custom Ed25519 worker key file path")
     p_worker.add_argument("--affinity", default=None, help="Self-serve client affinity filter")
-    p_worker.add_argument("--concurrency", type=int, default=1, help="Evaluation concurrency")
+    p_worker.add_argument("--concurrency", type=int, default=1, help="Evaluation concurrency (1-3)")
     p_worker.add_argument("--continuous", action="store_true", default=True, help="Poll continuously")
+    p_worker.add_argument("--once", action="store_true", default=False, help="Process a single poll cycle and exit")
     p_worker.add_argument("--max-jobs", type=int, default=None, help="Maximum jobs to complete before stopping")
 
     return parser

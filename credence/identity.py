@@ -75,7 +75,8 @@ def load_or_create_node_identity(key_path: Path | str | None = None) -> NodeIden
     import os
 
     # 1. Environment variable injection (for headless Docker, Cloud Run, or CI/CD)
-    env_pem = os.environ.get("CREDENCE_NODE_KEY_PEM")
+    # Only apply env fallback when caller did not explicitly specify a key_path.
+    env_pem = os.environ.get("CREDENCE_NODE_KEY_PEM") if key_path is None else None
     if env_pem and env_pem.strip():
         try:
             private_key = serialization.load_pem_private_key(env_pem.encode("utf-8"), password=None)

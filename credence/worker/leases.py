@@ -10,7 +10,9 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+from credence.identity import NodeIdentity, canonical_json_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,28 @@ logger = logging.getLogger(__name__)
 def utc_now() -> datetime:
     """Return current timezone-aware UTC datetime."""
     return datetime.now(timezone.utc)
+
+
+def build_claim_proof_payload(worker_pubkey: str, model_slug: str, claim_timestamp: int) -> Dict[str, Any]:
+    """Build canonical JSON payload signed by workers for Ed25519 claim proof-of-possession."""
+    return {
+        "action": "mempool_claim",
+        "claim_timestamp": int(claim_timestamp),
+        "model_slug": model_slug.strip(),
+        "worker_pubkey": worker_pubkey.strip().lower(),
+    }
+
+
+def sign_claim_proof(
+    identity: NodeIdentity,
+    model_slug: str,
+    claim_timestamp: Optional[int] = None,
+) -> Tuple[int, str]:
+    """Sign a mempool claim proof payload using the worker's Ed25519 private key."""
+    ts = int(claim_timestamp if claim_timestamp is not None else utc_now().timestamp())
+    payload = build_claim_proof_payload(identity.public_key_hex, model_slug, ts)
+    sig_bytes = identity.private_key.sign(canonical_json_bytes(payload))
+    return ts, sig_bytes.hex()
 
 
 def resolve_model_family(model_slug: str) -> str:
@@ -34,9 +58,9 @@ def resolve_model_family(model_slug: str) -> str:
         return "google/gemini"
     if any(k in clean for k in ("claude", "anthropic")):
         return "anthropic/claude"
-    if any(k in clean for k in ("gpt-", "gpt", "o1", "o3", "openai")):
+    if any(k in clean for k in ("gpt-", "gpt", "openai")) or re.search(r"(?:^|[/:_-])o[134](?:$|[/:_.-])", clean):
         return "openai/gpt"
-    if any(k in clean for k in ("deepseek", "r1")):
+    if "deepseek" in clean or re.search(r"(?:^|[/:_-])r1(?:$|[/:_.-])", clean):
         return "deepseek/deepseek"
     if any(k in clean for k in ("llama", "meta-llama")):
         return "meta/llama"

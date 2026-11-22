@@ -1501,13 +1501,13 @@
                 <span style="color:var(--text-dim); font-weight:600; text-transform:uppercase; font-size:0.72rem;">1. Ed25519 Signer Public Key</span>
                 <button type="button" class="btn-secondary" style="font-size:0.7rem; padding:0.15rem 0.4rem;" onclick="navigator.clipboard.writeText('${merit.node_pubkey || ''}'); showToast('Public key copied!', 'success')">Copy</button>
               </div>
-              <code style="background:#020617; color:#38bdf8; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.75rem; word-break:break-all;">${merit.node_pubkey || '0x0'}</code>
+              <code style="background:#020617; color:#38bdf8; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.75rem; word-break:break-all;">${merit.node_pubkey || 'None Provided'}</code>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.35rem;">
                 <span style="color:var(--text-dim); font-weight:600; text-transform:uppercase; font-size:0.72rem;">2. Canonical Envelope Digest (SHA-256)</span>
                 <span style="color:#34d399; font-size:0.72rem;">RFC 8785 Compliant</span>
               </div>
-              <code id="modal-digest-display" style="background:#020617; color:#34d399; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.75rem; word-break:break-all;">${merit.canonical_sha256 || 'sha256:0000000000000000'}</code>
+              <code id="modal-digest-display" style="background:#020617; color:#34d399; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.75rem; word-break:break-all;">${merit.canonical_sha256 || 'None Provided'}</code>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.35rem;">
                 <span style="color:var(--text-dim); font-weight:600; text-transform:uppercase; font-size:0.72rem;">3. Cryptographic Signature</span>

@@ -554,3 +554,16 @@ def test_dynamic_category_counts_and_fullheight_table_governance(web_dir: Path) 
     css_content = (web_dir / "assets" / "credence-ui.css").read_text(encoding="utf-8")
     assert "position: sticky" in css_content
     assert "top: 0" in css_content
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_worker_workstation_zero_unsafe_dom_sinks(web_dir: Path) -> None:
+    """Verify workstation-workers.js avoids innerHTML / inline onclick interpolation on dynamic worker telemetry."""
+    workers_js = (web_dir / "assets" / "workstation-workers.js").read_text(encoding="utf-8")
+    assert ".innerHTML" not in workers_js, "workstation-workers.js must use createElement/textContent, never innerHTML"
+    assert "onclick=" not in workers_js, (
+        "workstation-workers.js must use delegated addEventListener, never inline onclick"
+    )
+    assert "data-worker-pubkey" in workers_js
+    assert "safeHttpUrl" in workers_js

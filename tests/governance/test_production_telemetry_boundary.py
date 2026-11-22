@@ -108,3 +108,23 @@ async def test_backend_standalone_telemetry_zero_floors(db_session: AsyncSession
     assert savings.get("tokens_saved_estimate") == 0, "Fresh standalone node must report 0 tokens saved"
     assert savings.get("adopted_from_mesh_count") == 0, "Fresh standalone node must have 0 adopted items"
     assert dynamics.get("connected_peers_count") == 0, "Fresh standalone node with empty DB must report 0 peers"
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_zero_dev_cloudrun_leak_or_mock_workers_in_web_assets(web_dir: Path) -> None:
+    """Assert zero hardcoded dev Cloud Run URLs or mock volunteer worker arrays exist in web/ assets."""
+    forbidden_tokens = [
+        "credence-dev-865363499314.us-central1.run.app",
+        "arbiter-alpha",
+        "deepseek-runner",
+    ]
+    violations = []
+    for asset_path in list(web_dir.rglob("*.js")) + list(web_dir.rglob("*.html")):
+        if asset_path.name == "_worker.js":
+            continue
+        content = asset_path.read_text(encoding="utf-8")
+        for token in forbidden_tokens:
+            if token in content:
+                violations.append((str(asset_path.relative_to(web_dir.parent)), token))
+    assert not violations, f"Environment isolation / zero-mock boundary violation detected in web assets: {violations}"

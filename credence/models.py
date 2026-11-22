@@ -337,6 +337,9 @@ class AuditJob(SQLModel, table=True):
     completed_models_json: str = Field(
         default="[]", description="JSON list of completed model families: [family1, family2, ...]"
     )
+    completed_workers_json: str = Field(
+        default="[]", description="JSON list of worker pubkeys that already submitted passes on this job"
+    )
     is_consensus_ready: bool = Field(
         default=False, index=True, description="True when target quorum or required passes have converged"
     )
@@ -358,6 +361,20 @@ class WorkerRecord(SQLModel, table=True):
     bounties_cleared: int = Field(default=0, description="Number of mempool bounties fulfilled")
     consensus_anchors_count: int = Field(default=0, description="Audits that successfully served as consensus anchors")
     grounded_violations_count: int = Field(default=0, description="Total verbatim-grounded violations cited")
+    grounding_rejections_count: int = Field(
+        default=0, description="Total ungrounded submissions rejected by coordinator"
+    )
+    distinct_models_json: str = Field(
+        default="[]", description="JSON list of distinct canonical model families contributed by this worker"
+    )
+    fastest_turnaround_sec: Optional[float] = Field(
+        default=None, description="Fastest verified claim-to-submit turnaround time in seconds"
+    )
+    weekend_completed_count: int = Field(default=0, description="Audits completed during UTC Saturday/Sunday")
+    night_owl_completed_count: int = Field(default=0, description="Audits completed during UTC 00:00-05:59")
+    pioneer_families_count: int = Field(
+        default=0, description="Number of model families first introduced to this coordinator by this worker"
+    )
     quality_score: float = Field(default=0.50, description="Calculated worker quality score (0.0 to 1.0)")
     first_seen: datetime = Field(default_factory=utc_now, description="First recorded active timestamp")
     last_seen: datetime = Field(

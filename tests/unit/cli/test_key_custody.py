@@ -58,3 +58,31 @@ def test_cli_key_export_and_import(tmp_path: Path) -> None:
 
     ident2 = load_or_create_node_identity(Path(imported_key_file))
     assert ident1.public_key_hex == ident2.public_key_hex
+
+
+@pytest.mark.unit
+def test_cli_parser_supports_mcp_positional_key_and_worker_flags() -> None:
+    """Verify parser supports --mcp on serve, positional key import, and worker --once/--key-file."""
+    from credence.cli.main import build_parser
+
+    parser = build_parser()
+
+    args_mcp = parser.parse_args(["serve", "--mcp"])
+    assert args_mcp.command == "serve"
+    assert args_mcp.mcp is True
+
+    args_stdio = parser.parse_args(["serve", "--transport", "stdio"])
+    assert args_stdio.transport == "stdio"
+
+    args_pos_imp = parser.parse_args(["key", "import", "backup.pem"])
+    assert args_pos_imp.command == "key"
+    assert args_pos_imp.action == "import"
+    assert args_pos_imp.file == "backup.pem"
+
+    args_flag_imp = parser.parse_args(["key", "import", "-i", "backup.pem"])
+    assert args_flag_imp.in_file == "backup.pem"
+
+    args_worker = parser.parse_args(["worker", "--once", "--key-file", "custom.pem", "--concurrency", "2"])
+    assert args_worker.once is True
+    assert args_worker.key_file == "custom.pem"
+    assert args_worker.concurrency == 2

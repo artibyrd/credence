@@ -8,27 +8,58 @@ from __future__ import annotations
 
 import asyncio
 import json
-import re
 import uuid
-from datetime import datetime, timedelta, timezone
+from collections import OrderedDict
+from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from sqlmodel import col, select
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from credence.config import settings
 from credence.db import get_async_session
 from credence.identity import verify_audit_signature
-from credence.mesh.worker_badges import evaluate_worker_badges
-from credence.models import Audit, AuditJob, Snapshot, Violation, WorkerRecord, utc_now
+from credence.models import AuditJob, WorkerRecord, utc_now
 from credence.pipeline.schemas import AuditReport
+from credence.pipeline.subagents import validate_grounded_quote
+from credence.server.api.queue_guards import (
+    MODEL_SLUG_REGEX,
+    check_public_enqueue_rate_limit,
+    compute_consensus_verdict,
+    is_authenticated_operator,
+    resolve_authoritative_enqueue_content,
+    sanitize_worker_alias,
+    validate_enqueue_payload,
+    validate_violation_safety,
+    validate_worker_pubkey,
+    verify_claim_proof,
+)
+from credence.server.api.queue_persistence import (
+    parse_iso_utc,
+    persist_verified_submission,
+    record_grounding_rejection,
+)
+from credence.worker.leases import resolve_model_family
 
-# In-memory synchronization handles for instant FastMCP client unblocking
-_COMPLETION_EVENTS: Dict[str, asyncio.Event] = {}
-_COMPLETED_REPORTS: Dict[str, Dict[str, Any]] = {}
+__all__ = [
+    "MODEL_SLUG_REGEX",
+    "api_queue_claim",
+    "api_queue_enqueue",
+    "api_queue_stats",
+    "api_queue_submit",
+    "clear_completion_state",
+    "compute_consensus_verdict",
+    "compute_estimated_queue_wait",
+    "get_completed_report",
+    "register_completion_listener",
+]
 
-# Strict ASCII regex for model slugs (Vector 9 Defense: prevent traversal, confusables, and SQLi)
-MODEL_SLUG_REGEX = re.compile(r"^(?!.*\.\.)[a-zA-Z0-9_\-\.\/]{1,64}(?::[a-zA-Z0-9_\-\.]{1,32})?$")
+# Bounded in-memory synchronization handles for instant FastMCP client unblocking
+_MAX_COMPLETION_CACHE = 500
+_COMPLETION_EVENTS: OrderedDict[str, asyncio.Event] = OrderedDict()
+_COMPLETED_REPORTS: OrderedDict[str, Dict[str, Any]] = OrderedDict()
+_CLAIM_LOCK = asyncio.Lock()
 
 
 def compute_estimated_queue_wait(queue_depth: int, active_workers_count: int) -> float:
@@ -37,52 +68,26 @@ def compute_estimated_queue_wait(queue_depth: int, active_workers_count: int) ->
     return round((queue_depth / workers) * 12.0, 2)
 
 
-def compute_consensus_verdict(audits: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Compute Bayesian consensus verdict and apply Galileo Rule override."""
-    if not audits:
-        return {"consensus_score": 0.0, "classification": "CLEAN", "galileo_override": False}
-
-    scores = [float(a.get("suspicion_score", 0.0)) for a in audits]
-    # Simple median for small quorums
-    scores.sort()
-    mid = len(scores) // 2
-    median_score = scores[mid] if len(scores) % 2 != 0 else (scores[mid - 1] + scores[mid]) / 2.0
-
-    # The Galileo Rule: If any audit provided verbatim-grounded violations, preserve them
-    grounded_violations: List[Dict[str, Any]] = []
-    has_grounded_violations = False
-    for a in audits:
-        violations = a.get("violations", [])
-        if violations:
-            has_grounded_violations = True
-            for v in violations:
-                grounded_violations.append(v)
-
-    galileo_override = False
-    final_score = median_score
-    if has_grounded_violations and median_score < 25.0:
-        # Grounded truth overrides ungrounded clean consensus
-        galileo_override = True
-        max_severity_score = max(scores)
-        final_score = max(max_severity_score, 45.0)
-
-    classification = "CLEAN" if final_score < 25.0 else ("SUSPICIOUS" if final_score < 60.0 else "DECEPTIVE")
-
-    return {
-        "consensus_score": round(final_score, 1),
-        "median_score": round(median_score, 1),
-        "classification": classification,
-        "evaluations_count": len(audits),
-        "galileo_override": galileo_override,
-        "violations_count": len(grounded_violations),
-    }
+def _evict_if_over_cap(store: OrderedDict[str, Any]) -> None:
+    while len(store) > _MAX_COMPLETION_CACHE:
+        store.popitem(last=False)
 
 
 def register_completion_listener(url: str) -> asyncio.Event:
     """Register an in-memory event listener for FastMCP adaptive wait window."""
-    if url not in _COMPLETION_EVENTS:
-        _COMPLETION_EVENTS[url] = asyncio.Event()
-    return _COMPLETION_EVENTS[url]
+    if url in _COMPLETION_EVENTS:
+        _COMPLETION_EVENTS.move_to_end(url)
+        return _COMPLETION_EVENTS[url]
+    ev = asyncio.Event()
+    _COMPLETION_EVENTS[url] = ev
+    _evict_if_over_cap(_COMPLETION_EVENTS)
+    return ev
+
+
+def clear_completion_state(url: str) -> None:
+    """Reset any cached completion event or report for a URL (used on fresh or forced enqueue)."""
+    _COMPLETED_REPORTS.pop(url, None)
+    _COMPLETION_EVENTS.pop(url, None)
 
 
 def get_completed_report(url: str) -> Optional[Dict[str, Any]]:
@@ -97,23 +102,20 @@ async def api_queue_enqueue(request: Request) -> JSONResponse:
     except Exception:
         return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
 
-    url = body.get("url")
-    if not url:
-        return JSONResponse({"error": "Missing required 'url' field"}, status_code=400)
+    validated, err = validate_enqueue_payload(body)
+    if err or validated is None:
+        return JSONResponse({"error": err or "Invalid enqueue payload"}, status_code=400)
 
-    content_sha256 = body.get("content_sha256") or ""
-    normalized_text = body.get("normalized_text") or ""
-    priority = int(body.get("priority", 2))
-    client_affinity = body.get("client_affinity")
-    target_quorum = int(body.get("target_quorum", 1))
+    url = validated["url"]
+    is_operator = is_authenticated_operator(request)
+    if not is_operator and not url.startswith("text://") and not check_public_enqueue_rate_limit(request):
+        return JSONResponse({"error": "Public enqueue rate limit exceeded; retry shortly"}, status_code=429)
 
     async with get_async_session() as session:
-        # Single-flight deduplication: check if pending or claimed job already exists
-        statement = select(AuditJob).where(AuditJob.url == url, col(AuditJob.status).in_(["pending", "claimed"]))
-        result = await session.exec(statement)
-        existing_job = result.first()
+        stmt = select(AuditJob).where(AuditJob.url == url, col(AuditJob.status).in_(["pending", "claimed"]))
+        existing_job = (await session.exec(stmt)).first()
 
-        if existing_job:
+        if existing_job and not validated["force"]:
             return JSONResponse(
                 {
                     "status": "already_queued",
@@ -124,21 +126,30 @@ async def api_queue_enqueue(request: Request) -> JSONResponse:
                 }
             )
 
-        job_id = str(uuid.uuid4())
-        job = AuditJob(
-            job_id=job_id,
+        norm_text, content_sha, fetch_err = await resolve_authoritative_enqueue_content(
+            session=session,
             url=url,
-            content_sha256=content_sha256,
-            normalized_text=normalized_text,
-            priority=priority,
-            client_affinity=client_affinity,
-            target_quorum=target_quorum,
+            caller_text=validated["normalized_text"],
+            caller_sha256=validated["content_sha256"],
+            is_operator=is_operator,
+        )
+        if fetch_err:
+            return JSONResponse({"error": fetch_err}, status_code=422)
+
+        job = AuditJob(
+            job_id=str(uuid.uuid4()),
+            url=url,
+            content_sha256=content_sha,
+            normalized_text=norm_text,
+            priority=validated["priority"],
+            client_affinity=validated["client_affinity"],
+            target_quorum=validated["target_quorum"],
             status="pending",
         )
         session.add(job)
         await session.commit()
 
-        # Register event for listeners
+        clear_completion_state(url)
         register_completion_listener(url)
 
         return JSONResponse(
@@ -153,150 +164,147 @@ async def api_queue_enqueue(request: Request) -> JSONResponse:
 
 
 async def api_queue_claim(request: Request) -> JSONResponse:
-    """POST /api/queue/claim: Atomically claim a pending job with lease enforcement."""
+    """POST /api/queue/claim: Atomically claim a pending job with Ed25519 PoP and lease enforcement."""
     try:
         body = await request.json()
     except Exception:
         return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
 
-    worker_pubkey = body.get("worker_pubkey")
-    model_family = body.get("model_family", "general").strip().lower()
-    model_slug = body.get("model_slug", "google/gemini-3.7-flash").strip()
-    client_affinity = body.get("client_affinity")
+    raw_pubkey = body.get("worker_pubkey")
+    if not validate_worker_pubkey(raw_pubkey):
+        return JSONResponse({"error": "Invalid or missing 64-hex Ed25519 worker_pubkey"}, status_code=400)
+    worker_pubkey = str(raw_pubkey).strip().lower()
 
-    if not worker_pubkey:
-        return JSONResponse({"error": "Missing worker_pubkey"}, status_code=400)
-
-    # Vector 9: Validate model slug
+    model_slug = str(body.get("model_slug") or settings.DEFAULT_WORKER_MODEL).strip()
     if not MODEL_SLUG_REGEX.match(model_slug) or ".." in model_slug:
         return JSONResponse({"error": "Invalid model_slug format"}, status_code=400)
 
-    async with get_async_session() as session:
-        # Vector 7: Rate limit active leases per worker (max 3)
-        statement_active = select(AuditJob).where(AuditJob.status == "claimed")
-        result_active = await session.exec(statement_active)
-        all_claimed = result_active.all()
+    # Server-side canonical model family resolution (never trust caller-supplied model_family)
+    model_family = resolve_model_family(model_slug)
+    client_affinity = body.get("client_affinity")
 
-        worker_active_count = 0
-        now = utc_now()
-        for cj in all_claimed:
-            leases = json.loads(cj.active_leases_json or "[]")
-            for entry in leases:
-                if entry.get("worker_pubkey") == worker_pubkey:
-                    exp = datetime.fromisoformat(entry["expires_at"])
-                    if exp.tzinfo is None:
-                        exp = exp.replace(tzinfo=timezone.utc)
-                    if exp > now:
-                        worker_active_count += 1
+    # Ed25519 Proof-of-Possession prevents third-party pubkey quota-exhaustion DoS
+    proof_err = verify_claim_proof(
+        worker_pubkey=worker_pubkey,
+        model_slug=model_slug,
+        claim_timestamp=body.get("claim_timestamp"),
+        claim_signature=body.get("claim_signature"),
+    )
+    if proof_err:
+        return JSONResponse({"error": proof_err}, status_code=401)
 
-        if worker_active_count >= 3:
-            return JSONResponse({"error": "Too many active unfulfilled leases (max 3)"}, status_code=429)
+    async with _CLAIM_LOCK:
+        async with get_async_session() as session:
+            now = utc_now()
+            all_claimed = (await session.exec(select(AuditJob).where(AuditJob.status == "claimed"))).all()
 
-        # Reclaim expired leases across all claimed jobs
-        for cj in all_claimed:
-            leases = json.loads(cj.active_leases_json or "[]")
-            valid_leases = []
-            expired_found = False
-            for entry in leases:
-                exp = datetime.fromisoformat(entry["expires_at"])
-                if exp.tzinfo is None:
-                    exp = exp.replace(tzinfo=timezone.utc)
-                if exp > now:
-                    valid_leases.append(entry)
-                else:
-                    expired_found = True
-            if expired_found:
-                cj.active_leases_json = json.dumps(valid_leases)
-                if not valid_leases and cj.status == "claimed":
-                    cj.status = "pending"
-                session.add(cj)
-        await session.commit()
+            # Reclaim expired leases first so stale leases never falsely rate-limit workers
+            worker_active_count = 0
+            for cj in all_claimed:
+                leases = json.loads(cj.active_leases_json or "[]")
+                valid_leases = []
+                expired_found = False
+                for entry in leases:
+                    if parse_iso_utc(entry["expires_at"]) > now:
+                        valid_leases.append(entry)
+                        if entry.get("worker_pubkey") == worker_pubkey:
+                            worker_active_count += 1
+                    else:
+                        expired_found = True
+                if expired_found:
+                    cj.active_leases_json = json.dumps(valid_leases)
+                    if not valid_leases and cj.status == "claimed":
+                        cj.status = "pending"
+                    session.add(cj)
+            await session.commit()
 
-        # Query eligible jobs
-        statement = select(AuditJob).where(col(AuditJob.status).in_(["pending", "claimed"]))
-        result = await session.exec(statement)
-        candidates = result.all()
+            if worker_active_count >= 3:
+                return JSONResponse({"error": "Too many active unfulfilled leases (max 3)"}, status_code=429)
 
-        # Filter and rank candidates
-        eligible = []
-        for job in candidates:
-            leases = json.loads(job.active_leases_json or "[]")
-            completed = json.loads(job.completed_models_json or "[]")
+            candidates = (
+                await session.exec(select(AuditJob).where(col(AuditJob.status).in_(["pending", "claimed"])))
+            ).all()
+            eligible = []
+            for job in candidates:
+                leases = json.loads(job.active_leases_json or "[]")
+                completed_models = json.loads(job.completed_models_json or "[]")
+                completed_workers = json.loads(job.completed_workers_json or "[]")
 
-            # Check if this model family has already completed or is actively claimed
-            if model_family in completed:
-                continue
-            if any(entry.get("model_family") == model_family for entry in leases):
-                continue
-            if len(completed) >= job.target_quorum:
-                continue
+                if model_family in completed_models or worker_pubkey in completed_workers:
+                    continue
+                if any(entry.get("model_family") == model_family for entry in leases):
+                    continue
+                if any(entry.get("worker_pubkey") == worker_pubkey for entry in leases):
+                    continue
+                if len(completed_models) >= job.target_quorum:
+                    continue
+                if client_affinity and job.client_affinity != client_affinity:
+                    continue
 
-            # Affinity check: if worker requested specific affinity, only pick matching jobs
-            if client_affinity and job.client_affinity != client_affinity:
-                continue
+                affinity_match = 1 if (client_affinity and job.client_affinity == client_affinity) else 0
+                eligible.append((affinity_match, -job.priority, job.created_at, job))
 
-            # Affinity bonus score
-            affinity_match = 1 if (client_affinity and job.client_affinity == client_affinity) else 0
-            eligible.append((affinity_match, -job.priority, job.created_at, job))
+            if not eligible:
+                return JSONResponse({"job": None})
 
-        if not eligible:
-            return JSONResponse({"job": None})
+            eligible.sort(key=lambda x: (-x[0], -x[1], x[2]))
+            selected_job = eligible[0][3]
 
-        # Sort: affinity match first, then priority (1 is highest), then oldest created
-        eligible.sort(key=lambda x: (-x[0], -x[1], x[2]))
-        selected_job = eligible[0][3]
+            lease_seconds = 15 if selected_job.priority == 1 else 180
+            expires_at = now + timedelta(seconds=lease_seconds)
+            lease_id = str(uuid.uuid4())
 
-        # Determine lease duration: Priority 1 gets tight 15s slice, else 180s
-        lease_seconds = 15 if selected_job.priority == 1 else 180
-        expires_at = now + timedelta(seconds=lease_seconds)
-        lease_id = str(uuid.uuid4())
-
-        existing_leases = json.loads(selected_job.active_leases_json or "[]")
-        existing_leases.append(
-            {
-                "lease_id": lease_id,
-                "worker_pubkey": worker_pubkey,
-                "model_family": model_family,
-                "expires_at": expires_at.isoformat(),
-            }
-        )
-        selected_job.active_leases_json = json.dumps(existing_leases)
-        selected_job.status = "claimed"
-        session.add(selected_job)
-        await session.commit()
-
-        return JSONResponse(
-            {
-                "job": {
-                    "job_id": selected_job.job_id,
-                    "url": selected_job.url,
-                    "content_sha256": selected_job.content_sha256,
-                    "normalized_text": selected_job.normalized_text,
-                    "priority": selected_job.priority,
+            existing_leases = json.loads(selected_job.active_leases_json or "[]")
+            existing_leases.append(
+                {
                     "lease_id": lease_id,
-                    "lease_seconds": lease_seconds,
+                    "worker_pubkey": worker_pubkey,
+                    "model_family": model_family,
+                    "model_slug": model_slug,
+                    "acquired_at": now.isoformat(),
+                    "expires_at": expires_at.isoformat(),
                 }
-            }
-        )
+            )
+            selected_job.active_leases_json = json.dumps(existing_leases)
+            selected_job.status = "claimed"
+            session.add(selected_job)
+            await session.commit()
+
+            return JSONResponse(
+                {
+                    "job": {
+                        "job_id": selected_job.job_id,
+                        "url": selected_job.url,
+                        "content_sha256": selected_job.content_sha256,
+                        "normalized_text": selected_job.normalized_text,
+                        "priority": selected_job.priority,
+                        "lease_id": lease_id,
+                        "lease_seconds": lease_seconds,
+                    }
+                }
+            )
 
 
 async def api_queue_submit(request: Request) -> JSONResponse:
-    """POST /api/queue/submit: Submit completed evaluation, verify grounding, and aggregate consensus."""
+    """POST /api/queue/submit: Verify lease, Ed25519 signature, G=1.00 grounding, and aggregate consensus."""
     try:
         body = await request.json()
     except Exception:
         return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
 
     job_id = body.get("job_id")
-    worker_pubkey = body.get("worker_pubkey")
-    model_family = body.get("model_family", "general").strip().lower()
-    model_slug = body.get("model_slug", "google/gemini-3.7-flash")
+    raw_pubkey = body.get("worker_pubkey")
     report_dict = body.get("report")
+    if not job_id or not validate_worker_pubkey(raw_pubkey) or not report_dict:
+        return JSONResponse({"error": "Missing or invalid required submit fields"}, status_code=400)
 
-    if not job_id or not worker_pubkey or not report_dict:
-        return JSONResponse({"error": "Missing required submit fields"}, status_code=400)
+    worker_pubkey = str(raw_pubkey).strip().lower()
+    model_slug = str(body.get("model_slug") or settings.DEFAULT_WORKER_MODEL).strip()
+    if not MODEL_SLUG_REGEX.match(model_slug) or ".." in model_slug:
+        return JSONResponse({"error": "Invalid model_slug format"}, status_code=400)
+    model_family = resolve_model_family(model_slug)
 
-    # 1. Cryptographic Signature Verification (Vector 6 Defense)
+    # 1. Cryptographic signature & pubkey binding (Vector 6 Defense)
     try:
         report_obj = AuditReport.model_validate(report_dict)
         if not verify_audit_signature(report_obj):
@@ -304,173 +312,120 @@ async def api_queue_submit(request: Request) -> JSONResponse:
     except Exception as e:
         return JSONResponse({"error": f"Schema or signature validation failed: {e}"}, status_code=422)
 
-    # 2. Stored XSS & Script Tag Defense (Vector 5)
-    for v in report_obj.violations:
-        if "<script" in v.quote_or_element.lower() or "javascript:" in v.quote_or_element.lower():
-            return JSONResponse({"error": "XSS payload detected in violation quote"}, status_code=422)
-        if "<script" in v.reasoning.lower():
-            return JSONResponse({"error": "XSS payload detected in violation reasoning"}, status_code=422)
+    if (report_obj.node_pubkey or "").strip().lower() != worker_pubkey:
+        return JSONResponse({"error": "Report node_pubkey does not match submitting worker_pubkey"}, status_code=422)
 
-    async with get_async_session() as session:
-        statement = select(AuditJob).where(AuditJob.job_id == job_id)
-        result = await session.exec(statement)
-        job = result.first()
+    # 2. XSS & empty-quote defense (Vector 5)
+    xss_err = validate_violation_safety(report_obj.violations)
+    if xss_err:
+        return JSONResponse({"error": xss_err}, status_code=422)
 
-        if not job:
-            return JSONResponse({"error": "Job not found"}, status_code=404)
+    async with _CLAIM_LOCK:
+        async with get_async_session() as session:
+            now = utc_now()
+            job = (await session.exec(select(AuditJob).where(AuditJob.job_id == job_id))).first()
+            if not job:
+                return JSONResponse({"error": "Job not found"}, status_code=404)
+            if job.status == "completed":
+                return JSONResponse({"error": "Job is already completed"}, status_code=409)
 
-        # 3. Verbatim Grounding Verification (Vector 4: G=1.00 assertion)
-        if job.normalized_text and report_obj.violations:
-            for v in report_obj.violations:
-                if v.quote_or_element and v.quote_or_element not in job.normalized_text:
+            if report_obj.url != job.url:
+                return JSONResponse({"error": "Report URL does not match claimed job URL"}, status_code=422)
+            if (
+                job.content_sha256
+                and job.content_sha256 != "sha256:unknown"
+                and report_obj.content_sha256 != job.content_sha256
+            ):
+                return JSONResponse(
+                    {"error": "Report content_sha256 does not match job snapshot hash"}, status_code=422
+                )
+
+            leases = json.loads(job.active_leases_json or "[]")
+            matched_lease: Optional[Dict[str, Any]] = None
+            remaining_leases: List[Dict[str, Any]] = []
+            for entry in leases:
+                is_live = parse_iso_utc(entry["expires_at"]) > now
+                if entry.get("worker_pubkey") == worker_pubkey and is_live and matched_lease is None:
+                    matched_lease = entry
+                elif is_live:
+                    remaining_leases.append(entry)
+            if matched_lease is None:
+                return JSONResponse({"error": "No active unexpired lease held by worker for this job"}, status_code=403)
+
+            completed_models = json.loads(job.completed_models_json or "[]")
+            completed_workers = json.loads(job.completed_workers_json or "[]")
+            if worker_pubkey in completed_workers or model_family in completed_models:
+                return JSONResponse({"error": "Worker or model family already submitted for this job"}, status_code=409)
+
+            worker = (
+                await session.exec(select(WorkerRecord).where(WorkerRecord.worker_pubkey == worker_pubkey))
+            ).first()
+            sanitized_alias = sanitize_worker_alias(body.get("worker_alias"), worker_pubkey)
+            if not worker:
+                worker = WorkerRecord(
+                    worker_pubkey=worker_pubkey,
+                    worker_alias=sanitized_alias,
+                    model_family=model_family,
+                    model_slug=model_slug,
+                )
+                session.add(worker)
+                await session.flush()
+            elif body.get("worker_alias"):
+                worker.worker_alias = sanitized_alias
+
+            # 3. Fail-Closed Verbatim Grounding Verification (G=1.00)
+            if report_obj.violations:
+                grounding_failed = not job.normalized_text.strip() or any(
+                    not validate_grounded_quote(v.quote_or_element, job.normalized_text, "")
+                    for v in report_obj.violations
+                )
+                if grounding_failed:
+                    await record_grounding_rejection(session, worker, job, remaining_leases, now)
                     return JSONResponse(
-                        {
-                            "error": f"Grounding precision G < 1.00: Quote '{v.quote_or_element[:40]}...' not found in source text"
-                        },
+                        {"error": "Grounding precision G < 1.00: Quote not found verbatim in coordinator source text"},
                         status_code=422,
                     )
 
-        # Update leases and completed models
-        leases = json.loads(job.active_leases_json or "[]")
-        valid_leases = [entry for entry in leases if entry.get("worker_pubkey") != worker_pubkey]
-        job.active_leases_json = json.dumps(valid_leases)
-
-        completed_models = json.loads(job.completed_models_json or "[]")
-        if model_family not in completed_models:
-            completed_models.append(model_family)
-        job.completed_models_json = json.dumps(completed_models)
-
-        # Check or create Snapshot & persist Audit
-        snap_stmt = select(Snapshot).where(Snapshot.url == job.url)
-        snap_res = await session.exec(snap_stmt)
-        snapshot = snap_res.first()
-        if not snapshot:
-            snapshot = Snapshot(
-                url=job.url,
-                content_sha256=job.content_sha256 or "sha256:unknown",
-                simhash_64=report_obj.simhash_64 or "0x0",
-                clean_text_length=len(job.normalized_text or ""),
-                word_count=len((job.normalized_text or "").split()),
-            )
-            session.add(snapshot)
-            await session.commit()
-            await session.refresh(snapshot)
-
-        audit_record = Audit(
-            snapshot_id=snapshot.id,
-            content_sha256=snapshot.content_sha256,
-            suspicion_score=report_obj.suspicion_score,
-            suspicion_density=report_obj.suspicion_density,
-            confidence_score=report_obj.confidence_score,
-            classification=report_obj.classification,
-            is_satire=report_obj.is_satire,
-            content_type=report_obj.content_type,
-            node_pubkey=report_obj.node_pubkey,
-            node_signature=report_obj.node_signature,
-            evaluation_method="worker_volunteer_mempool",
-            evaluation_model=model_slug,
-        )
-        session.add(audit_record)
-        await session.commit()
-        await session.refresh(audit_record)
-
-        for v in report_obj.violations:
-            viol_record = Violation(
-                audit_id=audit_record.id,
-                rule_id=v.rule_id,
-                rule_uri=v.rule_uri,
-                domain=v.domain,
-                cluster_id=v.cluster_id,
-                severity=v.severity,
-                confidence=v.confidence,
-                quote_or_element=v.quote_or_element,
-                reasoning=v.reasoning,
-            )
-            session.add(viol_record)
-
-        # Update WorkerRecord
-        worker_stmt = select(WorkerRecord).where(WorkerRecord.worker_pubkey == worker_pubkey)
-        worker_res = await session.exec(worker_stmt)
-        worker = worker_res.first()
-        if not worker:
-            worker = WorkerRecord(
-                worker_pubkey=worker_pubkey,
-                worker_alias=body.get("worker_alias") or f"worker-{worker_pubkey[:8]}",
+            awards, is_consensus_ready = await persist_verified_submission(
+                session=session,
+                job=job,
+                worker=worker,
+                report_obj=report_obj,
                 model_family=model_family,
                 model_slug=model_slug,
-                total_completed=0,
-                bounties_cleared=0,
-                tokens_donated=0,
+                worker_pubkey=worker_pubkey,
+                matched_lease=matched_lease,
+                remaining_leases=remaining_leases,
+                completed_models=completed_models,
+                completed_workers=completed_workers,
+                raw_tokens=body.get("tokens_donated", 0),
+                now=now,
             )
-            session.add(worker)
-            await session.commit()
-            await session.refresh(worker)
 
-        worker.model_slug = model_slug
-        worker.model_family = model_family
-        worker.total_completed += 1
-        worker.bounties_cleared += 1
-        worker.tokens_donated += int(body.get("tokens_donated", 1500))
-        worker.grounded_violations_count += len(report_obj.violations)
-        worker.last_seen = utc_now()
+            _COMPLETED_REPORTS[job.url] = report_dict
+            _COMPLETED_REPORTS.move_to_end(job.url)
+            _evict_if_over_cap(_COMPLETED_REPORTS)
+            if job.url in _COMPLETION_EVENTS:
+                _COMPLETION_EVENTS[job.url].set()
 
-        # Evaluate and unlock badges
-        awards = evaluate_worker_badges(worker)
-        worker.badges_unlocked_json = json.dumps([a.model_dump() for a in awards])
-        session.add(worker)
-
-        # Check Consensus
-        if len(completed_models) >= job.target_quorum:
-            job.status = "completed"
-            job.is_consensus_ready = True
-            job.completed_at = utc_now()
-            # Compile audits for consensus verdict
-            all_audits_stmt = select(Audit).where(Audit.snapshot_id == snapshot.id)
-            all_audits_res = await session.exec(all_audits_stmt)
-            all_audits = all_audits_res.all()
-            audits_list = []
-            for a in all_audits:
-                v_stmt = select(Violation).where(Violation.audit_id == a.id)
-                v_res = await session.exec(v_stmt)
-                audits_list.append(
-                    {
-                        "suspicion_score": a.suspicion_score,
-                        "violations": [v.model_dump() for v in v_res.all()],
-                    }
-                )
-            job.consensus_verdict_json = json.dumps(compute_consensus_verdict(audits_list))
-
-        session.add(job)
-        await session.commit()
-
-        # Unblock in-memory FastMCP listeners
-        _COMPLETED_REPORTS[job.url] = report_dict
-        if job.url in _COMPLETION_EVENTS:
-            _COMPLETION_EVENTS[job.url].set()
-
-        return JSONResponse(
-            {
-                "status": "accepted",
-                "job_id": job.job_id,
-                "is_consensus_ready": job.is_consensus_ready,
-                "bounties_cleared": worker.bounties_cleared,
-                "badges_awarded": [a.badge_id for a in awards],
-            }
-        )
+            return JSONResponse(
+                {
+                    "status": "accepted",
+                    "job_id": job.job_id,
+                    "is_consensus_ready": is_consensus_ready,
+                    "bounties_cleared": worker.bounties_cleared,
+                    "quality_score": worker.quality_score,
+                    "badges_awarded": [a.badge_id for a in awards],
+                }
+            )
 
 
 async def api_queue_stats(request: Request) -> JSONResponse:
     """GET /api/queue/stats: Return mempool queue vitals, active workers, and estimated wait."""
     async with get_async_session() as session:
-        stmt_pending = select(AuditJob).where(AuditJob.status == "pending")
-        pending = len((await session.exec(stmt_pending)).all())
-
-        stmt_claimed = select(AuditJob).where(AuditJob.status == "claimed")
-        claimed = len((await session.exec(stmt_claimed)).all())
-
-        stmt_workers = select(WorkerRecord)
-        workers = len((await session.exec(stmt_workers)).all())
-
+        pending = len((await session.exec(select(AuditJob).where(AuditJob.status == "pending"))).all())
+        claimed = len((await session.exec(select(AuditJob).where(AuditJob.status == "claimed"))).all())
+        workers = len((await session.exec(select(WorkerRecord))).all())
         wait_sec = compute_estimated_queue_wait(pending, workers)
 
         return JSONResponse(

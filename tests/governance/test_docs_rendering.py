@@ -769,3 +769,66 @@ async def test_invariants_page_dual_view_and_scope_filtering(page: Page, docs_se
 
     is_open = await page.eval_on_selector(".invariant-card .agent-translation", "el => el.hasAttribute('open')")
     assert is_open is True, "Expected .agent-translation details accordion to open upon clicking summary"
+
+
+@pytest.mark.governance
+@pytest.mark.asyncio
+async def test_workstation_worker_leaderboard_xss_inertness(page: Page) -> None:
+    """Verify real renderWorkerLeaderboard() from workstation-workers.js renders hostile XSS inertly."""
+    import functools
+    import http.server
+    import threading
+
+    web_root = Path(__file__).resolve().parents[2] / "web"
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(web_root))
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    port = httpd.server_address[1]
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+
+    try:
+        await page.goto(f"http://127.0.0.1:{port}/credence.nexus/index.html", wait_until="domcontentloaded")
+        result = await page.evaluate(
+            """
+            async () => {
+              window.__xssTriggered = false;
+              let tbody = document.getElementById('worker-leaderboard-body');
+              if (!tbody) {
+                const table = document.createElement('table');
+                tbody = document.createElement('tbody');
+                tbody.id = 'worker-leaderboard-body';
+                table.appendChild(tbody);
+                document.body.appendChild(table);
+              }
+              const mod = await import('/assets/workstation-workers.js');
+              mod.renderWorkerLeaderboard([
+                {
+                  worker_pubkey: 'a'.repeat(64),
+                  worker_alias: '<img src=x onerror="window.__xssTriggered=true"><script>window.__xssTriggered=true</script>',
+                  model_family: 'google/gemini',
+                  model_slug: 'google/gemini-3.8-flash',
+                  quality_score: 0.9,
+                  bounties_cleared: 3,
+                  tokens_donated: 4200,
+                  tokens_saved_usd: 0.0014,
+                  badges: [{ name: '<b>Bad</b>', description: '<img src=x onerror="window.__xssTriggered=true">', icon: '🎯' }],
+                },
+              ]);
+              return {
+                executed: window.__xssTriggered,
+                imgCount: tbody.querySelectorAll('img').length,
+                scriptCount: tbody.querySelectorAll('script').length,
+                text: tbody.textContent || '',
+                rowPubkey: tbody.querySelector('tr')?.dataset?.workerPubkey || '',
+              };
+            }
+            """
+        )
+        assert result["executed"] is False
+        assert result["imgCount"] == 0
+        assert result["scriptCount"] == 0
+        assert "<img src=x" in result["text"]
+        assert result["rowPubkey"] == "a" * 64
+    finally:
+        httpd.shutdown()
+        httpd.server_close()

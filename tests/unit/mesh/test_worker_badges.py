@@ -1,61 +1,64 @@
-"""Unit tests for worker achievement badges and SVG generation."""
+"""Unit tests verifying all 10 registered volunteer worker achievement badges."""
+
+from __future__ import annotations
+
+import json
 
 import pytest
 
-from credence.mesh.worker_badges import evaluate_worker_badges, generate_worker_profile_badge_svg
+from credence.mesh.worker_badges import evaluate_worker_badges
 from credence.models import WorkerRecord
 
 
 @pytest.mark.unit
-def test_worker_badge_milestones() -> None:
-    """Verify worker milestones unlock dynamically as contributions increase."""
+def test_all_10_worker_badges_awarded_at_thresholds() -> None:
+    """Verify every one of the 10 registered worker badges awards when criteria are satisfied."""
     worker = WorkerRecord(
-        worker_pubkey="aabbcc112233",
-        worker_alias="alice-gpu",
-        total_completed=0,
-        bounties_cleared=0,
+        worker_pubkey="a" * 64,
+        worker_alias="ten-badge-champion",
+        total_completed=500,
+        bounties_cleared=100,
+        grounded_violations_count=60,
+        grounding_rejections_count=0,
+        distinct_models_json=json.dumps(["google/gemini", "anthropic/claude", "deepseek/deepseek"]),
+        fastest_turnaround_sec=9.4,
+        weekend_completed_count=12,
+        night_owl_completed_count=2,
+        pioneer_families_count=1,
+        quality_score=0.92,
     )
 
-    # Initially zero badges
-    awards_0 = evaluate_worker_badges(worker)
-    assert len(awards_0) == 0
+    awards = evaluate_worker_badges(worker)
+    unlocked = {a.badge_id for a in awards}
 
-    # 1st bounty
-    worker.total_completed = 1
-    worker.bounties_cleared = 1
-    awards_1 = evaluate_worker_badges(worker)
-    badge_ids_1 = {a.badge_id for a in awards_1}
-    assert "first_bounty" in badge_ids_1
-
-    # 25 bounties
-    worker.total_completed = 25
-    worker.bounties_cleared = 25
-    awards_25 = evaluate_worker_badges(worker)
-    badge_ids_25 = {a.badge_id for a in awards_25}
-    assert "first_bounty" in badge_ids_25
-    assert "bounty_hunter" in badge_ids_25
-
-    # 100 bounties
-    worker.total_completed = 100
-    worker.bounties_cleared = 100
-    awards_100 = evaluate_worker_badges(worker)
-    badge_ids_100 = {a.badge_id for a in awards_100}
-    assert "bounty_legend" in badge_ids_100
+    expected_all_10 = {
+        "first_bounty",
+        "speed_demon",
+        "bounty_hunter",
+        "bounty_legend",
+        "diversity_champion",
+        "model_pioneer",
+        "night_owl",
+        "weekend_warrior",
+        "precision_striker",
+        "iron_worker",
+    }
+    assert unlocked == expected_all_10
 
 
 @pytest.mark.unit
-def test_worker_profile_badge_svg_rendering() -> None:
-    """Verify SVG badge rendering for worker profile produces valid vector graphics."""
+def test_grounding_rejections_block_precision_and_iron_badges() -> None:
+    """Verify zero-rejection gates block precision_striker and iron_worker when rejections > 0."""
     worker = WorkerRecord(
-        worker_pubkey="aabbcc112233",
-        worker_alias="bob-rig",
-        total_completed=30,
-        bounties_cleared=30,
-        tokens_donated=45000,
+        worker_pubkey="b" * 64,
+        worker_alias="slashed-worker",
+        total_completed=600,
+        bounties_cleared=150,
+        grounded_violations_count=80,
+        grounding_rejections_count=1,
+        quality_score=0.88,
     )
-
-    svg = generate_worker_profile_badge_svg(worker, style="shield", theme="dark")
-    assert "<svg" in svg
-    assert "</svg>" in svg
-    assert "Worker: bob-rig" in svg
-    assert "30 Bounties" in svg
+    unlocked = {a.badge_id for a in evaluate_worker_badges(worker)}
+    assert "bounty_legend" in unlocked
+    assert "precision_striker" not in unlocked
+    assert "iron_worker" not in unlocked

@@ -138,11 +138,26 @@ export default {
         return initialResponse;
       }
 
-      if (host === 'mcp.credence.run' || host === 'mcp.dev.credence.run') {
+      if (
+        host === 'mcp.credence.run' ||
+        host === 'mcp.dev.credence.run' ||
+        url.pathname === '/mcp' ||
+        url.pathname === '/sse' ||
+        url.pathname.startsWith('/messages/')
+      ) {
+        if (request.method === 'OPTIONS') {
+          return new Response(null, {
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': '*',
+            },
+          });
+        }
         const backendUrl = new URL(url.pathname + url.search, targetBackend);
         const newHeaders = new Headers(request.headers);
         newHeaders.set('Host', targetBackendHost);
-        
+
         const res = await fetch(backendUrl, {
           method: request.method,
           headers: newHeaders,
@@ -150,12 +165,12 @@ export default {
           redirect: 'follow',
         });
 
-        // Preserve SSE streaming headers without buffering
+        // Preserve SSE / Streamable HTTP streaming headers without buffering
         const resHeaders = new Headers(res.headers);
         resHeaders.set('Access-Control-Allow-Origin', '*');
-        resHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        resHeaders.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
         resHeaders.set('Access-Control-Allow-Headers', '*');
-        
+
         return new Response(res.body, {
           status: res.status,
           statusText: res.statusText,
@@ -168,7 +183,7 @@ export default {
         return new Response(null, {
           headers: {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, POST, HEAD, OPTIONS',
             'Access-Control-Allow-Headers': '*',
           }
         });

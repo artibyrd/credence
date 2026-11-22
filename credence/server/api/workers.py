@@ -7,6 +7,7 @@ and inv-unified-merit-and-attestation.
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 
 from sqlmodel import desc, select
@@ -16,6 +17,8 @@ from starlette.responses import JSONResponse, Response
 from credence.db import get_async_session
 from credence.mesh.worker_badges import generate_worker_profile_badge_svg
 from credence.models import Audit, Snapshot, WorkerRecord, utc_now
+
+_PUBKEY_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def compute_token_savings(tokens_count: int) -> float:
@@ -29,22 +32,23 @@ def compute_worker_quality_score(
     bounties_cleared: int,
     grounded_violations: int,
     first_seen: datetime,
+    grounding_rejections: int = 0,
 ) -> float:
-    """Compute 5-factor quality score Q_w for a volunteer worker."""
+    """Compute quality score Q_w (0.10 to 1.00) incorporating grounding accuracy and slashing."""
     now = utc_now()
     if first_seen.tzinfo is None:
         first_seen = first_seen.replace(tzinfo=timezone.utc)
     longevity_days = max(0.1, (now - first_seen).total_seconds() / 86400.0)
 
-    # Volume factor
     vol_factor = min(1.0, bounties_cleared / 50.0)
-    # Grounding factor (assume high if positive violations)
-    ground_factor = 1.0 if grounded_violations >= 0 else 0.5
-    # Longevity factor
+    total_attempts = max(1, total_completed + grounding_rejections)
+    ground_accuracy = total_completed / total_attempts if total_completed > 0 else 0.0
+    rejection_penalty = min(0.60, grounding_rejections * 0.15)
     long_factor = min(1.0, longevity_days / 14.0)
 
-    score = 0.50 + (0.25 * vol_factor) + (0.15 * ground_factor) + (0.10 * long_factor)
-    return round(min(1.0, max(0.1, score)), 2)
+    base = 0.50 + (0.25 * vol_factor) + (0.15 * ground_accuracy) + (0.10 * long_factor)
+    score = base - rejection_penalty
+    return round(min(1.0, max(0.10, score)), 2)
 
 
 async def api_workers_leaderboard(request: Request) -> JSONResponse:
@@ -52,15 +56,17 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
     params = request.query_params
     search = params.get("search", "").strip().lower()
     family_filter = params.get("family", "").strip().lower()
-    limit = min(100, max(1, int(params.get("limit", 50))))
-    offset = max(0, int(params.get("offset", 0)))
+    try:
+        limit = min(100, max(1, int(params.get("limit", 50))))
+        offset = max(0, int(params.get("offset", 0)))
+    except ValueError:
+        return JSONResponse({"error": "Invalid limit or offset query parameter"}, status_code=400)
 
     async with get_async_session() as session:
         statement = select(WorkerRecord).order_by(
             desc(WorkerRecord.tokens_donated), desc(WorkerRecord.bounties_cleared)
         )
-        result = await session.exec(statement)
-        workers = result.all()
+        workers = (await session.exec(statement)).all()
 
         filtered = []
         for w in workers:
@@ -71,7 +77,11 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
 
             badges_list = json.loads(w.badges_unlocked_json or "[]")
             q_score = compute_worker_quality_score(
-                w.total_completed, w.bounties_cleared, w.grounded_violations_count, w.first_seen
+                w.total_completed,
+                w.bounties_cleared,
+                w.grounded_violations_count,
+                w.first_seen,
+                w.grounding_rejections_count,
             )
             filtered.append(
                 {
@@ -84,6 +94,7 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
                     "tokens_donated": w.tokens_donated,
                     "tokens_saved_usd": compute_token_savings(w.tokens_donated),
                     "quality_score": q_score,
+                    "grounding_rejections_count": w.grounding_rejections_count,
                     "badges_count": len(badges_list),
                     "badges": badges_list,
                     "last_seen": w.last_seen.isoformat(),
@@ -104,32 +115,31 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
 
 async def api_worker_dossier(request: Request) -> JSONResponse:
     """GET /api/worker/{pubkey}: Retrieve complete contributor dossier and audit history."""
-    pubkey = request.path_params.get("pubkey", "").strip()
-    if not pubkey:
-        return JSONResponse({"error": "Missing worker pubkey"}, status_code=400)
+    pubkey = request.path_params.get("pubkey", "").strip().lower()
+    if not pubkey or not _PUBKEY_HEX_RE.match(pubkey):
+        return JSONResponse({"error": "Invalid or missing 64-hex worker pubkey"}, status_code=400)
 
     async with get_async_session() as session:
-        statement = select(WorkerRecord).where(WorkerRecord.worker_pubkey == pubkey)
-        result = await session.exec(statement)
-        worker = result.first()
-
+        worker = (await session.exec(select(WorkerRecord).where(WorkerRecord.worker_pubkey == pubkey))).first()
         if not worker:
             return JSONResponse({"error": "Worker not found"}, status_code=404)
 
         badges_list = json.loads(worker.badges_unlocked_json or "[]")
         q_score = compute_worker_quality_score(
-            worker.total_completed, worker.bounties_cleared, worker.grounded_violations_count, worker.first_seen
+            worker.total_completed,
+            worker.bounties_cleared,
+            worker.grounded_violations_count,
+            worker.first_seen,
+            worker.grounding_rejections_count,
         )
 
-        # Retrieve recent audits completed by this worker (prioritize mempool bounties)
         audit_stmt = (
             select(Audit)
             .where(Audit.node_pubkey == worker.worker_pubkey, Audit.evaluation_method == "worker_volunteer_mempool")
             .order_by(desc(Audit.audited_at))
             .limit(10)
         )
-        audit_res = await session.exec(audit_stmt)
-        audits_raw = audit_res.all()
+        audits_raw = (await session.exec(audit_stmt)).all()
 
         if not audits_raw and worker.bounties_cleared == 0:
             fallback_stmt = (
@@ -142,8 +152,7 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
 
         recent_audits = []
         for a in audits_raw:
-            snap_stmt = select(Snapshot).where(Snapshot.id == a.snapshot_id)
-            snap = (await session.exec(snap_stmt)).first()
+            snap = (await session.exec(select(Snapshot).where(Snapshot.id == a.snapshot_id))).first()
             recent_audits.append(
                 {
                     "url": snap.url if snap else "unknown",
@@ -166,6 +175,7 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
                 "tokens_donated": worker.tokens_donated,
                 "tokens_saved_usd": compute_token_savings(worker.tokens_donated),
                 "quality_score": q_score,
+                "grounding_rejections_count": worker.grounding_rejections_count,
                 "badges": badges_list,
                 "first_seen": worker.first_seen.isoformat(),
                 "last_seen": worker.last_seen.isoformat(),
@@ -177,15 +187,15 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
 
 async def api_worker_badge_svg(request: Request) -> Response:
     """GET /api/badge/worker/{pubkey}: Return dynamic vector SVG badge for worker."""
-    pubkey = request.path_params.get("pubkey", "").replace(".svg", "").strip()
+    pubkey = request.path_params.get("pubkey", "").replace(".svg", "").strip().lower()
+    if not _PUBKEY_HEX_RE.match(pubkey):
+        return JSONResponse({"error": "Invalid 64-hex worker pubkey"}, status_code=400)
+
     style = request.query_params.get("style", "shield")
     theme = request.query_params.get("theme", "dark")
 
     async with get_async_session() as session:
-        statement = select(WorkerRecord).where(WorkerRecord.worker_pubkey == pubkey)
-        result = await session.exec(statement)
-        worker = result.first()
-
+        worker = (await session.exec(select(WorkerRecord).where(WorkerRecord.worker_pubkey == pubkey))).first()
         if not worker:
             worker = WorkerRecord(
                 worker_pubkey=pubkey,

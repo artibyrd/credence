@@ -2037,37 +2037,151 @@ def test_all_registered_playgrounds_have_active_dom_mounts(docs_root: Path) -> N
 @pytest.mark.governance
 @pytest.mark.unit
 def test_docs_cli_commands_and_flags_validity(docs_root: Path) -> None:
-    """Gate 3: Assert that CLI commands documented in markdown tutorials point to registered CLI subcommands."""
+    """Gate 3: Assert documented CLI subcommands AND v2.22.0+/worker/key/MCP --flags match build_parser()."""
+    import json
+    import shlex
+
     from credence.cli.main import build_parser
 
     parser = build_parser()
     valid_subcommands: set[str] = set()
+    subcommand_flags: dict[str, set[str]] = {}
     for action in parser._actions:
         if isinstance(action, argparse._SubParsersAction):
-            valid_subcommands.update(action.choices.keys())
+            for name, subparser in action.choices.items():
+                valid_subcommands.add(name)
+                flags: set[str] = {"--help", "-h"}
+                for sub_act in subparser._actions:
+                    flags.update(sub_act.option_strings)
+                subcommand_flags[name] = flags
 
     # Common standalone tools / aliases
     valid_subcommands.update({"tui", "serve", "server", "verify-file", "audit-docs"})
+    # Legacy conceptual subcommands present in pre-v2.22.0 docs (strictly disallowed in v2.22.0+ docs)
+    legacy_pre_v222_subcommands = {"consensus", "ignite", "migrate", "notify", "org", "service", "storage"}
+
+    # Always enforce strict --flag parity on these subcommands globally, and on ALL commands
+    # inside v2.22.0+ docs and core quickstart/MCP/worker guides.
+    strict_global_subcommands = {"worker", "key"}
+    strict_flag_docs = {
+        "quickstart.md",
+        "quickstart-mcp.md",
+        "quickstart-worker.md",
+        "quickstart-node.md",
+        "worker-key-custody-and-migration.md",
+        "15-volunteer-compute-and-worker-guide.md",
+        "open-epistemic-mempool.md",
+        "03-claude-cursor-fastmcp.md",
+        "multi-model-adapters.md",
+        "the-model-lineage-sybil.md",
+    }
+
+    def _extract_fenced_blocks(md_text: str) -> list[tuple[str, str]]:
+        blocks: list[tuple[str, str]] = []
+        in_fence = False
+        fence_lang = ""
+        buf: list[str] = []
+        for raw_line in md_text.splitlines():
+            stripped = raw_line.strip()
+            if not in_fence:
+                if stripped.startswith("```"):
+                    in_fence = True
+                    fence_lang = stripped[3:].strip().lower()
+                    buf = []
+            else:
+                if stripped == "```":
+                    blocks.append((fence_lang, "\n".join(buf)))
+                    in_fence = False
+                    fence_lang = ""
+                    buf = []
+                else:
+                    buf.append(raw_line)
+        return blocks
 
     md_files = list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md"))
-    cmd_pattern = re.compile(r"(?:poetry\s+run\s+)?credence\s+([a-zA-Z0-9_-]+)")
+    cmd_pattern = re.compile(
+        r"^(?:\$\s+)?(?:(?:poetry\s+run\s+)|(?:uvx\s+(?:--from\s+\S+\s+)?))?credence\s+([a-zA-Z0-9_-]+)(.*)"
+    )
 
+    violations: list[str] = []
     for md_file in md_files:
         content = md_file.read_text(encoding="utf-8")
-        code_blocks = re.findall(r"```(?:bash|sh|console)?\n(.*?)```", content, re.DOTALL)
-        for block in code_blocks:
-            for line in block.splitlines():
-                line = line.strip()
-                if line.startswith("#"):
-                    continue
-                match = cmd_pattern.search(line)
-                if match:
+        is_v222_doc = md_file.name in strict_flag_docs or bool(
+            re.search(r"^since_version:\s*['\"]?v2\.2[2-9]", content, re.MULTILINE)
+        )
+        fenced_blocks = _extract_fenced_blocks(content)
+
+        for lang, block in fenced_blocks:
+            # 1. Validate shell code blocks (subcommands globally + --flags on strict scope)
+            if lang in {"", "bash", "sh", "shell", "console"}:
+                for raw_line in block.splitlines():
+                    line = raw_line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    cmd_part = re.split(r"\s+#|\s*\|\s*|\s*&&\s*|\s*;\s*", line, maxsplit=1)[0].strip()
+                    match = cmd_pattern.match(cmd_part)
+                    if not match:
+                        continue
                     subcmd = match.group(1)
                     if subcmd.startswith("-"):
                         continue
-                    assert subcmd in valid_subcommands, (
-                        f"Documented unknown CLI subcommand 'credence {subcmd}' in {md_file.name}"
+                    allowed_cmds = (
+                        valid_subcommands if is_v222_doc else (valid_subcommands | legacy_pre_v222_subcommands)
                     )
+                    if subcmd not in allowed_cmds:
+                        violations.append(f"Unknown CLI subcommand 'credence {subcmd}' in {md_file.name}")
+                        continue
+                    enforce_flags = is_v222_doc or subcmd in strict_global_subcommands
+                    rest = match.group(2).strip()
+                    if enforce_flags and subcmd in subcommand_flags and rest:
+                        try:
+                            tokens = shlex.split(rest)
+                        except ValueError:
+                            tokens = rest.split()
+                        for tok in tokens:
+                            if tok.startswith("--"):
+                                flag_name = tok.split("=", 1)[0].rstrip("`'\",;)]")
+                                if flag_name not in subcommand_flags[subcmd]:
+                                    violations.append(
+                                        f"Unknown CLI flag '{flag_name}' for 'credence {subcmd}' in {md_file.name}"
+                                    )
+
+            # 2. Validate JSON MCP args arrays invoking credence (always strict on subcommands & flags)
+            elif lang == "json":
+                try:
+                    parsed = json.loads(block)
+                except Exception:
+                    continue
+                stack = [parsed]
+                while stack:
+                    node = stack.pop()
+                    if isinstance(node, dict):
+                        args_list = node.get("args")
+                        if isinstance(args_list, list) and "credence" in args_list:
+                            idx = args_list.index("credence")
+                            if idx + 1 < len(args_list):
+                                subcmd = str(args_list[idx + 1])
+                                if not subcmd.startswith("-"):
+                                    if subcmd not in valid_subcommands:
+                                        violations.append(
+                                            f"Unknown JSON MCP CLI subcommand 'credence {subcmd}' in {md_file.name}"
+                                        )
+                                    else:
+                                        for tok in args_list[idx + 2 :]:
+                                            tok_s = str(tok)
+                                            if tok_s.startswith("--") and subcmd in subcommand_flags:
+                                                flag_name = tok_s.split("=", 1)[0]
+                                                if flag_name not in subcommand_flags[subcmd]:
+                                                    violations.append(
+                                                        f"Unknown JSON MCP flag '{flag_name}' for 'credence {subcmd}' in {md_file.name}"
+                                                    )
+                        stack.extend(node.values())
+                    elif isinstance(node, list):
+                        stack.extend(node)
+
+    assert not violations, "Documented CLI command/flag mismatches found:\n" + "\n".join(
+        f"  - {v}" for v in sorted(set(violations))
+    )
 
 
 @pytest.mark.governance
