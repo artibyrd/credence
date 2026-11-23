@@ -2931,3 +2931,48 @@ def test_cross_reference_density_and_linked_invariants_invariant(docs_root: Path
         + "\n".join(f"  - {v}" for v in violations)
         + "\nAll diagnostic tables must hyperlink invariants to The Invariant Bible, and core empirical studies must cross-reference companion studies."
     )
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_deploy_workflows_strip_workers_config_before_pages_deploy() -> None:
+    """Gate 15: Assert deploy-dev.yml and deploy-edge.yml strip Workers-mode wrangler.toml/_worker.js before Pages deploy."""
+    workflows_dir = Path(__file__).resolve().parents[2] / ".github" / "workflows"
+    for wf_name in ("deploy-dev.yml", "deploy-edge.yml"):
+        wf_path = workflows_dir / wf_name
+        assert wf_path.exists(), f"Missing workflow file: {wf_name}"
+        content = wf_path.read_text(encoding="utf-8")
+        if "pages deploy" in content:
+            assert "rm -f _worker.js wrangler.toml" in content, (
+                f"{wf_name} must remove Workers-mode _worker.js and wrangler.toml from credence-docs before `wrangler pages deploy`"
+            )
+            assert "--commit-dirty=true" in content, (
+                f"{wf_name} must pass --commit-dirty=true to `wrangler pages deploy` after removing _worker.js/wrangler.toml"
+            )
+
+
+@pytest.mark.governance
+@pytest.mark.unit
+def test_zero_raw_html_arrow_or_bullet_entities_in_docs(docs_root: Path) -> None:
+    """Gate 16: Assert zero raw &rarr; or &bull; HTML entities outside fenced code blocks across docs and blog."""
+    entity_re = re.compile(r"&(?:rarr|bull);")
+    violations: list[str] = []
+
+    md_files = sorted(list(docs_root.glob("docs/**/*.md")) + list(docs_root.glob("blog/**/*.md")))
+    for md_file in md_files:
+        in_fence = False
+        rel = md_file.relative_to(docs_root)
+        for line_no, raw_line in enumerate(md_file.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = raw_line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            match = entity_re.search(raw_line)
+            if match:
+                violations.append(
+                    f"{rel}:{line_no}: Found raw HTML entity '{match.group(0)}'; use Unicode '→' or '•' instead."
+                )
+
+    assert not violations, "Raw HTML entities found in markdown prose:\n" + "\n".join(violations[:25])

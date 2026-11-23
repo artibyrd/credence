@@ -324,4 +324,10 @@ When operating across decoupled ecosystem repositories (`credence`, `credence-do
 3. **Decoupled Docs & Blog Domain Routing**:
    - `docs.credence.run` and `blog.credence.run` are proxied to Cloudflare Pages via `web/_worker.js`.
    - `app.js` enforces subdomain routing separation: `docs.credence.run` routes technical reference, and `blog.credence.run` routes sovereign essays, bouncing across subdomains dynamically when cross-plane links are activated.
+4. **Cross-Repo PR Merge Order**:
+   - Always merge `credence-docs` into `main` **before** `credence`, because `credence`'s `deploy-edge.yml` immediately clones `credence-docs/main` to publish Production Cloudflare Pages.
+5. **Workers-vs-Pages Config Stripping Parity**:
+   - Because `credence-docs` contains Workers-mode `wrangler.toml` and `_worker.js` for Cloudflare Builds compatibility, both `deploy-dev.yml` and `deploy-edge.yml` MUST run `rm -f _worker.js wrangler.toml` and pass `--commit-dirty=true` before `wrangler pages deploy`.
+6. **Release Semver Format**:
+   - Pass bare semver (`2.22.0`, without a leading `v`) to `just sync-version <version>` and `just release <version> "<msg>"` because `release.just` prepends `v` to tags and manifest strings automatically.
 

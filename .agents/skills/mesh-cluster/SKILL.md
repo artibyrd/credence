@@ -47,3 +47,9 @@ Use this skill when orchestrating, monitoring, or testing the decentralized P2P 
 - **Headroom Floor Circuit Breaker**: Nodes operating under quota pressure ($<40\%$ token headroom) reject shadow trial canaries with `QUOTA_PRESERVED`.
 - **Temporal Trajectory DAG Immutability**: Verifies that upgrading standards (e.g. `v1.0.0` $\to$ `v2.0.0`) preserves bit-for-bit cryptographic verification of historical receipts under original CAS digests.
 
+## Open Mempool & FastMCP Trust Boundary Guardrails
+- **Sovereign Key Isolation**: Never sign untrusted remote submissions (public SSE/HTTP MCP calls or mempool submits) with the coordinator's sovereign Ed25519 key. Public remote anchors must supply and verify the caller's own `worker_pubkey` + `worker_signature` against a server-captured `Snapshot` and store under the caller's pubkey.
+- **Authoritative Server-Side Ingestion**: Public `http(s)://` `/api/queue/enqueue` requests must ignore untrusted caller-supplied `normalized_text` and capture authoritative prose + SHA-256 server-side via SSRF-safe, rate-limited, byte-capped fastpath HTTP fetch (no Playwright on public enqueue). `/api/queue/submit` must fail closed (`HTTP 422`) on empty text or ungrounded quotes (`G=1.00`).
+- **Claim Proof-of-Possession & Atomic Locks**: `/api/queue/claim` must serialize lease assignment under an atomic lock, derive `model_family` server-side from `model_slug`, and verify a fresh Ed25519 PoP signature over `(action="mempool_claim", worker_pubkey, model_slug, claim_timestamp)`.
+- **Real-Endpoint Red-Team Verification**: Security gauntlet tests (`tests/integration/test_worker_redteam_gauntlet.py`) must exercise actual production FastAPI/FastMCP handlers and parser/validator functions—never local helper functions defined inside the test file.
+

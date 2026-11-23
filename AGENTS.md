@@ -23,7 +23,7 @@ Welcome to **Credence** (`/home/pendragon/Projects/credence`).
 - **`inv-dual-env-least-privilege-cicd` — 🌐 Dual-Environment Least-Privilege CI/CD**: Cloudflare dev deploys use `--branch=dev` preview routing; prod deploys require signed release tags and review.
 
 ### Class γ (Gamma): Ergonomics & Governance (P2)
-- **`inv-artifact-curation` — 🌐 Artifact Archival ("That Belongs in a Museum!")**: Never overwrite earlier phases; append cumulative milestone sections.
+- **`inv-artifact-curation` — 🌐 Artifact Archival ("That Belongs in a Museum!")**: Never overwrite `implementation_plan.md` or `walkthrough.md`; append Milestone $M+1$ or create `<topic>_implementation_plan.md`.
 - **`inv-documentation-expansion` — 🌐 Documentation Expansion**: Deepen canonical docs over shallow files; systematically audit cards for schema drift.
 - **`inv-narrative-plot-fidelity` — 🌐 Narrative Plot Fidelity**: Published studies fulfill title promise through a 4-stage narrative arc with zero boilerplate.
 

@@ -11,6 +11,19 @@ last_verified: 2026-11-22
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.22.1] - 2026-11-22
+
+### Added
+- **Shift-Left Governance Gates (Gates 15 & 16)**:
+  - Added `test_deploy_workflows_strip_workers_config_before_pages_deploy` in `tests/governance/test_docs_integrity.py` asserting both `deploy-dev.yml` and `deploy-edge.yml` strip Workers-mode `_worker.js` and `wrangler.toml` with `--commit-dirty=true` prior to Cloudflare Pages deployment.
+  - Added `test_zero_raw_html_arrow_or_bullet_entities_in_docs` to enforce Unicode arrows (`→`) and bullets (`•`) over raw HTML arrow/bullet entities across all documentation and blog markdown prose.
+
+### Changed
+- **Cross-Repo PR Merge Ordering (`credence-agent`)**: Updated `scripts/manage_pr.py` with explicit `MERGE_ORDER = ("credence-docs", "credence-agent", "credence")` so Production `deploy-edge.yml` always clones newly merged `credence-docs/main`.
+- **Living Governance & Progressive Skills (`/learn` Retrospective)**:
+  - Clarified `inv-artifact-curation` in `AGENTS.md` (explicitly naming `implementation_plan.md` and `walkthrough.md` as append-only ledgers while staying under the 800-token budget).
+  - Updated and synchronized `architecture-governance`, `cloudrun-ops`, and `mesh-cluster` skills across all repository mirrors (Safe DOM Construction, Platform Neutrality & Plain-English Spec Guides, Lazy-Image Playwright checks, Artifact Ledger Governance, cross-repo merge & Workers-vs-Pages stripping rules, and Open Mempool / FastMCP trust boundary guardrails).
+
 ## [2.22.0] - 2026-11-22
 
 ### Added

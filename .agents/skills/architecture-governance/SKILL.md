@@ -105,6 +105,7 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
   1. `page.on("pageerror")`: Assert zero uncaught JavaScript exceptions across all navigated paths.
   2. `#doc-content` / DOM Mount Verification: Query content selectors to verify substantive rendered text ($>100$ characters) rather than empty placeholders or loading states.
   3. Interactive Route & Hash Navigation: Verify transitions across deep-links and playground widgets.
+  4. **Lazy-Loaded Image Verification**: Scroll every `<img>` element into view (`img.scrollIntoView()`) before asserting `img.complete && img.naturalWidth > 0` so below-the-fold `loading="lazy"` SVGs are verified accurately.
 - **Order-of-Operations Invariant**: Playwright browser verification against the live Dev preview deployment (`https://dev.credence.run/docs/`, `https://dev.credence.run/`) must pass cleanly **before** presenting the walkthrough and requesting human Mk1 Eyeball review (`inv-mk1-eyeball`).
 
 ### 15. Non-Interactive Command Execution Invariant
@@ -197,6 +198,10 @@ Use this skill when refactoring, modularizing, or auditing source files, Justfil
   - Hardcoded sparkline trajectories (e.g. `+2.4 pts (Improving)`).
   - Dummy scores or synthetic consensus badges.
 
+### 4. Safe DOM Construction & Zero Unsafe Sinks
+- Never interpolate API or user-controlled fields (`worker_alias`, `model_name`, `url`, `quote`, `reason`) into `.innerHTML`, `insertAdjacentHTML`, or inline `onclick="..."` handlers.
+- Construct dynamic workstation tables, cards, and modals programmatically with `document.createElement()` + `.textContent`, attach click handlers via delegated `data-*` attributes, and allowlist `http:`/`https:` URL schemes before binding `<a href>`.
+
 ---
 
 ## 6. Scoped Workstation CSS & Viewport Isolation
@@ -232,6 +237,11 @@ To prevent compact workstation layout locks from freezing natural document scrol
 - **Audience-Centric Communication**: Open Graph social preview cards (`og-card.png`), landing page hero banners, and public embeds must communicate value in clear, accessible plain English (e.g. *"Verify Truth on the Web. Evidence, Not Algorithms"*).
 - **Demarcation of Internal Constants**: Mathematical constants ($G=1.00$, $H<0.30$, $3f+1$, RFC 8785 canonical envelopes) are internal engineering benchmarks. They must NEVER be advertised on top-of-funnel social cards or public hero headers without explanatory context.
 - **Proper Placement**: Reserve mathematical formulas and cryptographic verification tags strictly for Focus Lenses, Deep Forensic Modals, and technical documentation.
+
+### 2. Platform Neutrality, Honest Hardware Footprints & Plain-English Spec Guides
+- **No Vendor Bleed**: Use platform-agnostic configuration (`CREDENCE_MODEL_API_KEY`, generic OCI container wording) wherever Credence supports multiple providers. Never label a provider-specific Terraform stack (e.g., GCP Cloud Run) as generic multi-cloud without linking dedicated multi-cloud guides.
+- **Honest Resource Tables**: Separate **Minimum Hardware** from **Recommended Hardware** rows in decision matrices.
+- **Plain-English Companion Guides**: Whenever a specification table relies on dense mathematical shorthand ($Q_i$, $G_i$, $U_i$, HRW, Galileo overrides), include an adjacent plain-English subsection explaining what each badge, tier, or threshold means in everyday language.
 
 ---
 
@@ -362,3 +372,11 @@ $$\text{Plan Approval} \longrightarrow \mathbf{just\ branch} \longrightarrow \te
 - **Decoupled LLM Adapters**: The engine supports pluggable model adapters (Gemini 3.7 default 4k thinking, Claude 3.7, GPT-4o, DeepSeek R1, Ollama).
 - **Quota Headroom & Circuit Breakers**: Whenever model quota headroom falls below 30%, operations trip offline circuit breakers (`QUOTA_PRESERVED`) to preserve interactive capacity.
 - **Pareto Thinking Invariant**: Reasoning tokens are strictly capped and budgeted according to audit depth (Free: zero reasoning, Balanced: 2k, Ultra: 4k).
+
+---
+
+## 17. Artifact Ledger Governance (`inv-artifact-curation`)
+
+- Treat `implementation_plan.md` and `walkthrough.md` as strictly append-only cumulative chronicles across an entire release epoch.
+- Before modifying either file, read the tail to identify the highest milestone number $M$, then append `# Milestone M+1: <Title>` using `Append=true` or targeted tail edits.
+- Never pass `Overwrite=true` to `implementation_plan.md` or `walkthrough.md`. For independent follow-up initiatives (e.g., pre-merge remediation), create a distinct topic artifact such as `remediation_implementation_plan.md`.
