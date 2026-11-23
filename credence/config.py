@@ -49,8 +49,20 @@ class CostProfileConfig(BaseModel):
     primary_model: str
     escalation_model: str
     triage_model: str
-    default_thinking_budget: int = Field(ge=0, description="Thinking tokens allocated per subagent")
-    escalation_thinking_budget: int = Field(ge=0, description="Thinking tokens on ambiguous scores")
+    default_thinking_budget: int = Field(ge=0, description="Legacy thinking tokens allocated per subagent")
+    escalation_thinking_budget: int = Field(ge=0, description="Legacy thinking tokens on ambiguous scores")
+    default_thinking_level: str = Field(
+        default="minimal",
+        description="Qualitative Gemini 3.8/4 thinkingLevel per subagent (minimal | low | medium | high)",
+    )
+    escalation_thinking_level: str = Field(
+        default="minimal",
+        description="Qualitative Gemini 3.8/4 thinkingLevel on ambiguity escalation (minimal | low | medium | high)",
+    )
+    triage_thinking_level: str = Field(
+        default="minimal",
+        description="Qualitative Gemini 3.8/4 thinkingLevel for lightweight triage passes (minimal | low | medium | high)",
+    )
     max_tokens_per_hour: int = Field(gt=0)
     max_tokens_per_day: int = Field(gt=0)
     max_daily_budget_usd: float = Field(ge=0.0)
@@ -73,6 +85,9 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
         triage_model="offline-heuristic",
         default_thinking_budget=0,
         escalation_thinking_budget=0,
+        default_thinking_level="minimal",
+        escalation_thinking_level="minimal",
+        triage_thinking_level="minimal",
         max_tokens_per_hour=1,
         max_tokens_per_day=1,
         max_daily_budget_usd=0.00,
@@ -86,13 +101,16 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
     CostProfile.FREE: CostProfileConfig(
         profile=CostProfile.FREE,
         name="Free / Zero-Marginal-Cost",
-        description="Strict zero-spend budget enforcing Gemini API Free Tier limits (15 RPM / 1M TPM) with zero thinking tokens.",
+        description="Strict zero-spend budget enforcing Gemini API Free Tier limits (15 RPM / 1M TPM) with minimal thinking on Gemini 3.8 Flash.",
         target_tier="Gemini API Free Tier (Zero-Cost)",
-        primary_model="gemini-2.0-flash-lite",
-        escalation_model="gemini-2.0-flash-lite",
-        triage_model="gemini-2.0-flash-lite",
+        primary_model="gemini-3.8-flash",
+        escalation_model="gemini-3.8-flash",
+        triage_model="gemini-3.8-flash",
         default_thinking_budget=0,
         escalation_thinking_budget=0,
+        default_thinking_level="minimal",
+        escalation_thinking_level="minimal",
+        triage_thinking_level="minimal",
         max_tokens_per_hour=50_000,
         max_tokens_per_day=250_000,
         max_daily_budget_usd=0.00,
@@ -106,13 +124,16 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
     CostProfile.ECONOMY: CostProfileConfig(
         profile=CostProfile.ECONOMY,
         name="Economy / Conservative Developer (Default)",
-        description="Most conservative fully functional profile pairing Gemini 3.7 Flash thinking with strict 15 cent/day ceiling.",
+        description="Most conservative fully functional profile pairing Gemini 3.8 Flash low-level thinking with strict 15 cent/day ceiling.",
         target_tier="Gemini Pay-As-You-Go ($0.15/day Max Budget)",
-        primary_model="gemini-3.7-flash",
-        escalation_model="gemini-3.7-flash",
-        triage_model="gemini-2.5-flash-lite",
+        primary_model="gemini-3.8-flash",
+        escalation_model="gemini-3.8-flash",
+        triage_model="gemini-3.8-flash",
         default_thinking_budget=512,
         escalation_thinking_budget=1024,
+        default_thinking_level="low",
+        escalation_thinking_level="low",
+        triage_thinking_level="minimal",
         max_tokens_per_hour=50_000,
         max_tokens_per_day=300_000,
         max_daily_budget_usd=0.15,
@@ -126,13 +147,16 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
     CostProfile.BALANCED: CostProfileConfig(
         profile=CostProfile.BALANCED,
         name="Balanced / Developer Standard",
-        description="Standard pay-as-you-go developer profile balancing low token costs with calibrated Gemini 3.7 Flash thinking on ambiguity.",
+        description="Standard pay-as-you-go developer profile pairing Gemini 3.8 Flash medium thinking with Gemini 4 Neon ambiguity escalation.",
         target_tier="Gemini Pay-As-You-Go ($0.10/$0.40 per 1M)",
-        primary_model="gemini-3.7-flash",
-        escalation_model="gemini-3.7-flash",
-        triage_model="gemini-2.5-flash-lite",
-        default_thinking_budget=1024,
+        primary_model="gemini-3.8-flash",
+        escalation_model="gemini-4-neon",
+        triage_model="gemini-3.8-flash",
+        default_thinking_budget=2048,
         escalation_thinking_budget=4096,
+        default_thinking_level="medium",
+        escalation_thinking_level="medium",
+        triage_thinking_level="minimal",
         max_tokens_per_hour=100_000,
         max_tokens_per_day=1_000_000,
         max_daily_budget_usd=0.50,
@@ -146,13 +170,16 @@ COST_PROFILES: Dict[CostProfile, CostProfileConfig] = {
     CostProfile.ULTRA: CostProfileConfig(
         profile=CostProfile.ULTRA,
         name="Ultra / Newsroom Fidelity",
-        description="Maximum epistemic depth utilizing Gemini 3.7 Flash high-reasoning budgets (4k-16k tokens) and Gemini 1.5 Pro for full long-form articles.",
+        description="Maximum epistemic depth pairing Gemini 4 Neon high reasoning, Gemini 4 Carbon escalation, and Gemini 4 Hydrogen triage for long-form articles.",
         target_tier="Gemini Advanced / Ultra / Newsroom Desk",
-        primary_model="gemini-3.7-flash",
-        escalation_model="gemini-1.5-pro",
-        triage_model="gemini-3.7-flash",
-        default_thinking_budget=4096,
+        primary_model="gemini-4-neon",
+        escalation_model="gemini-4-carbon",
+        triage_model="gemini-4-hydrogen",
+        default_thinking_budget=8192,
         escalation_thinking_budget=16384,
+        default_thinking_level="high",
+        escalation_thinking_level="high",
+        triage_thinking_level="low",
         max_tokens_per_hour=2_000_000,
         max_tokens_per_day=10_000_000,
         max_daily_budget_usd=5.00,
@@ -284,9 +311,11 @@ class Settings(BaseSettings):
     DEEPSEEK_API_KEY: Optional[str] = None
     OLLAMA_HOST: Optional[str] = None
     OLLAMA_BASE_URL: Optional[str] = None
-    DEFAULT_SPECIALIST_MODEL: str = "gemini-3.7-flash"
+    DEFAULT_SPECIALIST_MODEL: str = "gemini-3.8-flash"
     DEFAULT_WORKER_MODEL: str = "google/gemini-3.8-flash"
-    DEFAULT_TRIAGE_MODEL: str = "gemini-2.5-flash-lite"
+    DEFAULT_TRIAGE_MODEL: str = "gemini-3.8-flash"
+    DEFAULT_THINKING_LEVEL: str = "low"
+    ESCALATION_THINKING_LEVEL: str = "low"
     DEFAULT_THINKING_BUDGET: int = 512
     ESCALATION_THINKING_BUDGET: int = 1024
 

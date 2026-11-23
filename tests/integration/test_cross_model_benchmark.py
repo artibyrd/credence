@@ -364,3 +364,66 @@ def test_cross_model_pareto_frontier():
     for m_id in ["gemini-3.7-flash", "gemini-3.8-flash", "claude-sonnet-4.6"]:
         assert models[m_id]["model_cost_usd"] == 0.0
         assert models[m_id]["f1_score"] >= 0.98
+
+
+@pytest.mark.integration
+def test_active_gemini4_benchmark_configs_and_pricing_parity():
+    """Verify cross_model_benchmark.py benchmarks the active Gemini 3.8 / 4 lineup with thinkingLevel and registry pricing."""
+    from credence.pipeline.cross_model_benchmark import ACTIVE_BENCHMARK_CONFIGS, MODEL_PRICING
+    from credence.pipeline.model_registry import VALID_THINKING_LEVELS, get_model_spec
+
+    expected_models = ["gemini-3.8-flash", "gemini-4-hydrogen", "gemini-4-neon", "gemini-4-carbon"]
+    configured_models = [cfg[0] for cfg in ACTIVE_BENCHMARK_CONFIGS]
+    assert configured_models == expected_models
+
+    for model_id, thinking_level, label in ACTIVE_BENCHMARK_CONFIGS:
+        assert thinking_level in VALID_THINKING_LEVELS
+        spec = get_model_spec(model_id)
+        assert spec is not None
+        assert spec.status == "active"
+        assert spec.thinking_mode == "level"
+        assert "antigravity-harness" in spec.supported_surfaces
+        assert label in MODEL_PRICING
+        assert MODEL_PRICING[label]["input"] == spec.pricing_per_million["prompt"]
+        assert MODEL_PRICING[label]["output"] == spec.pricing_per_million["completion"]
+        assert MODEL_PRICING[label]["thinking"] == spec.pricing_per_million["thinking"]
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_cross_model_benchmark_fixture_emits_thinking_level_only():
+    """Verify run_model_benchmark_fixture sends thinkingLevel (never thinkingBudget) for active Gemini 3.8/4 models."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    import httpx
+
+    from credence.pipeline.cross_model_benchmark import ACTIVE_BENCHMARK_CONFIGS, run_model_benchmark_fixture
+
+    fixture = Path(__file__).parent.parent / "fixtures" / "html" / "clean_article.html"
+    assert fixture.exists()
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "candidates": [{"content": {"parts": [{"text": '{"violations": []}'}]}}],
+        "usageMetadata": {"promptTokenCount": 500, "candidatesTokenCount": 80, "thoughtsTokenCount": 120},
+    }
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+        async with httpx.AsyncClient() as client:
+            metrics = await run_model_benchmark_fixture(fixture, "Ground Truth News", "fake-key", client)
+
+        assert len(metrics) == 1 + len(ACTIVE_BENCHMARK_CONFIGS)
+        assert [m.model_name for m in metrics] == [
+            "offline-heuristic",
+            "gemini-3.8-flash",
+            "gemini-4-hydrogen",
+            "gemini-4-neon",
+            "gemini-4-carbon",
+        ]
+        assert mock_post.await_count == len(ACTIVE_BENCHMARK_CONFIGS)
+
+        for call, (_, expected_level, _) in zip(mock_post.call_args_list, ACTIVE_BENCHMARK_CONFIGS, strict=True):
+            thinking_cfg = call.kwargs["json"]["generationConfig"]["thinkingConfig"]
+            assert thinking_cfg == {"thinkingLevel": expected_level}
+            assert "thinkingBudget" not in thinking_cfg

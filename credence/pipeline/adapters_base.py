@@ -34,8 +34,9 @@ class BaseLLMProvider(abc.ABC):
         self,
         prompt: str,
         system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
+        thinking_budget: Optional[int] = None,
         temperature: float = 0.1,
+        thinking_level: Optional[str] = None,
     ) -> LLMResponse:
         """Generate content from LLM provider."""
         raise NotImplementedError

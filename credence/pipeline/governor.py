@@ -19,16 +19,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.config import CostProfileConfig, settings
 from credence.models import TokenUsage
+from credence.pipeline.model_registry import get_model_pricing_per_million, normalize_model_id
 from credence.pipeline.schemas import SpecialistViolationFinding
 
-# Model Pricing Matrix (Price per 1,000,000 tokens in USD)
-MODEL_PRICING_PER_MILLION: Dict[str, Dict[str, float]] = {
-    "gemini-3.7-flash": {"prompt": 0.15, "completion": 0.60, "thinking": 0.60},
-    "gemini-2.5-flash-lite": {"prompt": 0.075, "completion": 0.30, "thinking": 0.30},
-    "gemini-2.0-flash-lite": {"prompt": 0.075, "completion": 0.30, "thinking": 0.30},
-    "gemini-2.0-flash": {"prompt": 0.10, "completion": 0.40, "thinking": 0.40},
-    "gemini-1.5-pro": {"prompt": 1.25, "completion": 5.00, "thinking": 5.00},
-}
+# Model Pricing Matrix (Price per 1,000,000 tokens in USD), derived directly from model_registry.py
+MODEL_PRICING_PER_MILLION: Dict[str, Dict[str, float]] = get_model_pricing_per_million()
 
 
 def utc_now() -> datetime:
@@ -80,10 +75,14 @@ def compute_call_cost(
     completion_tokens: int,
     thinking_tokens: int = 0,
 ) -> float:
-    """Calculate estimated USD cost for a Gemini API call based on token counts."""
+    """Calculate estimated USD cost for an LLM API call based on token counts."""
+    normalized = normalize_model_id(model_name)
     pricing = MODEL_PRICING_PER_MILLION.get(
         model_name,
-        {"prompt": 0.15, "completion": 0.60, "thinking": 0.60},
+        MODEL_PRICING_PER_MILLION.get(
+            normalized,
+            MODEL_PRICING_PER_MILLION.get("gemini-3.8-flash", {"prompt": 0.10, "completion": 0.40, "thinking": 0.40}),
+        ),
     )
 
     prompt_cost = (prompt_tokens / 1_000_000.0) * pricing["prompt"]

@@ -96,7 +96,7 @@ class AuditReport(BaseModel):
     )
     evaluation_model: Optional[str] = Field(
         default=None,
-        description="Exact cognitive model or engine used (e.g. gemini-3.7-flash, antigravity_pro, deepseek-r1:8b)",
+        description="Exact cognitive model or engine used (e.g. gemini-3.8-flash, gemini-4-neon, deepseek-r1:8b)",
     )
     taxonomy_root_hash: Optional[str] = Field(
         default=None,

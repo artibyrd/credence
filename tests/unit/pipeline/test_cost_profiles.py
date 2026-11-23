@@ -19,20 +19,29 @@ def test_cost_profile_enum_values():
 
 @pytest.mark.unit
 def test_economy_profile_is_default():
-    """Verify that Settings defaults to ECONOMY profile."""
+    """Verify that Settings defaults to ECONOMY profile aligned with Gemini 3.8 Flash."""
     s = Settings()
     assert s.CREDENCE_PROFILE == CostProfile.ECONOMY
+    assert s.DEFAULT_SPECIALIST_MODEL == "gemini-3.8-flash"
+    assert s.DEFAULT_TRIAGE_MODEL == "gemini-3.8-flash"
+    assert s.DEFAULT_WORKER_MODEL == "google/gemini-3.8-flash"
+
     cfg = s.get_profile_config()
     assert cfg.profile == CostProfile.ECONOMY
-    assert cfg.primary_model == "gemini-3.7-flash"
-    assert cfg.triage_model == "gemini-2.5-flash-lite"
+    assert cfg.primary_model == "gemini-3.8-flash"
+    assert cfg.escalation_model == "gemini-3.8-flash"
+    assert cfg.triage_model == "gemini-3.8-flash"
+    assert cfg.default_thinking_level == "low"
+    assert cfg.escalation_thinking_level == "low"
+    assert cfg.triage_thinking_level == "minimal"
     assert cfg.default_thinking_budget == 512
     assert cfg.max_daily_budget_usd == 0.15
 
 
 @pytest.mark.unit
 def test_all_cost_profiles_configured():
-    """Verify each profile has valid token and spend ceilings."""
+    """Verify each profile has valid token, thinkingLevel, and spend ceilings."""
+    valid_levels = {"minimal", "low", "medium", "high"}
     for prof in CostProfile:
         cfg = COST_PROFILES[prof]
         assert cfg.profile == prof
@@ -40,3 +49,6 @@ def test_all_cost_profiles_configured():
         assert cfg.max_tokens_per_hour > 0
         assert cfg.max_tokens_per_day > 0
         assert cfg.concurrency_limit >= 1
+        assert cfg.default_thinking_level in valid_levels
+        assert cfg.escalation_thinking_level in valid_levels
+        assert cfg.triage_thinking_level in valid_levels

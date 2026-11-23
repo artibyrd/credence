@@ -112,9 +112,11 @@ async def evaluate_snapshot(
     if provider is not None and not quota_preserved:
         try:
             model_name = provider.model_name
+            triage_level = profile_override.triage_thinking_level if profile_override else "low"
+            cluster_level = profile_override.default_thinking_level if profile_override else "medium"
             # 1a. Satire evaluation via LLM
             satire_prompt = build_satire_provenance_prompt(snapshot.extracted, reg=active_reg)
-            satire_resp = await provider.generate(satire_prompt, thinking_budget=1024)
+            satire_resp = await provider.generate(satire_prompt, thinking_level=triage_level)
             satire_verdict = parse_satire_response(satire_resp.text)
             if satire_verdict.is_satire or snapshot.extracted.is_satire_cue:
                 is_satire = True
@@ -141,7 +143,7 @@ async def evaluate_snapshot(
                 )
                 domain_name = cat.domain if cat else "GENERAL"
                 p_text = build_cluster_specialist_prompt(cluster, snapshot.extracted, domain_name=domain_name)
-                specialist_tasks.append((cluster, domain_name, provider.generate(p_text, thinking_budget=2048)))
+                specialist_tasks.append((cluster, domain_name, provider.generate(p_text, thinking_level=cluster_level)))
 
             results = await asyncio.gather(*[t[2] for t in specialist_tasks], return_exceptions=True)
             total_prompt_tok = satire_resp.prompt_tokens

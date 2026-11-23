@@ -50,6 +50,8 @@ data/*.key
 .env.prod
 
 # IDEs & Editors
+.gemini/
+.cursor/
 .vscode/
 .idea/
 *.swp

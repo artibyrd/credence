@@ -16,6 +16,7 @@ from credence.pipeline.adapters import (
     OllamaProvider,
     OpenAIProvider,
     VertexModelGardenProvider,
+    compute_thinking_config,
     get_llm_provider,
 )
 
@@ -72,8 +73,184 @@ async def test_gemini_provider_generate_success():
         # Verify thinkingConfig and systemInstruction in request payload
         _, kwargs = mock_post.call_args
         payload = kwargs["json"]
-        assert payload["generationConfig"]["thinkingConfig"]["thinkingBudget"] == 4096
+        assert payload["generationConfig"]["thinkingConfig"] == {"thinkingBudget": 4096}
+        assert "thinkingLevel" not in payload["generationConfig"]["thinkingConfig"]
         assert "systemInstruction" in payload
+
+
+@pytest.mark.unit
+def test_gemini_provider_defaults_to_gemini_3_8_flash():
+    provider = GeminiProvider(api_key="fake-gemini-key")
+    assert provider.model_name == "gemini-3.8-flash"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("model_name", "thinking_budget", "thinking_level", "expected"),
+    [
+        # Gemini 3.8 & Gemini 4 deterministic integer-budget -> thinkingLevel mapping
+        ("gemini-3.8-flash", 0, None, {"thinkingLevel": "minimal"}),
+        ("gemini-3.8-flash", 512, None, {"thinkingLevel": "low"}),
+        ("gemini-3.8-flash", 1024, None, {"thinkingLevel": "low"}),
+        ("gemini-3.8-flash", 1025, None, {"thinkingLevel": "medium"}),
+        ("gemini-3.8-flash", 4096, None, {"thinkingLevel": "medium"}),
+        ("gemini-3.8-flash", 4097, None, {"thinkingLevel": "high"}),
+        ("gemini-3.8-flash", 16384, None, {"thinkingLevel": "high"}),
+        # Explicit thinking_level overrides budget and strictly excludes thinkingBudget
+        ("gemini-4-hydrogen", 4096, "low", {"thinkingLevel": "low"}),
+        ("gemini-4-argon", None, "medium", {"thinkingLevel": "medium"}),
+        ("gemini-4-neon", None, None, {"thinkingLevel": "medium"}),
+        ("gemini-4-carbon", 512, "HIGH", {"thinkingLevel": "high"}),
+        # Legacy Gemini 2.5 / 3.7 budget mode preserved when no thinking_level is set
+        ("gemini-3.7-flash", 4096, None, {"thinkingBudget": 4096}),
+        ("gemini-2.5-flash-lite", 512, None, {"thinkingBudget": 512}),
+        ("gemini-3.7-flash", 0, None, None),
+        ("gemini-3.7-flash", None, None, None),
+        # Budget-only models map explicit thinking_level back to thinkingBudget (never emit thinkingLevel)
+        ("gemini-3.7-flash", 4096, "low", {"thinkingBudget": 1024}),
+        ("gemini-3.5-flash-lite", None, "minimal", None),
+        ("gemini-3.5-flash-lite", None, "low", {"thinkingBudget": 1024}),
+        ("gemini-3.5-flash-lite", None, "medium", {"thinkingBudget": 4096}),
+        ("gemini-2.5-flash-lite", None, "high", {"thinkingBudget": 8192}),
+        # Non-thinking legacy models emit no thinkingConfig
+        ("gemini-2.0-flash-lite", 4096, None, None),
+        ("gemini-1.5-pro", 4096, "high", None),
+    ],
+)
+def test_compute_thinking_config_contract(model_name, thinking_budget, thinking_level, expected):
+    cfg = compute_thinking_config(model_name, thinking_budget=thinking_budget, thinking_level=thinking_level)
+    assert cfg == expected
+    if cfg is not None:
+        assert not ("thinkingLevel" in cfg and "thinkingBudget" in cfg)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_evaluator_passes_profile_thinking_levels_to_level_and_budget_models():
+    """Verify evaluate_snapshot forwards profile triage/default thinking_level cleanly for both level and budget models."""
+    from credence.config import COST_PROFILES, CostProfile
+    from credence.ingestion.extractor import ExtractedContent
+    from credence.ingestion.hasher import compute_content_sha256, compute_simhash
+    from credence.ingestion.snapshot import DualCaptureResult
+    from credence.pipeline.evaluator import evaluate_snapshot
+
+    text = "City officials announced a routine water main inspection on Tuesday morning."
+    snapshot = DualCaptureResult(
+        url="https://example.org/civic-notice",
+        content_sha256=compute_content_sha256(text),
+        simhash_64=compute_simhash(text),
+        raw_html=f"<html><body><p>{text}</p></body></html>",
+        extracted=ExtractedContent(
+            url="https://example.org/civic-notice",
+            title="Civic Notice",
+            byline="Staff",
+            clean_text=text,
+            word_count=len(text.split()),
+        ),
+    )
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "candidates": [{"content": {"parts": [{"text": '{"is_satire": false, "violations": []}'}]}}],
+        "usageMetadata": {"promptTokenCount": 50, "candidatesTokenCount": 10, "thoughtsTokenCount": 5},
+    }
+
+    # 1. Gemini 4 level model under ULTRA (triage='low', default='high')
+    ultra_provider = GeminiProvider(api_key="fake-key", model_name="gemini-4-neon")
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+        await evaluate_snapshot(
+            snapshot,
+            sign_result=False,
+            profile_override=COST_PROFILES[CostProfile.ULTRA],
+            provider=ultra_provider,
+        )
+        assert mock_post.await_count >= 2
+        payloads = [c.kwargs["json"]["generationConfig"]["thinkingConfig"] for c in mock_post.call_args_list]
+        assert payloads[0] == {"thinkingLevel": "low"}
+        assert all(p == {"thinkingLevel": "high"} for p in payloads[1:])
+        assert all("thinkingBudget" not in p for p in payloads)
+
+    # 2. Budget-only model under BALANCED (triage='minimal' -> omitted, default='medium' -> thinkingBudget: 4096)
+    budget_provider = GeminiProvider(api_key="fake-key", model_name="gemini-3.5-flash-lite")
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+        await evaluate_snapshot(
+            snapshot,
+            sign_result=False,
+            profile_override=COST_PROFILES[CostProfile.BALANCED],
+            provider=budget_provider,
+        )
+        assert mock_post.await_count >= 2
+        gen_configs = [c.kwargs["json"]["generationConfig"] for c in mock_post.call_args_list]
+        assert "thinkingConfig" not in gen_configs[0]
+        assert all(gc["thinkingConfig"] == {"thinkingBudget": 4096} for gc in gen_configs[1:])
+        assert all("thinkingLevel" not in gc.get("thinkingConfig", {}) for gc in gen_configs)
+
+
+@pytest.mark.unit
+def test_compute_thinking_config_validation_errors():
+    with pytest.raises(ValueError, match="thinking_budget must be >= 0"):
+        compute_thinking_config("gemini-3.8-flash", thinking_budget=-1)
+    with pytest.raises(ValueError, match="Unsupported thinking_level"):
+        compute_thinking_config("gemini-4-neon", thinking_level="extreme")
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("model_name", "thinking_level", "thinking_budget", "expected_level"),
+    [
+        ("gemini-3.8-flash", "minimal", None, "minimal"),
+        ("gemini-3.8-flash", None, 1024, "low"),
+        ("gemini-4-hydrogen", "low", 4096, "low"),
+        ("gemini-4-argon", "medium", None, "medium"),
+        ("gemini-4-neon", "high", None, "high"),
+        ("gemini-4-carbon", None, 8192, "high"),
+    ],
+)
+async def test_gemini_provider_modern_models_emit_only_thinking_level(
+    model_name, thinking_level, thinking_budget, expected_level
+):
+    provider = GeminiProvider(api_key="fake-gemini-key", model_name=model_name)
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "candidates": [{"content": {"parts": [{"text": '{"violations": []}'}]}}],
+        "usageMetadata": {"promptTokenCount": 100, "candidatesTokenCount": 20, "thoughtsTokenCount": 15},
+    }
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+        res = await provider.generate(
+            prompt="Audit this article",
+            thinking_budget=thinking_budget,
+            thinking_level=thinking_level,
+        )
+        assert res.model_name == model_name
+        _, kwargs = mock_post.call_args
+        thinking_cfg = kwargs["json"]["generationConfig"]["thinkingConfig"]
+        assert thinking_cfg == {"thinkingLevel": expected_level}
+        assert "thinkingBudget" not in thinking_cfg
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_gemini_provider_legacy_25_flash_lite_emits_thinking_budget():
+    provider = GeminiProvider(api_key="fake-gemini-key", model_name="gemini-2.5-flash-lite")
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "candidates": [{"content": {"parts": [{"text": '{"violations": []}'}]}}],
+        "usageMetadata": {"promptTokenCount": 100, "candidatesTokenCount": 20, "thoughtsTokenCount": 10},
+    }
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+        await provider.generate(prompt="Replay legacy audit", thinking_budget=512)
+        _, kwargs = mock_post.call_args
+        thinking_cfg = kwargs["json"]["generationConfig"]["thinkingConfig"]
+        assert thinking_cfg == {"thinkingBudget": 512}
+        assert "thinkingLevel" not in thinking_cfg
 
 
 @pytest.mark.unit

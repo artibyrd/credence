@@ -288,4 +288,9 @@ audit-stale *urls: (preflight "poetry")
 sentinel-audit *urls: (preflight "poetry")
     poetry run python scripts/scheduled_sentinel_audit.py {{urls}}
 
+# Audit active model catalog freshness, sunset horizon, pricing parity, and harness alignment
+[group('core: engine')]
+check-models *args="": (preflight "poetry")
+    poetry run credence models check {{args}}
+
 
