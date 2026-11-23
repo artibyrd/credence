@@ -45,9 +45,10 @@ async def capture_webpage_fastpath(
     save_artifacts: bool = True,
     force_playwright: bool = False,
     timeout_ms: Optional[int] = None,
+    allow_playwright_fallback: bool = True,
 ) -> DualCaptureResult:
     """Capture webpage using Trafilatura fast-path (50ms), falling back to Playwright if needed."""
-    from credence.ingestion.security import validate_safe_url
+    from credence.ingestion.security import MAX_INGESTION_PAYLOAD_BYTES, create_safe_async_client, validate_safe_url
     from credence.storage.base import get_blob_storage
 
     is_local_file = url.startswith("file://") or url.startswith("text://")
@@ -55,13 +56,13 @@ async def capture_webpage_fastpath(
 
     # If force_playwright requested or local file, use Playwright engine
     if force_playwright or is_local_file:
+        if not allow_playwright_fallback:
+            raise ValueError("Playwright capture is disabled for fastpath-only ingestion.")
         return await capture_webpage(url, output_dir=output_dir, save_artifacts=save_artifacts, timeout_ms=timeout_ms)
 
-    # 1. Fast-Path HTTP GET via Safe Async Client
+    # 1. Fast-Path HTTP GET via Safe Async Client with strict streaming byte cap
     raw_html: Optional[str] = None
     try:
-        from credence.ingestion.security import create_safe_async_client
-
         async with create_safe_async_client(
             timeout=10.0,
             headers={
@@ -69,17 +70,35 @@ async def capture_webpage_fastpath(
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             },
         ) as client:
-            resp = await client.get(clean_url)
-            if resp.status_code == 200:
-                raw_html = resp.text
+            async with client.stream("GET", clean_url) as resp:
+                if resp.status_code == 200:
+                    content_length = resp.headers.get("Content-Length")
+                    if (
+                        content_length
+                        and content_length.isdigit()
+                        and int(content_length) > MAX_INGESTION_PAYLOAD_BYTES
+                    ):
+                        raise ValueError(f"Payload exceeds maximum allowed size ({MAX_INGESTION_PAYLOAD_BYTES} bytes).")
+                    chunks: list[bytes] = []
+                    total_bytes = 0
+                    async for chunk in resp.aiter_bytes():
+                        total_bytes += len(chunk)
+                        if total_bytes > MAX_INGESTION_PAYLOAD_BYTES:
+                            raise ValueError(
+                                f"Payload exceeds maximum allowed size ({MAX_INGESTION_PAYLOAD_BYTES} bytes)."
+                            )
+                        chunks.append(chunk)
+                    raw_html = b"".join(chunks).decode(resp.encoding or "utf-8", errors="replace")
+    except ValueError:
+        raise
     except Exception:
         raw_html = None
 
-    # 2. Check if Fast-Path succeeded with substantive content (>50 words)
+    # 2. Check if Fast-Path succeeded with substantive content (>50 words, or any text if fastpath-only)
     if raw_html:
         extracted = extract_clean_content(raw_html, url=clean_url)
         word_count = len(extracted.clean_text.split())
-        if word_count >= 50:
+        if word_count >= 50 or (not allow_playwright_fallback and extracted.clean_text.strip()):
             content_hash = compute_content_sha256(extracted.clean_text)
             simhash_hex = compute_simhash(extracted.clean_text)
 
@@ -102,6 +121,9 @@ async def capture_webpage_fastpath(
                 screenshot_file_path=None,
                 screenshot_bytes=None,
             )
+
+    if not allow_playwright_fallback:
+        raise ValueError("Unable to extract readable text from target URL via fastpath HTTP fetch.")
 
     # 3. Fallback to full Playwright Chromium capture
     return await capture_webpage(url, output_dir=output_dir, save_artifacts=save_artifacts, timeout_ms=timeout_ms)

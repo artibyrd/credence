@@ -2,34 +2,189 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-from typing import Optional
+import uuid
+from datetime import timedelta
+from typing import Any, Optional
 
-from mcp.server.mcpserver import MCPServer
-from sqlmodel import col, select
+from mcp.server.mcpserver import Context, MCPServer
+from sqlmodel import col, desc, select
 
 from credence.config import COST_PROFILES, CostProfile
 from credence.db import get_async_session, init_db
-from credence.models import Audit, Snapshot, Violation
+from credence.ingestion.hasher import compute_content_sha256, compute_simhash
+from credence.ingestion.security import is_safe_url
+from credence.models import Audit, AuditJob, Snapshot, Violation, WorkerRecord, utc_now
 from credence.pipeline.evaluator import evaluate_snapshot
+from credence.server.api.queue_guards import (
+    is_authenticated_operator,
+    resolve_authoritative_enqueue_content,
+)
+from credence.server.mcp.anchor_service import execute_verify_and_anchor
 
 logger = logging.getLogger("credence.server.mcp")
 
 
-def _register_eval_tools(server: MCPServer) -> None:
-    """Register evaluation tools."""
+def _extract_operator_status(ctx: Optional[Context]) -> bool:
+    """Inspect MCP Context HTTP request (if present) for explicit operator credentials."""
+    if ctx is None:
+        return False
+    req_ctx = getattr(ctx, "_request_context", None)
+    req = getattr(req_ctx, "request", None) if req_ctx is not None else None
+    return is_authenticated_operator(req) if req is not None else False
+
+
+def _register_eval_tools(server: MCPServer, transport_mode: str = "http") -> None:
+    """Register evaluation tools with transport-aware trust boundaries."""
 
     @server.tool(
         name="credence_check_url",
-        description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies.",
+        description="Fetch a URL snapshot, extract structured text, and evaluate against epistemic taxonomies with cache-first lookup and adaptive mempool wait when hosted workers are active.",
     )
     async def check_url(url: str, force: bool = False, profile: Optional[str] = None) -> str:
         from credence.pipeline.evaluator import audit_url
+        from credence.server.api.queue import (
+            clear_completion_state,
+            get_completed_report,
+            register_completion_listener,
+        )
+
+        allow_local = transport_mode == "stdio"
+        if not is_safe_url(url, allow_local=allow_local):
+            return json.dumps({"status": "rejected", "error": "Target URL blocked by SSRF security policy"}, indent=2)
+
+        await init_db()
+
+        # 1. Cache-first fastpath when not forcing fresh evaluation
+        if not force:
+            async with get_async_session() as s:
+                job_stmt = (
+                    select(AuditJob)
+                    .where(AuditJob.url == url, AuditJob.status == "completed")
+                    .order_by(desc(AuditJob.completed_at))
+                    .limit(1)
+                )
+                existing_job = (await s.exec(job_stmt)).first()
+                if existing_job and existing_job.consensus_verdict_json:
+                    return json.dumps(
+                        {
+                            "url": url,
+                            "status": "completed",
+                            "consensus": json.loads(existing_job.consensus_verdict_json),
+                        },
+                        indent=2,
+                    )
+
+                snap = (
+                    await s.exec(
+                        select(Snapshot).where(Snapshot.url == url).order_by(desc(Snapshot.captured_at)).limit(1)
+                    )
+                ).first()
+                if snap and snap.id is not None:
+                    cached_audit = (
+                        await s.exec(
+                            select(Audit).where(Audit.snapshot_id == snap.id).order_by(desc(Audit.audited_at)).limit(1)
+                        )
+                    ).first()
+                    if cached_audit:
+                        viols = (await s.exec(select(Violation).where(Violation.audit_id == cached_audit.id))).all()
+                        return json.dumps(
+                            {
+                                "url": url,
+                                "status": "cached",
+                                "content_sha256": cached_audit.content_sha256,
+                                "suspicion_score": cached_audit.suspicion_score,
+                                "classification": cached_audit.classification,
+                                "confidence_score": cached_audit.confidence_score,
+                                "node_pubkey": cached_audit.node_pubkey,
+                                "node_signature": cached_audit.node_signature,
+                                "violations": [v.model_dump() for v in viols],
+                            },
+                            indent=2,
+                            default=str,
+                        )
+        else:
+            clear_completion_state(url)
+
+        # 2. Adaptive mempool wait ONLY in hosted coordinator mode with active workers
+        if transport_mode != "stdio":
+            try:
+                async with get_async_session() as s:
+                    recent_cutoff = utc_now() - timedelta(minutes=15)
+                    active_workers = (
+                        await s.exec(select(WorkerRecord).where(WorkerRecord.last_seen >= recent_cutoff).limit(1))
+                    ).all()
+                    if active_workers:
+                        event = register_completion_listener(url)
+                        enq_stmt = select(AuditJob).where(
+                            AuditJob.url == url, col(AuditJob.status).in_(["pending", "claimed"])
+                        )
+                        if not (await s.exec(enq_stmt)).first():
+                            norm_text, sha256, fetch_err = await resolve_authoritative_enqueue_content(
+                                session=s,
+                                url=url,
+                                caller_text="",
+                                caller_sha256="",
+                                is_operator=False,
+                            )
+                            if not fetch_err and norm_text.strip():
+                                s.add(
+                                    AuditJob(
+                                        job_id=str(uuid.uuid4()),
+                                        url=url,
+                                        content_sha256=sha256,
+                                        normalized_text=norm_text,
+                                        priority=1,
+                                        client_affinity="fastmcp-ide-session",
+                                        target_quorum=1,
+                                        status="pending",
+                                    )
+                                )
+                                await s.commit()
+                        await asyncio.wait_for(event.wait(), timeout=25.0)
+                        completed = get_completed_report(url)
+                        if completed:
+                            return json.dumps(completed, indent=2)
+            except asyncio.TimeoutError:
+                logger.info("FastMCP 25s adaptive wait window expired; proceeding with local pipeline.")
+            except Exception as e:
+                logger.debug("FastMCP queue listener fallback: %s", e)
 
         prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
         report = await audit_url(url, force_refresh=force, profile_override=prof_cfg)
         return json.dumps(report.model_dump(mode="json"), indent=2)
+
+    @server.tool(
+        name="credence_verify_and_anchor",
+        description="Verify and anchor evaluated findings with verbatim grounding (G=1.00) and strict Ed25519 trust boundaries.",
+    )
+    async def verify_and_anchor(
+        url: str,
+        normalized_text: str,
+        suspicion_score: float,
+        classification: str,
+        violations: list[dict[str, Any]],
+        model_name: str = "anthropic/claude-3-7-sonnet",
+        worker_pubkey: Optional[str] = None,
+        worker_signature: Optional[str] = None,
+        audited_at: Optional[str] = None,
+        ctx: Optional[Context] = None,
+    ) -> str:
+        return await execute_verify_and_anchor(
+            url=url,
+            normalized_text=normalized_text,
+            suspicion_score=suspicion_score,
+            classification=classification,
+            violations=violations,
+            model_name=model_name,
+            is_stdio=(transport_mode == "stdio"),
+            is_operator=_extract_operator_status(ctx),
+            worker_pubkey=worker_pubkey,
+            worker_signature=worker_signature,
+            audited_at=audited_at,
+        )
 
     @server.tool(
         name="credence_evaluate_text",
@@ -42,7 +197,6 @@ def _register_eval_tools(server: MCPServer) -> None:
         profile: Optional[str] = None,
     ) -> str:
         from credence.ingestion.extractor import ExtractedContent
-        from credence.ingestion.hasher import compute_content_sha256, compute_simhash
         from credence.ingestion.snapshot import DualCaptureResult
 
         prof_cfg = COST_PROFILES.get(CostProfile(profile.lower())) if profile else None
@@ -66,7 +220,6 @@ def _register_eval_tools(server: MCPServer) -> None:
         async with get_async_session() as s:
             report = await evaluate_snapshot(snapshot, session=s, sign_result=True, profile_override=prof_cfg)
 
-            # Persist to database for cache & resource lookups
             snap_record = Snapshot(
                 url="text://inline",
                 content_sha256=snapshot.content_sha256,
@@ -78,8 +231,7 @@ def _register_eval_tools(server: MCPServer) -> None:
                 is_satire_cue=snapshot.extracted.is_satire_cue,
             )
             s.add(snap_record)
-            await s.commit()
-            await s.refresh(snap_record)
+            await s.flush()
 
             audit_record = Audit(
                 snapshot_id=snap_record.id,
@@ -99,25 +251,24 @@ def _register_eval_tools(server: MCPServer) -> None:
                 evaluation_method=report.evaluation_method,
             )
             s.add(audit_record)
-            await s.commit()
-            await s.refresh(audit_record)
+            await s.flush()
 
             for v in report.violations:
-                vr = Violation(
-                    audit_id=audit_record.id,
-                    rule_id=v.rule_id,
-                    rule_uri=v.rule_uri,
-                    domain=v.domain,
-                    cluster_id=v.cluster_id,
-                    severity=v.severity,
-                    confidence=v.confidence,
-                    quote_or_element=v.quote_or_element,
-                    reasoning=v.reasoning,
-                    line_or_selector=v.line_or_selector,
+                s.add(
+                    Violation(
+                        audit_id=audit_record.id,
+                        rule_id=v.rule_id,
+                        rule_uri=v.rule_uri,
+                        domain=v.domain,
+                        cluster_id=v.cluster_id,
+                        severity=v.severity,
+                        confidence=v.confidence,
+                        quote_or_element=v.quote_or_element,
+                        reasoning=v.reasoning,
+                        line_or_selector=v.line_or_selector,
+                    )
                 )
-                s.add(vr)
             await s.commit()
-
             return json.dumps(report.model_dump(mode="json"), indent=2)
 
     @server.tool(
@@ -148,7 +299,6 @@ def _register_eval_tools(server: MCPServer) -> None:
 
 async def _execute_browse_audits(category: str = "recent", limit: int = 10, format: str = "human") -> str:
     """Helper to browse stored audit records for FastMCP tools and resources."""
-
     await init_db()
     async with get_async_session() as s:
         cat = category.lower()
@@ -170,53 +320,43 @@ async def _execute_browse_audits(category: str = "recent", limit: int = 10, form
             stmt = select(Audit).where(Audit.is_satire).order_by(col(Audit.audited_at).desc()).limit(limit)
         elif cat == "random":
             stmt = select(Audit).limit(limit * 3)
-        else:  # "recent"
+        else:
             stmt = select(Audit).order_by(col(Audit.audited_at).desc()).limit(limit)
 
-        res = await s.exec(stmt)
-        audits = res.all()
-
+        audits = (await s.exec(stmt)).all()
         if not audits:
             return f"No audit records found for category: '{category}'"
 
         fmt = format.lower()
         if fmt in ("table", "grid"):
-            lines = [f"{'SCORE':6} | {'VERDICT':12} | {'SHA-256':24} | {'TIMESTAMP'}", "-" * 70]
+            lines = [f"{'SCORE':6} | {'VERDICT':12} | {'SHA-256':71} | {'TIMESTAMP'}", "-" * 115]
             for a in audits:
                 badge = "SATIRE" if a.is_satire else a.classification
-                lines.append(
-                    f"[{a.suspicion_score:4.1f}] {badge:12} | SHA: {a.content_sha256[:20]}... | {a.audited_at}"
-                )
+                lines.append(f"[{a.suspicion_score:4.1f}] {badge:12} | {a.content_sha256} | {a.audited_at}")
             return "\n".join(lines)
-        elif fmt == "ndjson":
-            lines = []
-            for a in audits:
-                d = a.to_dict() if hasattr(a, "to_dict") else a.model_dump()
-                lines.append(json.dumps(d, default=str))
-            return "\n".join(lines)
-        elif fmt == "tsv":
+        if fmt == "ndjson":
+            return "\n".join(
+                json.dumps(a.to_dict() if hasattr(a, "to_dict") else a.model_dump(), default=str) for a in audits
+            )
+        if fmt == "tsv":
             lines = ["content_sha256\tsuspicion_score\tclassification\tconfidence_score\taudited_at"]
             for a in audits:
                 lines.append(
                     f"{a.content_sha256}\t{a.suspicion_score:.1f}\t{a.classification}\t{a.confidence_score:.2f}\t{a.audited_at}"
                 )
             return "\n".join(lines)
-        elif fmt == "compact":
-            lines = []
-            for a in audits:
-                badge = "SATIRE" if a.is_satire else a.classification
-                lines.append(
-                    f"[{a.suspicion_score:4.1f}] {badge:12} | SHA: {a.content_sha256[:20]}... | {a.audited_at}"
-                )
-            return "\n".join(lines)
-        elif fmt in ("human", "markdown", "summary"):
+        if fmt == "compact":
+            return "\n".join(
+                f"[{a.suspicion_score:4.1f}] {'SATIRE' if a.is_satire else a.classification:12} | {a.content_sha256} | {a.audited_at}"
+                for a in audits
+            )
+        if fmt in ("human", "markdown", "summary"):
             lines = [f"### 🛡️ Credence Epistemic Audits Stream: {category.upper()}", ""]
             for idx, a in enumerate(audits, 1):
                 badge = "🎭 SATIRE" if a.is_satire else a.classification
                 lines.append(
-                    f"{idx}. **{badge}** (Score: `{a.suspicion_score:.1f}/100.0`, Density: `{a.suspicion_density:.1f}/1k`) — SHA: `{a.content_sha256[:16]}...` ({a.audited_at})"
+                    f"{idx}. **{badge}** (Score: `{a.suspicion_score:.1f}/100.0`, Density: `{a.suspicion_density:.1f}/1k`) — SHA: `{a.content_sha256}` ({a.audited_at})"
                 )
             return "\n".join(lines)
-        else:
-            records = [a.to_dict() if hasattr(a, "to_dict") else a.model_dump() for a in audits]
-            return json.dumps(records, indent=2, default=str)
+        records = [a.to_dict() if hasattr(a, "to_dict") else a.model_dump() for a in audits]
+        return json.dumps(records, indent=2, default=str)

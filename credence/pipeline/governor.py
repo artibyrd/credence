@@ -94,11 +94,38 @@ def compute_call_cost(
 
 
 def get_active_api_key() -> Tuple[Optional[str], str]:
-    """Retrieve active API key, strictly prioritizing CREDENCE_GEMINI_API_KEY for isolation."""
+    """Retrieve active LLM credential source across Gemini and platform-agnostic providers."""
+    import os
+
     if settings.CREDENCE_GEMINI_API_KEY:
         return settings.CREDENCE_GEMINI_API_KEY, "CREDENCE_GEMINI_API_KEY"
     if settings.GEMINI_API_KEY:
         return settings.GEMINI_API_KEY, "GEMINI_API_KEY"
+    env_credence_gemini = os.environ.get("CREDENCE_GEMINI_API_KEY")
+    if env_credence_gemini:
+        return env_credence_gemini, "CREDENCE_GEMINI_API_KEY"
+    env_gemini = os.environ.get("GEMINI_API_KEY")
+    if env_gemini:
+        return env_gemini, "GEMINI_API_KEY"
+
+    platform_sources = (
+        (settings.CREDENCE_MODEL_API_KEY or os.environ.get("CREDENCE_MODEL_API_KEY"), "CREDENCE_MODEL_API_KEY"),
+        (settings.ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY"), "ANTHROPIC_API_KEY"),
+        (settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY"), "OPENAI_API_KEY"),
+        (settings.DEEPSEEK_API_KEY or os.environ.get("DEEPSEEK_API_KEY"), "DEEPSEEK_API_KEY"),
+        (os.environ.get("OPENAI_COMPATIBLE_BASE_URL"), "OPENAI_COMPATIBLE_BASE_URL"),
+        (
+            settings.OLLAMA_HOST
+            or settings.OLLAMA_BASE_URL
+            or os.environ.get("OLLAMA_HOST")
+            or os.environ.get("OLLAMA_BASE_URL"),
+            "OLLAMA_HOST",
+        ),
+        (os.environ.get("VERTEX_BEARER_TOKEN"), "VERTEX_BEARER_TOKEN"),
+    )
+    for value, label in platform_sources:
+        if value:
+            return value, label
     return None, "NONE_OFFLINE"
 
 

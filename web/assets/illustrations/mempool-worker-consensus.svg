@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="obsidian-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="node-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+    <marker id="arr-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+  </defs>
+
+  <rect width="880" height="380" rx="12" fill="url(#obsidian-bg)" stroke="rgba(56, 189, 248, 0.22)" stroke-width="1" />
+  <text x="32" y="28" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.12em">OPEN MEMPOOL PROTOCOL</text>
+  <text x="32" y="49" fill="#ffffff" font-size="15" font-family="sans-serif" font-weight="bold">CACHE FASTPATH, LINEAGE FAN-OUT &amp; GALILEO CONSENSUS</text>
+
+  <!-- 1. Consumer FastMCP Client Node -->
+  <g filter="url(#node-shadow)">
+    <rect x="28" y="162" width="114" height="72" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="85" y="191" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">FASTMCP</text>
+    <text x="85" y="210" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">IDE Client</text>
+  </g>
+
+  <!-- 2. Cache Decision Diamond -->
+  <g filter="url(#node-shadow)">
+    <polygon points="212,158 256,198 212,238 168,198" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="212" y="195" fill="#ffffff" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">Cache</text>
+    <text x="212" y="209" fill="#38bdf8" font-size="9" font-family="monospace" text-anchor="middle">Hit?</text>
+  </g>
+
+  <!-- Cache Hit Return Arc (top lane) -->
+  <path d="M 212 158 C 212 96, 85 96, 85 158" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#arr-cyan)" />
+  <text x="148" y="92" fill="#38bdf8" font-size="9" font-family="monospace" text-anchor="middle">CACHE HIT (0ms)</text>
+
+  <!-- Client to Diamond -->
+  <line x1="142" y1="198" x2="165" y2="198" stroke="#38bdf8" stroke-width="1.8" marker-end="url(#arr-cyan)" />
+
+  <!-- Diamond Miss to Mempool Queue -->
+  <line x1="256" y1="198" x2="294" y2="198" stroke="#a855f7" stroke-width="1.8" marker-end="url(#arr-violet)" />
+
+  <!-- 3. Coordinator Mempool Queue Rack -->
+  <g filter="url(#node-shadow)">
+    <rect x="298" y="128" width="144" height="140" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="1.5" />
+    <text x="370" y="150" fill="#a855f7" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">COORDINATOR</text>
+    <text x="370" y="168" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">Mempool Queue</text>
+    <!-- Stacked Queue Slots -->
+    <rect x="314" y="180" width="112" height="22" rx="4" fill="#1e1b4b" stroke="#a855f7" stroke-width="0.9" />
+    <text x="370" y="195" fill="#e9d5ff" font-size="9" font-family="monospace" text-anchor="middle">P1 Lease: 15s</text>
+    <rect x="314" y="208" width="112" height="22" rx="4" fill="#172554" stroke="#38bdf8" stroke-width="0.9" />
+    <text x="370" y="223" fill="#bae6fd" font-size="9" font-family="monospace" text-anchor="middle">P2/P3: 180s</text>
+    <rect x="314" y="236" width="112" height="22" rx="4" fill="#020617" stroke="#64748b" stroke-width="0.9" />
+    <text x="370" y="251" fill="#94a3b8" font-size="9" font-family="monospace" text-anchor="middle">SHA-256 Fetch</text>
+  </g>
+
+  <!-- 4. Distinct Lineage Fan-Out Tracks -->
+  <path d="M 442 164 C 476 164, 480 118, 514 118" fill="none" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arr-emerald)" />
+  <line x1="442" y1="198" x2="514" y2="198" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arr-emerald)" />
+  <path d="M 442 232 C 476 232, 480 278, 514 278" fill="none" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arr-emerald)" />
+
+  <!-- 3 Independent Model Lineage Worker Nodes -->
+  <g filter="url(#node-shadow)">
+    <rect x="518" y="92" width="132" height="52" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.4" />
+    <circle cx="536" cy="118" r="6" fill="#38bdf8" />
+    <text x="550" y="114" fill="#ffffff" font-size="11" font-family="sans-serif" font-weight="bold">Lineage A</text>
+    <text x="550" y="130" fill="#94a3b8" font-size="9" font-family="monospace">Gemini / Ed25519</text>
+
+    <rect x="518" y="172" width="132" height="52" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.4" />
+    <circle cx="536" cy="198" r="6" fill="#22c55e" />
+    <text x="550" y="194" fill="#ffffff" font-size="11" font-family="sans-serif" font-weight="bold">Lineage B</text>
+    <text x="550" y="210" fill="#94a3b8" font-size="9" font-family="monospace">Claude / Ed25519</text>
+
+    <rect x="518" y="252" width="132" height="52" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.4" />
+    <circle cx="536" cy="278" r="6" fill="#f59e0b" />
+    <text x="550" y="274" fill="#ffffff" font-size="11" font-family="sans-serif" font-weight="bold">Lineage C</text>
+    <text x="550" y="290" fill="#94a3b8" font-size="9" font-family="monospace">DeepSeek / Local</text>
+  </g>
+
+  <!-- 5. Convergence into G=1.00 Grounding & Bayesian Aggregator -->
+  <path d="M 650 118 C 682 118, 686 172, 718 178" fill="none" stroke="#38bdf8" stroke-width="1.7" marker-end="url(#arr-cyan)" />
+  <line x1="650" y1="198" x2="718" y2="198" stroke="#22c55e" stroke-width="1.7" marker-end="url(#arr-emerald)" />
+  <path d="M 650 278 C 682 278, 686 224, 718 218" fill="none" stroke="#f59e0b" stroke-width="1.7" marker-end="url(#arr-amber)" />
+
+  <g filter="url(#node-shadow)">
+    <rect x="722" y="146" width="130" height="104" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.6" />
+    <text x="787" y="170" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">QUORUM SEAL</text>
+    <text x="787" y="191" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">Bayesian +</text>
+    <text x="787" y="208" fill="#ffffff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">G=1.00 Gate</text>
+    <text x="787" y="232" fill="#f59e0b" font-size="9" font-family="monospace" text-anchor="middle">Galileo Override</text>
+  </g>
+
+  <!-- Galileo Override Feedback Loop returning Sealed Verdict back to Coordinator Store -->
+  <path d="M 787 250 L 787 336 L 370 336 L 370 272" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#arr-amber)" />
+  <text x="584" y="356" fill="#f59e0b" font-size="9.5" font-family="monospace" text-anchor="middle">GROUNDED VERDICT ARCHIVED TO COORDINATOR</text>
+</svg>

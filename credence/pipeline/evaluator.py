@@ -23,16 +23,15 @@ from typing import List, Optional
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from credence.config import CostProfileConfig
+from credence.config import CostProfile, CostProfileConfig
 from credence.db import get_async_session, init_db
 from credence.identity import load_or_create_node_identity, sign_audit_report
 from credence.ingestion.extractor import ExtractedContent
 from credence.ingestion.snapshot import DualCaptureResult, capture_webpage_fastpath
 from credence.models import Audit, Snapshot, Violation
-from credence.pipeline.adapters import LLMResponse, get_llm_provider
+from credence.pipeline.adapters import BaseLLMProvider, LLMResponse, get_llm_provider
 from credence.pipeline.governor import (
     check_budget_before_call,
-    get_active_api_key,
     record_token_usage,
 )
 from credence.pipeline.heuristics import (
@@ -68,6 +67,7 @@ async def evaluate_snapshot(
     session: Optional[AsyncSession] = None,
     sign_result: bool = True,
     profile_override: Optional[CostProfileConfig] = None,
+    provider: Optional[BaseLLMProvider] = None,
 ) -> AuditReport:
     """Execute the granular cluster-swarm evaluation pipeline against a captured snapshot."""
     active_reg = reg or registry
@@ -79,15 +79,14 @@ async def evaluate_snapshot(
     taxonomies_used = active_reg.get_catalog_hashes()
     clusters = active_reg.get_granular_evaluation_clusters(max_rules_per_cluster=6)
 
-    # Check Token Budget Governor and API Key status
-    quota_preserved = False
-    api_key, key_source = get_active_api_key()
-    if not api_key:
-        quota_preserved = True
+    # Resolve active provider BEFORE evaluating quota/credential status (multi-model sovereignty)
+    provider = provider or get_llm_provider()
+    force_offline = profile_override is not None and profile_override.profile == CostProfile.OFFLINE
+    quota_preserved = force_offline or provider is None or not provider.has_credentials()
 
     if session is not None and not quota_preserved:
         estimated_tok = 1000 + (len(clusters) * 800)
-        budget_ok, reason = await check_budget_before_call(
+        budget_ok, _ = await check_budget_before_call(
             session, estimated_tokens=estimated_tok, profile_override=profile_override
         )
         if not budget_ok:
@@ -108,8 +107,8 @@ async def evaluate_snapshot(
     discovered_violations.extend(dom_structural_violations)
     used_llm = False
     model_name: Optional[str] = None
+    total_tokens_used = 0
 
-    provider = get_llm_provider()
     if provider is not None and not quota_preserved:
         try:
             model_name = provider.model_name
@@ -160,6 +159,8 @@ async def evaluate_snapshot(
                         if (v.rule_id, v.quote_or_element) not in existing_keys:
                             discovered_violations.append(v)
                             existing_keys.add((v.rule_id, v.quote_or_element))
+
+            total_tokens_used = total_prompt_tok + total_comp_tok + total_think_tok
 
             if session is not None:
                 await record_token_usage(
@@ -275,6 +276,7 @@ async def evaluate_snapshot(
         sourcing_ratios=sourcing_ratios,
         is_taxonomy_stale=False,
     )
+    report.tokens_used = total_tokens_used
 
     # Step 7: Cryptographic Attestation Signing
     if sign_result:

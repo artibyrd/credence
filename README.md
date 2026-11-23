@@ -4,7 +4,7 @@
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
-[![FastMCP 2.0](https://img.shields.io/badge/FastMCP-2.0-cyan.svg)](https://docs.credence.run#docs/protocols/fastmcp)
+[![FastMCP 2.0](https://img.shields.io/badge/FastMCP-2.0-cyan.svg)](https://docs.credence.run/protocols/fastmcp)
 
 **Credence** is an open-source trust engine, FastMCP 2.0 server, and decentralized verification network. It audits web articles, news stories, and research claims for **clickbait, logical fallacies, and deceptive tactics** — backing every finding with **100% exact verbatim quotes from the original text** so there are zero AI hallucinations.
 
@@ -12,70 +12,68 @@ Every evaluation produces a cryptographically signed receipt (Ed25519) that can 
 
 ---
 
-## ⚡ 60-Second Quickstart
+## ⚡ The Credence Graduation Path
 
-Get started immediately with the CLI or Docker:
+Get started with Credence at the layer that matches your needs:
 
-### 1. Install
+| Tier | Role | Setup Time | Launch Command | Guide |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Consume** | FastMCP 2.0 Client | **< 60s** | `uvx --from git+https://github.com/artibyrd/credence credence serve --mcp` | [FastMCP Quickstart](https://docs.credence.run/quickstart-mcp) |
+| **2. Contribute** | Volunteer Worker Daemon | **< 2m** | `uvx --from git+https://github.com/artibyrd/credence credence worker` | [Worker Quickstart](https://docs.credence.run/quickstart-worker) |
+| **3. Host & Coordinate** | Sovereign Coordinator Node | **< 5m** | `curl -fsSL https://credence.run/install.sh \| bash` • `just ignite` | [Node Quickstart](https://docs.credence.run/quickstart-node) |
 
-```bash
-# Automated install (Linux & macOS)
-curl -fsSL https://credence.run/install.sh | bash
-
-# Or clone and install with Poetry
-git clone https://github.com/artibyrd/credence.git
-cd credence
-poetry install
+### 1. FastMCP 2.0 AI Assistant (<60s) — Connect Claude & Cursor
+Give Claude Desktop, Cursor, or AI swarms the in-editor Epistemic Brake with zero infrastructure:
+```json
+{
+  "mcpServers": {
+    "credence": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/artibyrd/credence", "credence", "serve", "--mcp"]
+    }
+  }
+}
 ```
+*(Or connect directly to the public remote endpoints: `https://mcp.credence.run/sse` or Streamable HTTP `https://mcp.credence.run/mcp`)* • 📖 **[FastMCP Quickstart Guide](https://docs.credence.run/quickstart-mcp)**
 
-*(Or run via Docker: `docker run -d -p 8000:8000 ghcr.io/artibyrd/credence:latest`)*
-
-### 2. Configure API Key & Operator Security (Optional)
-
+### 2. Volunteer Worker Daemon (<2m) — Donate Compute to the Mempool
+Not getting audits fast enough? Earn cryptographic merit badges and climb the public leaderboard using any supported model API or local open-weights server:
 ```bash
-# Multi-agent reasoning (Gemini 3.7 Flash)
-export CREDENCE_GEMINI_API_KEY="your-gemini-api-key"
+# Launch volunteer worker with zero permanent install via uvx
+uvx --from git+https://github.com/artibyrd/credence credence worker --node https://credence.run --model google/gemini-3.8-flash
 
-# Bootstrap local operator admin key for web command deck (https://credence.nexus#admin)
-just auth-bootstrap local
+# Or run 100% offline with local Ollama ($0.00 spend)
+uvx --from git+https://github.com/artibyrd/credence credence worker --node https://credence.run --model ollama/llama3.3:70b
 ```
+📖 **[Volunteer Worker Quickstart Guide](https://docs.credence.run/quickstart-worker)**
 
-> 💡 **Zero-Cost / Offline Mode**: If no API key is provided, Credence runs in **100% offline heuristic mode** ($0.00 cost) using structural rules.
-
-### 3. Run Your First Audit & Launch Workstation
-
+### 3. Sovereign Node & Coordinator (<5m) — Full-Stack Hosting
+Have a team running lots of audits? Host a sovereign coordinator node with local mempool and web Admin Deck:
 ```bash
 # 1-Command ignite: setup, preflight, bootstrap admin key, germinate, and verify
+curl -fsSL https://credence.run/install.sh | bash
 just ignite
-
-# Audit any URL directly from your terminal
-credence audit https://example.com/news-story
-
-# Launch the interactive full-screen terminal dashboard
-credence tui
-
-# Print a 24-hour morning epistemic news briefing
-credence digest
 ```
+*(Or run via Docker: `docker run -d -p 8000:8000 ghcr.io/artibyrd/credence:latest`)* • 📖 **[Sovereign Node Quickstart Guide](https://docs.credence.run/quickstart-node)**
 
 ---
 
 ## 🧭 Topic Index: Finding What You Need
 
-> Looking for a specific setting, command, or concept? Check our comprehensive **[Topic Index & Cheat Sheet](docs/topic-index.md)** ("Finding the Marble in the Oatmeal"):
+> Looking for a specific setting, command, or concept? Check our comprehensive **[Topic Index & Cheat Sheet](https://docs.credence.run/topic-index)** ("Finding the Marble in the Oatmeal"):
 
 | Topic Category | Direct Jump Links |
 | :--- | :--- |
-| **🚀 Getting Started** | [POSIX Install](docs/quickstart.md#1-quick-installation) &bull; [Docker Setup](docs/quickstart.md#1-quick-installation) &bull; [API Key Config](docs/quickstart.md#2-api-key-configuration) &bull; [Node Germination](docs/protocols/node-germination-lifecycle.md) |
-| **💻 CLI & Workstation** | [`audit`](docs/walkthroughs/01-auditing-webpages-and-text.md) &bull; [`tui`](docs/integrations/tui-workstation.md) &bull; [`digest`](docs/walkthroughs/04-morning-digest-briefings.md) &bull; [`sifter`](docs/walkthroughs/02-zero-trust-feed-sifting.md) &bull; [`quota`](docs/protocols/token-governor.md) &bull; [`rank`](docs/protocols/epistemic-merit-and-leaderboards.md) |
-| **🤖 AI & FastMCP 2.0** | [Claude Desktop Config](docs/tutorials/03-claude-cursor-fastmcp.md) &bull; [Cursor Setup](docs/tutorials/03-claude-cursor-fastmcp.md) &bull; [Antigravity SDK](docs/agentic/01-antigravity-pair-programming-paradigm.md) &bull; [Epistemic Brake](docs/cookbooks/agentic-epistemic-brake.md) |
-| **💰 Cost & Tokens** | [`FREE` ($0.00)](docs/protocols/token-governor.md) &bull; [`BALANCED` (Default)](docs/portability/gemini-economic-rationale.md) &bull; [`ULTRA` (Investigative)](docs/cookbooks/financial-disclosures.md) &bull; [Headroom Breaker](docs/protocols/token-governor.md) |
-| **📜 Ethics & Taxonomies**| [SPJ Journalism Code](docs/cookbooks/taxonomy-engineering.md) &bull; [IEP Fallacies](docs/cookbooks/taxonomy-engineering.md) &bull; [Deceptive UI](docs/cookbooks/taxonomy-engineering.md) &bull; [Authoring YAML Rules](docs/cookbooks/taxonomy-engineering.md) |
-| **🎭 Satire & Parody** | [Poe's Law](docs/tutorials/02-satire-vs-disinformation.md) &bull; [Satire Neutralization](docs/security/satire-cloaking-defense.md) &bull; [`SPJ-1.6` Cloaking Override](docs/security/satire-cloaking-defense.md) |
-| **🕸️ P2P Mesh & Consensus**| [3-Node Quickstart](docs/tutorials/05-mesh-quickstart.md) &bull; [13-Node Chaos Lab](docs/tutorials/06-thirteen-node-chaos-lab.md) &bull; [Seed Nodes](docs/bootstrap-seeds.md) &bull; [DNS SRV Discovery](docs/mesh-engineering/dns-srv-discovery.md) |
-| **📐 Mathematical Proofs**| [Weighted Medians Proof](docs/mathematics/robust-consensus-proofs.md) &bull; [The Galileo Rule](docs/mathematics/robust-consensus-proofs.md) &bull; [SimHash-64](docs/mathematics/simhash-mirror-detection.md) |
-| **☁️ Operations & Hosting**| [Raspberry Pi Node](docs/operations/raspberry-pi-homelab.md) &bull; [Cloud Run ($15/mo Cap)](docs/deployment-cloudrun.md) &bull; [Tailscale Mesh](docs/operations/tailscale-wireguard-mesh.md) &bull; [WAL Maintenance](docs/operations/database-pruning-wal.md) |
-| **🏛️ The Invariant Bible** | [Living Canon of System Invariants](docs/agent-invariants.md) |
+| **🚀 Getting Started** | [Graduation Path](https://docs.credence.run/quickstart) • [FastMCP Quickstart](https://docs.credence.run/quickstart-mcp) • [Worker Quickstart](https://docs.credence.run/quickstart-worker) • [Node Quickstart](https://docs.credence.run/quickstart-node) • [Node Germination](https://docs.credence.run/protocols/node-germination-lifecycle) |
+| **💻 CLI & Workstation** | [`audit`](https://docs.credence.run/walkthroughs/01-auditing-webpages-and-text) • [`tui`](https://docs.credence.run/integrations/tui-workstation) • [`digest`](https://docs.credence.run/walkthroughs/04-morning-digest-briefings) • [`sifter`](https://docs.credence.run/walkthroughs/02-zero-trust-feed-sifting) • [`quota`](https://docs.credence.run/protocols/token-governor) • [`rankings`](https://docs.credence.run/protocols/epistemic-merit-and-leaderboards) |
+| **🤖 AI & FastMCP 2.0** | [Claude Desktop Config](https://docs.credence.run/tutorials/03-claude-cursor-fastmcp) • [Cursor Setup](https://docs.credence.run/tutorials/03-claude-cursor-fastmcp) • [Antigravity SDK](https://docs.credence.run/agentic/01-antigravity-pair-programming-paradigm) • [Epistemic Brake](https://docs.credence.run/cookbooks/agentic-epistemic-brake) |
+| **💰 Cost & Tokens** | [`FREE` ($0.00)](https://docs.credence.run/protocols/token-governor) • [`BALANCED`](https://docs.credence.run/portability/gemini-economic-rationale) • [`ULTRA` (Investigative)](https://docs.credence.run/cookbooks/financial-disclosures) • [Headroom Breaker](https://docs.credence.run/protocols/token-governor) |
+| **📜 Ethics & Taxonomies** | [SPJ Journalism Code](https://docs.credence.run/cookbooks/taxonomy-engineering) • [IEP Fallacies](https://docs.credence.run/cookbooks/taxonomy-engineering) • [Deceptive UI](https://docs.credence.run/cookbooks/taxonomy-engineering) • [Authoring YAML Rules](https://docs.credence.run/cookbooks/taxonomy-engineering) |
+| **🎭 Satire & Parody** | [Poe's Law](https://docs.credence.run/tutorials/02-satire-vs-disinformation) • [Satire Neutralization](https://docs.credence.run/security/satire-cloaking-defense) • [`SPJ-1.6` Cloaking Override](https://docs.credence.run/security/satire-cloaking-defense) |
+| **🕸️ P2P Mesh & Consensus** | [3-Node Quickstart](https://docs.credence.run/tutorials/05-mesh-quickstart) • [13-Node Chaos Lab](https://docs.credence.run/tutorials/06-thirteen-node-chaos-lab) • [Seed Nodes](https://docs.credence.run/bootstrap-seeds) • [DNS SRV Discovery](https://docs.credence.run/mesh-engineering/dns-srv-discovery) |
+| **📐 Mathematical Proofs** | [Weighted Medians Proof](https://docs.credence.run/mathematics/robust-consensus-proofs) • [The Galileo Rule](https://docs.credence.run/mathematics/robust-consensus-proofs) • [SimHash-64](https://docs.credence.run/mathematics/simhash-mirror-detection) |
+| **☁️ Operations & Hosting** | [Raspberry Pi Node](https://docs.credence.run/operations/raspberry-pi-homelab) • [Cloud Run ($15/mo Cap)](https://docs.credence.run/deployment-cloudrun) • [Tailscale Mesh](https://docs.credence.run/operations/tailscale-wireguard-mesh) • [WAL Maintenance](https://docs.credence.run/operations/database-pruning-wal) |
+| **🏛️ The Invariant Bible** | [Living Canon of System Invariants](https://docs.credence.run/invariants) |
 
 ---
 
@@ -86,12 +84,12 @@ Credence maintains 100% synchronous feature parity across 4 distinct interfaces:
 ### 1. 🖥️ Terminal Command Line (CLI)
 Run fast audits, filter JSON streams with `jq`, and enforce quality gates in GitHub Actions:
 ```bash
-credence audit https://arstechnica.com/tech-policy/...
-credence audit https://example.com/claim --json | jq .suspicion_score
+credence audit https://arstechnica.com/tech-policy/2026/08/ai-copyright-settlement
+credence audit https://example.com/claim --format json | jq .suspicion_score
 ```
 
 ### 2. ⚡ AI Assistant Integration (FastMCP 2.0)
-Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims:
+Give Claude Desktop, Cursor, and agent swarms real-time tools to evaluate claims over native `stdio`, SSE (`/sse`), or Streamable HTTP (`/mcp`), backed by a cache-first fastpath, 25-second hosted Epistemic Brake window, and cryptographically authenticated anchoring (`credence_verify_and_anchor`):
 ```json
 {
   "mcpServers": {
@@ -130,13 +128,13 @@ Open, inspect, and share high-contrast verification receipts directly in your br
 
 ## 💰 Operational Cost Profiles
 
-Credence adapts to your budget with 3 preconfigured profiles:
+Credence adapts to your budget with preconfigured profiles (and supports any major LLM provider or local Ollama endpoint):
 
-| Profile | Primary Engine | Thinking Tokens | Cost per 1k Audits | Best For |
+| Profile | Primary Engine | Thinking Tokens | Estimated Cost per 1k Audits | Best For |
 | :--- | :--- | :--- | :--- | :--- |
-| **`FREE`** | Offline Heuristics | 0 tokens | **$0.00 (Zero Spend)** | Air-gapped CI/CD, hermetic pipelines |
-| **`BALANCED`** *(Default)* | Gemini 3.7 Flash | 1,024 – 4,096 tokens | **$0.34 – $0.68** | Daily news, RSS sifting, developer workflows |
-| **`ULTRA`** | Gemini 3.7 Flash + Pro | 8,192 – 16,384 tokens | **$1.10 – $2.20** | Deep investigative 10-K & legal filings |
+| **`FREE`** | Zero-spend tier / Offline Heuristics | 0 tokens | **$0.00 (Zero Spend)** | Air-gapped CI/CD, hermetic pipelines |
+| **`ECONOMY` / `BALANCED`** | Configured Cloud or Local LLM | 512 – 4,096 tokens | **$0.34 – $0.68** | Daily news, RSS sifting, developer workflows |
+| **`ULTRA`** | High-reasoning LLM | 4,096 – 16,384 tokens | **$1.10 – $2.20** | Deep investigative 10-K & legal filings |
 
 > 🛡️ **Headroom Circuit Breaker**: If your daily token budget reaches 30% remaining headroom, Credence automatically switches to offline heuristic mode to guarantee zero surprise bills.
 
@@ -150,7 +148,7 @@ If you are developing or testing Credence, use the standard `just` commands:
 # Verify developer dependencies
 just preflight
 
-# Run the hermetic test suite (144 tests, 100% offline)
+# Run the hermetic unit test suite (100% offline)
 just test
 
 # Format and check types
@@ -169,14 +167,14 @@ just mesh-cluster-up
 ## 📚 Complete Documentation & Deep References
 
 - 📘 **[Documentation Portal](https://docs.credence.run)**: Interactive docs with zero npm build requirements.
-- 📘 **[Topic Index & Cheat Sheet](docs/topic-index.md)**: Categorized fast lookup for all commands and concepts.
-- 📘 **[The Invariant Bible](docs/agent-invariants.md)**: Living canon of architectural, mathematical, and security invariants.
-- 📘 **[Adversarial Threat Model FAQ](docs/faq-adversarial-defense.md)**: Red team analysis, prompt injection defense, and SSRF guards.
-- 📘 **[Mathematics of Robust Consensus](docs/mathematics/robust-consensus-proofs.md)**: Weighted medians and Galileo Rule proofs.
-- 📘 **[Cloud Run Deployment Guide](docs/deployment-cloudrun.md)**: Terraform production setup with $15/mo budget cap.
+- 📘 **[Topic Index & Cheat Sheet](https://docs.credence.run/topic-index)**: Categorized fast lookup for all commands and concepts.
+- 📘 **[The Invariant Bible](https://docs.credence.run/invariants)**: Living canon of architectural, mathematical, and security invariants.
+- 📘 **[Adversarial Threat Model FAQ](https://docs.credence.run/faq-adversarial-defense)**: Red team analysis, prompt injection defense, and SSRF guards.
+- 📘 **[Mathematics of Robust Consensus](https://docs.credence.run/mathematics/robust-consensus-proofs)**: Weighted medians and Galileo Rule proofs.
+- 📘 **[Cloud Run Deployment Guide](https://docs.credence.run/deployment-cloudrun)**: Terraform production setup with $15/mo budget cap.
 
 ---
 
 ## 📄 License
 
-MIT License &copy; 2026 Credence Network Contributors.
+MIT License © 2026 Credence Network Contributors.

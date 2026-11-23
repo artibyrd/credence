@@ -4,67 +4,59 @@ Provides unified interface across:
 1. Google Gemini REST API (gemini-3.7-flash with thinkingConfig)
 2. Anthropic Claude Messages API
 3. OpenAI Chat Completions API
-4. Local Ollama / vLLM API
-5. Deterministic Offline Heuristic Provider
+4. OpenAI-Compatible & DeepSeek APIs
+5. Local Ollama / vLLM API
+6. Google Cloud Vertex AI Model Garden (via adapters_vertex)
 
 Governed by Invariant 7 (Multi-Model Sovereignty & Token Budget).
 """
 
 from __future__ import annotations
 
-import abc
 import logging
 import os
-from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import httpx
 
 from credence.config import settings
+from credence.pipeline.adapters_base import BaseLLMProvider, LLMResponse, resolve_provider_key
+from credence.pipeline.adapters_vertex import VertexModelGardenProvider
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class LLMResponse:
-    """Standardized response container from any LLM provider."""
-
-    text: str
-    prompt_tokens: int
-    completion_tokens: int
-    thinking_tokens: int = 0
-    provider_name: str = "unknown"
-    model_name: str = "unknown"
-
-
-class BaseLLMProvider(abc.ABC):
-    """Abstract base class for LLM inference providers."""
-
-    model_name: str = "unknown"
-
-    @abc.abstractmethod
-    async def generate(
-        self,
-        prompt: str,
-        system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
-        temperature: float = 0.1,
-    ) -> LLMResponse:
-        """Generate content from LLM provider."""
-        raise NotImplementedError
+__all__ = [
+    "BaseLLMProvider",
+    "ClaudeProvider",
+    "GeminiProvider",
+    "LLMResponse",
+    "OllamaProvider",
+    "OpenAICompatibleProvider",
+    "OpenAIProvider",
+    "VertexModelGardenProvider",
+    "get_llm_provider",
+]
 
 
 class GeminiProvider(BaseLLMProvider):
     """Google Gemini REST API Provider supporting 3.7 Flash thinking budgets."""
 
     def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.7-flash"):
-        self.api_key = (
-            api_key
-            or settings.CREDENCE_GEMINI_API_KEY
-            or settings.GEMINI_API_KEY
-            or os.environ.get("GEMINI_API_KEY", "")
+        self.api_key = resolve_provider_key(
+            api_key,
+            "CREDENCE_GEMINI_API_KEY",
+            "GEMINI_API_KEY",
+            "CREDENCE_MODEL_API_KEY",
+            setting_fallbacks=(
+                settings.CREDENCE_GEMINI_API_KEY,
+                settings.GEMINI_API_KEY,
+                settings.CREDENCE_MODEL_API_KEY,
+            ),
         )
         self.model_name = model_name
+
+    def has_credentials(self) -> bool:
+        return bool(self.api_key)
 
     async def generate(
         self,
@@ -76,7 +68,8 @@ class GeminiProvider(BaseLLMProvider):
         if not self.api_key:
             raise ValueError("Gemini API key is required for GeminiProvider.")
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent?key={self.api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent"
+        headers = {"x-goog-api-key": self.api_key, "Content-Type": "application/json"}
         gen_config: Dict[str, Any] = {
             "temperature": temperature,
             "responseMimeType": "application/json",
@@ -92,7 +85,7 @@ class GeminiProvider(BaseLLMProvider):
             payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
 
         async with httpx.AsyncClient(timeout=45.0) as client:
-            resp = await client.post(url, json=payload)
+            resp = await client.post(url, headers=headers, json=payload)
             if resp.status_code != 200:
                 raise RuntimeError(f"Gemini API error ({resp.status_code}): {resp.text[:200]}")
 
@@ -122,8 +115,16 @@ class ClaudeProvider(BaseLLMProvider):
     """Anthropic Claude Messages API Provider."""
 
     def __init__(self, api_key: Optional[str] = None, model_name: str = "claude-3-7-sonnet-20250219"):
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+        self.api_key = resolve_provider_key(
+            api_key,
+            "ANTHROPIC_API_KEY",
+            "CREDENCE_MODEL_API_KEY",
+            setting_fallbacks=(settings.ANTHROPIC_API_KEY, settings.CREDENCE_MODEL_API_KEY),
+        )
         self.model_name = model_name
+
+    def has_credentials(self) -> bool:
+        return bool(self.api_key)
 
     async def generate(
         self,
@@ -175,9 +176,28 @@ class ClaudeProvider(BaseLLMProvider):
 class OpenAIProvider(BaseLLMProvider):
     """OpenAI Chat Completions API Provider."""
 
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gpt-4o"):
-        self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: str = "gpt-4o",
+        base_url: Optional[str] = None,
+        provider_name: str = "openai",
+    ):
+        self.api_key = resolve_provider_key(
+            api_key,
+            "OPENAI_API_KEY",
+            "CREDENCE_MODEL_API_KEY",
+            setting_fallbacks=(settings.OPENAI_API_KEY, settings.CREDENCE_MODEL_API_KEY),
+        )
         self.model_name = model_name
+        effective_base = base_url or os.environ.get("OPENAI_BASE_URL") or "https://api.openai.com/v1"
+        self.base_url = effective_base.rstrip("/")
+        self.provider_name = provider_name
+
+    def has_credentials(self) -> bool:
+        if "localhost" in self.base_url or "127.0.0.1" in self.base_url:
+            return True
+        return bool(self.api_key and self.api_key != "none")
 
     async def generate(
         self,
@@ -186,12 +206,12 @@ class OpenAIProvider(BaseLLMProvider):
         thinking_budget: int = 0,
         temperature: float = 0.1,
     ) -> LLMResponse:
-        if not self.api_key:
+        if not self.has_credentials():
             raise ValueError("OpenAI API key is required for OpenAIProvider.")
 
-        url = "https://api.openai.com/v1/chat/completions"
+        url = f"{self.base_url}/chat/completions"
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.api_key or 'none'}",
             "Content-Type": "application/json",
         }
         messages = []
@@ -209,7 +229,7 @@ class OpenAIProvider(BaseLLMProvider):
         async with httpx.AsyncClient(timeout=45.0) as client:
             resp = await client.post(url, headers=headers, json=payload)
             if resp.status_code != 200:
-                raise RuntimeError(f"OpenAI API error ({resp.status_code}): {resp.text[:200]}")
+                raise RuntimeError(f"{self.provider_name} API error ({resp.status_code}): {resp.text[:200]}")
 
             data = resp.json()
             choices = data.get("choices", [])
@@ -223,17 +243,69 @@ class OpenAIProvider(BaseLLMProvider):
                 prompt_tokens=in_tok,
                 completion_tokens=out_tok,
                 thinking_tokens=0,
-                provider_name="openai",
+                provider_name=self.provider_name,
                 model_name=self.model_name,
             )
+
+
+class OpenAICompatibleProvider(OpenAIProvider):
+    """Universal OpenAI-compatible API provider for custom, local, and open-weights endpoints."""
+
+    def __init__(
+        self,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model_name: str = "custom-model",
+    ):
+        target_base = (
+            base_url
+            or os.environ.get("OPENAI_COMPATIBLE_BASE_URL")
+            or os.environ.get("OPENAI_BASE_URL")
+            or "http://localhost:8000/v1"
+        )
+        target_key = (
+            resolve_provider_key(
+                api_key,
+                "OPENAI_COMPATIBLE_API_KEY",
+                "DEEPSEEK_API_KEY",
+                "OPENAI_API_KEY",
+                "CREDENCE_MODEL_API_KEY",
+                setting_fallbacks=(
+                    settings.DEEPSEEK_API_KEY,
+                    settings.OPENAI_API_KEY,
+                    settings.CREDENCE_MODEL_API_KEY,
+                ),
+            )
+            or "none"
+        )
+        target_model = (
+            model_name if model_name != "custom-model" else (os.environ.get("OPENAI_COMPATIBLE_MODEL") or model_name)
+        )
+        super().__init__(
+            api_key=target_key,
+            model_name=target_model,
+            base_url=target_base,
+            provider_name="openai_compatible",
+        )
 
 
 class OllamaProvider(BaseLLMProvider):
     """Local Ollama / vLLM Provider for 100% offline self-hosted inference."""
 
-    def __init__(self, base_url: str = "http://localhost:11434", model_name: str = "llama3.3:70b"):
-        self.base_url = os.environ.get("OLLAMA_BASE_URL", base_url).rstrip("/")
-        self.model_name = os.environ.get("OLLAMA_MODEL", model_name)
+    def __init__(self, base_url: Optional[str] = None, model_name: str = "llama3.3:70b"):
+        resolved_base = (
+            base_url
+            or os.environ.get("OLLAMA_HOST")
+            or os.environ.get("OLLAMA_BASE_URL")
+            or settings.OLLAMA_HOST
+            or settings.OLLAMA_BASE_URL
+            or "http://localhost:11434"
+        )
+        self.base_url = resolved_base.rstrip("/")
+        self.model_name = model_name if model_name != "llama3.3:70b" else (os.environ.get("OLLAMA_MODEL") or model_name)
+
+    def has_credentials(self) -> bool:
+        return bool(self.base_url)
 
     async def generate(
         self,
@@ -273,147 +345,55 @@ class OllamaProvider(BaseLLMProvider):
             )
 
 
-class VertexModelGardenProvider(BaseLLMProvider):
-    """Google Cloud Vertex AI Model Garden Provider (Model-as-a-Service / MaaS).
-
-    Supports:
-    - Meta Llama 3.3 70B Instruct
-    - DeepSeek-R1
-    - Mistral Large 2
-    - Alibaba Qwen 2.5 72B
-    - Google Gemma 2 27B
-    - AI21 Jamba 1.5 Mini
-
-    Uses GCP Project ID and OAuth2 Bearer token (via gcloud or google-auth).
-    """
-
-    def __init__(
-        self,
-        project_id: Optional[str] = None,
-        location: str = "us-central1",
-        model_name: str = "meta/llama-3.3-70b-instruct-maas",
-        access_token: Optional[str] = None,
-        max_output_tokens: int = 1024,
-    ):
-        self.project_id = (
-            project_id
-            or os.environ.get("CLOUDSDK_CORE_PROJECT")
-            or os.environ.get("GCP_PROJECT_ID")
-            or "credence-dev-495173"
-        )
-        self.location = location or os.environ.get("CLOUDSDK_COMPUTE_REGION") or "us-central1"
-        self.model_name = model_name
-        self.access_token = access_token or os.environ.get("VERTEX_BEARER_TOKEN") or ""
-        self.max_output_tokens = max_output_tokens
-
-    def _get_bearer_token(self) -> str:
-        if self.access_token:
-            return self.access_token
-        try:
-            import google.auth
-            from google.auth.transport.requests import Request
-
-            credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-            credentials.refresh(Request())
-            if credentials.token:
-                return str(credentials.token)
-        except Exception:
-            pass
-
-        import shutil
-        import subprocess
-
-        gcloud_bin = shutil.which("gcloud")
-        if gcloud_bin:
-            try:
-                res = subprocess.run(  # noqa: S603
-                    [gcloud_bin, "auth", "print-access-token"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5,
-                )
-                if res.returncode == 0:
-                    token = res.stdout.strip()
-                    if token:
-                        return token
-            except Exception:
-                pass
-        return ""
-
-    async def generate(
-        self,
-        prompt: str,
-        system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
-        temperature: float = 0.1,
-    ) -> LLMResponse:
-        token = self._get_bearer_token()
-        if not token:
-            raise ValueError(
-                "GCP OAuth2 Bearer token is required for VertexModelGardenProvider. Run 'gcloud auth login' or set VERTEX_BEARER_TOKEN."
-            )
-
-        url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/{self.model_name}:rawPredict"
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        }
-        payload: Dict[str, Any] = {
-            "prompt": prompt,
-            "max_tokens": self.max_output_tokens,
-            "temperature": temperature,
-        }
-        if system_instruction:
-            payload["system"] = system_instruction
-
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await client.post(url, headers=headers, json=payload)
-            if resp.status_code != 200:
-                raise RuntimeError(f"Vertex Model Garden API error ({resp.status_code}): {resp.text[:200]}")
-            data = resp.json()
-            text = ""
-            if "choices" in data and len(data["choices"]) > 0:
-                text = data["choices"][0].get("message", {}).get("content", "") or data["choices"][0].get("text", "")
-            elif "output" in data:
-                text = data["output"]
-            elif "text" in data:
-                text = data["text"]
-            else:
-                text = str(data)
-
-            usage = data.get("usage", {})
-            in_tok = usage.get("prompt_tokens", len(prompt) // 4)
-            out_tok = usage.get("completion_tokens", len(text) // 4)
-            return LLMResponse(
-                text=text,
-                prompt_tokens=in_tok,
-                completion_tokens=out_tok,
-                thinking_tokens=thinking_budget if "r1" in self.model_name else 0,
-                provider_name="vertex_model_garden",
-                model_name=self.model_name,
-            )
-
-
 def get_llm_provider(provider_override: Optional[str] = None) -> Optional[BaseLLMProvider]:
     """Resolve and return the appropriate LLM provider based on environment keys and settings."""
-    target = provider_override or os.environ.get("CREDENCE_LLM_PROVIDER")
+    target = (
+        provider_override or os.environ.get("CREDENCE_LLM_PROVIDER") or settings.CREDENCE_LLM_PROVIDER or ""
+    ).lower()
 
+    if target in ("openai_compatible", "custom") or (not target and os.environ.get("OPENAI_COMPATIBLE_BASE_URL")):
+        return OpenAICompatibleProvider()
+    if target == "deepseek" or (not target and (settings.DEEPSEEK_API_KEY or os.environ.get("DEEPSEEK_API_KEY"))):
+        return OpenAICompatibleProvider(
+            base_url="https://api.deepseek.com/v1",
+            api_key=resolve_provider_key(
+                None,
+                "DEEPSEEK_API_KEY",
+                "CREDENCE_MODEL_API_KEY",
+                setting_fallbacks=(settings.DEEPSEEK_API_KEY, settings.CREDENCE_MODEL_API_KEY),
+            ),
+            model_name=os.environ.get("DEEPSEEK_MODEL", "deepseek-chat"),
+        )
     if target == "vertex" or os.environ.get("VERTEX_BEARER_TOKEN"):
         return VertexModelGardenProvider()
-    elif target == "anthropic" or (not target and os.environ.get("ANTHROPIC_API_KEY")):
+    if target == "anthropic" or (not target and (settings.ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY"))):
         return ClaudeProvider()
-    elif target == "openai" or (not target and os.environ.get("OPENAI_API_KEY")):
+    if target == "openai" or (not target and (settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY"))):
         return OpenAIProvider()
-    elif target == "ollama" or (not target and os.environ.get("OLLAMA_BASE_URL")):
-        return OllamaProvider()
-    elif (
-        target == "gemini"
-        or settings.CREDENCE_GEMINI_API_KEY
-        or settings.GEMINI_API_KEY
-        or os.environ.get("GEMINI_API_KEY")
+    if target == "ollama" or (
+        not target
+        and (
+            settings.OLLAMA_HOST
+            or settings.OLLAMA_BASE_URL
+            or os.environ.get("OLLAMA_HOST")
+            or os.environ.get("OLLAMA_BASE_URL")
+        )
     ):
-        api_key = settings.CREDENCE_GEMINI_API_KEY or settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY")
-        if api_key:
-            return GeminiProvider(api_key=api_key)
+        return OllamaProvider()
+
+    gemini_key = resolve_provider_key(
+        None,
+        "CREDENCE_GEMINI_API_KEY",
+        "GEMINI_API_KEY",
+        "CREDENCE_MODEL_API_KEY",
+        setting_fallbacks=(
+            settings.CREDENCE_GEMINI_API_KEY,
+            settings.GEMINI_API_KEY,
+            settings.CREDENCE_MODEL_API_KEY,
+        ),
+    )
+    if target == "gemini" or gemini_key:
+        if gemini_key:
+            return GeminiProvider(api_key=gemini_key)
 
     return None

@@ -46,8 +46,9 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/artibyrd/credence-docs.git /tmp/credence-docs
           cd /tmp/credence-docs
+          rm -f _worker.js wrangler.toml
           npx wrangler pages project create credence-docs --production-branch=main || true
-          npx wrangler pages deploy . --project-name=credence-docs --branch=main
+          npx wrangler pages deploy . --project-name=credence-docs --branch=main --commit-dirty=true
 
       - name: Purge Cloudflare Edge Cache
         if: env.CLOUDFLARE_API_TOKEN != ''

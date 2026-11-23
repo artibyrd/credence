@@ -274,10 +274,18 @@ class Settings(BaseSettings):
     # Active Cost & Operational Profile (Defaults to ECONOMY)
     CREDENCE_PROFILE: CostProfile = CostProfile.ECONOMY
 
-    # Multi-Agent & LLM Models (Gemini 3.7 Flash with Thinking)
+    # Multi-Agent & Platform-Agnostic LLM Models
+    CREDENCE_MODEL_API_KEY: Optional[str] = None
+    CREDENCE_LLM_PROVIDER: Optional[str] = None
     CREDENCE_GEMINI_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    DEEPSEEK_API_KEY: Optional[str] = None
+    OLLAMA_HOST: Optional[str] = None
+    OLLAMA_BASE_URL: Optional[str] = None
     DEFAULT_SPECIALIST_MODEL: str = "gemini-3.7-flash"
+    DEFAULT_WORKER_MODEL: str = "google/gemini-3.8-flash"
     DEFAULT_TRIAGE_MODEL: str = "gemini-2.5-flash-lite"
     DEFAULT_THINKING_BUDGET: int = 512
     ESCALATION_THINKING_BUDGET: int = 1024

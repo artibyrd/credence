@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <linearGradient id="rise-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22" />
+      <stop offset="50%" stop-color="#22c55e" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.24" />
+    </linearGradient>
+    <filter id="glow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+    <marker id="arr-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Frame & Subtle Coordinate Grid -->
+  <rect width="880" height="380" rx="12" fill="url(#bg-grad)" stroke="rgba(56, 189, 248, 0.22)" stroke-width="1" />
+  <g stroke="rgba(148, 163, 184, 0.08)" stroke-width="1">
+    <line x1="64" y1="90" x2="844" y2="90" />
+    <line x1="64" y1="170" x2="844" y2="170" />
+    <line x1="64" y1="250" x2="844" y2="250" />
+    <line x1="64" y1="330" x2="844" y2="330" />
+    <line x1="64" y1="84" x2="64" y2="336" />
+  </g>
+
+  <!-- Title & Axes -->
+  <text x="32" y="30" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.12em">PROGRESSIVE TOPOLOGY</text>
+  <text x="32" y="52" fill="#ffffff" font-size="15" font-family="sans-serif" font-weight="bold">CREDENCE GRADUATION ELEVATION</text>
+  <text x="26" y="215" fill="#64748b" font-size="9" font-family="monospace" transform="rotate(-90 26 215)" text-anchor="middle">AUTONOMY</text>
+
+  <!-- Stepped Elevation Slope Silhouette -->
+  <path d="M 76 330 L 76 266 L 306 266 L 348 192 L 574 192 L 616 112 L 838 112 L 838 330 Z" fill="url(#rise-grad)" stroke="none" />
+  <polyline points="76,266 306,266 348,192 574,192 616,112 838,112" fill="none" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.2" stroke-dasharray="4 4" />
+
+  <!-- TIER 1: CONSUME (IDE Socket + FastMCP Terminal Node) -->
+  <g filter="url(#glow)">
+    <rect x="82" y="220" width="212" height="96" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+    <!-- Terminal glyph -->
+    <rect x="98" y="238" width="44" height="32" rx="5" fill="#020617" stroke="#38bdf8" stroke-width="1.2" />
+    <polyline points="107,249 114,254 107,259" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    <line x1="119" y1="259" x2="132" y2="259" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" />
+    <!-- Socket ports -->
+    <circle cx="98" cy="292" r="4" fill="#38bdf8" />
+    <circle cx="114" cy="292" r="4" fill="#38bdf8" opacity="0.55" />
+    <text x="154" y="250" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold">TIER 1</text>
+    <text x="154" y="268" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold">FastMCP Client</text>
+    <text x="128" y="295" fill="#94a3b8" font-size="10" font-family="monospace">stdio / SSE Brake</text>
+  </g>
+
+  <!-- TIER 2: CONTRIBUTE (Multi-Lineage Worker Ring) -->
+  <g filter="url(#glow)">
+    <rect x="348" y="148" width="222" height="106" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />
+    <!-- 3 Lineage Worker Nodes orbiting a shared signing hub -->
+    <circle cx="388" cy="200" r="24" fill="none" stroke="#22c55e" stroke-width="1.2" stroke-dasharray="3 3" />
+    <circle cx="388" cy="176" r="7" fill="#020617" stroke="#38bdf8" stroke-width="1.5" />
+    <circle cx="367" cy="212" r="7" fill="#020617" stroke="#22c55e" stroke-width="1.5" />
+    <circle cx="409" cy="212" r="7" fill="#020617" stroke="#f59e0b" stroke-width="1.5" />
+    <circle cx="388" cy="200" r="6" fill="#22c55e" />
+    <text x="428" y="176" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold">TIER 2</text>
+    <text x="428" y="195" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold">Worker Daemon</text>
+    <text x="428" y="216" fill="#94a3b8" font-size="10" font-family="monospace">Ed25519 Bounties</text>
+    <text x="428" y="234" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">API or Local Ollama</text>
+  </g>
+
+  <!-- TIER 3: HOST & COORDINATE (Sovereign Coordinator + Watts-Strogatz Mesh Ring) -->
+  <g filter="url(#glow)">
+    <rect x="616" y="72" width="224" height="114" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="1.5" />
+    <!-- Mesh Topology Mini-Graph -->
+    <g stroke="#a855f7" stroke-width="1.1" opacity="0.85">
+      <line x1="658" y1="102" x2="684" y2="128" />
+      <line x1="658" y1="102" x2="634" y2="128" />
+      <line x1="634" y1="128" x2="658" y2="154" />
+      <line x1="684" y1="128" x2="658" y2="154" />
+      <line x1="634" y1="128" x2="684" y2="128" stroke-dasharray="2 2" />
+    </g>
+    <circle cx="658" cy="102" r="6" fill="#020617" stroke="#a855f7" stroke-width="1.5" />
+    <circle cx="634" cy="128" r="6" fill="#020617" stroke="#38bdf8" stroke-width="1.5" />
+    <circle cx="684" cy="128" r="6" fill="#020617" stroke="#22c55e" stroke-width="1.5" />
+    <circle cx="658" cy="154" r="6" fill="#020617" stroke="#f59e0b" stroke-width="1.5" />
+    <circle cx="658" cy="128" r="7" fill="#a855f7" />
+    <text x="702" y="102" fill="#a855f7" font-size="9" font-family="monospace" font-weight="bold">TIER 3</text>
+    <text x="702" y="121" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold">Sovereign Node</text>
+    <text x="702" y="142" fill="#94a3b8" font-size="10" font-family="monospace">Mempool + Mesh</text>
+    <text x="702" y="160" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Admin Deck + DB</text>
+  </g>
+
+  <!-- Curved Escalation Connectors (clean separation from text) -->
+  <path d="M 294 252 C 324 252, 318 202, 344 202" fill="none" stroke="#22c55e" stroke-width="2" marker-end="url(#arr-emerald)" />
+  <path d="M 570 182 C 594 182, 590 128, 612 128" fill="none" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-violet)" />
+
+  <!-- Footer Track Legend (aligned below coordinate baseline, no pill clutter) -->
+  <text x="188" y="354" fill="#38bdf8" font-size="10" font-family="monospace" text-anchor="middle">CONSUME (&lt;60s)</text>
+  <text x="459" y="354" fill="#22c55e" font-size="10" font-family="monospace" text-anchor="middle">CONTRIBUTE (&lt;2m)</text>
+  <text x="728" y="354" fill="#a855f7" font-size="10" font-family="monospace" text-anchor="middle">COORDINATE (&lt;5m)</text>
+</svg>

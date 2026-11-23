@@ -72,7 +72,7 @@ export function injectOperatorModal() {
               <div class="form-group">
                 <label class="form-label" for="operator-key-input">Administrator Secret Key</label>
                 <div style="position:relative;">
-                  <input type="password" id="operator-key-input" class="form-input" placeholder="cred_adm_..." required autocomplete="current-password">
+                  <input type="password" id="operator-key-input" class="form-input" placeholder="cred_adm_key" required autocomplete="current-password">
                   <button type="button" onclick="window.CredenceWS.togglePasswordVisibility()" style="position:absolute; right:8px; top:8px; background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:0.8rem;">👁️</button>
                 </div>
               </div>
@@ -156,7 +156,7 @@ export function submitKeyLogin() {
 }
 
 export function loginOAuth(provider) {
-  showToast(`Initiating ${provider.toUpperCase()} OAuth authentication...`, 'info');
+  showToast(`Initiating ${provider.toUpperCase()} OAuth authentication`, 'info');
   // Simulating / directing to OAuth endpoint
   window.location.href = `/api/auth/oauth/${provider}`;
 }

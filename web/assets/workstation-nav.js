@@ -20,9 +20,9 @@ export function transformTargetUrl(href) {
   if (!href || typeof window === 'undefined' || !window.location) return href;
   const host = window.location.hostname;
   const isDev = host.startsWith('dev.') || host.startsWith('mcp.dev.');
-  const isSingleHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.a.run.app') || host.endsWith('.pages.dev');
+  const isSingleHost = host === 'localhost' || host === '127.0.0.1' || host.includes('.run.app') || host.endsWith('.pages.dev');
 
-  // Handle relative cross-domain paths (e.g. ../credence.report/index.html?rule=...)
+  // Handle relative cross-domain paths (e.g. ../credence.report/index.html?rule=<id>)
   if (href.startsWith('../credence.') || href.startsWith('../admin.credence.')) {
     const parts = href.split('/');
     const targetDir = parts[1];

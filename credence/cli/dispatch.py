@@ -91,8 +91,51 @@ def dispatch_command(args: argparse.Namespace) -> None:
         run_verify_command(args.file)
     elif args.command == "identity":
         cli_identity(action=args.action, key_path=args.key_path)
+    elif args.command == "key":
+        from credence.cli.commands.identity import (
+            run_key_export_command,
+            run_key_generate_command,
+            run_key_import_command,
+            run_key_show_command,
+        )
+
+        if args.action == "show":
+            sys.exit(run_key_show_command(getattr(args, "key_file", None)))
+        elif args.action == "export":
+            out_path = getattr(args, "out", None) or getattr(args, "file", None)
+            sys.exit(run_key_export_command(out_path, getattr(args, "key_file", None)))
+        elif args.action == "import":
+            in_path = getattr(args, "in_file", None) or getattr(args, "file", None)
+            sys.exit(run_key_import_command(in_path, getattr(args, "key_file", None)))
+        elif args.action == "generate":
+            sys.exit(run_key_generate_command(getattr(args, "force", False), getattr(args, "key_file", None)))
+        else:
+            sys.exit(run_key_show_command(getattr(args, "key_file", None)))
+    elif args.command == "worker":
+        from credence.worker.daemon import run_worker_daemon
+
+        run_continuous = False if getattr(args, "once", False) else args.continuous
+        asyncio.run(
+            run_worker_daemon(
+                node_url=args.node,
+                model=args.model,
+                api_base=args.api_base,
+                api_key=args.api_key,
+                affinity=args.affinity,
+                concurrency=args.concurrency,
+                continuous=run_continuous,
+                max_jobs=getattr(args, "max_jobs", None),
+                key_file=getattr(args, "key_file", None),
+            )
+        )
     elif args.command in ("serve", "server"):
-        run_server_command(transport=args.transport, host=args.host, port=args.port, name=getattr(args, "name", None))
+        effective_transport = "stdio" if getattr(args, "mcp", False) else args.transport
+        run_server_command(
+            transport=effective_transport,
+            host=args.host,
+            port=args.port,
+            name=getattr(args, "name", None),
+        )
     elif args.command in ("quota", "cost", "profile"):
         asyncio.run(run_quota_command()) if asyncio.iscoroutinefunction(run_quota_command) else run_quota_command()
     elif args.command == "db":

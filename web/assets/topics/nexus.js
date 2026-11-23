@@ -189,7 +189,7 @@ export const NEXUS_TOPICS = {
       "<b>Custom Organizations</b>: News organizations can host private badge registries using <code>credence init-org</code>."
     ],
     cli: "credence badge generate --domain reuters.com",
-    math_proof: "SVG Signature: Anti-tamper digest embedded directly in SVG DOM comment metadata: <!-- credence-sig: 0x... -->.",
+    math_proof: "SVG Signature: Anti-tamper digest embedded directly in SVG DOM comment metadata: <!-- credence-sig: 0x<hex> -->.",
     invariants: ["inv-web-component-zero-clone", "inv-verbatim-grounding"],
     links: [
       { label: "📘 Embeddable Badges & Anti-Tamper Blueprint", url: "https://docs.credence.run/blueprints/embeddable-attestation-badges-and-anti-tamper", desc: "Embeddable HTML5 custom elements and CSP-compliant badges" }
@@ -302,6 +302,38 @@ export const NEXUS_TOPICS = {
     invariants: ["inv-ssrf-defense", "inv-boredom-root-expansion"],
     links: [
       { label: "📘 Morning Feed Sifter Cookbook", url: "https://docs.credence.run/cookbooks/morning-feed-sifter", desc: "Configuring systemd daemons and headless scrapers" }
+    ]
+  },
+
+  qw_scoring: {
+    title: "Volunteer Worker Fleet Quality Score (Q_w) & Merit Badges",
+    icon: "🐝",
+    tag: "VOLUNTEER FLEET",
+    tier1_plain_english: `
+      <b>In plain words:</b> How volunteer contributors earn reputation, quality points, and merit badges in the open mempool.
+      <br><br>
+      Anyone can run a volunteer worker daemon using spare compute across any major cloud LLM or local runtime — including <b>Google Gemini, Anthropic Claude, OpenAI GPT, DeepSeek, Meta Llama, Mistral, Qwen</b>, or any custom open-weights model via local <b>Ollama, vLLM, or LM Studio</b>.
+      <br><br>
+      <b>What is Q_w?</b> <i>Q_w</i> is the <i>Worker Quality &amp; Accuracy Score</i>. It measures how reliably a volunteer worker delivers accurate, hallucination-free evaluations. Displayed on a <b>0.0 to 10.0</b> scale, it combines baseline reliability, completed bounty volume, character-for-character citation grounding (G=1.00), and sustained node longevity.
+    `,
+    tier1_article: {
+      title: "📘 Volunteer Compute & Worker Guide",
+      desc: "Getting started with volunteer worker daemons, universal model configuration, key custody, and leaderboard badges.",
+      url: "https://docs.credence.run/tutorials/15-volunteer-compute-and-worker-guide"
+    },
+    tier2_mechanics: [
+      "<b>Quality Score (Q_w) Breakdown</b>: Computed as <code>Q_w = 0.50 + 0.25·Vol + 0.15·Ground + 0.10·Age</code> (scaled &times;10 for display):<br>&bull; <b>Base Score (0.50 / 5.0)</b>: Neutral starting reliability for every new cryptographic keypair.<br>&bull; <b>Volume (+0.25 / +2.5)</b>: Scales linearly up to 50 verified mempool bounties.<br>&bull; <b>Grounding (+0.15 / +1.5)</b>: Awarded for perfect G=1.00 verbatim DOM quotes without hallucinations.<br>&bull; <b>Longevity (+0.10 / +1.0)</b>: Scales across 14 active days of network contribution.",
+      "<b>Bounties vs. Audits</b>: A <i>bounty</i> is an open mempool evaluation task. When a worker fulfills a bounty, it clears the bounty and publishes a signed cryptographic <i>audit</i> to the ledger.",
+      "<b>Universal Model Diversity</b>: Any inference engine serving an OpenAI-compatible <code>/v1/chat/completions</code> endpoint or supported vendor SDK can participate.",
+      "<b>Blind Consensus</b>: Workers evaluate content independently without seeing other nodes' submissions, preventing herd bias.",
+      "<b>Permanent Ed25519 Custody</b>: Contributor reputation and merit badges are permanently bound to your private key, exportable via <code>credence key export</code>."
+    ],
+    cli: "uvx credence worker --model google/gemini-3.8-flash --continuous",
+    math_proof: "Worker Quality: Q_w = 0.50 + 0.25·min(1, N_bounties/50) + 0.15·G + 0.10·min(1, T_days/14).",
+    invariants: ["inv-ground-truth-config", "inv-canonical-json-ed25519"],
+    links: [
+      { label: "📘 Open Epistemic Mempool Protocol", url: "https://docs.credence.run/protocols/open-epistemic-mempool", desc: "Atomic lease state machine, priority queues, and Bayesian consensus" },
+      { label: "📘 Key Custody & Migration Guide", url: "https://docs.credence.run/cookbooks/worker-key-custody-and-migration", desc: "Exporting and importing Ed25519 worker identities across ephemeral containers" }
     ]
   }
 };

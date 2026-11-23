@@ -131,24 +131,37 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
             except Exception:
                 pass
 
-            # Prune duplicate legacy audit rows, retaining only the latest canonical audit per URL
+            # Ensure mempool auditjob table has completed_workers_json
             try:
-                await conn.exec_driver_sql(
-                    """
-                    DELETE FROM audit WHERE id IN (
-                        SELECT a.id FROM audit a
-                        JOIN snapshot s ON a.snapshot_id = s.id
-                        WHERE s.url IS NOT NULL AND a.id NOT IN (
-                            SELECT MAX(a2.id) FROM audit a2
-                            JOIN snapshot s2 ON a2.snapshot_id = s2.id
-                            GROUP BY s2.url
-                        )
-                    );
-                    """
-                )
-                await conn.exec_driver_sql("DELETE FROM snapshot WHERE id NOT IN (SELECT snapshot_id FROM audit);")
+                res_job = await conn.exec_driver_sql("PRAGMA table_info(auditjob);")
+                cols_job = [row[1] for row in res_job.fetchall()]
+                if cols_job and "completed_workers_json" not in cols_job:
+                    await conn.exec_driver_sql(
+                        "ALTER TABLE auditjob ADD COLUMN completed_workers_json VARCHAR DEFAULT '[]';"
+                    )
             except Exception:
                 pass
+
+            # Ensure workerrecord table has grounding/badge telemetry columns
+            try:
+                res_wrk = await conn.exec_driver_sql("PRAGMA table_info(workerrecord);")
+                cols_wrk = [row[1] for row in res_wrk.fetchall()]
+                if cols_wrk:
+                    worker_migrations = [
+                        ("grounding_rejections_count", "INTEGER DEFAULT 0"),
+                        ("distinct_models_json", "VARCHAR DEFAULT '[]'"),
+                        ("fastest_turnaround_sec", "REAL"),
+                        ("weekend_completed_count", "INTEGER DEFAULT 0"),
+                        ("night_owl_completed_count", "INTEGER DEFAULT 0"),
+                        ("pioneer_families_count", "INTEGER DEFAULT 0"),
+                    ]
+                    for col_name, col_def in worker_migrations:
+                        if col_name not in cols_wrk:
+                            await conn.exec_driver_sql(f"ALTER TABLE workerrecord ADD COLUMN {col_name} {col_def};")
+            except Exception:
+                pass
+
+            await conn.commit()
 
 
 async def init_db(engine: AsyncEngine | None = None) -> None:

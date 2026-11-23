@@ -3,13 +3,38 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v1.21.7
-last_verified: '2026-08-20'
+verified_version: v2.22.0
+last_verified: 2026-11-22
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [2.22.0] - 2026-11-22
+
+### Added
+- **FastMCP 2.0 Epistemic Brake, Genuine `stdio` Transport & Dual HTTP Mounts**:
+  - Wired `credence serve --mcp` and `--transport stdio` to genuine stdin/stdout JSON-RPC execution with zero stdout contamination, alongside simultaneous Streamable HTTP (`/mcp`) and legacy SSE (`/sse`) server mounts.
+  - Implemented cache-first lookup and 25-second adaptive mempool wait window in `credence_check_url` (active on hosted coordinators with online workers; instant local execution in standalone `stdio` mode).
+  - Hardened `credence_verify_and_anchor` with transport-aware cryptographic trust boundaries: coordinator sovereign key signing is disabled for untrusted remote callers, requiring valid Ed25519 `worker_pubkey` + `worker_signature` matching a real server-captured `Snapshot` and $G=1.00$ verbatim grounding.
+- **Open Epistemic Mempool & Hardened Security Guardrails**:
+  - Implemented `/api/queue/enqueue`, `/api/queue/claim`, `/api/queue/submit`, and `/api/queue/stats` Starlette REST endpoints with atomic `asyncio.Lock` claim serialization and bounded completion event caches.
+  - Enforced coordinator-side SSRF-safe, rate-limited, 10 MB-capped Trafilatura fastpath capture on public `http(s)://` enqueues and fail-closed $G=1.00$ grounding verification on submit.
+  - Enforced Ed25519 proof-of-possession signatures (`claim_timestamp` + `claim_signature`, 300s window) on `/api/queue/claim`, server-side canonical model family resolution, cross-URL/SHA replay checks, active lease enforcement, and duplicate-worker pass blocking.
+  - Added 180-second soft lease reclamation and 15-second tight lease slicing for Priority 1 interactive FastMCP queries.
+- **Distributed Volunteer Worker Daemon (`uvx --from git+https://github.com/artibyrd/credence credence worker`)**:
+  - Implemented platform-agnostic multi-model worker daemon in `credence/worker/daemon.py` supporting Google Gemini (`x-goog-api-key` header), Anthropic Claude, OpenAI, DeepSeek, Ollama (`OLLAMA_HOST`/`OLLAMA_BASE_URL`), Vertex AI, and any OpenAI-compatible endpoint (`CREDENCE_MODEL_API_KEY`).
+  - Fixed multi-model evaluation in `evaluator.py` so non-Gemini providers execute genuine LLM pipelines without requiring `GEMINI_API_KEY`, reporting authentic token usage (`tokens_donated`).
+  - Added Self-Serve Affinity (`--affinity`), `--key-file`, `--once`, and bounded `--concurrency` execution.
+- **Multi-Model Bayesian Consensus Quorum (`BayesianConsensusAggregator`)**:
+  - Wired real `BayesianConsensusAggregator` with worker quality weighting ($Q_w$) and Galileo Rule override scoped to each job's verified submissions, and removed destructive startup audit deduplication in `db.py` so multi-model passes persist intact.
+- **Contributor Telemetry, Safe DOM Leaderboards & All 10 Achievement Badges (`credence.nexus`)**:
+  - Added zero-XSS (`createElement`/`textContent`) fail-closed Worker Leaderboard and Dossier modal (`#worker/{pubkey}`) with zero mock fallback arrays or dev URL leaks.
+  - Implemented full award evaluation for all 10 registered worker badges (`first_bounty`, `speed_demon`, `bounty_hunter`, `bounty_legend`, `diversity_champion`, `model_pioneer`, `night_owl`, `weekend_warrior`, `precision_striker`, `iron_worker`) and dynamic vector SVG profile badges (`/api/badge/worker/{pubkey}.svg`).
+  - Wired grounding rejection slashing into `compute_worker_quality_score()`.
+- **Identity Key Custody & Migration CLI**:
+  - Added `credence key show`, `credence key export`, `credence key import` (supporting both positional file paths and `-i`), and `credence key generate` commands, plus `CREDENCE_NODE_KEY_PEM` injection.
 
 ## [2.17.4] - 2026-08-26
 

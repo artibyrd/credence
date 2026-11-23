@@ -18,14 +18,14 @@ from credence.server.mcp.query_tools import _register_query_tools
 from credence.server.mcp.resources import _register_subject_resources, _register_taxonomy_resources
 
 
-def create_mcp_server() -> MCPServer:
+def create_mcp_server(transport_mode: str = "http") -> MCPServer:
     """Instantiate and configure the Credence FastMCP server."""
     server = MCPServer(
         name="credence",
         instructions="Autonomous Epistemic Evaluation Engine, FastMCP Server, and Trust Network.",
         version=__version__,
     )
-    _register_eval_tools(server)
+    _register_eval_tools(server, transport_mode=transport_mode)
     _register_query_tools(server)
     _register_consensus_tools(server)
     _register_mesh_tools(server)

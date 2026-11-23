@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 
 def utc_now() -> datetime:
@@ -110,3 +110,13 @@ class AuditReport(BaseModel):
         default=False,
         description="True if audit taxonomy state is outdated relative to live registry",
     )
+    _tokens_used: int = PrivateAttr(default=0)
+
+    @property
+    def tokens_used(self) -> int:
+        """Total LLM tokens consumed while producing this report (excluded from signed JSON)."""
+        return self._tokens_used
+
+    @tokens_used.setter
+    def tokens_used(self, value: int) -> None:
+        self._tokens_used = max(0, int(value))
