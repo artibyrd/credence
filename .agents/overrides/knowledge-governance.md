@@ -39,6 +39,7 @@ Every documentation entry point and feature guide in `credence-docs` follows Cre
 3. **Level 3 — Everyday Interfaces:** Terminal CLI, FastMCP AI Assistant, TUI Workstation, Web Report Viewer.
 4. **Level 4 — Core Concepts:** Grounded DOM quotes ($G=1.00$), ethical taxonomy (SPJ/IEP), satire protection, Ed25519 receipts.
 5. **Level 5 — Deep Dives & Specifications:** Formal proofs, Living Canon of System Invariants (`docs/invariants.md`), and P2P mesh dynamics.
+- **Prose Readability Rule:** Avoid walls of comma-separated inline `code-snippets` in prose or table cells; break catalogs into dedicated per-item rows and explain capabilities in plain English.
 
 ### 3. Frontmatter Version Provenance
 Every Markdown document in `credence-docs/docs/` and `credence-docs/blog/` MUST maintain version provenance frontmatter:

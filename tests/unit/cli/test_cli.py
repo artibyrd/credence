@@ -234,18 +234,23 @@ async def test_cli_export_catalog(tmp_path: Any, db_session: Any) -> None:
 
 
 @pytest.mark.asyncio
-async def test_cli_germinate(db_session: Any) -> None:
-    """Verify cli_germinate runs botanical lifecycle without exceptions."""
+async def test_cli_germinate(tmp_path: Any, db_session: Any) -> None:
+    """Verify cli_germinate runs botanical lifecycle hermetically without mutating repo web/ files."""
     from unittest.mock import AsyncMock, patch
 
     from credence.cli.main import cli_germinate
     from credence.feeds.parser import ParsedFeed
 
     mock_feed = ParsedFeed(title="Mock Stream", is_modified=True, entries=[])
+    out_dir = tmp_path / "web" / "credence.report"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "web" / "credence.nexus").mkdir(parents=True, exist_ok=True)
 
     with patch("credence.feeds.worker.fetch_and_parse_feed", new_callable=AsyncMock, return_value=mock_feed):
-        await cli_germinate(burst=0, no_mesh=False, profile="free")
-        await cli_germinate(burst=0, no_mesh=True, profile="free")
+        await cli_germinate(burst=0, no_mesh=False, profile="free", output_dir=str(out_dir))
+        await cli_germinate(burst=0, no_mesh=True, profile="free", output_dir=str(out_dir))
+
+    assert (out_dir / "reports.json").exists()
 
 
 @pytest.mark.unit

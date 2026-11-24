@@ -25,11 +25,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout Credence Docs (for docs integrity verification)
-        uses: actions/checkout@v4
-        with:
-          repository: artibyrd/credence-docs
-          path: ../credence-docs
-        continue-on-error: true
+        run: |
+          rm -rf ../credence-docs
+          git clone --depth=1 --branch="${{ github.ref_name || 'main' }}" "https://github.com/artibyrd/credence-docs.git" ../credence-docs \
+            || git clone --depth=1 "https://github.com/artibyrd/credence-docs.git" ../credence-docs
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5

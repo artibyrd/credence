@@ -11,6 +11,19 @@ last_verified: 2026-11-23
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
 
+## [2.23.1] - 2026-11-23
+
+### Added
+- **Deterministic Version-Bump & PR-Title Parity Gate (`credence`, `credence-agent`)**:
+  - Added `credence/scripts/validate_pr.py` (wired into GitHub Actions `ci.yml` `validate-pr-conventions`) and `validate_triad_version_parity` in `credence-agent/scripts/manage_pr.py` to hard-fail on every PR branch whenever `branch_version <= main_version`, `[vX.Y.Z]` PR titles diverge from manifest versions, or triad manifests drift across repos.
+  - Added unit tests in `credence/tests/governance/test_validate_pr.py` covering all branch types (`feat/*`, `fix/*`, `docs/*`, `ci/*`, `hotfix/*`, `release/*`), title mismatches, and triad drift.
+- **Documentation Prose Readability Guardrail (`credence-agent`, `credence`)**:
+  - Recorded the plain-English readability standard in `credence-agent/overrides/knowledge-governance.md` (and synced `credence/.agents/overrides/knowledge-governance.md`), discouraging walls of comma-separated inline code snippets in prose and table cells.
+
+### Fixed
+- **Hermetic `test_cli_germinate` Fixture Isolation (`credence`)**: Added optional `output_dir` support to `cli_germinate` and redirected `tests/unit/cli/test_cli.py::test_cli_germinate` to `tmp_path` so running unit tests never mutates tracked `web/credence.report/reports.json` or `web/credence.nexus/genesis_attestations.json`.
+- **Silent `credence-docs` CI Checkout Failure (`credence`)**: Replaced the failing `actions/checkout@v4` `path: ../credence-docs` step (previously swallowed by `continue-on-error: true`) in `ci.yml` and `release.yml` with a deterministic sibling `git clone` step, and aligned `manage_pr.py` PR staging order to push `credence-docs` before `credence`.
+
 ## [2.23.0] - 2026-11-23
 
 ### Added
