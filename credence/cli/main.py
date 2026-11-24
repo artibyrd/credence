@@ -267,12 +267,36 @@ def build_parser() -> argparse.ArgumentParser:
     p_mesh.add_argument("--limit", type=int, default=10, help="Maximum articles to audit from feed")
     p_mesh.add_argument("--profile", default="balanced", help="Cost / evaluation profile (balanced, ultra, free)")
 
-    # compare (alias: models)
+    # compare
     p_comp = subparsers.add_parser(
-        "compare", aliases=["models"], help="Compare multi-model evaluation passes and score discrepancies for a URL"
+        "compare", help="Compare multi-model evaluation passes and score discrepancies for a URL"
     )
     p_comp.add_argument("url", help="Target URL or content SHA-256")
     p_comp.add_argument("--json", action="store_true", help="Output raw JSON matrix")
+
+    # models
+    p_models = subparsers.add_parser(
+        "models",
+        help="Audit model catalog freshness, sunset dates, pricing parity, or compare passes",
+    )
+    p_models.add_argument(
+        "action",
+        default="check",
+        nargs="?",
+        help="Action: check, list, or a target URL / SHA-256 to compare",
+    )
+    p_models.add_argument(
+        "--live",
+        action="store_true",
+        help="Query live Gemini API catalog to surface newly released or retired models",
+    )
+    p_models.add_argument(
+        "--horizon-days",
+        type=int,
+        default=30,
+        help="Sunset warning horizon in days (default: 30)",
+    )
+    p_models.add_argument("--json", action="store_true", help="Output raw JSON report")
 
     # heuristics
     p_heur = subparsers.add_parser("heuristics", help="Manage heuristic calibration benchmark and anchor corpus")

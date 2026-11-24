@@ -8,13 +8,19 @@ pytestmark = pytest.mark.unit
 
 
 def test_information_pyramid_invariants_declared():
-    """Verify Invariant 42 & 43 in docs/invariants.md and AGENTS.md."""
+    """Verify inv-cart-before-horse in AGENTS.md and Epistemic Lensing in architecture-review overlay."""
     repo_root = Path(__file__).resolve().parents[2]
     agents_path = repo_root / "AGENTS.md"
     assert agents_path.exists(), "AGENTS.md must exist in repository root"
-    content = agents_path.read_text(encoding="utf-8")
-    assert "The Epistemic Lensing & Information Pyramid Invariant" in content
-    assert "The Cart-Before-the-Horse Order-of-Operations Invariant" in content
+    agents_content = agents_path.read_text(encoding="utf-8")
+    assert "inv-cart-before-horse" in agents_content
+    assert ".agents/overrides/" in agents_content
+
+    arch_overlay = repo_root / ".agents" / "overrides" / "architecture-review.md"
+    assert arch_overlay.exists(), ".agents/overrides/architecture-review.md must exist"
+    overlay_content = arch_overlay.read_text(encoding="utf-8")
+    assert "Epistemic Lensing & Information Pyramid" in overlay_content
+    assert "inv-epistemic-lensing" in overlay_content
 
 
 def test_lexicon_contains_v210_terms():

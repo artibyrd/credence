@@ -1,7 +1,7 @@
 """Decoupled Multi-Model LLM Adapter Subsystem for Credence.
 
 Provides unified interface across:
-1. Google Gemini REST API (gemini-3.7-flash with thinkingConfig)
+1. Google Gemini REST API (Gemini 3.8 & Gemini 4 `thinkingLevel`, legacy 2.5/3.7 `thinkingBudget`)
 2. Anthropic Claude Messages API
 3. OpenAI Chat Completions API
 4. OpenAI-Compatible & DeepSeek APIs
@@ -22,6 +22,7 @@ import httpx
 from credence.config import settings
 from credence.pipeline.adapters_base import BaseLLMProvider, LLMResponse, resolve_provider_key
 from credence.pipeline.adapters_vertex import VertexModelGardenProvider
+from credence.pipeline.model_registry import VALID_THINKING_LEVELS, compute_thinking_mode
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +35,91 @@ __all__ = [
     "OpenAICompatibleProvider",
     "OpenAIProvider",
     "VertexModelGardenProvider",
+    "compute_thinking_budget_from_level",
+    "compute_thinking_config",
+    "compute_thinking_level_from_budget",
     "get_llm_provider",
 ]
 
 
-class GeminiProvider(BaseLLMProvider):
-    """Google Gemini REST API Provider supporting 3.7 Flash thinking budgets."""
+_THINKING_LEVEL_TO_BUDGET: Dict[str, int] = {
+    "minimal": 0,
+    "low": 1024,
+    "medium": 4096,
+    "high": 8192,
+}
 
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.7-flash"):
+
+def compute_thinking_level_from_budget(thinking_budget: int) -> str:
+    """Deterministically map a legacy integer thinking budget to a Gemini qualitative thinkingLevel."""
+    if thinking_budget < 0:
+        raise ValueError(f"thinking_budget must be >= 0, got {thinking_budget}")
+    if thinking_budget == 0:
+        return "minimal"
+    if thinking_budget <= 1024:
+        return "low"
+    if thinking_budget <= 4096:
+        return "medium"
+    return "high"
+
+
+def compute_thinking_budget_from_level(thinking_level: str) -> int:
+    """Deterministically map a qualitative thinkingLevel back to an integer thinkingBudget for budget-only models."""
+    candidate = thinking_level.strip().lower()
+    if candidate not in _THINKING_LEVEL_TO_BUDGET:
+        allowed = ", ".join(sorted(VALID_THINKING_LEVELS))
+        raise ValueError(f"Unsupported thinking_level '{thinking_level}'. Must be one of: {allowed}.")
+    return _THINKING_LEVEL_TO_BUDGET[candidate]
+
+
+def compute_thinking_config(
+    model_name: str,
+    thinking_budget: Optional[int] = None,
+    thinking_level: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Compute a mutually exclusive Gemini `thinkingConfig` payload (`thinkingLevel` OR `thinkingBudget`).
+
+    Consults `model_registry.py`'s `thinking_mode`:
+    - `"level"` (Gemini 3.8 & Gemini 4): emits ONLY `{"thinkingLevel": ...}`, never `thinkingBudget`.
+    - `"budget"` (Gemini 2.5 / 3.5 / 3.7): emits ONLY `{"thinkingBudget": N}`, never `thinkingLevel`
+      (explicit `thinking_level` maps back to budget: minimal->omit, low->1024, medium->4096, high->8192).
+    - `"none"`: returns `None`.
+    """
+    if thinking_budget is not None and thinking_budget < 0:
+        raise ValueError(f"thinking_budget must be >= 0, got {thinking_budget}")
+
+    normalized_level: Optional[str] = None
+    if thinking_level is not None:
+        candidate = thinking_level.strip().lower()
+        if candidate not in VALID_THINKING_LEVELS:
+            allowed = ", ".join(sorted(VALID_THINKING_LEVELS))
+            raise ValueError(f"Unsupported thinking_level '{thinking_level}'. Must be one of: {allowed}.")
+        normalized_level = candidate
+
+    mode = compute_thinking_mode(model_name)
+    if mode == "none":
+        return None
+
+    if mode == "level":
+        if normalized_level is not None:
+            return {"thinkingLevel": normalized_level}
+        if thinking_budget is not None:
+            return {"thinkingLevel": compute_thinking_level_from_budget(thinking_budget)}
+        return {"thinkingLevel": "medium"}
+
+    # mode == "budget" (budget-only models: Gemini 2.5 / 3.5 / 3.7, DeepSeek R1)
+    if normalized_level is not None:
+        mapped_budget = compute_thinking_budget_from_level(normalized_level)
+        return {"thinkingBudget": mapped_budget} if mapped_budget > 0 else None
+    if thinking_budget is not None and thinking_budget > 0:
+        return {"thinkingBudget": int(thinking_budget)}
+    return None
+
+
+class GeminiProvider(BaseLLMProvider):
+    """Google Gemini REST API Provider supporting Gemini 3.8/4 thinkingLevel and legacy thinkingBudget."""
+
+    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.8-flash"):
         self.api_key = resolve_provider_key(
             api_key,
             "CREDENCE_GEMINI_API_KEY",
@@ -62,8 +140,9 @@ class GeminiProvider(BaseLLMProvider):
         self,
         prompt: str,
         system_instruction: Optional[str] = None,
-        thinking_budget: int = 4096,
+        thinking_budget: Optional[int] = None,
         temperature: float = 0.1,
+        thinking_level: Optional[str] = None,
     ) -> LLMResponse:
         if not self.api_key:
             raise ValueError("Gemini API key is required for GeminiProvider.")
@@ -74,8 +153,13 @@ class GeminiProvider(BaseLLMProvider):
             "temperature": temperature,
             "responseMimeType": "application/json",
         }
-        if thinking_budget > 0:
-            gen_config["thinkingConfig"] = {"thinkingBudget": thinking_budget}
+        thinking_config = compute_thinking_config(
+            self.model_name,
+            thinking_budget=thinking_budget,
+            thinking_level=thinking_level,
+        )
+        if thinking_config is not None:
+            gen_config["thinkingConfig"] = thinking_config
 
         payload: Dict[str, Any] = {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -130,8 +214,9 @@ class ClaudeProvider(BaseLLMProvider):
         self,
         prompt: str,
         system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
+        thinking_budget: Optional[int] = None,
         temperature: float = 0.1,
+        thinking_level: Optional[str] = None,
     ) -> LLMResponse:
         if not self.api_key:
             raise ValueError("Anthropic API key is required for ClaudeProvider.")
@@ -203,8 +288,9 @@ class OpenAIProvider(BaseLLMProvider):
         self,
         prompt: str,
         system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
+        thinking_budget: Optional[int] = None,
         temperature: float = 0.1,
+        thinking_level: Optional[str] = None,
     ) -> LLMResponse:
         if not self.has_credentials():
             raise ValueError("OpenAI API key is required for OpenAIProvider.")
@@ -311,8 +397,9 @@ class OllamaProvider(BaseLLMProvider):
         self,
         prompt: str,
         system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
+        thinking_budget: Optional[int] = None,
         temperature: float = 0.1,
+        thinking_level: Optional[str] = None,
     ) -> LLMResponse:
         url = f"{self.base_url}/api/generate"
         payload: Dict[str, Any] = {

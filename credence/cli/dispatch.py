@@ -258,10 +258,31 @@ def dispatch_command(args: argparse.Namespace) -> None:
             cli_stats(mesh=True)
         else:
             console.print(f"[bold cyan]🌐 Starting Credence Mesh Node on port {args.port}...[/bold cyan]")
-    elif args.command in ("compare", "models"):
+    elif args.command == "compare":
         from credence.cli.commands.compare import run_model_compare_command
 
         code = asyncio.run(run_model_compare_command(url=args.url, json_output=getattr(args, "json", False)))
+        sys.exit(code)
+    elif args.command == "models":
+        action = getattr(args, "action", "check") or "check"
+        if action == "check":
+            from credence.cli.commands.models import run_models_check_command
+
+            code = asyncio.run(
+                run_models_check_command(
+                    live=getattr(args, "live", False),
+                    horizon_days=getattr(args, "horizon_days", 30),
+                    json_output=getattr(args, "json", False),
+                )
+            )
+        elif action == "list":
+            from credence.cli.commands.models import run_models_list_command
+
+            code = run_models_list_command(json_output=getattr(args, "json", False))
+        else:
+            from credence.cli.commands.compare import run_model_compare_command
+
+            code = asyncio.run(run_model_compare_command(url=action, json_output=getattr(args, "json", False)))
         sys.exit(code)
     elif args.command == "heuristics":
         from credence.cli.commands.heuristics import (

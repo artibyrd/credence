@@ -2093,5 +2093,5 @@ def execute_audit(ecosystem_root: Path):
 
 
 if __name__ == "__main__":
-    eco_root = Path("/home/pendragon/Projects/credence-ecosystem")
+    eco_root = Path(__file__).resolve().parents[2]
     execute_audit(eco_root)

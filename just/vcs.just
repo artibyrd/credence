@@ -2,13 +2,16 @@
 # 4. Version Control, Staged PR Triad & Governance [vcs: safe & gated]
 # ==============================================================================
 
+_ecosystem_root := parent_directory(justfile_directory())
+
 # Display git status across all 3 ecosystem repositories (credence, docs, agent)
 [group('vcs: safe')]
 status:
     #!/usr/bin/env bash
     set -euo pipefail
-    REPOS="/home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent"
-    for r in $REPOS; do
+    REPOS=("{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent")
+    for r in "${REPOS[@]}"; do
+        [ -d "$r" ] || continue
         echo "=== Git Status: $(basename "$r") ==="
         (cd "$r" && git status -s)
     done
@@ -20,15 +23,16 @@ git-diff repo="all":
     set -euo pipefail
     case "{{repo}}" in
         all)
-            for r in /home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent; do
+            for r in "{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent"; do
+                [ -d "$r" ] || continue
                 echo "=== Git Diff: $(basename "$r") ==="
                 (cd "$r" && git diff)
             done
             ;;
         credence|docs|agent)
-            TARGET_DIR="/home/pendragon/Projects/credence-ecosystem/{{repo}}"
-            if [ "{{repo}}" = "docs" ]; then TARGET_DIR="/home/pendragon/Projects/credence-ecosystem/credence-docs"; fi
-            if [ "{{repo}}" = "agent" ]; then TARGET_DIR="/home/pendragon/Projects/credence-ecosystem/credence-agent"; fi
+            TARGET_DIR="{{_ecosystem_root}}/{{repo}}"
+            if [ "{{repo}}" = "docs" ]; then TARGET_DIR="{{_ecosystem_root}}/credence-docs"; fi
+            if [ "{{repo}}" = "agent" ]; then TARGET_DIR="{{_ecosystem_root}}/credence-agent"; fi
             (cd "$TARGET_DIR" && git diff)
             ;;
         *)
@@ -44,15 +48,16 @@ git-log n="10" repo="all":
     set -euo pipefail
     case "{{repo}}" in
         all)
-            for r in /home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent; do
+            for r in "{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent"; do
+                [ -d "$r" ] || continue
                 echo "=== Recent Commits: $(basename "$r") (limit: {{n}}) ==="
                 (cd "$r" && git log -n {{n}} --oneline)
             done
             ;;
         credence|docs|agent)
-            TARGET_DIR="/home/pendragon/Projects/credence-ecosystem/{{repo}}"
-            if [ "{{repo}}" = "docs" ]; then TARGET_DIR="/home/pendragon/Projects/credence-ecosystem/credence-docs"; fi
-            if [ "{{repo}}" = "agent" ]; then TARGET_DIR="/home/pendragon/Projects/credence-ecosystem/credence-agent"; fi
+            TARGET_DIR="{{_ecosystem_root}}/{{repo}}"
+            if [ "{{repo}}" = "docs" ]; then TARGET_DIR="{{_ecosystem_root}}/credence-docs"; fi
+            if [ "{{repo}}" = "agent" ]; then TARGET_DIR="{{_ecosystem_root}}/credence-agent"; fi
             (cd "$TARGET_DIR" && git log -n {{n}} --oneline)
             ;;
         *)
@@ -66,7 +71,8 @@ git-log n="10" repo="all":
 git-branches:
     #!/usr/bin/env bash
     set -euo pipefail
-    for r in /home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent; do
+    for r in "{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent"; do
+        [ -d "$r" ] || continue
         BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
         echo -e "🌿 \033[1;36m$(basename "$r"):\033[0m $BRANCH"
     done
@@ -74,7 +80,7 @@ git-branches:
 # View active Pull Request triad status and review approvals
 [group('vcs: safe')]
 pr-status: (preflight "gh") (auth-check "gh")
-    @python3 ../credence-agent/scripts/manage_pr.py status
+    @python3 "{{_ecosystem_root}}/credence-agent/scripts/manage_pr.py" status
 
 # View detailed markdown summary and diff of open Pull Requests
 [group('vcs: safe')]
@@ -91,14 +97,14 @@ pr-checks pr_num="": (preflight "gh") (auth-check "gh")
 branch name:
     #!/usr/bin/env bash
     set -euo pipefail
-    for r in /home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent; do
+    for r in "{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent"; do
+        [ -d "$r" ] || continue
         echo "=== Switching branch in $(basename "$r") ==="
         (cd "$r" && (git checkout "{{name}}" 2>/dev/null || git checkout -b "{{name}}"))
     done
     echo -e "\033[1;32m✅ All ecosystem repositories switched to branch '{{name}}'.\033[0m"
-    echo -e "\033[1;33m⚠️ GUARDRAIL: All new files must obey the 500 LOC Ceiling Law (Invariant 1).\033[0m"
-    echo -e "\033[1;33m⚠️ SCRATCH RITUAL: All scratch scripts must reside in '/scratch/<name>.py' with Session ID headers & chat links.\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: Make discrete edits, use workspace scratch ('/scratch/<name>.py'), commit often ('just commit <msg>'), then run 'just check' and 'just pr-create <title>'.\033[0m"
+    echo -e "\033[1;33m⚠️ GUARDRAIL: Keep modules focused and cohesive (see .agents/overrides/architecture-review.md).\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: Make discrete edits, commit often ('just commit <msg>'), then run 'just check' and 'just pr-create <title>'.\033[0m"
 
 # Perform incremental verified atomic commit across ecosystem repositories
 [group('vcs: gated')]
@@ -107,8 +113,9 @@ commit message:
     set -euo pipefail
     MSG="{{message}}"
     poetry run python -c "import re, sys; msg = sys.argv[1]; pat = r'^(\[v[0-9]+\.[0-9]+\.[0-9]+\] )?(feat|fix|docs|refactor|test|ci|chore|perf)(\((governance|forensics|mesh|crypto|ui|ops)\))?!?: .+$|^(feat|fix|docs|refactor|test|ci|chore|perf)(\((governance|forensics|mesh|crypto|ui|ops)\))?: .+'; sys.exit(0 if re.match(pat, msg) else (print(f'❌ Error: Commit message violates ecosystem convention:\n   \"{msg}\"\n   Allowed format: <type>(<scope>): <summary> OR <type>: <summary>\n   Allowed types : feat, fix, docs, refactor, test, ci, chore, perf\n   Allowed scopes: (governance), (forensics), (mesh), (crypto), (ui), (ops)') or 1))" "$MSG"
-    REPOS="/home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent"
-    for r in $REPOS; do
+    REPOS=("{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent")
+    for r in "${REPOS[@]}"; do
+        [ -d "$r" ] || continue
         echo "=== Committing in $(basename "$r") ==="
         (cd "$r" && (git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m "$MSG")))
     done
@@ -120,7 +127,8 @@ commit message:
 git-tag version:
     #!/usr/bin/env bash
     set -euo pipefail
-    for r in /home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent; do
+    for r in "{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent"; do
+        [ -d "$r" ] || continue
         echo "=== Tagging $(basename "$r") (v{{version}}) ==="
         (cd "$r" && git tag -f -a "v{{version}}" -m "Release v{{version}}")
     done
@@ -131,7 +139,8 @@ git-tag version:
 git-push:
     #!/usr/bin/env bash
     set -euo pipefail
-    for r in /home/pendragon/Projects/credence-ecosystem/credence /home/pendragon/Projects/credence-ecosystem/credence-docs /home/pendragon/Projects/credence-ecosystem/credence-agent; do
+    for r in "{{_ecosystem_root}}/credence" "{{_ecosystem_root}}/credence-docs" "{{_ecosystem_root}}/credence-agent"; do
+        [ -d "$r" ] || continue
         CURRENT_BRANCH=$(cd "$r" && git rev-parse --abbrev-ref HEAD)
         echo "=== Pushing $(basename "$r") ($CURRENT_BRANCH) to origin ==="
         (cd "$r" && git push origin "$CURRENT_BRANCH" --follow-tags)
@@ -145,37 +154,37 @@ alias git-sync := git-push
 pr-create title: (preflight "gh") (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
-    python3 ../credence-agent/scripts/manage_pr.py "create" "{{title}}"
+    python3 "{{_ecosystem_root}}/credence-agent/scripts/manage_pr.py" "create" "{{title}}"
     echo -e "\033[1;33m⚠️ GUARDRAIL: Pre-staging version sync invariant requires all 7 manifests to match target version.\033[0m"
-    echo -e "\033[1;36m💡 NEXT STEP: 1. Monitor CI/CD ('just ci-watch' / 'gh run watch') -> 2. Verify live Dev deployment with scratch probe -> 3. Update walkthrough.md (Museum Invariant: do NOT wipe earlier phases!) -> 4. Request Mk1 review.\033[0m"
+    echo -e "\033[1;36m💡 NEXT STEP: 1. Monitor CI/CD ('just ci-watch' / 'gh run watch') -> 2. Verify live Dev deployment -> 3. Update walkthrough.md (Museum Invariant: do NOT wipe earlier phases!) -> 4. Request Mk1 review.\033[0m"
 
 # Update description and companion links across open PR triad
 [group('vcs: gated')]
 pr-update title: (preflight "gh") (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
-    python3 ../credence-agent/scripts/manage_pr.py "update" "{{title}}"
+    python3 "{{_ecosystem_root}}/credence-agent/scripts/manage_pr.py" "update" "{{title}}"
 
 # Merge Pull Request triad into main following human Mk1 Eyeball sign-off
 [group('vcs: gated')]
 pr-merge pr_num="": (preflight "gh") (auth-check "gh")
     #!/usr/bin/env bash
     set -euo pipefail
-    python3 ../credence-agent/scripts/manage_pr.py merge ${pr_num:+"$pr_num"}
+    python3 "{{_ecosystem_root}}/credence-agent/scripts/manage_pr.py" merge ${pr_num:+"$pr_num"}
     echo -e "\033[1;32m✅ PR triad merged into main.\033[0m"
     echo -e "\033[1;36m💡 NEXT STEP: Switch to main ('just branch main'), pull changes ('git pull origin main'), run 'just sync-version <version>', then 'just release <version> <msg>'.\033[0m"
 
 # Force merge Pull Request triad bypassing check gates (emergency use only)
 [group('vcs: gated')]
 pr-merge-force pr_num="": (preflight "gh") (auth-check "gh")
-    @python3 ../credence-agent/scripts/manage_pr.py merge ${pr_num:+"$pr_num"} --force
+    @python3 "{{_ecosystem_root}}/credence-agent/scripts/manage_pr.py" merge ${pr_num:+"$pr_num"} --force
 
 # Apply GitHub branch protection rules on main branch across triad
 [group('vcs: gated')]
 branch-protect: (preflight "gh") (auth-check "gh")
-    @python3 ../credence-agent/scripts/configure_branch_protection.py
+    @python3 "{{_ecosystem_root}}/credence-agent/scripts/configure_branch_protection.py"
 
 # Install conventional commit pre-commit hooks across all 3 ecosystem repositories
 [group('vcs: gated')]
 install-hooks:
-    @python3 ../credence-agent/scripts/install_hooks.py
+    @python3 "{{_ecosystem_root}}/credence-agent/scripts/install_hooks.py"

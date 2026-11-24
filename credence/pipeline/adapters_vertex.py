@@ -77,8 +77,9 @@ class VertexModelGardenProvider(BaseLLMProvider):
         self,
         prompt: str,
         system_instruction: Optional[str] = None,
-        thinking_budget: int = 0,
+        thinking_budget: Optional[int] = None,
         temperature: float = 0.1,
+        thinking_level: Optional[str] = None,
     ) -> LLMResponse:
         token = self._get_bearer_token()
         if not token:
@@ -128,7 +129,7 @@ class VertexModelGardenProvider(BaseLLMProvider):
                 text=text,
                 prompt_tokens=in_tok,
                 completion_tokens=out_tok,
-                thinking_tokens=thinking_budget if "r1" in self.model_name else 0,
+                thinking_tokens=(thinking_budget or 0) if "r1" in self.model_name else 0,
                 provider_name="vertex_model_garden",
                 model_name=self.model_name,
             )

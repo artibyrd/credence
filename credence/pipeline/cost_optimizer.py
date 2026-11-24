@@ -56,7 +56,7 @@ def evaluate_cost_profile_recommendation(
                 confidence=0.95,
                 rationale=(
                     f"Your node experienced {trips_last_72h} throttle trips and {sifter_deferred_count} deferred articles. "
-                    f"Upgrading to ECONOMY unlocks Gemini 3.7 Flash reasoning with thinking tokens for up to $4.50/mo."
+                    f"Upgrading to ECONOMY unlocks Gemini 3.8 Flash low-level reasoning for up to $4.50/mo."
                 ),
                 key_metrics={
                     "trips_last_72h": trips_last_72h,
@@ -75,7 +75,7 @@ def evaluate_cost_profile_recommendation(
                 confidence=0.90,
                 rationale=(
                     f"Your node reached budget saturation ({trips_last_72h} throttle events). "
-                    f"Upgrading to BALANCED doubles token throughput to 100k/hr and raises thinking budget to 1024 tokens."
+                    f"Upgrading to BALANCED doubles token throughput to 100k/hr with medium thinking and Gemini 4 Neon escalation."
                 ),
                 key_metrics={
                     "trips_last_72h": trips_last_72h,
@@ -94,7 +94,7 @@ def evaluate_cost_profile_recommendation(
                 confidence=0.85,
                 rationale=(
                     f"Heavy investigative workload detected ({int(long_article_ratio * 100)}% long-form articles). "
-                    f"Upgrading to ULTRA enables 4k-16k deep thinking and Gemini 1.5 Pro escalation."
+                    f"Upgrading to ULTRA enables high thinkingLevel on Gemini 4 Neon with Gemini 4 Carbon escalation."
                 ),
                 key_metrics={
                     "long_article_ratio": long_article_ratio,
@@ -133,7 +133,7 @@ def evaluate_cost_profile_recommendation(
                 confidence=0.88,
                 rationale=(
                     f"Low direct inference demand (${avg_daily_spend_usd:.2f}/day) and {int(mesh_adoption_ratio * 100)}% mesh attestation reuse. "
-                    f"Downgrading to ECONOMY saves up to ${savings:.2f}/month while preserving Gemini 3.7 Flash reasoning."
+                    f"Downgrading to ECONOMY saves up to ${savings:.2f}/month while preserving Gemini 3.8 Flash reasoning."
                 ),
                 key_metrics={"avg_daily_spend_usd": avg_daily_spend_usd, "mesh_adoption_ratio": mesh_adoption_ratio},
             )

@@ -1,14 +1,16 @@
 """Cross-Model Epistemic & Economic Pareto Benchmark for Credence.
 
-Compares multiple LLM families and thinking token budgets on identical content fixtures:
-1. gemini-3.8-flash (1k thinking budget)
-2. gemini-3.7-flash (4k thinking budget)
-3. gemini-3.6-flash (fast triage / generational baseline)
-4. gemini-3.1-pro (flagship high-parameter reasoning)
-5. offline_structural_heuristic ($0.00 baseline)
+Compares active Antigravity-aligned Gemini 3.8 & Gemini 4 models using `thinkingLevel`
+on identical content fixtures:
+1. gemini-3.8-flash (`medium` thinkingLevel)
+2. gemini-4-hydrogen (`low` thinkingLevel)
+3. gemini-4-neon (`medium` thinkingLevel)
+4. gemini-4-carbon (`high` thinkingLevel)
+5. offline-heuristic ($0.00 deterministic baseline)
 
-Note: This standalone sweep utility utilizes GeminiProvider from credence.pipeline.adapters.
-The complete 14-model hybrid tournament is evaluated in tests/integration/test_cross_model_benchmark.py.
+Note: This standalone sweep utility utilizes GeminiProvider from credence.pipeline.adapters
+and derives pricing directly from credence.pipeline.model_registry.
+The historical 14-model hybrid tournament is evaluated in tests/integration/test_cross_model_benchmark.py.
 """
 
 from __future__ import annotations
@@ -18,7 +20,7 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 from rich.console import Console
@@ -27,6 +29,7 @@ from rich.table import Table
 from credence.ingestion.extractor import extract_clean_content
 from credence.pipeline.adapters import GeminiProvider
 from credence.pipeline.evaluator import heuristic_evaluate_content
+from credence.pipeline.model_registry import get_model_pricing_per_million
 from credence.pipeline.subagents import (
     build_specialist_prompt,
     parse_specialist_response,
@@ -36,13 +39,22 @@ from credence.taxonomy_loader import registry
 
 console = Console()
 
-# Pricing constants per 1M tokens (USD)
-MODEL_PRICING = {
-    "gemini-3.8-flash": {"input": 0.075, "output": 0.30, "thinking": 0.30},
-    "gemini-3.7-flash-4k": {"input": 0.075, "output": 0.30, "thinking": 0.30},
-    "gemini-3.6-flash": {"input": 0.05, "output": 0.20, "thinking": 0.00},
-    "gemini-3.1-pro": {"input": 1.25, "output": 5.00, "thinking": 5.00},
-    "offline-heuristic": {"input": 0.00, "output": 0.00, "thinking": 0.00},
+# Active Antigravity-aligned benchmark configurations: (model_id, thinking_level, display_label)
+ACTIVE_BENCHMARK_CONFIGS: List[Tuple[str, str, str]] = [
+    ("gemini-3.8-flash", "medium", "gemini-3.8-flash"),
+    ("gemini-4-hydrogen", "low", "gemini-4-hydrogen"),
+    ("gemini-4-neon", "medium", "gemini-4-neon"),
+    ("gemini-4-carbon", "high", "gemini-4-carbon"),
+]
+
+# Pricing constants per 1M tokens (USD), derived directly from model_registry.py
+MODEL_PRICING: Dict[str, Dict[str, float]] = {
+    model_id: {
+        "input": pricing["prompt"],
+        "output": pricing["completion"],
+        "thinking": pricing["thinking"],
+    }
+    for model_id, pricing in get_model_pricing_per_million().items()
 }
 
 
@@ -67,14 +79,16 @@ async def call_gemini_rest_api(
     client: Optional[httpx.AsyncClient],
     api_key: str,
     model_name: str,
-    thinking_budget: int,
+    thinking_budget: Optional[int],
     prompt: str,
+    thinking_level: Optional[str] = None,
 ) -> Tuple[str, int, int, int]:
     """Call Google Gemini via unified GeminiProvider adapter."""
     provider = GeminiProvider(api_key=api_key, model_name=model_name)
     response = await provider.generate(
         prompt=prompt,
         thinking_budget=thinking_budget,
+        thinking_level=thinking_level,
         temperature=0.1,
     )
     return response.text, response.prompt_tokens, response.completion_tokens, response.thinking_tokens
@@ -86,19 +100,12 @@ async def run_model_benchmark_fixture(
     api_key: str,
     client: httpx.AsyncClient,
 ) -> List[ModelEvaluationMetric]:
-    """Evaluate a single fixture across all candidate model configurations."""
+    """Evaluate a single fixture across all active candidate model configurations."""
     raw_html = fixture_path.read_text(encoding="utf-8")
     extracted = extract_clean_content(raw_html, url=f"file://{fixture_path.name}")
     registry.load_all()
 
     results: List[ModelEvaluationMetric] = []
-
-    configs = [
-        ("gemini-3.8-flash", 1024, "gemini-3.8-flash"),
-        ("gemini-3.7-flash", 4096, "gemini-3.7-flash-4k"),
-        ("gemini-3.6-flash", 0, "gemini-3.6-flash"),
-        ("gemini-3.1-pro", 2048, "gemini-3.1-pro"),
-    ]
 
     prompt_spj = build_specialist_prompt("spj_ethics", extracted, reg=registry)
 
@@ -128,12 +135,17 @@ async def run_model_benchmark_fixture(
         )
     )
 
-    # 2. LLM Candidate Models
-    for base_model, budget, config_label in configs:
+    # 2. Active Gemini 3.8 & Gemini 4 Candidate Models (using thinkingLevel)
+    for base_model, level, config_label in ACTIVE_BENCHMARK_CONFIGS:
         t0 = time.perf_counter()
         try:
             raw_resp, in_tok, out_tok, think_tok = await call_gemini_rest_api(
-                client, api_key, base_model, budget, prompt_spj
+                client,
+                api_key,
+                base_model,
+                None,
+                prompt_spj,
+                thinking_level=level,
             )
             elapsed = time.perf_counter() - t0
             report = parse_specialist_response(raw_resp, "spj_ethics", reg=registry)
@@ -142,7 +154,7 @@ async def run_model_benchmark_fixture(
             grounded = sum(1 for v in validated if v.is_grounded)
             g_rate = (grounded / len(validated)) * 100 if validated else 100.0
 
-            pricing = MODEL_PRICING.get(config_label, {"input": 0.075, "output": 0.30, "thinking": 0.30})
+            pricing = MODEL_PRICING.get(config_label, {"input": 0.10, "output": 0.40, "thinking": 0.40})
             cost_audit = (
                 (in_tok / 1_000_000) * pricing["input"]
                 + (out_tok / 1_000_000) * pricing["output"]
@@ -195,7 +207,7 @@ async def run_full_cross_model_benchmark() -> List[ModelEvaluationMetric]:
 
     fixtures_dir = Path(__file__).resolve().parent.parent.parent / "tests" / "fixtures" / "html"
     if not fixtures_dir.exists():
-        fixtures_dir = Path("/home/pendragon/Projects/credence-ecosystem/credence/tests/fixtures/html")
+        fixtures_dir = Path("tests/fixtures/html")
 
     target_fixtures = [
         ("clean_article.html", "Ground Truth News"),

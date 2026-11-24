@@ -3,13 +3,36 @@ title: Release Changelog
 description: Version history, release notes, and milestone accomplishments across
   the Credence network.
 since_version: v1.0.0
-verified_version: v2.22.0
-last_verified: 2026-11-22
+verified_version: v2.23.0
+last_verified: 2026-11-23
 ---
 
 # Release Changelog
 
 All notable changes to the **Credence** network and documentation are documented here following [Semantic Versioning](https://semver.org/).
+
+## [2.23.0] - 2026-11-23
+
+### Added
+- **Gemini 4 & 3.8 `thinkingLevel` Adapter Contract & Model Lifecycle Gate (`credence`)**:
+  - Added canonical `credence/pipeline/model_registry.py` centralizing active, deprecated, and retired model metadata, `supported_surfaces`, `thinking_mode` (`level` vs. `budget`), pricing, and sunset dates.
+  - Added `compute_thinking_config`, `compute_thinking_level_from_budget`, and `compute_thinking_budget_from_level` in `credence/pipeline/adapters.py` enforcing strict mutual exclusion between `thinkingLevel` (Gemini 4 / 3.8) and `thinkingBudget` (legacy 2.5 / 3.7).
+  - Added `credence models check` (`--live` optional) and `just check-models`, plus offline Tier 2 gate `test_model_catalog_freshness_and_sunset_dates` inside `just check`.
+- **Self-Contained Skill Overlays & Featured Documentation (`credence-agent`, `credence-docs`)**:
+  - Authored 6 self-contained, harness-agnostic overlays in `credence-agent/overrides/` (`architecture-review.md`, `bootstrap-approvals.md`, `domain-modeling.md`, `knowledge-governance.md`, `pr-brief.md`, `release-lifecycle.md`) synced into `credence/.agents/overrides/` via `just sync-overlays` with Tier 2 checksum parity.
+  - Published featured guide `docs/agentic/08-antigravity-customizations-and-skill-overlays.md` (*"Optimized for Antigravity, compatible with other harnesses"*) and dark-theme Vector SVG `antigravity-customizations-overlay-architecture.svg` (SHA-256 parity synced to `credence/web/assets/illustrations/`).
+- **Platform-Agnostic Hygiene Gates (`credence`, `credence-agent`, `credence-docs`)**:
+  - Added `.gemini/` and `.cursor/` ignore entries across all three repositories and Tier 2 gates (`test_zero_tracked_vendor_ide_dotfolders`, `test_zero_machine_local_paths_in_governance_files`).
+
+### Changed
+- **Antigravity-Aligned `COST_PROFILES` & Derived Pricing (`credence`)**: Aligned all 4 active cost profiles (`FREE`/`ECONOMY`: `gemini-3.8-flash`; `BALANCED`: `gemini-3.8-flash` + `gemini-4-neon`; `ULTRA`: `gemini-4-neon` + `gemini-4-carbon` + `gemini-4-hydrogen`), derived `MODEL_PRICING_PER_MILLION` directly from `model_registry.py`, and retired legacy `gemini-2.0-flash-lite`, `gemini-2.5-flash-lite`, `gemini-3.7-flash`, and `gemini-1.5-pro` from active defaults ahead of the Dec 1, 2026 cutover.
+- **Native Antigravity Plugin Layout & Governance Modernization (`credence-agent`, `credence`)**:
+  - Consolidated 6 retained Credence domain skills into `credence-agent/skills/` and moved plugin rules to `credence-agent/rules/AGENTS.md` (passing `agy plugin validate --strict` with 0 errors and 0 warnings).
+  - Adopted generalized `antigravity-customizations` workflow patterns (`architecture-review` Deep Modules with a 1,000-LOC anti-god-file rail, harness-neutral off-repo scratch scripts for `inv-clean-scratch-scripts`, vertical-slice TDD alignment for `inv-cart-before-horse`, and dynamic No-Spicy-Prefixes `bootstrap-approvals`).
+  - Removed hardcoded machine-local paths across `AGENTS.md`, `just/vcs.just`, `docs_audit.py`, `generate_illustrations.py`, and `credence-agent/README.md`.
+
+### Removed
+- Removed duplicated `.agents/skills/` copies across `credence/`, `credence-docs/`, and umbrella root, duplicate `architecture-governance`/`bootstrap-approvals`/`knowledge-governance` skills in `credence-agent`, and obsolete `credence/scripts/bootstrap_approvals.py`.
 
 ## [2.22.1] - 2026-11-22
 

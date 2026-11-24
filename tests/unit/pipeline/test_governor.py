@@ -5,6 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from credence.config import settings
 from credence.pipeline.governor import (
+    MODEL_PRICING_PER_MILLION,
     check_budget_before_call,
     compute_call_cost,
     evaluate_quality_and_should_escalate,
@@ -12,12 +13,13 @@ from credence.pipeline.governor import (
     get_token_headroom_status,
     record_token_usage,
 )
+from credence.pipeline.model_registry import get_model_pricing_per_million
 from credence.pipeline.schemas import SpecialistViolationFinding
 
 
 @pytest.mark.unit
 def test_calculate_call_cost_with_thinking_tokens() -> None:
-    """Verify call cost estimation calculates prompt, completion, and thinking tokens."""
+    """Verify legacy historical replay pricing for gemini-3.7-flash remains accurate."""
     # gemini-3.7-flash: prompt $0.15/1M, completion $0.60/1M, thinking $0.60/1M
     cost = compute_call_cost(
         model_name="gemini-3.7-flash",
@@ -27,6 +29,37 @@ def test_calculate_call_cost_with_thinking_tokens() -> None:
     )
     # Total = 0.0015 + 0.0006 + 0.0012 = 0.0033
     assert cost == 0.0033
+
+
+@pytest.mark.unit
+def test_governor_pricing_derived_from_model_registry_and_gemini4_costs() -> None:
+    """Verify MODEL_PRICING_PER_MILLION derives from model_registry.py and prices Gemini 3.8 / 4 accurately."""
+    assert MODEL_PRICING_PER_MILLION == get_model_pricing_per_million()
+
+    # gemini-3.8-flash: prompt $0.10/1M, completion $0.40/1M, thinking $0.40/1M
+    cost_38 = compute_call_cost(
+        "gemini-3.8-flash", prompt_tokens=10_000, completion_tokens=1_000, thinking_tokens=2_000
+    )
+    assert cost_38 == 0.0022
+
+    # Prefixed worker slug normalizes identically
+    cost_38_prefixed = compute_call_cost(
+        "google/gemini-3.8-flash", prompt_tokens=10_000, completion_tokens=1_000, thinking_tokens=2_000
+    )
+    assert cost_38_prefixed == cost_38
+
+    # gemini-4-neon: prompt $0.50/1M, completion $2.00/1M, thinking $2.00/1M
+    cost_neon = compute_call_cost("gemini-4-neon", prompt_tokens=10_000, completion_tokens=1_000, thinking_tokens=2_000)
+    assert cost_neon == 0.011
+
+    # gemini-4-carbon: prompt $1.25/1M, completion $5.00/1M, thinking $5.00/1M
+    cost_carbon = compute_call_cost(
+        "gemini-4-carbon", prompt_tokens=10_000, completion_tokens=1_000, thinking_tokens=2_000
+    )
+    assert cost_carbon == 0.0275
+
+    # offline-heuristic is $0.00
+    assert compute_call_cost("offline-heuristic", prompt_tokens=10_000, completion_tokens=1_000) == 0.0
 
 
 @pytest.mark.unit
@@ -40,7 +73,7 @@ async def test_record_and_query_token_headroom(db_session: AsyncSession) -> None
     # Record usage
     await record_token_usage(
         session=db_session,
-        model_name="gemini-3.7-flash",
+        model_name="gemini-3.8-flash",
         prompt_tokens=20_000,
         completion_tokens=5_000,
         thinking_tokens=5_000,
@@ -66,7 +99,7 @@ async def test_circuit_breaker_tripping(db_session: AsyncSession, monkeypatch: p
     # Burn tokens exceeding hourly limit
     await record_token_usage(
         session=db_session,
-        model_name="gemini-3.7-flash",
+        model_name="gemini-3.8-flash",
         prompt_tokens=8_000,
         completion_tokens=3_000,
         caller="stress_test",

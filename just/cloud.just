@@ -282,11 +282,6 @@ tf-apply env="prod" extra="": (preflight "terraform")
     terraform -chdir=terraform apply -var-file="${VAR_FILE}" -state="${STATE_FILE}" {{extra}}
     echo -e "\033[1;32m✅ Terraform infrastructure applied successfully.\033[0m"
 
-# Interactive agent command approval bootstrapping runner for maintainer cloud & URL telemetry
-[group('bootstrap')]
-bootstrap-approvals-hosted:
-    @python3 scripts/bootstrap_approvals.py --scope hosted --execute
-
 # Compatibility aliases for deployment commands
 alias deploy-dev := cloud-deploy-dev
 alias deploy-prod := cloud-deploy-prod

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="auto" style="background: transparent;">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16" />
+      <stop offset="100%" stop-color="#050810" />
+    </linearGradient>
+    <filter id="glow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+    <marker id="arr-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Frame & Coordinate Grid -->
+  <rect width="880" height="380" rx="12" fill="url(#bg-grad)" stroke="rgba(56, 189, 248, 0.22)" stroke-width="1" />
+  <g stroke="rgba(148, 163, 184, 0.07)" stroke-width="1">
+    <line x1="32" y1="112" x2="848" y2="112" />
+    <line x1="32" y1="206" x2="848" y2="206" />
+    <line x1="32" y1="300" x2="848" y2="300" />
+    <line x1="560" y1="68" x2="560" y2="352" stroke-dasharray="4 4" />
+  </g>
+
+  <!-- Header -->
+  <text x="32" y="30" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold" letter-spacing="0.12em">PLATFORM-AGNOSTIC SKILL ARCHITECTURE</text>
+  <text x="32" y="52" fill="#ffffff" font-size="15" font-family="sans-serif" font-weight="bold">3-LAYER SKILL &amp; OVERLAY RESOLUTION</text>
+
+  <!-- LAYER 1: Optional Antigravity Customizations Suite -->
+  <g filter="url(#glow)">
+    <rect x="36" y="76" width="484" height="72" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 3" />
+    <!-- Plugin Grid Glyph -->
+    <rect x="52" y="94" width="14" height="14" rx="3" fill="#020617" stroke="#38bdf8" stroke-width="1.3" />
+    <rect x="70" y="94" width="14" height="14" rx="3" fill="#020617" stroke="#38bdf8" stroke-width="1.3" />
+    <rect x="52" y="112" width="14" height="14" rx="3" fill="#020617" stroke="#38bdf8" stroke-width="1.3" />
+    <rect x="70" y="112" width="14" height="14" rx="3" fill="#38bdf8" opacity="0.35" stroke="#38bdf8" stroke-width="1.3" />
+    <text x="102" y="96" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold">LAYER 1</text>
+    <text x="102" y="115" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold">antigravity-customizations</text>
+    <text x="102" y="133" fill="#94a3b8" font-size="10" font-family="monospace">20 Plugins (18 Skills, 2 Hooks)</text>
+    <rect x="434" y="100" width="72" height="22" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="0.9" />
+    <text x="470" y="114" fill="#38bdf8" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">OPTIONAL</text>
+  </g>
+
+  <!-- LAYER 2: Self-Contained Project Overlays -->
+  <g filter="url(#glow)">
+    <rect x="36" y="172" width="484" height="72" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.6" />
+    <!-- Delta Layers Glyph -->
+    <polygon points="68,188 86,198 68,208 50,198" fill="#22c55e" opacity="0.25" stroke="#22c55e" stroke-width="1.3" />
+    <polyline points="50,208 68,218 86,208" fill="none" stroke="#22c55e" stroke-width="1.4" />
+    <polyline points="50,217 68,227 86,217" fill="none" stroke="#22c55e" stroke-width="1.4" opacity="0.7" />
+    <text x="102" y="192" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold">LAYER 2</text>
+    <text x="102" y="211" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold">Project Overlays</text>
+    <text x="102" y="229" fill="#94a3b8" font-size="10" font-family="monospace">.agents/overrides/&lt;skill&gt;.md</text>
+    <rect x="434" y="196" width="72" height="22" rx="4" fill="#1e293b" stroke="#22c55e" stroke-width="0.9" />
+    <text x="470" y="210" fill="#22c55e" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">0 TOKENS</text>
+  </g>
+
+  <!-- LAYER 3: Domain Skills & Tier 2 Enforcement -->
+  <g filter="url(#glow)">
+    <rect x="36" y="268" width="484" height="72" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="1.6" />
+    <!-- Shield & Gate Glyph -->
+    <path d="M 68 286 L 83 292 L 83 306 C 83 316 76 322 68 326 C 60 322 53 316 53 306 L 53 292 Z" fill="#a855f7" opacity="0.22" stroke="#a855f7" stroke-width="1.4" />
+    <polyline points="62,306 67,311 76,300" fill="none" stroke="#a855f7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    <text x="102" y="288" fill="#a855f7" font-size="9" font-family="monospace" font-weight="bold">LAYER 3</text>
+    <text x="102" y="307" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold">Domain Skills &amp; Gates</text>
+    <text x="102" y="325" fill="#94a3b8" font-size="10" font-family="monospace">AGENTS.md + skills/ + just check</text>
+    <rect x="434" y="292" width="72" height="22" rx="4" fill="#1e293b" stroke="#a855f7" stroke-width="0.9" />
+    <text x="470" y="306" fill="#a855f7" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">REQUIRED</text>
+  </g>
+
+  <!-- Vertical Stack Connectors -->
+  <line x1="278" y1="148" x2="278" y2="168" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="3 2" marker-end="url(#arr-cyan)" />
+  <line x1="278" y1="244" x2="278" y2="264" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arr-emerald)" />
+
+  <!-- RIGHT PANEL: Dual-Harness Resolution Targets -->
+  <!-- Target 1: Antigravity Native Optimized -->
+  <g filter="url(#glow)">
+    <rect x="602" y="88" width="242" height="104" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.6" />
+    <circle cx="626" cy="116" r="8" fill="#020617" stroke="#38bdf8" stroke-width="1.6" />
+    <circle cx="626" cy="116" r="3.5" fill="#38bdf8" />
+    <text x="644" y="114" fill="#38bdf8" font-size="9.5" font-family="monospace" font-weight="bold">ANTIGRAVITY</text>
+    <text x="644" y="135" fill="#ffffff" font-size="13.5" font-family="sans-serif" font-weight="bold">Native Optimized</text>
+    <text x="622" y="168" fill="#cbd5e1" font-size="10" font-family="monospace">L1 + L2 + L3 + Hooks</text>
+  </g>
+
+  <!-- Target 2: Other Agent Harnesses (Zero Lock-In) -->
+  <g filter="url(#glow)">
+    <rect x="602" y="226" width="242" height="104" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.6" />
+    <circle cx="626" cy="254" r="8" fill="#020617" stroke="#22c55e" stroke-width="1.6" />
+    <circle cx="626" cy="254" r="3.5" fill="#22c55e" />
+    <text x="644" y="252" fill="#22c55e" font-size="9.5" font-family="monospace" font-weight="bold">OTHER HARNESSES</text>
+    <text x="644" y="273" fill="#ffffff" font-size="13.5" font-family="sans-serif" font-weight="bold">Claude / Cursor / Codex</text>
+    <text x="622" y="306" fill="#cbd5e1" font-size="10" font-family="monospace">L2 + L3 (Zero Lock-In)</text>
+  </g>
+
+  <!-- Resolution Flow Arrows -->
+  <path d="M 520 112 C 556 112, 566 122, 598 122" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-cyan)" />
+  <path d="M 520 198 C 556 198, 566 150, 598 150" fill="none" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arr-emerald)" />
+  <path d="M 520 218 C 556 218, 566 262, 598 262" fill="none" stroke="#22c55e" stroke-width="1.8" marker-end="url(#arr-emerald)" />
+  <path d="M 520 294 C 556 294, 568 172, 598 172" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.85" marker-end="url(#arr-violet)" />
+  <path d="M 520 310 C 556 310, 566 296, 598 296" fill="none" stroke="#a855f7" stroke-width="1.8" marker-end="url(#arr-violet)" />
+</svg>

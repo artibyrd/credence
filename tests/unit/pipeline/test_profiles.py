@@ -42,7 +42,12 @@ def test_cost_profile_presets_structure() -> None:
     assert econ_cfg.max_daily_budget_usd == 0.15
     assert econ_cfg.default_thinking_budget == 512
     assert econ_cfg.escalation_thinking_budget == 1024
-    assert econ_cfg.primary_model == "gemini-3.7-flash"
+    assert econ_cfg.default_thinking_level == "low"
+    assert econ_cfg.escalation_thinking_level == "low"
+    assert econ_cfg.triage_thinking_level == "minimal"
+    assert econ_cfg.primary_model == "gemini-3.8-flash"
+    assert econ_cfg.escalation_model == "gemini-3.8-flash"
+    assert econ_cfg.triage_model == "gemini-3.8-flash"
     assert econ_cfg.concurrency_limit == 2
 
     # Free Profile Invariants
@@ -50,24 +55,40 @@ def test_cost_profile_presets_structure() -> None:
     assert free_cfg.max_daily_budget_usd == 0.00
     assert free_cfg.default_thinking_budget == 0
     assert free_cfg.escalation_thinking_budget == 0
-    assert free_cfg.primary_model == "gemini-2.0-flash-lite"
+    assert free_cfg.default_thinking_level == "minimal"
+    assert free_cfg.escalation_thinking_level == "minimal"
+    assert free_cfg.triage_thinking_level == "minimal"
+    assert free_cfg.primary_model == "gemini-3.8-flash"
+    assert free_cfg.escalation_model == "gemini-3.8-flash"
+    assert free_cfg.triage_model == "gemini-3.8-flash"
     assert free_cfg.max_article_words == 1500
     assert free_cfg.concurrency_limit == 1
 
     # Balanced Profile Invariants
     bal_cfg = COST_PROFILES[CostProfile.BALANCED]
     assert bal_cfg.max_daily_budget_usd == 0.50
-    assert bal_cfg.default_thinking_budget == 1024
+    assert bal_cfg.default_thinking_budget == 2048
     assert bal_cfg.escalation_thinking_budget == 4096
-    assert bal_cfg.primary_model == "gemini-3.7-flash"
+    assert bal_cfg.default_thinking_level == "medium"
+    assert bal_cfg.escalation_thinking_level == "medium"
+    assert bal_cfg.triage_thinking_level == "minimal"
+    assert bal_cfg.primary_model == "gemini-3.8-flash"
+    assert bal_cfg.escalation_model == "gemini-4-neon"
+    assert bal_cfg.triage_model == "gemini-3.8-flash"
     assert bal_cfg.max_article_words == 3000
     assert bal_cfg.concurrency_limit == 3
 
     # Ultra Profile Invariants
     ultra_cfg = COST_PROFILES[CostProfile.ULTRA]
     assert ultra_cfg.max_daily_budget_usd == 5.00
-    assert ultra_cfg.default_thinking_budget == 4096
+    assert ultra_cfg.default_thinking_budget == 8192
     assert ultra_cfg.escalation_thinking_budget == 16384
+    assert ultra_cfg.default_thinking_level == "high"
+    assert ultra_cfg.escalation_thinking_level == "high"
+    assert ultra_cfg.triage_thinking_level == "low"
+    assert ultra_cfg.primary_model == "gemini-4-neon"
+    assert ultra_cfg.escalation_model == "gemini-4-carbon"
+    assert ultra_cfg.triage_model == "gemini-4-hydrogen"
     assert ultra_cfg.max_article_words == 10000
     assert ultra_cfg.concurrency_limit == 8
     assert ultra_cfg.enable_deep_verification is True
@@ -96,7 +117,7 @@ async def test_governor_circuit_breaker_per_profile(db_session: AsyncSession) ->
     # Consume 60k tokens (exceeds Free limit of 50k, but within Balanced 100k and Ultra 2M)
     await record_token_usage(
         session=db_session,
-        model_name="gemini-3.7-flash",
+        model_name="gemini-3.8-flash",
         prompt_tokens=40_000,
         completion_tokens=20_000,
         caller="profile_tester",

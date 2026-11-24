@@ -208,7 +208,7 @@ def cli_audit_docs(
     lens: str = "surface",
 ) -> int:
     """Scan documentation files, evaluate epistemic integrity, and mint attestations."""
-    root = Path(docs_root) if docs_root else Path("/home/pendragon/Projects/credence-ecosystem/credence-docs")
+    root = Path(docs_root) if docs_root else Path(__file__).resolve().parents[4] / "credence-docs"
     if not root.exists():
         # Fallback to local repo docs
         root = Path("docs")

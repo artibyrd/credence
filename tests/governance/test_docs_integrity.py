@@ -1013,7 +1013,7 @@ def test_learning_lifecycle_and_invariant_governance_contracts(docs_root: Path) 
         ecosystem_root / "AGENTS.md",
         ecosystem_root / "credence" / "AGENTS.md",
         ecosystem_root / "credence-docs" / "AGENTS.md",
-        ecosystem_root / "credence-agent" / "AGENTS.md",
+        ecosystem_root / "credence-agent" / "rules" / "AGENTS.md",
     ]
     for af in agents_files:
         if af.exists():
@@ -1027,18 +1027,18 @@ def test_learning_lifecycle_and_invariant_governance_contracts(docs_root: Path) 
             )
             assert "invariant-audit" in content, f"{af.name} must reference invariant-audit skill"
 
-    # Verify invariant-audit skill existence and frontmatter
-    audit_skill = ecosystem_root / "credence-agent" / ".agents" / "skills" / "invariant-audit" / "SKILL.md"
-    assert audit_skill.exists(), "invariant-audit/SKILL.md must exist"
+    # Verify invariant-audit skill existence and frontmatter (native plugin-root skills/)
+    audit_skill = ecosystem_root / "credence-agent" / "skills" / "invariant-audit" / "SKILL.md"
+    assert audit_skill.exists(), "credence-agent/skills/invariant-audit/SKILL.md must exist"
     skill_content = audit_skill.read_text(encoding="utf-8")
     assert "name: invariant-audit" in skill_content
     assert "description:" in skill_content
 
-    # Verify knowledge-governance skill declares 4-phase lifecycle
-    kg_skill = ecosystem_root / "credence-agent" / ".agents" / "skills" / "knowledge-governance" / "SKILL.md"
-    if kg_skill.exists():
-        kg_content = kg_skill.read_text(encoding="utf-8")
-        assert "The 4-Phase Delivery & Continuous Learning Lifecycle" in kg_content
+    # Verify knowledge-governance project overlay declares Credence's 4-phase lifecycle
+    kg_overlay = ecosystem_root / "credence-agent" / "overrides" / "knowledge-governance.md"
+    assert kg_overlay.exists(), "credence-agent/overrides/knowledge-governance.md must exist"
+    kg_content = kg_overlay.read_text(encoding="utf-8")
+    assert "4-Phase Delivery & Continuous Learning Lifecycle" in kg_content
 
 
 @pytest.mark.governance
@@ -1455,7 +1455,7 @@ def test_edge_wrangler_routes_and_web_folders_parity(docs_root: Path) -> None:
 
 @pytest.mark.governance
 def test_skills_schema_and_frontmatter_integrity(docs_root: Path) -> None:
-    """Verify all Antigravity skills in credence-agent/.agents/skills pass schema and token economy linting."""
+    """Verify all Credence domain skills, project overlays, and plugin.json pass schema linting."""
     import importlib.util
 
     agent_root = docs_root.parent / "credence-agent"
@@ -1467,11 +1467,11 @@ def test_skills_schema_and_frontmatter_integrity(docs_root: Path) -> None:
     lint_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(lint_module)
 
-    skills_dir = agent_root / ".agents" / "skills"
-    assert skills_dir.exists(), ".agents/skills directory must exist"
+    skills_dir = agent_root / "skills"
+    assert skills_dir.exists(), "credence-agent/skills directory must exist"
 
     skill_subdirs = [p for p in skills_dir.iterdir() if p.is_dir() and not p.name.startswith(".")]
-    assert len(skill_subdirs) >= 7, f"Expected at least 7 skills, found {len(skill_subdirs)}"
+    assert len(skill_subdirs) >= 6, f"Expected at least 6 domain skills, found {len(skill_subdirs)}"
 
     all_errors = []
     for skill_dir in skill_subdirs:
@@ -1480,7 +1480,11 @@ def test_skills_schema_and_frontmatter_integrity(docs_root: Path) -> None:
         if errors:
             all_errors.extend(errors)
 
-    assert not all_errors, "Found skill schema violations:\n" + "\n".join(f"  • {e}" for e in all_errors)
+    all_errors.extend(lint_module.lint_plugin_manifest(agent_root / "plugin.json"))
+    all_errors.extend(lint_module.lint_overrides_dir(agent_root / "overrides"))
+    all_errors.extend(lint_module.lint_local_paths(agent_root))
+
+    assert not all_errors, "Found skill/overlay schema violations:\n" + "\n".join(f"  • {e}" for e in all_errors)
 
 
 @pytest.mark.governance
@@ -1491,7 +1495,7 @@ def test_agents_md_categorization_and_budget(docs_root: Path) -> None:
         ecosystem_root / "AGENTS.md",
         ecosystem_root / "credence" / "AGENTS.md",
         ecosystem_root / "credence-docs" / "AGENTS.md",
-        ecosystem_root / "credence-agent" / "AGENTS.md",
+        ecosystem_root / "credence-agent" / "rules" / "AGENTS.md",
     ]
     for af in agents_files:
         if af.exists():
@@ -1620,7 +1624,7 @@ def test_invariant_variable_anatomy_and_scratch_script_previews():
         repo_root / "AGENTS.md",
         repo_root / "credence" / "AGENTS.md",
         repo_root / "credence-docs" / "AGENTS.md",
-        repo_root / "credence-agent" / "AGENTS.md",
+        repo_root / "credence-agent" / "rules" / "AGENTS.md",
     ]
 
     invariants_content = invariants_file.read_text(encoding="utf-8")
@@ -1660,21 +1664,18 @@ def test_invariant_variable_anatomy_and_scratch_script_previews():
         assert "<th>Weight</th>" in card_snippet
         assert "<th>Epistemic Role</th>" in card_snippet
 
-    # 3. Scratch script invariant in all AGENTS.md mandates preview links before run_command, provenance, and archival
+    # 3. Scratch script invariant (D2) in all AGENTS.md enforces harness-neutral off-repo scratch rules
     for af in agents_files:
         if af.exists():
             text = af.read_text(encoding="utf-8")
             assert "inv-clean-scratch-scripts" in text, f"{af.name} missing inv-clean-scratch-scripts"
-            assert "scratch/<name>.py" in text or "workspace `/scratch/" in text, (
-                f"{af.name} must mandate standalone workspace scratch scripts"
+            assert "inline" in text.lower(), f"{af.name} must prohibit inline shell blobs (python -c, bash -c)"
+            assert "outside tracked" in text.lower() or "/tmp/" in text.lower(), (
+                f"{af.name} must mandate off-repo temporary scratch directories outside tracked git repos"
             )
-            assert "clickable" in text.lower() or "preview" in text.lower(), (
-                f"{af.name} must mandate clickable preview links before run_command"
+            assert ".agents/overrides/" in text, (
+                f"{af.name} must declare the 1-line .agents/overrides/ project overlay pointer"
             )
-            assert "created" in text.lower() or "session" in text.lower(), (
-                f"{af.name} must mandate session provenance headers"
-            )
-            assert "archive" in text.lower(), f"{af.name} must mandate /scratch/archive/ lifecycle"
 
 
 def test_ecosystem_naming_conventions_and_guardrails():

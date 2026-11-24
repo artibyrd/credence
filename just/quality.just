@@ -66,17 +66,39 @@ check: lint test-unit test-docs tf-validate agent-check
     @echo -e "\033[1;32m🎉 Complete Multi-Plane QA Verification Passed Cleanly in Parallel!\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: If on a feature branch, run 'just sync-version <vX.Y.Z>' and 'just pr-create <title>'.\033[0m"
 
-# Verify Antigravity declarative workspace configuration, skills schema, and prompt economy
+# Verify declarative workspace configuration, skills, overlays, and prompt economy
 [group('core: quality')]
 agent-check:
-    @test -f ../AGENTS.md && echo "✅ Universal root AGENTS.md verified." || (echo "❌ Missing root AGENTS.md"; exit 1)
-    @test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
-    @test -d ../credence-agent/.agents/skills && echo "✅ Native skills repository verified." || (echo "❌ Missing credence-agent skills"; exit 1)
-    @python3 ../credence-agent/scripts/lint_skills.py
-    @python3 ../credence-agent/scripts/audit_demotions.py
-    @echo -e "\033[1;32m✅ Declarative Antigravity Workspace & Invariant Engine Verified Cleanly!\033[0m"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -f ../AGENTS.md && echo "✅ Universal root AGENTS.md verified." || (echo "❌ Missing root AGENTS.md"; exit 1)
+    test -f ../.agents/skills.json && echo "✅ Declarative .agents/skills.json verified." || (echo "❌ Missing .agents/skills.json"; exit 1)
+    test -d ../credence-agent/skills && echo "✅ Native skills repository verified (credence-agent/skills)." || (echo "❌ Missing credence-agent/skills"; exit 1)
+    test -d ../credence-agent/overrides && echo "✅ Canonical project overlays verified (credence-agent/overrides)." || (echo "❌ Missing credence-agent/overrides"; exit 1)
+    python3 ../credence-agent/scripts/lint_skills.py
+    python3 ../credence-agent/scripts/audit_demotions.py
+    if command -v agy >/dev/null 2>&1; then
+        agy plugin validate --strict ../credence-agent
+    else
+        echo "ℹ️ agy CLI not on PATH — skipping optional Antigravity plugin strict validation."
+    fi
+    echo -e "\033[1;32m✅ Declarative Agent Workspace, Skills & Overlays Verified Cleanly!\033[0m"
 
-# Audit skills schema, frontmatter, and token economy
+# Synchronize standalone credence/.agents/overrides/ from canonical credence-agent/overrides/
+[group('core: quality')]
+sync-overlays:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d ../credence-agent/overrides ]; then
+        echo "❌ Canonical overlays directory ../credence-agent/overrides not found."
+        exit 1
+    fi
+    mkdir -p .agents/overrides
+    rm -f .agents/overrides/*.md
+    cp ../credence-agent/overrides/*.md .agents/overrides/
+    echo -e "\033[1;32m✅ Synchronized standalone .agents/overrides/ from credence-agent/overrides/.\033[0m"
+
+# Audit skills schema, frontmatter, overlays, and token economy
 [group('core: quality')]
 audit-skills:
     @python3 ../credence-agent/scripts/lint_skills.py
