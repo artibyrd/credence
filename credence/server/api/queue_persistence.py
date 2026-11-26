@@ -8,19 +8,31 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from credence.config import settings
 from credence.mesh.models import BadgeAward
 from credence.mesh.worker_badges import evaluate_worker_badges
-from credence.models import Audit, AuditJob, Snapshot, Violation, WorkerRecord
+from credence.models import Audit, AuditJob, DomainMetric, FeedItem, Snapshot, Violation, WorkerRecord
 from credence.pipeline.schemas import AuditReport
 from credence.server.api.queue_guards import (
     MAX_TOKENS_DONATED_PER_SUBMIT,
     compute_consensus_verdict,
 )
 from credence.server.api.workers import compute_worker_quality_score
+from credence.subjects.expertise import (
+    RECENT_WINDOW_SIZE,
+    SLASH_STREAK_THRESHOLD,
+    _compute_prior_baseline,
+    _parse_recent_deviations,
+    compute_divergence_acceleration_dampening,
+    get_node_subject_expertise,
+    record_domain_evaluation,
+)
+from credence.worker.leases import resolve_model_family
 
 
 def parse_iso_utc(raw: str) -> datetime:
@@ -44,6 +56,7 @@ async def record_grounding_rejection(
         worker.grounded_violations_count,
         worker.first_seen,
         worker.grounding_rejections_count,
+        worker.divergence_slashes_count,
     )
     worker.last_seen = now
     job.active_leases_json = json.dumps(remaining_leases)
@@ -172,6 +185,7 @@ async def persist_verified_submission(
         worker.grounded_violations_count,
         worker.first_seen,
         worker.grounding_rejections_count,
+        worker.divergence_slashes_count,
     )
 
     awards = evaluate_worker_badges(worker)
@@ -180,34 +194,93 @@ async def persist_verified_submission(
 
     # Finalize Bayesian consensus scoped strictly to this job's participating workers
     if len(completed_models) >= job.target_quorum:
-        job.status = "completed"
-        job.is_consensus_ready = True
-        job.completed_at = now
-        worker.consensus_anchors_count += 1
-        session.add(worker)
+        await session.flush()
+
+        subject_id: Optional[str] = getattr(job, "subject_id", None) or getattr(job, "subject_tag", None)
+        if not subject_id:
+            feed_item = (await session.exec(select(FeedItem).where(FeedItem.item_url == job.url))).first()
+            if feed_item and feed_item.subject_id:
+                subject_id = feed_item.subject_id
 
         job_audits = (
             await session.exec(
-                select(Audit).where(
+                select(Audit)
+                .where(
                     Audit.snapshot_id == snapshot.id,
                     col(Audit.node_pubkey).in_(completed_workers),
                 )
+                .order_by(col(Audit.id))
             )
         ).all()
-        worker_qualities = {
-            w.worker_pubkey: w.quality_score
-            for w in (
-                await session.exec(select(WorkerRecord).where(col(WorkerRecord.worker_pubkey).in_(completed_workers)))
+        audit_by_pubkey: Dict[str, Audit] = {}
+        for audit_row in job_audits:
+            if audit_row.node_pubkey:
+                audit_by_pubkey[audit_row.node_pubkey] = audit_row
+
+        participating_workers = (
+            await session.exec(select(WorkerRecord).where(col(WorkerRecord.worker_pubkey).in_(completed_workers)))
+        ).all()
+        worker_by_pubkey = {w.worker_pubkey: w for w in participating_workers}
+        worker_qualities = {w.worker_pubkey: w.quality_score for w in participating_workers}
+        peer_recent_deviations: Dict[str, List[float]] = {}
+        peer_baseline_deviations: Dict[str, Optional[float]] = {}
+        for w in participating_workers:
+            w_recent = _parse_recent_deviations(w.recent_deviations_json)
+            prior_evals = (
+                w.consensus_evaluations_count
+                if w.consensus_evaluations_count > 0
+                else max(0, w.total_completed - (1 if w.worker_pubkey == worker_pubkey else 0))
+            )
+            w_baseline = _compute_prior_baseline(prior_evals, w.median_deviations_sum, w_recent)
+            peer_recent_deviations[w.worker_pubkey] = w_recent
+            peer_baseline_deviations[w.worker_pubkey] = w_baseline
+
+        subject_expertise_map: Optional[Dict[str, float]] = None
+        if subject_id:
+            subject_expertise_map = {
+                w.worker_pubkey: await get_node_subject_expertise(session, w.worker_pubkey, subject_id)
+                for w in participating_workers
+            }
+            dm_rows = (
+                await session.exec(
+                    select(DomainMetric).where(
+                        DomainMetric.subject_id == subject_id,
+                        col(DomainMetric.node_pubkey).in_(completed_workers),
+                    )
+                )
             ).all()
-        }
-        audits_list = []
-        for a in job_audits:
-            viols = (await session.exec(select(Violation).where(Violation.audit_id == a.id))).all()
+            for dm in dm_rows:
+                dm_recent = _parse_recent_deviations(dm.recent_deviations_json)
+                dm_baseline = _compute_prior_baseline(dm.evaluations_count, dm.median_deviations_sum, dm_recent)
+                dm_damp = compute_divergence_acceleration_dampening(dm_recent, baseline_deviation=dm_baseline)
+                w_damp = compute_divergence_acceleration_dampening(
+                    peer_recent_deviations.get(dm.node_pubkey, []),
+                    baseline_deviation=peer_baseline_deviations.get(dm.node_pubkey),
+                )
+                if dm_damp < w_damp:
+                    peer_recent_deviations[dm.node_pubkey] = dm_recent
+                    peer_baseline_deviations[dm.node_pubkey] = dm_baseline
+
+        audits_list: List[Dict[str, Any]] = []
+        viols_by_pubkey: Dict[str, List[Violation]] = {}
+        for pubkey in completed_workers:
+            a = audit_by_pubkey.get(pubkey)
+            if not a:
+                continue
+            viols = list((await session.exec(select(Violation).where(Violation.audit_id == a.id))).all())
+            viols_by_pubkey[pubkey] = viols
+            w_rec = worker_by_pubkey.get(pubkey)
+            family = (
+                resolve_model_family(a.evaluation_model)
+                if a.evaluation_model
+                else (w_rec.model_family if w_rec else "general")
+            )
             audits_list.append(
                 {
                     "url": job.url,
                     "content_sha256": a.content_sha256,
                     "node_pubkey": a.node_pubkey,
+                    "model_family": family,
                     "suspicion_score": a.suspicion_score,
                     "confidence_score": a.confidence_score,
                     "classification": a.classification,
@@ -215,7 +288,107 @@ async def persist_verified_submission(
                     "violations": [v.model_dump() for v in viols],
                 }
             )
-        job.consensus_verdict_json = json.dumps(compute_consensus_verdict(audits_list, worker_qualities))
+
+        verdict_dict = compute_consensus_verdict(
+            audits_list,
+            worker_qualities,
+            peer_recent_deviations=peer_recent_deviations,
+            subject_id=subject_id,
+            subject_expertise_map=subject_expertise_map,
+            peer_baseline_deviations=peer_baseline_deviations,
+        )
+
+        # Single-Lineage Galileo Auto-Escalation: expand quorum +1 (up to cap 4) before finality
+        grounded_families = {
+            a["model_family"] for a in audits_list if any(v.get("is_grounded", True) for v in a.get("violations", []))
+        }
+        other_families = {a["model_family"] for a in audits_list} - grounded_families
+        all_other_clean = bool(other_families) and all(
+            float(a.get("suspicion_score", 0.0)) <= 15.0 for a in audits_list if a["model_family"] in other_families
+        )
+
+        if (
+            settings.MEMPOOL_GALILEO_ESCALATION_ENABLED
+            and verdict_dict.get("galileo_override") is True
+            and len(grounded_families) == 1
+            and all_other_clean
+            and job.target_quorum < 4
+        ):
+            verdict_dict["provisional_galileo"] = True
+            job.target_quorum = min(4, job.target_quorum + 1)
+            job.is_consensus_ready = False
+            job.status = "claimed" if remaining_leases else "pending"
+            job.completed_at = None
+            job.consensus_verdict_json = json.dumps(verdict_dict)
+            session.add(job)
+            await session.commit()
+            return awards, False
+
+        job.status = "completed"
+        job.is_consensus_ready = True
+        job.completed_at = now
+        job.consensus_verdict_json = json.dumps(verdict_dict)
+        worker.consensus_anchors_count += 1
+        session.add(worker)
+
+        # Record live worker deviations, divergence slashing, and optional subject DomainMetric
+        median_score = float(verdict_dict["median_score"])
+        parsed_host = urlparse(job.url).netloc or None
+        for pubkey in completed_workers:
+            w_rec = worker_by_pubkey.get(pubkey)
+            a = audit_by_pubkey.get(pubkey)
+            if not w_rec or not a:
+                continue
+
+            deviation = abs(float(a.suspicion_score) - median_score)
+            prior_evals = (
+                w_rec.consensus_evaluations_count
+                if w_rec.consensus_evaluations_count > 0
+                else max(0, w_rec.total_completed - (1 if w_rec.worker_pubkey == worker_pubkey else 0))
+            )
+            w_rec.consensus_evaluations_count = prior_evals + 1
+            w_rec.median_deviations_sum += deviation
+
+            recent_devs = _parse_recent_deviations(w_rec.recent_deviations_json)
+            recent_devs = (recent_devs + [deviation])[-RECENT_WINDOW_SIZE:]
+            w_rec.recent_deviations_json = json.dumps(recent_devs)
+
+            baseline = _compute_prior_baseline(
+                max(w_rec.consensus_evaluations_count, w_rec.total_completed),
+                w_rec.median_deviations_sum,
+                recent_devs,
+            )
+            dampening = compute_divergence_acceleration_dampening(recent_devs, baseline_deviation=baseline)
+            if dampening == 0.0:
+                w_rec.consecutive_zero_dampening += 1
+            else:
+                w_rec.consecutive_zero_dampening = 0
+
+            if w_rec.consecutive_zero_dampening >= SLASH_STREAK_THRESHOLD:
+                w_rec.divergence_slashes_count += 1
+                w_rec.consecutive_zero_dampening = 0
+
+            w_rec.quality_score = compute_worker_quality_score(
+                w_rec.total_completed,
+                w_rec.bounties_cleared,
+                w_rec.grounded_violations_count,
+                w_rec.first_seen,
+                w_rec.grounding_rejections_count,
+                w_rec.divergence_slashes_count,
+            )
+            session.add(w_rec)
+
+            if subject_id:
+                viols = viols_by_pubkey.get(pubkey, [])
+                await record_domain_evaluation(
+                    session=session,
+                    node_pubkey=w_rec.worker_pubkey,
+                    subject_id=subject_id,
+                    median_deviation=deviation,
+                    grounded_quotes=len(viols),
+                    total_quotes=len(viols),
+                    origin_fqdn=parsed_host,
+                )
 
     session.add(job)
     await session.commit()

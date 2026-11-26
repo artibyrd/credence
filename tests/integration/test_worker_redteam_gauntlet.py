@@ -574,3 +574,129 @@ def test_vector14_corrupted_pem_injection_rejected(tmp_path: Path):
         with pytest.raises(ValueError) as exc_info:
             import_private_key_pem(bad_pem, tmp_path / "bad.key")
         assert "Corrupted" in str(exc_info.value) or "Ed25519" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_vector_15_zero_reputation_galileo_hijack_blocked(
+    tmp_path: Path, test_identity: NodeIdentity, secondary_identity: NodeIdentity
+):
+    """Vector 15: Brand-new worker (Q_w=0.50) quoting benign sentence verbatim at score 95 cannot hijack clean quorum."""
+    from credence.server.api.queue_guards import compute_consensus_verdict
+
+    # 15a. Direct consensus check including confidence_score=1.0 bypass attempt
+    direct_audits = [
+        {"node_pubkey": "honest_1", "suspicion_score": 0.0, "confidence_score": 0.90, "violations": []},
+        {"node_pubkey": "honest_2", "suspicion_score": 0.0, "confidence_score": 0.90, "violations": []},
+        {
+            "node_pubkey": "new_attacker",
+            "suspicion_score": 95.0,
+            "confidence_score": 1.0,
+            "violations": [
+                {
+                    "rule_id": "SPJ-1.1",
+                    "quote_or_element": "The committee met on Tuesday.",
+                    "reasoning": "False interpretive framing.",
+                    "is_grounded": True,
+                }
+            ],
+        },
+    ]
+    direct_verdict = compute_consensus_verdict(
+        direct_audits,
+        worker_qualities={"honest_1": 0.50, "honest_2": 0.50, "new_attacker": 0.50},
+    )
+    assert direct_verdict["galileo_override"] is False
+    assert direct_verdict["consensus_score"] <= 15.0
+    assert direct_verdict["classification"] == "CLEAN"
+
+    # 15b. Full end-to-end /api/queue/enqueue -> claim -> submit flow with 3 distinct model families
+    third_identity = load_or_create_node_identity(tmp_path / "redteam_third.key")
+    prose = "The committee met on Tuesday. Minutes were approved unanimously without controversy."
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        enq = await client.post(
+            "/api/queue/enqueue",
+            headers=OPERATOR_HEADERS,
+            json={"url": "https://example.com/vector15", "normalized_text": prose, "target_quorum": 3},
+        )
+        assert enq.status_code == 200
+        job_id = enq.json()["job_id"]
+
+        # 2 clean distinct-lineage workers
+        for ident, slug in (
+            (test_identity, "google/gemini-3.8-flash"),
+            (secondary_identity, "anthropic/claude-3-7-sonnet"),
+        ):
+            c = await client.post("/api/queue/claim", json=_claim_body(ident, slug))
+            assert c.json()["job"] is not None
+            clean_report = sign_audit_report(
+                AuditReport(
+                    url="https://example.com/vector15",
+                    content_sha256=compute_content_sha256(prose),
+                    simhash_64=compute_simhash(prose),
+                    suspicion_score=0.0,
+                    suspicion_density=0.0,
+                    confidence_score=0.92,
+                    classification="CLEAN",
+                    violations=[],
+                ),
+                ident,
+            )
+            sub = await client.post(
+                "/api/queue/submit",
+                json={
+                    "job_id": job_id,
+                    "worker_pubkey": ident.public_key_hex,
+                    "model_slug": slug,
+                    "report": clean_report.model_dump(mode="json"),
+                },
+            )
+            assert sub.status_code == 200
+
+        # 3rd brand-new volunteer worker (Q_w=0.50) submits benign quote at score=95.0, confidence=1.0
+        c3 = await client.post("/api/queue/claim", json=_claim_body(third_identity, "deepseek/deepseek-r1"))
+        assert c3.json()["job"] is not None
+        hijack_report = sign_audit_report(
+            AuditReport(
+                url="https://example.com/vector15",
+                content_sha256=compute_content_sha256(prose),
+                simhash_64=compute_simhash(prose),
+                suspicion_score=95.0,
+                suspicion_density=5.0,
+                confidence_score=1.0,
+                classification="DECEPTIVE",
+                violations=[
+                    SpecialistViolationFinding(
+                        rule_id="SPJ-1.1",
+                        rule_uri="journalistic-ethics:seek-truth-and-report/SPJ-1.1@v1.0.0",
+                        domain="JOURNALISTIC_ETHICS",
+                        cluster_id="SEEK_TRUTH_AND_REPORT",
+                        severity=5,
+                        confidence=1.0,
+                        quote_or_element="The committee met on Tuesday.",
+                        reasoning="Malicious interpretive framing on benign sentence.",
+                    )
+                ],
+            ),
+            third_identity,
+        )
+        sub3 = await client.post(
+            "/api/queue/submit",
+            json={
+                "job_id": job_id,
+                "worker_pubkey": third_identity.public_key_hex,
+                "model_slug": "deepseek/deepseek-r1",
+                "report": hijack_report.model_dump(mode="json"),
+            },
+        )
+        assert sub3.status_code == 200
+        assert sub3.json()["is_consensus_ready"] is True
+
+    async with get_async_session() as session:
+        job = (await session.exec(select(AuditJob).where(AuditJob.job_id == job_id))).first()
+        assert job is not None and job.consensus_verdict_json is not None
+        verdict = json.loads(job.consensus_verdict_json)
+        assert verdict["galileo_override"] is False
+        assert verdict["consensus_score"] <= 15.0
+        assert verdict["classification"] == "CLEAN"

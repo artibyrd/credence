@@ -131,14 +131,17 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
             except Exception:
                 pass
 
-            # Ensure mempool auditjob table has completed_workers_json
+            # Ensure mempool auditjob table has completed_workers_json and subject_id
             try:
                 res_job = await conn.exec_driver_sql("PRAGMA table_info(auditjob);")
                 cols_job = [row[1] for row in res_job.fetchall()]
-                if cols_job and "completed_workers_json" not in cols_job:
-                    await conn.exec_driver_sql(
-                        "ALTER TABLE auditjob ADD COLUMN completed_workers_json VARCHAR DEFAULT '[]';"
-                    )
+                if cols_job:
+                    if "completed_workers_json" not in cols_job:
+                        await conn.exec_driver_sql(
+                            "ALTER TABLE auditjob ADD COLUMN completed_workers_json VARCHAR DEFAULT '[]';"
+                        )
+                    if "subject_id" not in cols_job:
+                        await conn.exec_driver_sql("ALTER TABLE auditjob ADD COLUMN subject_id VARCHAR;")
             except Exception:
                 pass
 
@@ -154,10 +157,30 @@ async def migrate_db_v1_to_v2(engine: AsyncEngine) -> None:
                         ("weekend_completed_count", "INTEGER DEFAULT 0"),
                         ("night_owl_completed_count", "INTEGER DEFAULT 0"),
                         ("pioneer_families_count", "INTEGER DEFAULT 0"),
+                        ("recent_deviations_json", "VARCHAR DEFAULT '[]'"),
+                        ("consensus_evaluations_count", "INTEGER DEFAULT 0"),
+                        ("median_deviations_sum", "REAL DEFAULT 0.0"),
+                        ("divergence_slashes_count", "INTEGER DEFAULT 0"),
+                        ("consecutive_zero_dampening", "INTEGER DEFAULT 0"),
                     ]
                     for col_name, col_def in worker_migrations:
                         if col_name not in cols_wrk:
                             await conn.exec_driver_sql(f"ALTER TABLE workerrecord ADD COLUMN {col_name} {col_def};")
+            except Exception:
+                pass
+
+            # Ensure domainmetric table has rolling-window Galileo dampening columns
+            try:
+                res_dom = await conn.exec_driver_sql("PRAGMA table_info(domainmetric);")
+                cols_dom = [row[1] for row in res_dom.fetchall()]
+                if cols_dom:
+                    domain_migrations = [
+                        ("recent_deviations_json", "VARCHAR DEFAULT '[]'"),
+                        ("consecutive_zero_dampening", "INTEGER DEFAULT 0"),
+                    ]
+                    for col_name, col_def in domain_migrations:
+                        if col_name not in cols_dom:
+                            await conn.exec_driver_sql(f"ALTER TABLE domainmetric ADD COLUMN {col_name} {col_def};")
             except Exception:
                 pass
 

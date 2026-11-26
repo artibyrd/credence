@@ -362,6 +362,7 @@ class Settings(BaseSettings):
     PEER_SEEDS: str = ""  # Comma-separated list of peer ws://host:port endpoints
     CONSENSUS_THRESHOLD: float = 0.66
     RATE_LIMIT_MSGS_PER_SEC: int = 50
+    MEMPOOL_GALILEO_ESCALATION_ENABLED: bool = True
     MCP_HOST: str = "0.0.0.0"  # noqa: S104
     MCP_PORT: int = 8000
 

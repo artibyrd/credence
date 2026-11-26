@@ -14,7 +14,12 @@ import pytest
 
 from credence.mesh.consensus import BayesianConsensusAggregator
 from credence.mesh.quality import NodeMetrics, rank_nodes
-from credence.pipeline.schemas import AuditReport
+from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
+from credence.subjects.expertise import (
+    DomainMetrics,
+    compute_divergence_acceleration_dampening,
+    compute_subject_expertise,
+)
 
 
 @pytest.mark.integration
@@ -135,3 +140,115 @@ def test_node_quality_dynamic_ranking_and_demotion() -> None:
         assert s.node_alias.startswith("honest-node")
         assert s.quality_score >= 0.85
         assert s.is_seed_candidate is True
+
+
+@pytest.mark.integration
+def test_galileo_weaponization_resisted_in_13_node_mesh() -> None:
+    """Verify a 13-node mesh resists a 0.90-expertise node pivoting to grounded-but-divergent findings."""
+    now = datetime.now(timezone.utc)
+    first_eval = now - timedelta(days=45)
+    subject_id = "journalism.news"
+    content_sha = "sha256:galileo_13node_" + "a" * 47
+
+    # 1. Attacker builds >= 0.90 expertise over 30 concordant evaluations
+    pre_pivot_metrics = DomainMetrics(
+        evaluations_count=30,
+        median_deviations_sum=0.0,
+        grounded_quotes_count=60,
+        total_quotes_count=60,
+        unique_domains_count=6,
+        slashing_count=0,
+        first_evaluated_at=first_eval,
+        last_evaluated_at=now,
+        recent_deviations=[0.0] * 20,
+    )
+    assert compute_subject_expertise(pre_pivot_metrics) >= 0.90
+
+    # 2. Attacker pivots to 10 grounded-but-divergent evaluations (deviation = 85.0)
+    pivoted_recent = [0.0] * 10 + [85.0] * 10
+    dampening = compute_divergence_acceleration_dampening(pivoted_recent, baseline_deviation=0.0)
+    assert dampening == 0.0
+
+    post_pivot_metrics = DomainMetrics(
+        evaluations_count=40,
+        median_deviations_sum=850.0,
+        grounded_quotes_count=80,
+        total_quotes_count=80,
+        unique_domains_count=6,
+        slashing_count=0,
+        first_evaluated_at=first_eval,
+        last_evaluated_at=now,
+        recent_deviations=pivoted_recent,
+    )
+    post_pivot_expertise = compute_subject_expertise(post_pivot_metrics)
+    assert post_pivot_expertise < 0.70
+
+    # 3. 13-node mesh: 12 honest generalist nodes score CLEAN (0..4) vs 1 pivoting grounded attacker (88.0)
+    attacker_pubkey = "pivoting_galileo_attacker_" + "f" * 38
+    reports: list[AuditReport] = []
+    reps: dict[str, float] = {}
+    exp_map: dict[str, float] = {}
+
+    for i in range(1, 13):
+        pk = f"honest_mesh_node_{i:02d}_" + "0" * 45
+        reports.append(
+            AuditReport(
+                url="https://example.org/galileo-13node-test",
+                content_sha256=content_sha,
+                simhash_64="0x1111222233334444",
+                suspicion_score=float(i % 4),
+                suspicion_density=0.0,
+                confidence_score=0.92,
+                classification="CLEAN",
+                violations=[],
+                node_pubkey=pk,
+            )
+        )
+        reps[pk] = 0.85
+        exp_map[pk] = 0.05
+
+    attacker_report = AuditReport(
+        url="https://example.org/galileo-13node-test",
+        content_sha256=content_sha,
+        simhash_64="0x1111222233334444",
+        suspicion_score=88.0,
+        suspicion_density=6.0,
+        confidence_score=0.99,
+        classification="DECEPTIVE",
+        violations=[
+            SpecialistViolationFinding(
+                rule_id="SPJ-1.1",
+                rule_uri="journalistic-ethics:seek-truth/SPJ-1.1@v1.0.0",
+                domain="JOURNALISTIC_ETHICS",
+                cluster_id="SEEK_TRUTH_AND_REPORT",
+                severity=5,
+                confidence=0.99,
+                quote_or_element="The municipal budget passed 5-2.",
+                reasoning="Malicious interpretive framing on benign factual quote.",
+                is_grounded=True,
+            )
+        ],
+        node_pubkey=attacker_pubkey,
+    )
+    reports.append(attacker_report)
+    reps[attacker_pubkey] = 0.95
+    # Even if stale 0.90 expertise is still cached in subject_expertise_map, consensus dampening withdraws protection
+    exp_map[attacker_pubkey] = 0.90
+
+    aggregator = BayesianConsensusAggregator(f=4, outlier_delta_threshold=25.0, enable_byzantine_trimming=True)
+    verdict = aggregator.compute_consensus(
+        attestations=reports,
+        node_reputations=reps,
+        subject_id=subject_id,
+        subject_expertise_map=exp_map,
+        peer_recent_deviations={attacker_pubkey: pivoted_recent},
+        peer_baseline_deviations={attacker_pubkey: 0.0},
+    )
+
+    assert verdict is not None
+    assert verdict.node_count == 13
+    assert attacker_pubkey in verdict.outlier_nodes
+    assert attacker_pubkey in verdict.galileo_escalated_nodes
+    assert verdict.galileo_override is False
+    assert verdict.consensus_score <= 15.0
+    assert verdict.classification == "CLEAN"

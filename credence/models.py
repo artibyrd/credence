@@ -219,6 +219,14 @@ class DomainMetric(SQLModel, table=True):
     unique_domains_count: int = Field(default=1, description="Number of distinct origin FQDNs evaluated in this domain")
     slashing_count: int = Field(default=0, description="Number of times expertise was slashed for hallucinations")
     expertise_score: float = Field(default=0.05, description="Empirical expertise score E_i(subject) from 0.05 to 1.0")
+    recent_deviations_json: str = Field(
+        default="[]",
+        description="JSON-serialized rolling window of the last 20 absolute consensus deviations",
+    )
+    consecutive_zero_dampening: int = Field(
+        default=0,
+        description="Count of consecutive evaluations where Galileo dampening reached 0.0",
+    )
     first_evaluated_at: datetime = Field(default_factory=utc_now, description="First evaluation timestamp in domain")
     last_evaluated_at: datetime = Field(default_factory=utc_now, description="Most recent evaluation timestamp")
 
@@ -328,6 +336,9 @@ class AuditJob(SQLModel, table=True):
     client_affinity: Optional[str] = Field(
         default=None, index=True, description="Client ID for self-serve affinity filtering"
     )
+    subject_id: Optional[str] = Field(
+        default=None, index=True, description="Optional subject namespace tag for domain-weighted consensus"
+    )
     target_quorum: int = Field(default=1, description="Target quorum of distinct model family evaluations")
     status: str = Field(default="pending", index=True, description="Status: pending, claimed, completed, failed")
     active_leases_json: str = Field(
@@ -376,6 +387,26 @@ class WorkerRecord(SQLModel, table=True):
         default=0, description="Number of model families first introduced to this coordinator by this worker"
     )
     quality_score: float = Field(default=0.50, description="Calculated worker quality score (0.0 to 1.0)")
+    recent_deviations_json: str = Field(
+        default="[]",
+        description="JSON-serialized rolling window of the last 20 worker deviations from quorum medians",
+    )
+    consensus_evaluations_count: int = Field(
+        default=0,
+        description="Total finalized mempool consensus evaluations recorded for baseline deviation tracking",
+    )
+    median_deviations_sum: float = Field(
+        default=0.0,
+        description="Cumulative absolute deviation from finalized mempool quorum medians",
+    )
+    divergence_slashes_count: int = Field(
+        default=0,
+        description="Count of automated divergence slashes applied to the worker",
+    )
+    consecutive_zero_dampening: int = Field(
+        default=0,
+        description="Consecutive zero-dampening streak for automated escalation",
+    )
     first_seen: datetime = Field(default_factory=utc_now, description="First recorded active timestamp")
     last_seen: datetime = Field(
         default_factory=utc_now, index=True, description="Most recent heartbeat/claim/submit timestamp"
