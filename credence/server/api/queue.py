@@ -143,6 +143,7 @@ async def api_queue_enqueue(request: Request) -> JSONResponse:
             normalized_text=norm_text,
             priority=validated["priority"],
             client_affinity=validated["client_affinity"],
+            subject_id=validated.get("subject_id"),
             target_quorum=validated["target_quorum"],
             status="pending",
         )

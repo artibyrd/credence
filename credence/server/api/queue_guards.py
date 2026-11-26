@@ -33,6 +33,7 @@ from credence.ingestion.snapshot import capture_webpage_fastpath
 from credence.mesh.consensus import BayesianConsensusAggregator
 from credence.models import AuditJob, Snapshot, utc_now
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
+from credence.pipeline.scoring import classify_verdict
 from credence.server.middleware.security import get_auth_identity
 from credence.storage.base import get_blob_storage
 from credence.worker.leases import build_claim_proof_payload
@@ -178,6 +179,13 @@ def validate_enqueue_payload(body: Dict[str, Any]) -> Tuple[Optional[Dict[str, A
             return None, "Invalid client_affinity format"
         affinity = affinity.strip()
 
+    raw_subject = body.get("subject_id") if body.get("subject_id") is not None else body.get("subject_tag")
+    subject_id: Optional[str] = None
+    if raw_subject is not None:
+        if not isinstance(raw_subject, str) or not AFFINITY_REGEX.match(raw_subject.strip()):
+            return None, "Invalid subject_id format"
+        subject_id = raw_subject.strip().lower()
+
     content_sha256 = str(body.get("content_sha256") or "").strip()
     return {
         "url": url,
@@ -186,6 +194,7 @@ def validate_enqueue_payload(body: Dict[str, Any]) -> Tuple[Optional[Dict[str, A
         "priority": priority,
         "target_quorum": target_quorum,
         "client_affinity": affinity,
+        "subject_id": subject_id,
         "force": bool(body.get("force", False)),
     }, None
 
@@ -271,16 +280,26 @@ async def resolve_authoritative_enqueue_content(
 def compute_consensus_verdict(
     audits: List[Dict[str, Any]],
     worker_qualities: Optional[Dict[str, float]] = None,
+    peer_recent_deviations: Optional[Dict[str, List[float]]] = None,
+    subject_id: Optional[str] = None,
+    subject_expertise_map: Optional[Dict[str, float]] = None,
+    peer_baseline_deviations: Optional[Dict[str, Optional[float]]] = None,
 ) -> Dict[str, Any]:
-    """Compute quality-weighted Bayesian consensus verdict with Galileo Rule override."""
+    """Compute quality-weighted Bayesian consensus verdict with acceleration-dampened Galileo Rule."""
     if not audits:
         return {
             "consensus_score": 0.0,
             "median_score": 0.0,
             "classification": "CLEAN",
+            "consensus_verdict": "CLEAN",
+            "verdict_class": "CLEAN",
             "evaluations_count": 0,
             "galileo_override": False,
+            "galileo_escalated_nodes": [],
+            "provisional_galileo": False,
             "violations_count": 0,
+            "agreement_pct": 100.0,
+            "outlier_nodes": [],
         }
 
     reports: List[AuditReport] = []
@@ -288,9 +307,10 @@ def compute_consensus_verdict(
     scores: List[float] = []
 
     for idx, audit in enumerate(audits):
-        score = float(audit.get("suspicion_score", 0.0))
+        score = max(0.0, min(100.0, float(audit.get("suspicion_score", 0.0))))
         scores.append(score)
         pubkey = str(audit.get("node_pubkey") or f"worker-{idx}")
+        is_satire = bool(audit.get("is_satire", False))
         findings: List[SpecialistViolationFinding] = []
         for raw_v in audit.get("violations", []):
             quote = str(raw_v.get("quote_or_element") or raw_v.get("quote") or "").strip()
@@ -312,24 +332,31 @@ def compute_consensus_verdict(
                     is_grounded=is_grounded,
                 )
             )
-        band = "CLEAN" if score < 25.0 else ("SUSPICIOUS" if score < 60.0 else "DECEPTIVE")
+        band = classify_verdict(score, is_satire=is_satire)
         reports.append(
             AuditReport(
                 url=str(audit.get("url") or "https://consensus.local/item"),
                 content_sha256=str(audit.get("content_sha256") or "sha256:consensus"),
                 simhash_64=str(audit.get("simhash_64") or "0x0"),
-                suspicion_score=max(0.0, min(100.0, score)),
+                suspicion_score=score,
                 suspicion_density=float(audit.get("suspicion_density", len(findings))),
                 confidence_score=float(audit.get("confidence_score", 0.9)),
                 classification=str(audit.get("classification") or band),
-                is_satire=bool(audit.get("is_satire", False)),
+                is_satire=is_satire,
                 violations=findings,
                 node_pubkey=pubkey,
             )
         )
 
     aggregator = BayesianConsensusAggregator()
-    verdict = aggregator.compute_consensus(reports, node_reputations=worker_qualities or {})
+    verdict = aggregator.compute_consensus(
+        reports,
+        node_reputations=worker_qualities or {},
+        subject_id=subject_id,
+        subject_expertise_map=subject_expertise_map,
+        peer_recent_deviations=peer_recent_deviations,
+        peer_baseline_deviations=peer_baseline_deviations,
+    )
     sorted_scores = sorted(scores)
     mid = len(sorted_scores) // 2
     raw_median = (
@@ -337,18 +364,19 @@ def compute_consensus_verdict(
     )
 
     final_score = verdict.consensus_score if verdict else raw_median
-    galileo_override = False
-    if grounded_violations and final_score < 25.0:
-        galileo_override = True
-        final_score = max(max(scores), 45.0)
-
-    classification = "CLEAN" if final_score < 25.0 else ("SUSPICIOUS" if final_score < 60.0 else "DECEPTIVE")
+    galileo_override = verdict.galileo_override if verdict else False
+    is_satire_consensus = verdict.is_satire_consensus if verdict else False
+    classification = classify_verdict(final_score, is_satire=is_satire_consensus)
     return {
         "consensus_score": round(final_score, 1),
         "median_score": round(raw_median, 1),
         "classification": classification,
+        "consensus_verdict": classification,
+        "verdict_class": classification,
         "evaluations_count": len(audits),
         "galileo_override": galileo_override,
+        "galileo_escalated_nodes": verdict.galileo_escalated_nodes if verdict else [],
+        "provisional_galileo": False,
         "violations_count": len(grounded_violations),
         "agreement_pct": verdict.agreement_pct if verdict else 100.0,
         "outlier_nodes": verdict.outlier_nodes if verdict else [],

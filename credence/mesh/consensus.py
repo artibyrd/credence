@@ -13,7 +13,10 @@ from pydantic import BaseModel, Field
 
 from credence.pipeline.schemas import AuditReport
 from credence.pipeline.scoring import classify_verdict
-from credence.subjects.expertise import compute_effective_weight
+from credence.subjects.expertise import (
+    compute_divergence_acceleration_dampening,
+    compute_effective_weight,
+)
 
 
 class PeerAttestationWeight(BaseModel):
@@ -26,6 +29,8 @@ class PeerAttestationWeight(BaseModel):
     effective_weight: float
     domain_expertise: float = 0.05
     is_outlier: bool = False
+    galileo_dampening: float = 1.0
+    galileo_escalation: bool = False
 
 
 class ConsensusVerdict(BaseModel):
@@ -43,6 +48,11 @@ class ConsensusVerdict(BaseModel):
     is_satire_consensus: bool = Field(default=False)
     is_byzantine_resilient: bool = Field(default=True, description="True if agreement meets or exceeds 66% threshold")
     outlier_nodes: List[str] = Field(default_factory=list, description="Public keys of detected divergent/rogue nodes")
+    galileo_override: bool = Field(default=False, description="True if Galileo Rule anchor elevated consensus")
+    galileo_escalated_nodes: List[str] = Field(
+        default_factory=list,
+        description="Public keys of nodes flagged for Galileo divergence acceleration",
+    )
     peer_weights: List[PeerAttestationWeight] = Field(default_factory=list)
 
 
@@ -73,8 +83,12 @@ class BayesianConsensusAggregator:
         reputations: Dict[str, float],
         subject_id: Optional[str],
         exp_map: Dict[str, float],
+        peer_recent_deviations: Optional[Dict[str, List[float]]] = None,
+        peer_baseline_deviations: Optional[Dict[str, Optional[float]]] = None,
     ) -> List[Dict[str, Any]]:
         peer_meta: List[Dict[str, Any]] = []
+        recent_map = peer_recent_deviations or {}
+        baseline_map = peer_baseline_deviations or {}
         for att in attestations:
             pubkey = att.node_pubkey or "anonymous"
             rep = reputations.get(pubkey, 0.5)
@@ -105,11 +119,46 @@ class BayesianConsensusAggregator:
                     "confidence": att.confidence_score,
                     "grounded_ratio": grounded_ratio,
                     "domain_exp": domain_exp,
+                    "base_weight": base_weight,
+                    "subject_id": subject_id,
                     "weight": effective_weight,
                     "is_satire": att.is_satire,
+                    "recent_deviations": recent_map.get(pubkey, []),
+                    "baseline_deviation": baseline_map.get(pubkey),
+                    "galileo_dampening": 1.0,
+                    "galileo_escalation": False,
                 }
             )
         return peer_meta
+
+    @staticmethod
+    def _is_verified_authority(p: Dict[str, Any]) -> bool:
+        if p.get("domain_exp", 0.0) >= 0.70:
+            return True
+        if p.get("subject_id") is not None:
+            return bool(p["weight"] >= 0.50)
+        return bool(p.get("base_weight", 0.0) >= 0.70 and p["weight"] >= 0.50)
+
+    def _apply_galileo_dampening(self, peer_meta: List[Dict[str, Any]]) -> None:
+        """Compute Galileo acceleration dampening and scale peer weights before median calculation."""
+        for p in peer_meta:
+            has_grounded_violations = len(p["att"].violations) > 0 and p["grounded_ratio"] >= 0.80
+            is_verified_authority = self._is_verified_authority(p)
+            p["is_verified_authority"] = is_verified_authority
+
+            if is_verified_authority and has_grounded_violations:
+                dampening = compute_divergence_acceleration_dampening(
+                    p.get("recent_deviations", []),
+                    baseline_deviation=p.get("baseline_deviation"),
+                )
+                p["galileo_dampening"] = dampening
+                if dampening > 0.5:
+                    p["weight"] = max(0.01, p["weight"] * dampening)
+                    if dampening < 1.0:
+                        p["galileo_escalation"] = True
+                else:
+                    p["weight"] = max(0.01, p["weight"] * (dampening**2))
+                    p["galileo_escalation"] = True
 
     def _compute_median_score(
         self,
@@ -141,11 +190,12 @@ class BayesianConsensusAggregator:
         for p in peer_meta:
             delta = abs(p["score"] - median_score)
             has_grounded_violations = len(p["att"].violations) > 0 and p["grounded_ratio"] >= 0.80
-            is_verified_authority = p.get("domain_exp", 0.0) >= 0.70 or p["weight"] >= 0.50
+            is_verified_authority = p.get("is_verified_authority", self._is_verified_authority(p))
+            dampening = p.get("galileo_dampening", 1.0)
 
-            # The Galileo Rule: Verified authorities providing 100% grounded citations
-            # cannot be dismissed as outliers by low-expertise swarms reporting absence of evidence
-            if is_verified_authority and has_grounded_violations:
+            # The Galileo Rule: Verified authorities providing grounded citations
+            # retain outlier immunity unless divergence acceleration indicates a pivot.
+            if is_verified_authority and has_grounded_violations and dampening > 0.5:
                 p["is_outlier"] = False
                 valid_peers.append(p)
             elif delta > self.outlier_delta_threshold and len(peer_meta) >= 3:
@@ -162,6 +212,8 @@ class BayesianConsensusAggregator:
         node_reputations: Optional[Dict[str, float]] = None,
         subject_id: Optional[str] = None,
         subject_expertise_map: Optional[Dict[str, float]] = None,
+        peer_recent_deviations: Optional[Dict[str, List[float]]] = None,
+        peer_baseline_deviations: Optional[Dict[str, Optional[float]]] = None,
     ) -> Optional[ConsensusVerdict]:
         """Calculate subject-weighted Bayesian consensus across signed attestations."""
         if not attestations:
@@ -173,7 +225,10 @@ class BayesianConsensusAggregator:
             reputations=node_reputations or {},
             subject_id=subject_id,
             exp_map=subject_expertise_map or {},
+            peer_recent_deviations=peer_recent_deviations,
+            peer_baseline_deviations=peer_baseline_deviations,
         )
+        self._apply_galileo_dampening(peer_meta)
         median_score = self._compute_median_score(peer_meta, subject_id)
         outlier_pubkeys, valid_peers = self._filter_outliers(peer_meta, median_score)
 
@@ -183,18 +238,25 @@ class BayesianConsensusAggregator:
         consensus_score = self._compute_median_score(active_peers, subject_id)
         consensus_score = round(max(0.0, min(100.0, consensus_score)), 1)
 
-        # Galileo Rule Anchor: If verified authorities with grounded citations exist,
-        # their discoveries cannot be silenced by low-expertise swarms reporting absence of evidence
+        # Galileo Rule Anchor: If non-pivoting verified authorities with grounded citations exist,
+        # their discoveries cannot be silenced by low-expertise swarms scoring in the CLEAN band (<= 15.0)
         authoritative_evidentiary_peers = [
             p
             for p in active_peers
-            if (p.get("domain_exp", 0.0) >= 0.70 or p["weight"] >= 0.50)
+            if p.get("is_verified_authority", self._is_verified_authority(p))
             and p["grounded_ratio"] >= 0.80
             and len(p["att"].violations) > 0
+            and p.get("galileo_dampening", 1.0) > 0.5
         ]
-        if authoritative_evidentiary_peers and consensus_score == 0.0:
-            consensus_score = self._compute_median_score(authoritative_evidentiary_peers, subject_id)
-            consensus_score = round(max(0.0, min(100.0, consensus_score)), 1)
+        galileo_override = False
+        if authoritative_evidentiary_peers and consensus_score <= 15.0:
+            anchored_score = round(
+                max(0.0, min(100.0, self._compute_median_score(authoritative_evidentiary_peers, subject_id))),
+                1,
+            )
+            if anchored_score > 15.0:
+                consensus_score = anchored_score
+                galileo_override = True
 
         # Step 4: Satire consensus
         satire_votes = sum(1 for p in active_peers if p["is_satire"])
@@ -203,6 +265,7 @@ class BayesianConsensusAggregator:
         if is_satire_consensus:
             consensus_score = 0.0
             classification = "SATIRE_PARODY"
+            galileo_override = False
         else:
             classification = classify_verdict(consensus_score, is_satire=False)
 
@@ -224,9 +287,12 @@ class BayesianConsensusAggregator:
                 effective_weight=round(p["weight"], 3),
                 domain_expertise=round(p["domain_exp"], 3),
                 is_outlier=p["is_outlier"],
+                galileo_dampening=round(p.get("galileo_dampening", 1.0), 4),
+                galileo_escalation=bool(p.get("galileo_escalation", False)),
             )
             for p in peer_meta
         ]
+        galileo_escalated_nodes = [p["pubkey"] for p in peer_meta if p.get("galileo_escalation", False)]
 
         return ConsensusVerdict(
             content_sha256=content_sha256,
@@ -241,6 +307,8 @@ class BayesianConsensusAggregator:
             is_satire_consensus=is_satire_consensus,
             is_byzantine_resilient=is_byzantine_resilient,
             outlier_nodes=outlier_pubkeys,
+            galileo_override=galileo_override,
+            galileo_escalated_nodes=galileo_escalated_nodes,
             peer_weights=peer_weights_list,
         )
 

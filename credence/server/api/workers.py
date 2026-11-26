@@ -33,6 +33,7 @@ def compute_worker_quality_score(
     grounded_violations: int,
     first_seen: datetime,
     grounding_rejections: int = 0,
+    divergence_slashes: int = 0,
 ) -> float:
     """Compute quality score Q_w (0.10 to 1.00) incorporating grounding accuracy and slashing."""
     now = utc_now()
@@ -44,10 +45,11 @@ def compute_worker_quality_score(
     total_attempts = max(1, total_completed + grounding_rejections)
     ground_accuracy = total_completed / total_attempts if total_completed > 0 else 0.0
     rejection_penalty = min(0.60, grounding_rejections * 0.15)
+    divergence_penalty = min(0.50, max(0, divergence_slashes) * 0.20)
     long_factor = min(1.0, longevity_days / 14.0)
 
     base = 0.50 + (0.25 * vol_factor) + (0.15 * ground_accuracy) + (0.10 * long_factor)
-    score = base - rejection_penalty
+    score = base - rejection_penalty - divergence_penalty
     return round(min(1.0, max(0.10, score)), 2)
 
 
@@ -82,6 +84,7 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
                 w.grounded_violations_count,
                 w.first_seen,
                 w.grounding_rejections_count,
+                w.divergence_slashes_count,
             )
             filtered.append(
                 {
@@ -95,6 +98,7 @@ async def api_workers_leaderboard(request: Request) -> JSONResponse:
                     "tokens_saved_usd": compute_token_savings(w.tokens_donated),
                     "quality_score": q_score,
                     "grounding_rejections_count": w.grounding_rejections_count,
+                    "divergence_slashes_count": w.divergence_slashes_count,
                     "badges_count": len(badges_list),
                     "badges": badges_list,
                     "last_seen": w.last_seen.isoformat(),
@@ -131,6 +135,7 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
             worker.grounded_violations_count,
             worker.first_seen,
             worker.grounding_rejections_count,
+            worker.divergence_slashes_count,
         )
 
         audit_stmt = (
@@ -176,6 +181,7 @@ async def api_worker_dossier(request: Request) -> JSONResponse:
                 "tokens_saved_usd": compute_token_savings(worker.tokens_donated),
                 "quality_score": q_score,
                 "grounding_rejections_count": worker.grounding_rejections_count,
+                "divergence_slashes_count": worker.divergence_slashes_count,
                 "badges": badges_list,
                 "first_seen": worker.first_seen.isoformat(),
                 "last_seen": worker.last_seen.isoformat(),

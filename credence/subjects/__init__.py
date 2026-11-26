@@ -2,6 +2,7 @@
 
 from credence.subjects.expertise import (
     DomainMetrics,
+    compute_divergence_acceleration_dampening,
     compute_effective_weight,
     compute_subject_expertise,
     record_domain_evaluation,
@@ -20,6 +21,7 @@ __all__ = [
     "get_subject_registry",
     "classify_subject",
     "DomainMetrics",
+    "compute_divergence_acceleration_dampening",
     "compute_subject_expertise",
     "compute_effective_weight",
     "record_domain_evaluation",

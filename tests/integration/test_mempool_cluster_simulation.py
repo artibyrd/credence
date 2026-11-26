@@ -29,8 +29,9 @@ from credence.db import get_async_session, init_db
 from credence.identity import NodeIdentity, load_or_create_node_identity, sign_audit_report
 from credence.ingestion.hasher import compute_content_sha256, compute_simhash
 from credence.mesh.worker_badges import evaluate_worker_badges
-from credence.models import Audit, AuditJob, Snapshot, Violation, WorkerRecord
+from credence.models import Audit, AuditJob, DomainMetric, Snapshot, Violation, WorkerRecord
 from credence.pipeline.schemas import AuditReport, SpecialistViolationFinding
+from credence.pipeline.scoring import classify_verdict
 from credence.server.api.queue import compute_consensus_verdict, get_completed_report
 from credence.server.app import app
 from credence.worker.leases import sign_claim_proof
@@ -63,6 +64,7 @@ async def setup_cluster_db():
         await session.exec(delete(Snapshot))
         await session.exec(delete(AuditJob))
         await session.exec(delete(WorkerRecord))
+        await session.exec(delete(DomainMetric))
         await session.commit()
 
 
@@ -103,7 +105,7 @@ def make_cluster_report(
         suspicion_score=score,
         suspicion_density=1.0,
         confidence_score=0.92,
-        classification="CLEAN" if score < 25.0 else "SUSPICIOUS",
+        classification=classify_verdict(score),
         is_satire=False,
         content_type="NEWS_ARTICLE",
         violations=violations,
@@ -290,20 +292,23 @@ async def test_scenario_06_bayesian_consensus_convergence(cluster_identities: di
             assert job is not None and job.consensus_verdict_json is not None
             verdict = json.loads(job.consensus_verdict_json)
             assert verdict["evaluations_count"] == 3
-            assert verdict["classification"] == "CLEAN"
+            assert verdict["classification"] == "LOW_SUSPICION"
 
 
 def test_scenario_07_galileo_rule_override():
-    """Scenario 7: Grounded finding from minority specialist overrides ungrounded clean majority."""
+    """Scenario 7: Grounded finding from authoritative whistleblower (Q_w >= 0.70) overrides clean majority."""
     audits = [
-        {"suspicion_score": 10.0, "violations": []},
-        {"suspicion_score": 12.0, "violations": []},
+        {"node_pubkey": "gen_1", "suspicion_score": 10.0, "violations": []},
+        {"node_pubkey": "gen_2", "suspicion_score": 12.0, "violations": []},
         {
+            "node_pubkey": "whistleblower",
             "suspicion_score": 58.0,
-            "violations": [{"rule_id": "SPJ-1.1", "quote": "Secret source claim", "severity": 3}],
+            "confidence_score": 0.95,
+            "violations": [{"rule_id": "SPJ-1.1", "quote": "Secret source claim", "severity": 3, "is_grounded": True}],
         },
     ]
-    verdict = compute_consensus_verdict(audits)
+    worker_qualities = {"gen_1": 0.50, "gen_2": 0.50, "whistleblower": 0.85}
+    verdict = compute_consensus_verdict(audits, worker_qualities=worker_qualities)
     assert verdict["galileo_override"] is True
     assert verdict["consensus_score"] >= 45.0
     assert verdict["classification"] in ("SUSPICIOUS", "DECEPTIVE")
@@ -423,3 +428,393 @@ async def test_scenario_11_multi_model_audits_survive_init_db(cluster_identities
     async with get_async_session() as session:
         audits = (await session.exec(select(Audit))).all()
         assert len(audits) == 3, f"init_db() wiped multi-model audits! Remaining: {len(audits)}"
+
+
+def test_mempool_consensus_verdict_uses_canonical_5_tier_bands():
+    """Verify compute_consensus_verdict uses canonical 5-tier classify_verdict (LOW_SUSPICION & SATIRE_PARODY)."""
+    low_suspicion_verdict = compute_consensus_verdict(
+        [
+            {"node_pubkey": "w1", "suspicion_score": 25.0, "violations": []},
+            {"node_pubkey": "w2", "suspicion_score": 25.0, "violations": []},
+        ]
+    )
+    assert low_suspicion_verdict["consensus_score"] == 25.0
+    assert low_suspicion_verdict["classification"] == "LOW_SUSPICION"
+
+    satire_verdict = compute_consensus_verdict(
+        [
+            {"node_pubkey": "w1", "suspicion_score": 0.0, "is_satire": True, "violations": []},
+            {"node_pubkey": "w2", "suspicion_score": 0.0, "is_satire": True, "violations": []},
+            {"node_pubkey": "w3", "suspicion_score": 30.0, "is_satire": False, "violations": []},
+        ]
+    )
+    assert satire_verdict["classification"] == "SATIRE_PARODY"
+
+
+@pytest.mark.asyncio
+async def test_mempool_single_lineage_galileo_escalation(cluster_identities: dict[str, NodeIdentity], monkeypatch):
+    """Single-lineage authoritative Galileo override flags provisional_galileo and expands quorum +1 (up to 4)."""
+    from credence.config import settings
+
+    monkeypatch.setattr(settings, "MEMPOOL_GALILEO_ESCALATION_ENABLED", True)
+
+    prose = "Verified investigative prose containing Secret source claim inside article body."
+    # Seed authoritative quality (Q_w = 0.85) for alpha so Galileo Rule legitimately activates
+    async with get_async_session() as session:
+        session.add(
+            WorkerRecord(
+                worker_pubkey=cluster_identities["alpha"].public_key_hex,
+                worker_alias="trusted-alpha",
+                total_completed=25,
+                bounties_cleared=25,
+                grounded_violations_count=10,
+                quality_score=0.85,
+            )
+        )
+        await session.commit()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        enq = await client.post(
+            "/api/queue/enqueue",
+            headers=OPERATOR_HEADERS,
+            json={"url": "https://example.com/galileo-escalate", "normalized_text": prose, "target_quorum": 3},
+        )
+        assert enq.status_code == 200
+        job_id = enq.json()["job_id"]
+
+        # 1. Authoritative alpha submits grounded violation (score=80.0)
+        await client.post("/api/queue/claim", json=_claim_body(cluster_identities["alpha"], "google/gemini-3.8-flash"))
+        rep_alpha = make_cluster_report(
+            "https://example.com/galileo-escalate",
+            prose,
+            cluster_identities["alpha"],
+            score=80.0,
+            violation_quote="Secret source claim",
+        )
+        sub1 = await client.post(
+            "/api/queue/submit",
+            json={
+                "job_id": job_id,
+                "worker_pubkey": cluster_identities["alpha"].public_key_hex,
+                "model_slug": "google/gemini-3.8-flash",
+                "report": rep_alpha.model_dump(mode="json"),
+            },
+        )
+        assert sub1.status_code == 200
+        assert sub1.json()["is_consensus_ready"] is False
+
+        # 2 & 3. Two independent model families score CLEAN (0.0)
+        for name, slug in (("beta", "anthropic/claude-3-7-sonnet"), ("gamma", "deepseek/deepseek-r1")):
+            await client.post("/api/queue/claim", json=_claim_body(cluster_identities[name], slug))
+            rep_clean = make_cluster_report(
+                "https://example.com/galileo-escalate", prose, cluster_identities[name], score=0.0
+            )
+            sub_res = await client.post(
+                "/api/queue/submit",
+                json={
+                    "job_id": job_id,
+                    "worker_pubkey": cluster_identities[name].public_key_hex,
+                    "model_slug": slug,
+                    "report": rep_clean.model_dump(mode="json"),
+                },
+            )
+            assert sub_res.status_code == 200
+
+        # At 3/3 passes with single-lineage Galileo override, job must NOT finalize yet; quorum expands to 4
+        assert sub_res.json()["is_consensus_ready"] is False
+        async with get_async_session() as session:
+            job = (await session.exec(select(AuditJob).where(AuditJob.job_id == job_id))).first()
+            assert job is not None
+            assert job.is_consensus_ready is False
+            assert job.target_quorum == 4
+            assert job.status == "pending"
+            assert job.consensus_verdict_json is not None
+            prov_verdict = json.loads(job.consensus_verdict_json)
+            assert prov_verdict["galileo_override"] is True
+            assert prov_verdict["provisional_galileo"] is True
+
+        # 4. Fourth distinct model family claims & submits -> reaches cap 4 and finalizes
+        c4 = await client.post("/api/queue/claim", json=_claim_body(cluster_identities["delta"], "openai/gpt-4o"))
+        assert c4.json()["job"] is not None
+        rep_delta = make_cluster_report(
+            "https://example.com/galileo-escalate", prose, cluster_identities["delta"], score=0.0
+        )
+        sub4 = await client.post(
+            "/api/queue/submit",
+            json={
+                "job_id": job_id,
+                "worker_pubkey": cluster_identities["delta"].public_key_hex,
+                "model_slug": "openai/gpt-4o",
+                "report": rep_delta.model_dump(mode="json"),
+            },
+        )
+        assert sub4.status_code == 200
+        assert sub4.json()["is_consensus_ready"] is True
+
+        async with get_async_session() as session:
+            final_job = (await session.exec(select(AuditJob).where(AuditJob.job_id == job_id))).first()
+            assert final_job is not None
+            assert final_job.is_consensus_ready is True
+            assert final_job.status == "completed"
+            assert final_job.target_quorum == 4
+
+        # Verify disabling MEMPOOL_GALILEO_ESCALATION_ENABLED finalizes at quorum 3 without expansion
+        monkeypatch.setattr(settings, "MEMPOOL_GALILEO_ESCALATION_ENABLED", False)
+        enq_disabled = await client.post(
+            "/api/queue/enqueue",
+            headers=OPERATOR_HEADERS,
+            json={"url": "https://example.com/galileo-no-escalate", "normalized_text": prose, "target_quorum": 3},
+        )
+        job_disabled_id = enq_disabled.json()["job_id"]
+        await client.post("/api/queue/claim", json=_claim_body(cluster_identities["alpha"], "google/gemini-3.8-flash"))
+        rep_a2 = make_cluster_report(
+            "https://example.com/galileo-no-escalate",
+            prose,
+            cluster_identities["alpha"],
+            score=80.0,
+            violation_quote="Secret source claim",
+        )
+        await client.post(
+            "/api/queue/submit",
+            json={
+                "job_id": job_disabled_id,
+                "worker_pubkey": cluster_identities["alpha"].public_key_hex,
+                "model_slug": "google/gemini-3.8-flash",
+                "report": rep_a2.model_dump(mode="json"),
+            },
+        )
+        last_disabled = None
+        for name, slug in (("beta", "anthropic/claude-3-7-sonnet"), ("gamma", "deepseek/deepseek-r1")):
+            await client.post("/api/queue/claim", json=_claim_body(cluster_identities[name], slug))
+            rep_c2 = make_cluster_report(
+                "https://example.com/galileo-no-escalate", prose, cluster_identities[name], score=0.0
+            )
+            last_disabled = await client.post(
+                "/api/queue/submit",
+                json={
+                    "job_id": job_disabled_id,
+                    "worker_pubkey": cluster_identities[name].public_key_hex,
+                    "model_slug": slug,
+                    "report": rep_c2.model_dump(mode="json"),
+                },
+            )
+        assert last_disabled is not None and last_disabled.json()["is_consensus_ready"] is True
+
+
+@pytest.mark.asyncio
+async def test_mempool_worker_deviation_tracking_slashing_and_domain_wiring(
+    cluster_identities: dict[str, NodeIdentity],
+):
+    """Finalized jobs record worker deviations, slash sustained acceleration pivots, and update DomainMetric."""
+    from credence.server.api.workers import compute_worker_quality_score
+
+    # Verify divergence penalty math directly
+    now = datetime.now(timezone.utc)
+    base_q = compute_worker_quality_score(30, 30, 10, now - timedelta(days=20), grounding_rejections=0)
+    slashed_q = compute_worker_quality_score(
+        30, 30, 10, now - timedelta(days=20), grounding_rejections=0, divergence_slashes=1
+    )
+    assert slashed_q == pytest.approx(max(0.10, round(base_q - 0.20, 2)), abs=0.01)
+
+    # Seed alpha with 10 concordant deviations [0.0]*10 + 2 consecutive zero-dampening streak;
+    # submitting a 90.0 outlier on a subject-tagged job should trigger the 3rd streak -> slash!
+    async with get_async_session() as session:
+        session.add(
+            WorkerRecord(
+                worker_pubkey=cluster_identities["alpha"].public_key_hex,
+                worker_alias="pivoting-alpha",
+                total_completed=30,
+                bounties_cleared=30,
+                grounded_violations_count=10,
+                quality_score=0.90,
+                recent_deviations_json=json.dumps([0.0] * 10 + [90.0] * 6),
+                consecutive_zero_dampening=2,
+                divergence_slashes_count=0,
+            )
+        )
+        await session.commit()
+
+    prose = "Apiary equipment article citing single-stitch nylon veil fabric without reinforcement."
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        enq = await client.post(
+            "/api/queue/enqueue",
+            headers=OPERATOR_HEADERS,
+            json={
+                "url": "https://example.com/apiary-subject-wired",
+                "normalized_text": prose,
+                "target_quorum": 3,
+                "subject_id": "apiculture.equipment",
+            },
+        )
+        assert enq.status_code == 200
+        job_id = enq.json()["job_id"]
+
+        submissions = [
+            ("alpha", "google/gemini-3.8-flash", 90.0, "single-stitch nylon veil fabric"),
+            ("beta", "anthropic/claude-3-7-sonnet", 0.0, None),
+            ("gamma", "deepseek/deepseek-r1", 0.0, None),
+        ]
+        for name, slug, score, quote in submissions:
+            c = await client.post("/api/queue/claim", json=_claim_body(cluster_identities[name], slug))
+            assert c.json()["job"] is not None
+            rep = make_cluster_report(
+                "https://example.com/apiary-subject-wired",
+                prose,
+                cluster_identities[name],
+                score=score,
+                violation_quote=quote,
+            )
+            res = await client.post(
+                "/api/queue/submit",
+                json={
+                    "job_id": job_id,
+                    "worker_pubkey": cluster_identities[name].public_key_hex,
+                    "model_slug": slug,
+                    "report": rep.model_dump(mode="json"),
+                },
+            )
+            assert res.status_code == 200
+
+    async with get_async_session() as session:
+        alpha_rec = (
+            await session.exec(
+                select(WorkerRecord).where(WorkerRecord.worker_pubkey == cluster_identities["alpha"].public_key_hex)
+            )
+        ).first()
+        assert alpha_rec is not None
+        assert alpha_rec.divergence_slashes_count == 1
+        assert alpha_rec.consecutive_zero_dampening == 0
+        assert len(json.loads(alpha_rec.recent_deviations_json)) == 17
+        assert alpha_rec.quality_score < 0.80
+
+        # Verify record_domain_evaluation populated DomainMetric for participating workers
+        dm_rows = (
+            await session.exec(select(DomainMetric).where(DomainMetric.subject_id == "apiculture.equipment"))
+        ).all()
+        assert {row.node_pubkey for row in dm_rows} == {
+            cluster_identities["alpha"].public_key_hex,
+            cluster_identities["beta"].public_key_hex,
+            cluster_identities["gamma"].public_key_hex,
+        }
+
+
+@pytest.mark.asyncio
+async def test_mempool_slow_drip_and_periodic_hijack_blocked_on_worker_record(
+    cluster_identities: dict[str, NodeIdentity],
+):
+    """WorkerRecord baseline_deviation catches slow-drip (+0.5/eval) and 1-in-4 periodic hijacks in standard mempool."""
+    # 1. Slow-drip (+0.5/eval) on WorkerRecord in standard mempool (subject_id=None) triggers slashing
+    drip_worker = cluster_identities["alpha"]
+    async with get_async_session() as session:
+        session.add(
+            WorkerRecord(
+                worker_pubkey=drip_worker.public_key_hex,
+                worker_alias="slow-drip-mempool-worker",
+                total_completed=20,
+                bounties_cleared=20,
+                consensus_evaluations_count=20,
+                median_deviations_sum=0.0,
+                recent_deviations_json=json.dumps([0.0] * 20),
+                quality_score=0.80,
+            )
+        )
+        await session.commit()
+
+    prose = "Standard mempool article containing benign statement for baseline testing."
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Run 38 slow-drip mempool jobs (+1.5/step so acceleration crosses 25.0 via baseline within 38 rounds)
+        for step in range(1, 39):
+            url = f"https://example.com/slow-drip-{step}"
+            enq = await client.post(
+                "/api/queue/enqueue",
+                headers=OPERATOR_HEADERS,
+                json={"url": url, "normalized_text": prose, "target_quorum": 3},
+            )
+            job_id = enq.json()["job_id"]
+            drip_score = min(80.0, round(step * 1.5, 1))
+            for name, slug, score in (
+                ("alpha", "google/gemini-3.8-flash", drip_score),
+                ("beta", "anthropic/claude-3-7-sonnet", 0.0),
+                ("gamma", "deepseek/deepseek-r1", 0.0),
+            ):
+                c = await client.post("/api/queue/claim", json=_claim_body(cluster_identities[name], slug))
+                assert c.json()["job"] is not None
+                rep = make_cluster_report(url, prose, cluster_identities[name], score=score)
+                res = await client.post(
+                    "/api/queue/submit",
+                    json={
+                        "job_id": job_id,
+                        "worker_pubkey": cluster_identities[name].public_key_hex,
+                        "model_slug": slug,
+                        "report": rep.model_dump(mode="json"),
+                    },
+                )
+                assert res.status_code == 200
+
+    async with get_async_session() as session:
+        drip_rec = (
+            await session.exec(select(WorkerRecord).where(WorkerRecord.worker_pubkey == drip_worker.public_key_hex))
+        ).first()
+        assert drip_rec is not None
+        assert drip_rec.consensus_evaluations_count == 58
+        assert drip_rec.divergence_slashes_count >= 1
+        assert drip_rec.quality_score < 0.70
+
+    # 2. Periodic 1-in-4 hijack ([80.0, 0.0, 0.0, 0.0] x 5 after 20 concordant evals) is dampened <= 0.50
+    # and blocked from hijacking a clean mempool quorum via Galileo Rule
+    periodic_worker = cluster_identities["delta"]
+    periodic_history = [80.0, 0.0, 0.0, 0.0] * 5  # sum=400, window_avg=20.0, older_avg==recent_avg==20.0
+    async with get_async_session() as session:
+        session.add(
+            WorkerRecord(
+                worker_pubkey=periodic_worker.public_key_hex,
+                worker_alias="periodic-hijacker",
+                total_completed=40,
+                bounties_cleared=40,
+                consensus_evaluations_count=40,
+                median_deviations_sum=400.0,  # prior 20 had 0.0 sum -> baseline=0.0!
+                recent_deviations_json=json.dumps(periodic_history),
+                quality_score=0.90,
+            )
+        )
+        await session.commit()
+
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        hijack_url = "https://example.com/periodic-hijack-check"
+        enq_p = await client.post(
+            "/api/queue/enqueue",
+            headers=OPERATOR_HEADERS,
+            json={"url": hijack_url, "normalized_text": prose, "target_quorum": 3},
+        )
+        p_job_id = enq_p.json()["job_id"]
+        for name, slug, score, quote in (
+            ("delta", "google/gemini-3.8-flash", 85.0, "benign statement"),
+            ("eps", "anthropic/claude-3-7-sonnet", 0.0, None),
+            ("zeta", "deepseek/deepseek-r1", 0.0, None),
+        ):
+            c = await client.post("/api/queue/claim", json=_claim_body(cluster_identities[name], slug))
+            assert c.json()["job"] is not None
+            rep = make_cluster_report(hijack_url, prose, cluster_identities[name], score=score, violation_quote=quote)
+            res = await client.post(
+                "/api/queue/submit",
+                json={
+                    "job_id": p_job_id,
+                    "worker_pubkey": cluster_identities[name].public_key_hex,
+                    "model_slug": slug,
+                    "report": rep.model_dump(mode="json"),
+                },
+            )
+            assert res.status_code == 200
+
+    async with get_async_session() as session:
+        p_job = (await session.exec(select(AuditJob).where(AuditJob.job_id == p_job_id))).first()
+        assert p_job is not None and p_job.consensus_verdict_json is not None
+        p_verdict = json.loads(p_job.consensus_verdict_json)
+        assert p_verdict["galileo_override"] is False
+        assert periodic_worker.public_key_hex in p_verdict["outlier_nodes"]
+        assert periodic_worker.public_key_hex in p_verdict["galileo_escalated_nodes"]
+        assert p_verdict["consensus_score"] == 0.0
+        assert p_verdict["classification"] == "CLEAN"
