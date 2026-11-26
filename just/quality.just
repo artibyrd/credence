@@ -5,7 +5,7 @@
 # Run in-memory hermetic unit test gauntlet (<35s, 100% offline, $0.00 tokens)
 [group('core: test')]
 test-unit extra="": (preflight "poetry")
-    poetry run pytest tests/ -m "unit" --durations=10 {{extra}}
+    poetry run python -m pytest tests/ -m "unit" --durations=10 {{extra}}
     @echo -e "\033[1;32m✅ Hermetic unit tests passed cleanly.\033[0m"
     @echo -e "\033[1;36m💡 NEXT STEP: Run 'just check' for full multi-plane pre-commit validation.\033[0m"
 
@@ -15,32 +15,32 @@ alias test-e2e := test-mock
 # Run documentation integrity, frontmatter, parity, and living canon test suite
 [group('core: test')]
 test-docs extra="": (preflight "poetry")
-    poetry run pytest tests/governance/test_docs_integrity.py -v {{extra}}
+    poetry run python -m pytest tests/governance/test_docs_integrity.py -v {{extra}}
     @echo -e "\033[1;32m✅ Documentation & living canon integrity verified.\033[0m"
 
 # Run mock end-to-end integration tests
 [group('core: test')]
 test-mock extra="": (preflight "poetry")
-    poetry run pytest tests/e2e/test_mock_e2e.py -v {{extra}}
+    poetry run python -m pytest tests/e2e/test_mock_e2e.py -v {{extra}}
     @echo -e "\033[1;32m✅ Mock E2E integration tests passed.\033[0m"
 
 # Run live rotating public web syndication and extraction tests
 [group('core: test')]
 [env('CREDENCE_LIVE_TESTS', '1')]
 test-live extra="": (preflight "poetry")
-    poetry run pytest tests/e2e/test_live_rotating_suite.py -v -m e2e -s {{extra}}
+    poetry run python -m pytest tests/e2e/test_live_rotating_suite.py -v -m e2e -s {{extra}}
     @echo -e "\033[1;32m✅ Live rotating E2E suite passed.\033[0m"
 
 # Run full parallel test suite across all available cores
 [group('core: test')]
 test-all extra="": (preflight "poetry")
-    poetry run pytest tests/ -n auto --durations=10 {{extra}}
+    poetry run python -m pytest tests/ -n auto --durations=10 {{extra}}
     @echo -e "\033[1;32m✅ Complete test suite passed.\033[0m"
 
 # Run test suite inside isolated Docker container
 [group('core: test')]
 test-docker extra="": (preflight "docker")
-    docker compose run --rm credence poetry run pytest tests/ {{extra}}
+    docker compose run --rm credence poetry run python -m pytest tests/ {{extra}}
     @echo -e "\033[1;32m✅ Docker container test suite passed.\033[0m"
 
 # Run static linting and type analysis across the codebase
@@ -48,7 +48,7 @@ test-docker extra="": (preflight "docker")
 lint: (preflight "poetry")
     poetry run ruff check .
     poetry run ruff format --check .
-    poetry run mypy credence tests
+    poetry run python -m mypy credence tests
     @echo -e "\033[1;32m✅ Static linting and typing checks passed cleanly.\033[0m"
 
 # Autoformat code with Ruff

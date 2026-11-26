@@ -71,9 +71,29 @@ preflight tool="all":
         return 0
     }
 
+    check_poetry_venv_shebangs() {
+        local bin shebang interp
+        for bin in .venv/bin/pytest .venv/bin/mypy; do
+            [ -f "$bin" ] || continue
+            shebang=$(head -n 1 "$bin" 2>/dev/null || true)
+            case "$shebang" in
+                '#!'*)
+                    interp=$(printf '%s\n' "${shebang#\#!}" | awk '{print $1}')
+                    if [ -n "$interp" ] && [ ! -x "$interp" ]; then
+                        echo -e "\033[0;31m❌ Stale virtualenv shebang detected in $bin -> $interp (not found)\033[0m"
+                        echo "   👉 Repair local venv: poetry env remove --all && poetry install"
+                        return 1
+                    fi
+                    ;;
+            esac
+        done
+        return 0
+    }
+
     case "{{tool}}" in
         poetry)
             check_binary "Poetry" "poetry" "https://python-poetry.org/docs/#installation" ""
+            check_poetry_venv_shebangs
             ;;
         docker)
             check_binary "Docker" "docker" "https://docs.docker.com/get-docker/" ""
@@ -94,6 +114,7 @@ preflight tool="all":
         all)
             echo "=== Credence Multi-Plane Toolchain Preflight ==="
             check_binary "Poetry" "poetry" "https://python-poetry.org" "" || true
+            check_poetry_venv_shebangs || true
             check_binary "Docker" "docker" "https://docs.docker.com" "" || true
             check_gcloud || true
             check_wrangler || true
