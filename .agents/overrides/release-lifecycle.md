@@ -6,6 +6,7 @@ Self-contained Credence release-lifecycle policy. Applies automatically on top o
 
 ## Overrides
 
+- **PR & Live Dev Before Mk1 Eyeball:** Feature-branch commits, version sync (`just sync-version`), `just pr-create`, CI monitoring, and live Dev probing are **prerequisites** to requesting Mk1 Eyeball—never pause before opening PRs. Mk1 Eyeball strictly gates `just pr-merge`, release tags, and production rollout.
 - **Changelog & Roadmap Paths:** Canonical release records live in `credence-docs/docs/changelog.md` (with `## [X.Y.Z]` heading) and `credence-docs/docs/roadmap.md` (strictly forward-looking; completed items removed), NOT only in root `CHANGELOG.md` / `ROADMAP.md`.
 - **Bare Semver Argument Format:** Always pass bare semver (`2.23.0`, without a leading `v`) to `just sync-version <version>` and `just release <version> "<msg>"` because `credence/just/release.just` prepends `v` to tags and manifest strings automatically.
 - **3-Repo Topological Merge Order:** When merging a Credence PR triad into `main`, ALWAYS merge strictly in this order:

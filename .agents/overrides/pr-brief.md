@@ -6,6 +6,7 @@ Self-contained Credence pull-request titling, scoping, and review-brief policy. 
 
 ## Overrides
 
+- **PR-Before-Mk1-Eyeball Rule (Mandatory Review Surface):** Never pause on a dirty working tree or unpushed feature branch to request Mk1 Eyeball review. Always commit verified changes on the feature branch, synchronize version manifests and docs, push and open the staged Triad PRs (`just pr-create`), watch GitHub Actions (`CI` + `deploy-dev.yml`) to green, and verify live Dev endpoints **before** requesting Mk1 Eyeball sign-off. PRs provide the digestible human review surface and exercise live Dev deployment; human approval gates **merging to `main`, release tagging, and production deployment**.
 - **Mandatory Credence PR Title Format:** Every Credence pull request title MUST strictly follow:
   `[vX.Y.Z] <type>(<scope>): <imperative summary>`
   Example: `[v2.23.0] feat(governance): adopt skill overlay architecture and Gemini 4 models`
